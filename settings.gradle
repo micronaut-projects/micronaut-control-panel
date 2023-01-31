@@ -6,13 +6,13 @@ pluginManagement {
 }
 
 plugins {
-    id 'io.micronaut.build.shared.settings' version '6.2.0'
+    id 'io.micronaut.build.shared.settings' version '6.2.1'
 }
 
-rootProject.name = 'project-template-parent'
+rootProject.name = 'control-panel-parent'
 
-include 'project-template'
-include 'project-template-bom'
+include 'control-panel-core'
+include 'control-panel-bom'
 
 enableFeaturePreview 'TYPESAFE_PROJECT_ACCESSORS'
 
