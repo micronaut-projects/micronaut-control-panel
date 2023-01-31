@@ -1,4 +1,16 @@
 plugins {
-    id 'io.micronaut.build.internal.control-panel-base'
     id "io.micronaut.build.internal.module"
+}
+
+dependencies {
+    annotationProcessor mn.micronaut.inject.java
+    implementation mn.micronaut.inject.java
+    implementation mn.micronaut.runtime
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        url = uri('https://s01.oss.sonatype.org/content/repositories/snapshots/')
+    }
 }

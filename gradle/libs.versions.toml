@@ -16,11 +16,12 @@
 # a managed version (a version which alias starts with "managed-"
 
 [versions]
-micronaut = "3.8.3"
+micronaut = '4.0.0-SNAPSHOT'
 micronaut-docs = "2.0.0"
-micronaut-test = "3.8.0"
-groovy = "3.0.13"
-spock = "2.1-groovy-3.0"
+micronaut-test = '4.0.0-SNAPSHOT'
+groovy = '4.0.7'
+spock = '2.3-groovy-4.0'
+micronaut-gradle-plugin = "3.7.0"
 
 # Managed versions appear in the BOM
 # managed-somelib = "1.0"
@@ -28,20 +29,9 @@ spock = "2.1-groovy-3.0"
 
 [libraries]
 
-#
-# Managed dependencies appear in the BOM
-#
-# managed-somelib = { module = "group:artifact", version.ref = "managed-somelib" }
 
-#
-# Imported BOMs, also appearing in the generated BOM
-#
-# boms-somebom = { module = "com.foo:somebom", version.ref = "managed-somebom" }
-
-# Other libraries used by the project but non managed
-
-# micronaut-bom = { module = "io.micronaut:micronaut-bom", version.ref = "micronaut" }
-# jdoctor = { module = "me.champeau.jdoctor:jdoctor-core", version.ref="jdoctor" }
+# Plugins
+gradle-micronaut = { module = 'io.micronaut.gradle:micronaut-gradle-plugin', version.ref = 'micronaut-gradle-plugin' }
 
 [bundles]
 

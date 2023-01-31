@@ -17,5 +17,6 @@ include 'control-panel-bom'
 enableFeaturePreview 'TYPESAFE_PROJECT_ACCESSORS'
 
 micronautBuild {
+    addSnapshotRepository()
     importMicronautCatalog()
 }
