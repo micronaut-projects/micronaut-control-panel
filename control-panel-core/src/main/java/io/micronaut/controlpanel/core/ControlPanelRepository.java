@@ -12,6 +12,12 @@ public interface ControlPanelRepository {
 
     List<ControlPanel> findAll();
 
+    List<ControlPanel> findAllByCategory(String categoryId);
+
+    ControlPanel findByName(String name);
+
     List<ControlPanel.Category> findAllCategories();
+
+    ControlPanel.Category findCategoryById(String categoryId);
 
 }

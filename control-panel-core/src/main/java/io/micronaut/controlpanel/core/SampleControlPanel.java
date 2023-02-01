@@ -17,6 +17,11 @@ import java.util.Map;
 public class SampleControlPanel implements ControlPanel {
 
     @Override
+    public String getName() {
+        return "sample";
+    }
+
+    @Override
     public String getTitle() {
         return "Sample Control Panel";
     }
@@ -28,7 +33,9 @@ public class SampleControlPanel implements ControlPanel {
 
     @Override
     public Map<String, Object> getModel() {
-        return Collections.emptyMap();
+        return Map.of(
+            "text", "Text for the detailed view of the control panel"
+        );
     }
 
     @Override
@@ -39,5 +46,21 @@ public class SampleControlPanel implements ControlPanel {
     @Override
     public Category getCategory() {
         return Category.MAIN;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuffer sb = new StringBuffer("SampleControlPanel{");
+        sb.append("name='").append(getName()).append('\'');
+        sb.append(", title='").append(getTitle()).append('\'');
+        sb.append(", body='").append(getBody()).append('\'');
+        sb.append(", model=").append(getModel());
+        sb.append(", view=").append(getView());
+        sb.append(", category=").append(getCategory());
+        sb.append(", detailedView=").append(getDetailedView());
+        sb.append(", order=").append(getOrder());
+        sb.append(", enabled=").append(isEnabled());
+        sb.append('}');
+        return sb.toString();
     }
 }

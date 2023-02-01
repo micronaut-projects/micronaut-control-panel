@@ -12,7 +12,14 @@
         </div>
     </div>
     <div class="card-body">
-        {{ this.body }}
+        <div class="row">
+            <div class="col">{{ this.body }}</div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <a class="btn btn-block bg-gradient-primary" href="/control-panel/{{ this.name }}">Details</a>
+            </div>
+        </div>
     </div>
     <!-- /.card-body -->
 </div>

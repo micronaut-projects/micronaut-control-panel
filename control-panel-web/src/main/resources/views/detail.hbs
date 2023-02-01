@@ -106,13 +106,13 @@
 
         <!-- Main content -->
         <section class="content">
+
             <div class="row">
-                {{#each controlPanels as |controlPanel|}}
-                    <div class="col-md-auto">
-                        {{> (lookup . 'controlPanel.view.file') parameter=controlPanel }}
-                    </div>
-                {{/each}}
+                <div class="col-md-auto">
+                    {{> (lookup . 'controlPanel.detailedView.file') parameter=controlPanel }}
+                </div>
             </div>
+
         </section>
         <!-- /.content -->
     </div>

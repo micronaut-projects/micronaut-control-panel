@@ -29,7 +29,30 @@ public class DefaultControlPanelRepository implements ControlPanelRepository {
     }
 
     @Override
+    public List<ControlPanel> findAllByCategory(String categoryId) {
+        return controlPanels.stream()
+                .filter(controlPanel -> controlPanel.getCategory().id().equals(categoryId))
+                .toList();
+    }
+
+    @Override
+    public ControlPanel findByName(String name) {
+        return controlPanels.stream()
+                .filter(controlPanel -> controlPanel.getName().equals(name))
+                .findFirst()
+                .orElse(null);
+    }
+
+    @Override
     public List<ControlPanel.Category> findAllCategories() {
         return categories;
+    }
+
+    @Override
+    public ControlPanel.Category findCategoryById(String categoryId) {
+        return categories.stream()
+                .filter(category -> category.id().equals(categoryId))
+                .findFirst()
+                .orElse(null);
     }
 }

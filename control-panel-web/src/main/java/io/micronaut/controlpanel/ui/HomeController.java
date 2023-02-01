@@ -1,6 +1,7 @@
 package io.micronaut.controlpanel.ui;
 
 import com.github.jknack.handlebars.Handlebars;
+import com.github.jknack.handlebars.helper.ConditionalHelpers;
 import io.micronaut.controlpanel.core.ControlPanel;
 import io.micronaut.controlpanel.core.ControlPanelRepository;
 import io.micronaut.core.version.VersionUtils;
@@ -27,17 +28,42 @@ public class HomeController {
     public HomeController(Handlebars handlebars, ControlPanelRepository repository) {
         this.handlebars = handlebars;
         this.repository = repository;
+
+        handlebars.registerHelper("eq", ConditionalHelpers.eq);
     }
 
     @View("index")
     @Get
     public HttpResponse index() {
+        return byCategory(ControlPanel.Category.MAIN.id());
+    }
+
+    @View("index")
+    @Get("/categories/{categoryId}")
+    public HttpResponse byCategory(String categoryId) {
         List<ControlPanel.Category> categories = repository.findAllCategories();
-        List<ControlPanel> controlPanels = repository.findAll();
+        ControlPanel.Category currentCategory = repository.findCategoryById(categoryId);
+        List<ControlPanel> controlPanels = repository.findAllByCategory(categoryId);
         return HttpResponse.ok(Map.of(
             "micronautVersion", VersionUtils.getMicronautVersion(),
             "controlPanels", controlPanels,
-            "categories", categories
+            "categories", categories,
+            "currentCategory", currentCategory
+        ));
+
+    }
+
+    @View("detail")
+    @Get("/{controlPanelName}")
+    public HttpResponse detail(String controlPanelName) {
+        List<ControlPanel.Category> categories = repository.findAllCategories();
+        ControlPanel controlPanel = repository.findByName(controlPanelName);
+        ControlPanel.Category currentCategory = repository.findCategoryById(controlPanel.getCategory().id());
+        return HttpResponse.ok(Map.of(
+            "micronautVersion", VersionUtils.getMicronautVersion(),
+            "controlPanel", controlPanel,
+            "categories", categories,
+            "currentCategory", currentCategory
         ));
     }
 }

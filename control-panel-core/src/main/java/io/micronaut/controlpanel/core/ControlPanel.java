@@ -1,5 +1,6 @@
 package io.micronaut.controlpanel.core;
 
+import io.micronaut.core.naming.Named;
 import io.micronaut.core.order.Ordered;
 import io.micronaut.core.util.Toggleable;
 
@@ -11,7 +12,7 @@ import java.util.Map;
  * @author Álvaro Sánchez-Mariscal
  * @since 1.0.0
  */
-public interface ControlPanel extends Ordered, Toggleable {
+public interface ControlPanel extends Named, Ordered, Toggleable {
 
     String getTitle();
 
@@ -21,10 +22,14 @@ public interface ControlPanel extends Ordered, Toggleable {
 
     View getView();
 
+    default View getDetailedView() {
+        return new View("/views/" + getName());
+    }
+
     Category getCategory();
 
-    record Category (String name, String iconClass) {
-        public static final Category MAIN = new Category("Main", "fa-tachometer-alt");
+    record Category (String id, String name, String iconClass) {
+        public static final Category MAIN = new Category("main", "Dashboard", "fa-tachometer-alt");
     }
 
     record View (String file) {
