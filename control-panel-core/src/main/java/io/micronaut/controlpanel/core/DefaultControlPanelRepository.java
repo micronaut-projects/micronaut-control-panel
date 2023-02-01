@@ -20,6 +20,7 @@ public class DefaultControlPanelRepository implements ControlPanelRepository {
         this.controlPanels = controlPanels;
         this.categories = controlPanels.stream()
                 .map(ControlPanel::getCategory)
+                .distinct()
                 .toList();
     }
 

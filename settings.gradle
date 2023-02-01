@@ -21,4 +21,5 @@ micronautBuild {
     addSnapshotRepository()
     importMicronautCatalog()
     importMicronautCatalog("micronaut-views")
+    importMicronautCatalog("micronaut-reactor")
 }

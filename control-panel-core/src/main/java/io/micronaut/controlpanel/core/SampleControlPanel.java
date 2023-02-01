@@ -27,20 +27,10 @@ public class SampleControlPanel implements ControlPanel {
     }
 
     @Override
-    public String getBody() {
-        return "This is a sample control panel";
-    }
-
-    @Override
     public Map<String, Object> getModel() {
         return Map.of(
-            "text", "Text for the detailed view of the control panel"
+            "text", "This is a sample control panel. This text is coming from the model."
         );
-    }
-
-    @Override
-    public View getView() {
-        return View.CARD;
     }
 
     @Override
@@ -53,10 +43,9 @@ public class SampleControlPanel implements ControlPanel {
         final StringBuffer sb = new StringBuffer("SampleControlPanel{");
         sb.append("name='").append(getName()).append('\'');
         sb.append(", title='").append(getTitle()).append('\'');
-        sb.append(", body='").append(getBody()).append('\'');
         sb.append(", model=").append(getModel());
-        sb.append(", view=").append(getView());
         sb.append(", category=").append(getCategory());
+        sb.append(", body=").append(getBody());
         sb.append(", detailedView=").append(getDetailedView());
         sb.append(", order=").append(getOrder());
         sb.append(", enabled=").append(isEnabled());

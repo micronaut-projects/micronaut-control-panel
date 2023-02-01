@@ -20,6 +20,7 @@ micronaut = '4.0.0-SNAPSHOT'
 micronaut-docs = "2.0.0"
 micronaut-test = '4.0.0-SNAPSHOT'
 micronaut-views = '4.0.0-SNAPSHOT'
+micronaut-reactor = '3.0.0-SNAPSHOT'
 groovy = '4.0.7'
 spock = '2.3-groovy-4.0'
 micronaut-gradle-plugin = "3.7.0"
@@ -30,6 +31,7 @@ micronaut-gradle-plugin = "3.7.0"
 
 [libraries]
 micronaut-views = { module = 'io.micronaut.views:micronaut-views-bom', version.ref = 'micronaut-views' }
+micronaut-reactor = { module = 'io.micronaut.reactor:micronaut-reactor-bom', version.ref = 'micronaut-reactor' }
 
 
 # Plugins

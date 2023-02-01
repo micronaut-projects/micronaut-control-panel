@@ -16,14 +16,14 @@ public interface ControlPanel extends Named, Ordered, Toggleable {
 
     String getTitle();
 
-    String getBody();
 
     Map<String, Object> getModel();
 
-    View getView();
-
+    default View getBody() {
+        return new View("/views/" + getName() + "/body");
+    }
     default View getDetailedView() {
-        return new View("/views/" + getName());
+        return new View("/views/" + getName() + "/detail");
     }
 
     Category getCategory();

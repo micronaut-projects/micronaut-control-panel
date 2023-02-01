@@ -63,7 +63,7 @@
     <!-- Main Sidebar Container -->
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
         <!-- Brand Logo -->
-        <a href="../../index3.html" class="brand-link">
+        <a href="/control-panel" class="brand-link">
             <img src="https://docs.micronaut.io/latest/img/micronaut-logo-white.svg" alt="AdminLTE Logo" class="brand-image" style="opacity: .8">
             <span class="brand-text font-weight-light">&nbsp;</span>
         </a>
@@ -109,7 +109,26 @@
             <div class="row">
                 {{#each controlPanels as |controlPanel|}}
                     <div class="col-md-auto">
-                        {{> (lookup . 'controlPanel.view.file') parameter=controlPanel }}
+                        <div class="card card-outline card-primary">
+                            <div class="card-header">
+                                <h3 class="card-title">{{ controlPanel.title }}</h3>
+
+                                <div class="card-tools">
+                                    <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-tool" data-card-widget="maximize">
+                                        <i class="fas fa-expand"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                {{> (lookup . 'controlPanel.body.file') parameter=controlPanel }}
+                            </div>
+                            <!-- /.card-body -->
+                        </div>
+                        <!-- /.card -->
+
                     </div>
                 {{/each}}
             </div>

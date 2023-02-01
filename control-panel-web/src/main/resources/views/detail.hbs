@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Micronaut Control Panel</title>
+    <title>Micronaut Control Panel | {{controlPanel.title}}</title>
 
     <!-- Google Font: Source Sans Pro -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
@@ -63,7 +63,7 @@
     <!-- Main Sidebar Container -->
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
         <!-- Brand Logo -->
-        <a href="../../index3.html" class="brand-link">
+        <a href="/control-panel" class="brand-link">
             <img src="https://docs.micronaut.io/latest/img/micronaut-logo-white.svg" alt="AdminLTE Logo" class="brand-image" style="opacity: .8">
             <span class="brand-text font-weight-light">&nbsp;</span>
         </a>
@@ -108,8 +108,17 @@
         <section class="content">
 
             <div class="row">
-                <div class="col-md-auto">
-                    {{> (lookup . 'controlPanel.detailedView.file') parameter=controlPanel }}
+                <div class="col">
+                    <div class="card card-outline card-primary">
+                        <div class="card-header">
+                            <h3 class="card-title">{{ controlPanel.title }}</h3>
+                        </div>
+                        <div class="card-body">
+                            {{> (lookup . 'controlPanel.detailedView.file') parameter=controlPanel }}
+                        </div>
+                        <!-- /.card-body -->
+                    </div>
+                    <!-- /.card -->
                 </div>
             </div>
 
