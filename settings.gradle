@@ -11,12 +11,14 @@ plugins {
 
 rootProject.name = 'control-panel-parent'
 
-include 'control-panel-core'
 include 'control-panel-bom'
+include 'control-panel-core'
+include 'control-panel-web'
 
 enableFeaturePreview 'TYPESAFE_PROJECT_ACCESSORS'
 
 micronautBuild {
     addSnapshotRepository()
     importMicronautCatalog()
+    importMicronautCatalog("micronaut-views")
 }
