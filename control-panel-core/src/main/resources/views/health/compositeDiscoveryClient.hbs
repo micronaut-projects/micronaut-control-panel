@@ -1,0 +1,19 @@
+{{#neq subDetails.details.services.size 0 }}
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Service</th>
+        </tr>
+        </thead>
+        <tbody>
+        {{#each subDetails.details.services as |service| }}
+            <tr>
+                <td>{{ service }}</td>
+            </tr>
+        {{/each}}
+        </tbody>
+    </table>
+{{else}}
+    No services are discovered
+{{/neq}}
+

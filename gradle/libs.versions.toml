@@ -32,7 +32,7 @@ micronaut-gradle-plugin = "3.7.0"
 [libraries]
 micronaut-views = { module = 'io.micronaut.views:micronaut-views-bom', version.ref = 'micronaut-views' }
 micronaut-reactor = { module = 'io.micronaut.reactor:micronaut-reactor-bom', version.ref = 'micronaut-reactor' }
-
+handlebars-humanize = { module = 'com.github.jknack:handlebars-humanize' }
 
 # Plugins
 gradle-micronaut = { module = 'io.micronaut.gradle:micronaut-gradle-plugin', version.ref = 'micronaut-gradle-plugin' }

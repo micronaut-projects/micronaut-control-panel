@@ -1,16 +1,10 @@
 {{#with controlPanel}}
 
-    {{#eq model.healthResult.status model.UP}}
+    {{#eq model.healthResult.status.name 'UP'}}
         <div class="alert alert-success">
             <h5><i class="icon fas fa-check"></i> UP</h5>
             All health checks passed
         </div>
-        <div class="row justify-content-center">
-            <div class="col-md-auto">
-                <a class="btn btn-block bg-gradient-primary" href="/control-panel/{{ name }}">Details</a>
-            </div>
-        </div>
-
     {{/eq}}
 
 {{/with}}

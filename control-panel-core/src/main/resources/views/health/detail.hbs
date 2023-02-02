@@ -1,10 +1,28 @@
-{{#with controlPanel}}
+{{#with controlPanel.model }}
 
-    {{#eq model.healthResult.status model.UP}}
+    {{#eq healthResult.status.name 'UP'}}
         <div class="alert alert-success">
             <h5><i class="icon fas fa-check"></i> UP</h5>
             All health checks passed
         </div>
     {{/eq}}
+
+    <div class="row">
+        {{#each healthResult.details as |subDetails|}}
+            {{#if subDetails.details}}
+                <div class="col-md">
+                    <div class="card card-success">
+                        <div class="card-header">
+                            <h3 class="card-title">{{titleize (decamelize (cut @key '()')) }}</h3>
+                        </div>
+                        <div class="card-body">
+                            {{> (stringFormat "views/health/%s" (cut @key '()')) parameter=subDetails }}
+                        </div>
+                    </div>
+                </div>
+            {{/if}}
+        {{/each}}
+
+    </div>
 
 {{/with}}

@@ -1,0 +1,32 @@
+{{#with subDetails.details}}
+<p class="card-text">
+    <div class="progress">
+        <div class="progress-bar bg-warning" role="progressbar" style="width: {{minus 100 (percentage free total) }}%" aria-valuenow="{{minus 100 (percentage free total) }}" aria-valuemin="0" aria-valuemax="100">used</div>
+        <div class="progress-bar bg-success" role="progressbar" style="width: {{percentage free total }}%" aria-valuenow="{{percentage free total }}" aria-valuemin="0" aria-valuemax="100">free</div>
+    </div>
+</p>
+<p class="card-text">
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Type</th>
+            <th>Value</th>
+        </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Total</td>
+                <td>{{binaryPrefix total }}</td>
+            </tr>
+            <tr>
+                <td>Free</td>
+                <td>{{binaryPrefix free }}</td>
+            </tr>
+            <tr>
+                <td>Threshold</td>
+                <td>{{binaryPrefix threshold }}</td>
+            </tr>
+        </tbody>
+    </table>
+</p>
+{{/with}}

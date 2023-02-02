@@ -1,6 +1,5 @@
 package io.micronaut.controlpanel.core;
 
-import io.micronaut.health.HealthStatus;
 import io.micronaut.management.endpoint.health.HealthEndpoint;
 import io.micronaut.management.health.indicator.HealthResult;
 import jakarta.inject.Singleton;
@@ -32,10 +31,7 @@ public class HealthControlPanel implements ControlPanel {
     public Map<String, Object> getModel() {
         HealthResult healthResult = Mono.from(endpoint.getHealth(null)).block();
         return Map.of(
-            "healthResult", healthResult,
-            "UP", HealthStatus.UP,
-            "DOWN", HealthStatus.DOWN,
-            "UNKNOWN", HealthStatus.UNKNOWN
+            "healthResult", healthResult
         );
     }
 

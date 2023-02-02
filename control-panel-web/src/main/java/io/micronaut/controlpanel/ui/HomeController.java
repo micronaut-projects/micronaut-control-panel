@@ -1,7 +1,9 @@
 package io.micronaut.controlpanel.ui;
 
 import com.github.jknack.handlebars.Handlebars;
+import com.github.jknack.handlebars.HumanizeHelper;
 import com.github.jknack.handlebars.helper.ConditionalHelpers;
+import com.github.jknack.handlebars.helper.StringHelpers;
 import io.micronaut.controlpanel.core.ControlPanel;
 import io.micronaut.controlpanel.core.ControlPanelRepository;
 import io.micronaut.core.version.VersionUtils;
@@ -29,7 +31,19 @@ public class HomeController {
         this.handlebars = handlebars;
         this.repository = repository;
 
-        handlebars.registerHelper("eq", ConditionalHelpers.eq);
+        HumanizeHelper.register(handlebars);
+        handlebars.registerHelpers(ConditionalHelpers.class);
+        handlebars.registerHelpers(StringHelpers.class);
+        handlebars.registerHelper("percentage", (context, options) -> {
+            Double value = ((Long) context).doubleValue();
+            Double total = ((Long) options.param(0)).doubleValue();
+            return (int) Math.ceil((value / total) * 100);
+        });
+        handlebars.registerHelper("minus", (context, options) -> {
+            int a = (int) context;
+            int b = options.param(0);
+            return a - b;
+        });
     }
 
     @View("index")

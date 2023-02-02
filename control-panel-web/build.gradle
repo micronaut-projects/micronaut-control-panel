@@ -5,4 +5,10 @@ plugins {
 dependencies {
     api(projects.controlPanelCore)
     api(mnViews.micronaut.views.handlebars)
+    api(libs.handlebars.humanize) {
+        version {
+            require(mnViews.versions.handlebars.get())
+        }
+    }
+
 }
