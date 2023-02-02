@@ -2,6 +2,7 @@ package io.micronaut.controlpanel.core;
 
 import jakarta.inject.Singleton;
 
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -21,18 +22,22 @@ public class DefaultControlPanelRepository implements ControlPanelRepository {
         this.categories = controlPanels.stream()
                 .map(ControlPanel::getCategory)
                 .distinct()
+                .sorted(Comparator.comparing(ControlPanel.Category::order))
                 .toList();
     }
 
     @Override
     public List<ControlPanel> findAll() {
-        return controlPanels;
+        return controlPanels.stream()
+            .sorted(Comparator.comparing(ControlPanel::getOrder))
+            .toList();
     }
 
     @Override
     public List<ControlPanel> findAllByCategory(String categoryId) {
         return controlPanels.stream()
                 .filter(controlPanel -> controlPanel.getCategory().id().equals(categoryId))
+                .sorted(Comparator.comparing(ControlPanel::getOrder))
                 .toList();
     }
 

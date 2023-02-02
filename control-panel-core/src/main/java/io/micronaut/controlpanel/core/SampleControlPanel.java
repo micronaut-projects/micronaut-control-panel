@@ -39,6 +39,11 @@ public class SampleControlPanel implements ControlPanel {
     }
 
     @Override
+    public int getOrder() {
+        return Integer.MIN_VALUE;
+    }
+
+    @Override
     public String toString() {
         final StringBuffer sb = new StringBuffer("SampleControlPanel{");
         sb.append("name='").append(getName()).append('\'');

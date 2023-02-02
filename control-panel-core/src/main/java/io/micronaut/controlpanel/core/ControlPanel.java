@@ -28,8 +28,12 @@ public interface ControlPanel extends Named, Ordered, Toggleable {
 
     Category getCategory();
 
-    record Category (String id, String name, String iconClass) {
-        public static final Category MAIN = new Category("main", "Dashboard", "fa-tachometer-alt");
+    record Category (String id, String name, String iconClass, Integer order) {
+        public static final Category MAIN = new Category("main", "Dashboard", "fa-tachometer-alt", Integer.MIN_VALUE);
+
+        public Category(String id, String name, String iconClass) {
+            this(id, name, iconClass, 0);
+        }
     }
 
     record View (String file) {
