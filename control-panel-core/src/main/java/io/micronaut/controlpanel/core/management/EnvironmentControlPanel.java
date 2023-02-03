@@ -18,13 +18,11 @@ import java.util.stream.StreamSupport;
 public class EnvironmentControlPanel implements ControlPanel {
 
     private final EnvironmentEndpoint endpoint;
-    private final Environment environment;
 
     private final long totalProperties;
 
     public EnvironmentControlPanel(EnvironmentEndpoint endpoint, Environment environment) {
         this.endpoint = endpoint;
-        this.environment = environment;
         this.totalProperties = environment.getPropertySources().stream()
             .map(ps -> StreamSupport.stream(ps.spliterator(), false).count())
             .mapToLong(Long::longValue)
@@ -40,7 +38,6 @@ public class EnvironmentControlPanel implements ControlPanel {
     public Map<String, Object> getModel() {
         Map<String, Object> environmentInfo = endpoint.getEnvironmentInfo();
         return Map.of(
-            "environment", environment,
             "environmentInfo", environmentInfo
         );
     }
