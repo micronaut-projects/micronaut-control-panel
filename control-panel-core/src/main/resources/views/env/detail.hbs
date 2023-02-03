@@ -1,8 +1,8 @@
 {{#with controlPanel.model }}
 
     <dl class="row">
-        <dt class="col-sm-4">Active environments</dt>
-        <dd class="col-sm-8">
+        <dt class="col-sm-2">Active environments</dt>
+        <dd class="col-sm-10">
             {{#if environmentInfo.activeEnvironments}}
                 {{#each environmentInfo.activeEnvironments }}
                     <span class="badge badge-primary">{{ this }}</span>
@@ -11,6 +11,37 @@
                 (none)
             {{/if}}
         </dd>
+
+        {{#if environmentInfo.packages}}
+            <dt class="col-sm-2">Packages</dt>
+            <dd class="col-sm-10">
+                {{ environmentInfo.packages }}
+            </dd>
+        {{/if}}
     </dl>
+
+    <div class="card-columns">
+        {{#each environmentInfo.propertySources as |ps|}}
+            <div class="card card-light">
+                <div class="card-header">
+                    <h3 class="card-title">Property source: <code>{{ps.name}}</code></h3>
+                    <div class="card-tools">
+                        Order: <span class="badge badge-primary">{{ps.order}}</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <pre>
+                        <code class="language-properties">
+{{#each ps.properties as |p|}}{{@key}} = {{stripTags p}}
+{{/each}}
+                        </code>
+                    </pre>
+                </div>
+            </div>
+            {{#mod @index 2 0}}
+                <div class="w-100"></div>
+            {{/mod}}
+        {{/each}}
+    </div>
 
 {{/with}}
