@@ -1,0 +1,16 @@
+{{#with controlPanel.model }}
+
+    <dl class="row">
+        <dt class="col-sm-4">Active environments</dt>
+        <dd class="col-sm-8">
+            {{#if environmentInfo.activeEnvironments}}
+                {{#each environmentInfo.activeEnvironments }}
+                    <span class="badge badge-primary">{{ this }}</span>
+                {{/each}}
+            {{else}}
+                (none)
+            {{/if}}
+        </dd>
+    </dl>
+
+{{/with}}

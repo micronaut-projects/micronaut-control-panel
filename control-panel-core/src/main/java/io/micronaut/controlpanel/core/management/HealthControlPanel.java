@@ -1,5 +1,6 @@
-package io.micronaut.controlpanel.core;
+package io.micronaut.controlpanel.core.management;
 
+import io.micronaut.controlpanel.core.ControlPanel;
 import io.micronaut.management.endpoint.health.HealthEndpoint;
 import io.micronaut.management.health.indicator.HealthResult;
 import jakarta.inject.Singleton;
@@ -15,6 +16,8 @@ import java.util.Map;
  */
 @Singleton
 public class HealthControlPanel implements ControlPanel {
+
+    public static final int ORDER = 0;
 
     private final HealthEndpoint endpoint;
 
@@ -42,6 +45,11 @@ public class HealthControlPanel implements ControlPanel {
 
     @Override
     public String getName() {
-        return "health";
+        return HealthEndpoint.NAME;
+    }
+
+    @Override
+    public int getOrder() {
+        return ORDER;
     }
 }

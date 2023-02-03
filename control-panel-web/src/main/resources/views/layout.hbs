@@ -1,0 +1,150 @@
+<!DCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Micronaut Control Panel</title>
+
+    <!-- Google Font: Source Sans Pro -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <!-- Font Awesome -->
+    <link href="https://adminlte.io/themes/v3/plugins/fontawesome-free/css/all.min.css" rel="stylesheet">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+</head>
+<body class="hold-transition sidebar-mini">
+<!-- Site wrapper -->
+<div class="wrapper">
+    <!-- Navbar -->
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        <!-- Left navbar links -->
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+            </li>
+            <li class="nav-item">
+                <h3>Micronaut Control Panel</h3>
+            </li>
+        </ul>
+
+        <!-- Right navbar links -->
+        <ul class="navbar-nav ml-auto">
+            <!-- Navbar Search -->
+            <li class="nav-item">
+                <a class="nav-link" data-widget="navbar-search" href="#" role="button">
+                    <i class="fas fa-search"></i>
+                </a>
+                <div class="navbar-search-block">
+                    <form class="form-inline">
+                        <div class="input-group input-group-sm">
+                            <input class="form-control form-control-navbar" type="search" placeholder="Search" aria-label="Search">
+                            <div class="input-group-append">
+                                <button class="btn btn-navbar" type="submit">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                                <button class="btn btn-navbar" type="button" data-widget="navbar-search">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </li>
+
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown2" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Not logged in
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown2">
+                    <a class="dropdown-item" href="#">Login</a>
+                </div>
+            </li>
+        </ul>
+    </nav>
+    <!-- /.navbar -->
+
+    <!-- Main Sidebar Container -->
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <!-- Brand Logo -->
+        <a href="/control-panel" class="brand-link">
+            <img src="https://docs.micronaut.io/latest/img/micronaut-logo-white.svg" alt="Micronaut Logo" class="brand-image" style="opacity: .8">
+            <span class="brand-text font-weight-light">&nbsp;</span>
+        </a>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+
+            <!-- Sidebar Menu -->
+            <nav class="mt-2">
+                <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                    <!-- Add icons to the links using the .nav-icon class
+                         with font-awesome or any other icon font library -->
+                    {{#each categories as |category|}}
+                        <li class="nav-item">
+                            <a href="/control-panel/categories/{{ category.id }}" class="nav-link {{#eq currentCategory.id category.id}}active{{/eq}}">
+                                <i class="nav-icon fas {{ category.iconClass }}"></i>
+                                <p>{{ category.name }}</p>
+                            </a>
+                        </li>
+                    {{/each}}
+                </ul>
+            </nav>
+            <!-- /.sidebar-menu -->
+        </div>
+        <!-- /.sidebar -->
+    </aside>
+
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <section class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                {{#if controlPanel }}
+                                    <li class="breadcrumb-item"><a href="/control-panel/categories/{{ currentCategory.id }}"><i class="fas {{ currentCategory.iconClass }}"></i> {{ currentCategory.name }}</a></li>
+                                    <li class="breadcrumb-item active" aria-current="page">{{controlPanel.title}}</li>
+                                {{else}}
+                                    <li class="breadcrumb-item active"><i class="fas {{ currentCategory.iconClass }}"></i> {{ currentCategory.name }}</li>
+                                {{/if}}
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+            </div><!-- /.container-fluid -->
+        </section>
+
+        <!-- Main content -->
+        <section class="content">
+            <div class="container-fluid">
+                {{> (stringFormat "views/%s" contentView) }}
+            </div>
+        </section>
+    </div>
+
+    <footer class="main-footer">
+        <div class="float-right d-none d-sm-block">
+            <b>Micronaut version</b> {{ micronautVersion }}
+        </div>
+    </footer>
+
+    <!-- Control Sidebar -->
+    <aside class="control-sidebar control-sidebar-dark">
+        <!-- Control sidebar content goes here -->
+    </aside>
+    <!-- /.control-sidebar -->
+</div>
+<!-- ./wrapper -->
+
+<!-- jQuery -->
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.3/dist/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
+<!-- AdminLTE App -->
+<script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+
+
+</body>
+</html>

@@ -6,6 +6,8 @@ import io.micronaut.core.util.Toggleable;
 
 import java.util.Map;
 
+import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
+
 /**
  * TODO: add javadoc.
  *
@@ -24,6 +26,10 @@ public interface ControlPanel extends Named, Ordered, Toggleable {
     }
     default View getDetailedView() {
         return new View("/views/" + getName() + "/detail");
+    }
+
+    default String getBadge() {
+        return EMPTY_STRING;
     }
 
     Category getCategory();
