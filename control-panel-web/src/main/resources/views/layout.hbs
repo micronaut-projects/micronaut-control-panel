@@ -15,6 +15,10 @@
     <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/highlight.js@11.7.0/styles/androidstudio.css">
 </head>
 <body class="hold-transition sidebar-mini">
+
+<!-- jQuery -->
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.3/dist/jquery.min.js"></script>
+
 <!-- Site wrapper -->
 <div class="wrapper">
     <!-- Navbar -->
@@ -140,8 +144,6 @@
 </div>
 <!-- ./wrapper -->
 
-<!-- jQuery -->
-<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.3/dist/jquery.min.js"></script>
 <!-- Bootstrap 4 -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
 <!-- AdminLTE App -->
@@ -151,6 +153,11 @@
 <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/languages/properties.min.js"></script>
 <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/languages/java.min.js"></script>
 <script>hljs.highlightAll();</script>
-
+<!--mermaid -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@9/dist/mermaid.min.js"></script>
+<script>
+    // Don't try to render immediately
+    mermaid.initialize({startOnLoad:false});
+</script>
 </body>
 </html>

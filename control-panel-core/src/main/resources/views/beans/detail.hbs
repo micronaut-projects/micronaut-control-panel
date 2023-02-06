@@ -1,0 +1,39 @@
+{{#with controlPanel.model }}
+    <div class="row">
+        <div class="card card-light">
+            <div class="card-header">
+                <h3 class="card-title">Micronaut Framework beans</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="card-body">
+                {{#each micronautBeansByPackage as |pkg|}}
+                    {{> "views/beans/package" parameter=pkg pkgType="micronaut" }}
+                {{/each}}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="card card-light">
+            <div class="card-header">
+                <h3 class="card-title">Other beans</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="card-body">
+                {{#each otherBeansByPackage as |pkg|}}
+                    {{> "views/beans/package" parameter=pkg pkgType="other"}}
+                {{/each}}
+            </div>
+        </div>
+    </div>
+
+{{/with}}
