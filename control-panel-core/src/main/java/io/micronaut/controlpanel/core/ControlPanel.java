@@ -32,6 +32,10 @@ public interface ControlPanel extends Named, Ordered, Toggleable {
         return EMPTY_STRING;
     }
 
+    default String getIcon() {
+        return "fa-cog";
+    }
+
     Category getCategory();
 
     record Category (String id, String name, String iconClass, Integer order) {

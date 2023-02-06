@@ -52,4 +52,9 @@ public class HealthControlPanel implements ControlPanel {
     public int getOrder() {
         return ORDER;
     }
+
+    @Override
+    public String getIcon() {
+        return "fa-laptop-medical";
+    }
 }

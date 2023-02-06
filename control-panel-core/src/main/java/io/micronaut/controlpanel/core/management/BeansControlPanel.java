@@ -80,4 +80,9 @@ public class BeansControlPanel implements ControlPanel {
     public int getOrder() {
         return HealthControlPanel.ORDER + 30;
     }
+
+    @Override
+    public String getIcon() {
+        return "fa-plug";
+    }
 }

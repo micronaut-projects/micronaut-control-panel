@@ -15,7 +15,7 @@
         {{#if environmentInfo.packages}}
             <dt class="col-sm-2">Packages</dt>
             <dd class="col-sm-10">
-                {{ environmentInfo.packages }}
+                <code>{{join environmentInfo.packages ", "}}</code>
             </dd>
         {{/if}}
     </dl>
@@ -31,7 +31,7 @@
                 </div>
                 <div class="card-body">
                     <pre>
-                        <code class="language-properties">{{#each ps.properties as |p|}}{{@key}} = {{stripTags p}}
+                        <code class="language-properties">{{#each ps.properties as |p|}}{{@key}} = {{p}}
 {{/each}}</code></pre>
                 </div>
             </div>

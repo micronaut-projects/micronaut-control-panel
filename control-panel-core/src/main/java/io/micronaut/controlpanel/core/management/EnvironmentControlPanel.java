@@ -61,4 +61,9 @@ public class EnvironmentControlPanel implements ControlPanel {
     public int getOrder() {
         return HealthControlPanel.ORDER + 10;
     }
+
+    @Override
+    public String getIcon() {
+        return "fa-sliders";
+    }
 }

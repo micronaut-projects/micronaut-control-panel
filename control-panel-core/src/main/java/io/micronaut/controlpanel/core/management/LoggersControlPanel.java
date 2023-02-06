@@ -71,6 +71,11 @@ public class LoggersControlPanel implements ControlPanel {
         return HealthControlPanel.ORDER + 40;
     }
 
+    @Override
+    public String getIcon() {
+        return "fa-file-lines";
+    }
+
     private Stream<LoggerConfiguration> getLoggers() {
         return loggingSystem.getLoggers()
             .stream()

@@ -67,4 +67,9 @@ public class RoutesControlPanel implements ControlPanel {
     public int getOrder() {
         return HealthControlPanel.ORDER + 20;
     }
+
+    @Override
+    public String getIcon() {
+        return "fa-route";
+    }
 }

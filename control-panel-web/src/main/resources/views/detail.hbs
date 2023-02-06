@@ -1,6 +1,9 @@
 <div class="card card-primary">
     <div class="card-header">
         <h3 class="card-title">
+            {{#if controlPanel.icon}}
+                <i class="fa {{ controlPanel.icon }}"></i> &nbsp;
+            {{/if}}
             {{ controlPanel.title }}
             {{#if controlPanel.badge }}
                 <span class="badge badge-light">{{ controlPanel.badge }}</span>
