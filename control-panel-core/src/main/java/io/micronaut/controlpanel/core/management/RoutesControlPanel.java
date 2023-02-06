@@ -1,15 +1,20 @@
 package io.micronaut.controlpanel.core.management;
 
 import io.micronaut.controlpanel.core.ControlPanel;
+import io.micronaut.core.util.functional.ThrowingFunction;
 import io.micronaut.management.endpoint.routes.RouteDataCollector;
+import io.micronaut.web.router.MethodBasedRoute;
 import io.micronaut.web.router.Router;
 import io.micronaut.web.router.UriRoute;
 import jakarta.inject.Singleton;
 import reactor.core.publisher.Flux;
 
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * TODO: add javadoc.
@@ -20,15 +25,15 @@ import java.util.Map;
 @Singleton
 public class RoutesControlPanel implements ControlPanel {
 
-    private final List<UriRoute> routes;
+    private final Map<String, List<UriRoute>> routesByDeclaringType;
 
     public RoutesControlPanel(Router router) {
-        this.routes = router.uriRoutes()
+        Function<UriRoute, String> keyMapper = (UriRoute r) -> ((MethodBasedRoute) r).getTargetMethod().getDeclaringType().getName();
+        this.routesByDeclaringType = router.uriRoutes()
             .sorted(Comparator
                 .comparing((UriRoute r) -> r.getUriMatchTemplate().toPathString())
                 .thenComparing(UriRoute::getHttpMethodName))
-            .toList();
-
+            .collect(Collectors.groupingBy(keyMapper, LinkedHashMap::new, Collectors.toList()));
     }
 
     @Override
@@ -39,7 +44,7 @@ public class RoutesControlPanel implements ControlPanel {
     @Override
     public Map<String, Object> getModel() {
         return Map.of(
-            "routes", routes
+            "routesByDeclaringType", routesByDeclaringType
         );
     }
 
@@ -55,7 +60,7 @@ public class RoutesControlPanel implements ControlPanel {
 
     @Override
     public String getBadge() {
-        return String.valueOf(routes.size());
+        return String.valueOf(routesByDeclaringType.values().stream().mapToInt(List::size).sum());
     }
 
     @Override
