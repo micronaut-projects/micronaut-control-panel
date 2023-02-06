@@ -1,0 +1,133 @@
+{{#with controlPanel.model }}
+<p class="card-text">
+    <dl class="row">
+        <dt class="col-sm-2">Levels</dt>
+        <dd class="col-sm-10">
+            {{#each levels}}
+                <span class="badge badge-primary">{{ this }}</span>
+            {{/each}}
+        </dd>
+
+        {{#if loggers.ROOT }}
+            <dt class="col-sm-2">Effective level for unconfigured packages</dt>
+            <dd class="col-sm-10">
+                <span class="badge badge-primary">{{ loggers.ROOT.configuredLevel }}</span>
+            </dd>
+        {{/if}}
+    </dl>
+
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#actionsModal">
+        <i class="fa fa-plus"></i>
+        Add new logger
+    </button>
+
+</p>
+<p class="card-text">
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Logger name</th>
+            <th>Level</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+            {{#each loggers as |logger|}}
+            <tr>
+                <td><code>{{@key}}</code></td>
+                <td>
+                    <span class="badge badge-primary">{{ logger.configuredLevel }}</span>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#actionsModal" data-logger="{{@key}}" data-currentlevel="{{ logger.configuredLevel }}">
+                        <i class="fa fa-edit"></i>
+                        Reconfigure
+                    </button>
+                </td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+</p>
+
+<!-- Modal -->
+<div class="modal fade" id="actionsModal" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalLabel">Reconfigure logger</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="configureLogger">
+                    <div class="form-group">
+                        <label for="logger" class="col-form-label">Logger name:</label>
+                        <input type="text" class="form-control" id="logger" name="logger">
+                        <label for="configuredLevel" class="col-form-label">Level:</label>
+                        <select name="configuredLevel" class="form-control" id="configuredLevel">
+                            {{#each levels as |level|}}
+                                <option {{#eq level logger.effectiveLevel}}selected{{/eq}}>{{level}}</option>
+                            {{/each}}
+                        </select>
+                    </div>
+                </form>
+                <div id="result"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="submit">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $('#actionsModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget) // Button that triggered the modal
+        var logger = button.data('logger') // Extract info from data-* attributes
+        var currentlevel = button.data('currentlevel') // Extract info from data-* attributes
+
+        var modal = $(this)
+        if (logger) {
+            modal.find('.modal-title').html('Reconfigure logger <code>' + logger + '</code>')
+            modal.find('.modal-body input').val(logger)
+            modal.find('.modal-body select').val(currentlevel)
+        } else {
+            modal.find('.modal-title').html('Configure new logger')
+            modal.find('.modal-body input').val('')
+            modal.find('.modal-body select').val('')
+        }
+        $('#submit').show()
+    })
+
+    $('#actionsModal').on('hidden.bs.modal', function (e) {
+        $('#result').html("");
+        location.reload();
+    })
+
+    $('#submit').click(function(e){
+        submitForm();
+    })
+
+    function submitForm(){
+        var logger = $('#logger').val();
+        var payload = {
+            configuredLevel: $("#configuredLevel").val()
+        }
+        $.ajax({
+            type: "POST",
+            url: "/loggers/" + logger,
+            data: JSON.stringify(payload),
+            contentType: "application/json; charset=utf-8",
+        }).done(function (data) {
+            $('#result').html('<div class="alert alert-success" role="alert">Logger configured</div>');
+            $('#submit').hide()
+        }).fail(function (data) {
+            $('#result').html('<div class="alert alert-danger" role="alert">Error: ' + data.responseJSON.message + '</div>');
+        });
+    }
+</script>
+
+{{/with}}

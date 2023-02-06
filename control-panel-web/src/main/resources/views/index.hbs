@@ -1,4 +1,10 @@
-<div class="card-deck">
+<style>
+    .card-columns {
+        column-count: 4;
+    }
+</style>
+
+<div class="card-columns">
     {{#each controlPanels as |controlPanel|}}
         <div class="card card-primary">
             <div class="card-header">
