@@ -1,8 +1,14 @@
 {{#with controlPanel.model }}
 
     {{#eq healthResult.status.name 'UP'}}
-        <div class="alert alert-success">
-            <h5><i class="icon fas fa-check"></i> All health checks passed</h5>
+        <div class="small-box bg-success">
+            <div class="inner">
+                <h3>Operational</h3>
+                <p>All healthchecks passed</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-check"></i>
+            </div>
         </div>
     {{/eq}}
 

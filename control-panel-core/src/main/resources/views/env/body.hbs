@@ -1,3 +1,15 @@
 {{#with controlPanel.model.environmentInfo }}
-    <strong>{{badge}}</strong> properties have been resolved across <strong>{{ propertySources.size }}</strong> property sources.
+    <p class="card-text">
+        <strong>{{badge}}</strong> properties have been resolved across <strong>{{ propertySources.size }}</strong> property sources.
+    </p>
+    <p class="card-text">
+        <strong>Active environments:</strong>
+        {{#if activeEnvironments}}
+            {{#each activeEnvironments }}
+                <span class="badge badge-primary">{{ this }}</span>
+            {{/each}}
+        {{else}}
+            (none)
+        {{/if}}
+    </p>
 {{/with}}
