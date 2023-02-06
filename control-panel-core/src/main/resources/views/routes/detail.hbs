@@ -5,42 +5,44 @@
 </style>
 
 {{#with controlPanel.model }}
-    <div class="card-columns">
-    {{#each routesByDeclaringType as |routes|}}
+    <div class="row">
         <div class="card card-light">
             <div class="card-header">
-                <h3 class="card-title"><code>{{@key}}</code></h3>
+                <h3 class="card-title">Application routes</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
             </div>
+
             <div class="card-body">
-                <table class="table">
-                    <thead>
-                    <tr>
-                        <th>HTTP method</th>
-                        <th>URI</th>
-                        <th>Produces</th>
-                        <th>Consumes</th>
-                        <th>Method</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {{#each routes as |route|}}
-                        <tr>
-                            <td><code>{{route.httpMethodName}}</code></td>
-                            <td><code><a href="{{route.uriMatchTemplate}}" target="_blank">{{route.uriMatchTemplate}}</a></code></td>
-                            <td><code>{{join route.produces ", "}}</code></td>
-                            <td><code>{{defaultIfEmpty (join route.consumes ", ") ""}}</code></td>
-                            <td><code>{{route.targetMethod.name}}({{join route.targetMethod.arguments ", "}})</code></td>
-                        </tr>
-
+                <div class="card-columns">
+                    {{#each appRoutes as |routes|}}
+                        {{> "views/routes/routes" parameter=routes}}
                     {{/each}}
-                    </tbody>
-                </table>
-
+                </div>
             </div>
         </div>
-        {{#mod @index 2 0}}
-            <div class="w-100"></div>
-        {{/mod}}
-    {{/each}}
+    </div>
+    <div class="row">
+        <div class="card card-light">
+            <div class="card-header">
+                <h3 class="card-title">Micronaut Framework routes</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <div class="card-columns">
+                    {{#each micronautRoutes as |routes|}}
+                        {{> "views/routes/routes" parameter=routes}}
+                    {{/each}}
+                </div>
+            </div>
+        </div>
     </div>
 {{/with}}

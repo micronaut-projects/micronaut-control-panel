@@ -14,7 +14,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * TODO: add javadoc.
@@ -25,14 +27,21 @@ import java.util.stream.Collectors;
 @Singleton
 public class RoutesControlPanel implements ControlPanel {
 
-    private final Map<String, List<UriRoute>> routesByDeclaringType;
+    private final Map<String, List<UriRoute>> appRoutes;
+    private final Map<String, List<UriRoute>> micronautRoutes;
 
     public RoutesControlPanel(Router router) {
         Function<UriRoute, String> keyMapper = (UriRoute r) -> ((MethodBasedRoute) r).getTargetMethod().getDeclaringType().getName();
-        this.routesByDeclaringType = router.uriRoutes()
-            .sorted(Comparator
-                .comparing((UriRoute r) -> r.getUriMatchTemplate().toPathString())
-                .thenComparing(UriRoute::getHttpMethodName))
+        Comparator<UriRoute> byUri = Comparator.comparing((UriRoute r) -> r.getUriMatchTemplate().toPathString());
+        Predicate<UriRoute> isMicronautRoute = (UriRoute r) -> ((MethodBasedRoute) r).getTargetMethod().getDeclaringType().getPackage().getName().startsWith("io.micronaut");
+
+        appRoutes = router.uriRoutes()
+            .filter(isMicronautRoute.negate())
+            .sorted(byUri.thenComparing(UriRoute::getHttpMethodName))
+            .collect(Collectors.groupingBy(keyMapper, LinkedHashMap::new, Collectors.toList()));
+        micronautRoutes = router.uriRoutes()
+            .filter(isMicronautRoute)
+            .sorted(byUri.thenComparing(UriRoute::getHttpMethodName))
             .collect(Collectors.groupingBy(keyMapper, LinkedHashMap::new, Collectors.toList()));
     }
 
@@ -44,7 +53,8 @@ public class RoutesControlPanel implements ControlPanel {
     @Override
     public Map<String, Object> getModel() {
         return Map.of(
-            "routesByDeclaringType", routesByDeclaringType
+            "appRoutes", appRoutes,
+            "micronautRoutes", micronautRoutes
         );
     }
 
@@ -60,7 +70,9 @@ public class RoutesControlPanel implements ControlPanel {
 
     @Override
     public String getBadge() {
-        return String.valueOf(routesByDeclaringType.values().stream().mapToInt(List::size).sum());
+        int totalAppRoutes = appRoutes.values().stream().mapToInt(List::size).sum();
+        int totalMicronautRoutes = micronautRoutes.values().stream().mapToInt(List::size).sum();
+        return String.valueOf(totalAppRoutes + totalMicronautRoutes);
     }
 
     @Override
