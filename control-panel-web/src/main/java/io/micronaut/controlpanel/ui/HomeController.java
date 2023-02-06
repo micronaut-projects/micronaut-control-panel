@@ -3,24 +3,18 @@ package io.micronaut.controlpanel.ui;
 import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.HumanizeHelper;
 import com.github.jknack.handlebars.helper.ConditionalHelpers;
-import com.github.jknack.handlebars.helper.MethodHelper;
 import com.github.jknack.handlebars.helper.StringHelpers;
+import io.micronaut.context.annotation.Value;
 import io.micronaut.controlpanel.core.ControlPanel;
 import io.micronaut.controlpanel.core.ControlPanelRepository;
-import io.micronaut.core.reflect.ReflectionUtils;
 import io.micronaut.core.version.VersionUtils;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.views.View;
-import jakarta.annotation.Nullable;
-
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * TODO: add javadoc.
@@ -31,12 +25,15 @@ import java.util.Optional;
 @Controller("/control-panel")
 public class HomeController {
 
-    private Handlebars handlebars;
-    private ControlPanelRepository repository;
+    private final Handlebars handlebars;
+    private final ControlPanelRepository repository;
 
-    public HomeController(Handlebars handlebars, ControlPanelRepository repository) {
+    private final String applicationName;
+
+    public HomeController(Handlebars handlebars, ControlPanelRepository repository, @Value("${micronaut.application.name}") String applicationName) {
         this.handlebars = handlebars;
         this.repository = repository;
+        this.applicationName = applicationName;
 
         //TODO move this to a better place
         HumanizeHelper.register(handlebars);
@@ -90,6 +87,7 @@ public class HomeController {
         List<ControlPanel> controlPanels = repository.findAllByCategory(categoryId);
         return HttpResponse.ok(Map.of(
             "micronautVersion", VersionUtils.getMicronautVersion(),
+            "applicationName", applicationName,
             "controlPanels", controlPanels,
             "categories", categories,
             "currentCategory", currentCategory,
@@ -106,6 +104,7 @@ public class HomeController {
         ControlPanel.Category currentCategory = repository.findCategoryById(controlPanel.getCategory().id());
         return HttpResponse.ok(Map.of(
             "micronautVersion", VersionUtils.getMicronautVersion(),
+            "applicationName", applicationName,
             "controlPanel", controlPanel,
             "categories", categories,
             "currentCategory", currentCategory,
