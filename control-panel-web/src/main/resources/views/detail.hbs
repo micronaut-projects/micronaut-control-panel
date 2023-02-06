@@ -1,6 +1,11 @@
 <div class="card card-primary">
     <div class="card-header">
-        <h3 class="card-title">{{ controlPanel.title }}</h3>
+        <h3 class="card-title">
+            {{ controlPanel.title }}
+            {{#if controlPanel.badge }}
+                <span class="badge badge-light">{{ controlPanel.badge }}</span>
+            {{/if}}
+        </h3>
     </div>
     <div class="card-body">
         {{> (lookup . 'controlPanel.detailedView.file') parameter=controlPanel }}

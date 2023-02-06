@@ -1,0 +1,28 @@
+{{#with controlPanel.model }}
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th>HTTP method</th>
+            <th>URI</th>
+            <th>Produces</th>
+            <th>Consumes</th>
+            <th>Defined in</th>
+        </tr>
+        </thead>
+        <tbody>
+        {{#each routes as |route|}}
+            <tr>
+                <td><code>{{route.httpMethodName}}</code></td>
+                <td><code><a href="{{route.uriMatchTemplate}}" target="_blank">{{route.uriMatchTemplate}}</a></code></td>
+                <td><code>{{join route.produces ", "}}</code></td>
+                <td><code>{{defaultIfEmpty (join route.consumes ", ") ""}}</code></td>
+                <td><code>{{route.targetMethod.declaringType.name}}#{{route.targetMethod.name}}({{join route.targetMethod.arguments ", "}}){}</code></td>
+            </tr>
+
+        {{/each}}
+        </tbody>
+    </table>
+
+
+{{/with}}
