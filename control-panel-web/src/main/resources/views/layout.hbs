@@ -62,6 +62,18 @@
                 </div>
             </li>
 
+            <li class="nav-item">
+                <a class="nav-link" id="refreshButton" role="button" data-toggle="modal" data-target="#stopRefreshModal" data-action="refresh">
+                    <i class="fas fa-arrows-rotate"></i>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" id="stopButton" role="button" data-toggle="modal" data-target="#stopRefreshModal" data-action="shutdown">
+                    <i class="fas fa-stop"></i>
+                </a>
+            </li>
+
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown2" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     Not logged in
@@ -73,6 +85,93 @@
         </ul>
     </nav>
     <!-- /.navbar -->
+
+    <div class="modal fade" id="stopRefreshModal" tabindex="-1" role="dialog" aria-labelledby="stopRefreshModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="stopRefreshModalLabel">Confirm</h5>
+                </div>
+                <div class="modal-body">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="stopConfirm">Shutdown</button>
+                    <button type="button" class="btn btn-warning" id="refreshConfirm">Refresh</button>
+                    <button type="button" class="btn btn-danger" id="refreshForce">Force refresh</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $('#stopRefreshModal').on('show.bs.modal', function (event) {
+            var modal = $(this)
+            var button = $(event.relatedTarget) // Button that triggered the modal
+            var action = button.data('action') // Extract info from data-* attributes
+            var body = "Refreshing the application will cause all Refreshable beans in the context to be destroyed and re-instantiated upon further requests."
+            var confirm = "Are you sure you want to continue?"
+            modal.find('#stopConfirm').hide()
+            modal.find('#refreshConfirm').show()
+            modal.find('#refreshForce').show()
+            if (action === 'shutdown') {
+                body = "Shutting down the application cannot be undone."
+                modal.find('#stopConfirm').show()
+                modal.find('#refreshConfirm').hide()
+                modal.find('#refreshForce').hide()
+            }
+
+            modal.find('.modal-title').text('Confirm application ' + action)
+            modal.find('.modal-body').html('<p class="card-text">' + body + '</p><p class="card-text">' + confirm + '</p>')
+        })
+
+        $('#stopConfirm').click(function() {
+            $.ajax({
+                url: '/stop',
+                type: 'POST',
+                success: function(result) {
+                    $('#stopRefreshModal').modal('hide')
+                    $('#globalAlertTitle').text('Application is shutting down')
+                    $('#globalAlertMessage').text('The application is shutting down. Please wait for the server to stop.')
+                    $('#globalAlert').removeClass('alert-success')
+                    $('#globalAlert').addClass('alert-danger')
+                    $('#globalAlert').show()
+                }
+            });
+        })
+
+        $('#refreshConfirm').click(function() {
+            $.ajax({
+                url: '/refresh',
+                type: 'POST',
+                success: function(result) {
+                    $('#stopRefreshModal').modal('hide')
+                    $('#globalAlertTitle').text('Application refreshed')
+                    $('#globalAlertMessage').text('All Refreshable beans have been recreated.')
+
+                    $('#globalAlert').show()
+                }
+            });
+        })
+
+        $('#refreshForce').click(function() {
+            $.ajax({
+                url: '/refresh',
+                data: JSON.stringify({force: true}),
+                contentType: "application/json; charset=utf-8",
+                type: 'POST',
+                success: function(result) {
+                    $('#stopRefreshModal').modal('hide')
+                    $('#globalAlertTitle').text('Application refreshed')
+                    $('#globalAlertMessage').text('All Refreshable beans have been recreated regardless of environment changes.')
+
+                    $('#globalAlert').show()
+                }
+            });
+        })
+
+
+    </script>
 
     <!-- Main Sidebar Container -->
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
@@ -130,6 +229,13 @@
         <!-- Main content -->
         <section class="content">
             <div class="container-fluid">
+                <div class="alert alert-success" id="globalAlert" style="display:none;">
+                    <h5>
+                        <i class="icon fas fa-arrows-rotate"></i>
+                        <span id="globalAlertTitle"></span>
+                    </h5>
+                    <span id="globalAlertMessage"></span>
+                </div>
                 {{> (stringFormat "views/%s" contentView) }}
             </div>
         </section>
