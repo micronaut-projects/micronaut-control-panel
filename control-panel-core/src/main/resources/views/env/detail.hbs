@@ -30,9 +30,13 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <pre>
-                        <code class="language-properties">{{#each ps.properties as |p|}}{{@key}} = {{p}}
+                    {{#neq ps.properties.size 0 }}
+                        <pre>
+                            <code class="language-properties">{{#each ps.properties as |p|}}{{@key}} = {{p}}
 {{/each}}</code></pre>
+                    {{else}}
+                        No properties
+                    {{/neq}}
                 </div>
             </div>
             {{#mod @index 2 0}}
