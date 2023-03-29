@@ -9,6 +9,16 @@
 
 Micronaut control-panel
 
+## Reference links
+
+* [AdminLTE Docs](https://adminlte.io/docs/3.2/components/cards.html)
+* [AdminLTE Demo](https://adminlte.io/themes/v3/pages/UI/general.html)
+* [Bootstrap Docs](https://getbootstrap.com/docs/4.0/components/alerts/)
+* [handlebars.java docs](https://jknack.github.io/handlebars.java/)
+* [handlebars.java repo](https://github.com/jknack/handlebars.java)
+* [Handlebars Docs](https://handlebarsjs.com/guide/partials.html#basic-partials)
+* [Font Awesome](https://fontawesome.com/search?q=reload&o=r&m=free)
+
 ## Documentation
 
 See the [Documentation](https://micronaut-projects.github.io/micronaut-control-panel/latest/guide/) for more information.
