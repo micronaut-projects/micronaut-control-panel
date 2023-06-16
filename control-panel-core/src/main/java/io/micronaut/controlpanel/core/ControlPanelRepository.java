@@ -1,5 +1,7 @@
 package io.micronaut.controlpanel.core;
 
+import io.micronaut.context.annotation.DefaultImplementation;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -9,6 +11,7 @@ import java.util.Optional;
  * @author Álvaro Sánchez-Mariscal
  * @since 1.0.0
  */
+@DefaultImplementation(DefaultControlPanelRepository.class)
 public interface ControlPanelRepository {
 
     /**

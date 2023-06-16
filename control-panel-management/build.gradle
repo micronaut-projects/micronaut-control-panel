@@ -3,5 +3,7 @@ plugins {
 }
 
 dependencies {
+    api projects.micronautControlPanelCore
     implementation mn.micronaut.management
+    implementation mnReactor.micronaut.reactor
 }

@@ -1,5 +1,6 @@
 package io.micronaut.controlpanel.core.controlpanels.management;
 
+import io.micronaut.context.annotation.Requires;
 import io.micronaut.controlpanel.core.ControlPanel;
 import io.micronaut.logging.LogLevel;
 import io.micronaut.management.endpoint.loggers.LoggerConfiguration;
@@ -16,12 +17,13 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * TODO: add javadoc.
+ * Control panel that displays information about the application loggers.
  *
  * @author Álvaro Sánchez-Mariscal
  * @since 1.0.0
  */
 @Singleton
+@Requires(beans = { LoggersEndpoint.class, ManagedLoggingSystem.class })
 public class LoggersControlPanel implements ControlPanel {
 
     private final LoggersEndpoint endpoint;

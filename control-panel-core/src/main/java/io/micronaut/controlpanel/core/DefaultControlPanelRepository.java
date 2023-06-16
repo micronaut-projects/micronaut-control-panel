@@ -7,7 +7,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * TODO: add javadoc.
+ * Default implementation of {@link ControlPanelRepository} that gets the control panels injected
+ * as beans.
  *
  * @author Álvaro Sánchez-Mariscal
  * @since 1.0.0
@@ -18,6 +19,9 @@ public class DefaultControlPanelRepository implements ControlPanelRepository {
     private final List<ControlPanel> controlPanels;
     private final List<ControlPanel.Category> categories;
 
+    /**
+     * Default constructor.
+     */
     public DefaultControlPanelRepository(List<ControlPanel> controlPanels) {
         this.controlPanels = controlPanels;
         this.categories = controlPanels.stream()

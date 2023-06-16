@@ -14,7 +14,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
- * TODO: add javadoc.
+ * Control panel that displays information about the available routes.
  *
  * @author Álvaro Sánchez-Mariscal
  * @since 1.0.0

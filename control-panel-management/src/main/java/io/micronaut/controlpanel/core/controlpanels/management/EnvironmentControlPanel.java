@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.stream.StreamSupport;
 
 /**
- * TODO: add javadoc.
+ * Control panel that displays information about the environment properties.
  *
  * @author Álvaro Sánchez-Mariscal
  * @since 1.0.0

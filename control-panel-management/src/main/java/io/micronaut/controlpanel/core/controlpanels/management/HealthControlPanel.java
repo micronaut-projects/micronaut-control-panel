@@ -1,5 +1,6 @@
 package io.micronaut.controlpanel.core.controlpanels.management;
 
+import io.micronaut.context.annotation.Requires;
 import io.micronaut.controlpanel.core.ControlPanel;
 import io.micronaut.management.endpoint.health.HealthEndpoint;
 import io.micronaut.management.health.indicator.HealthResult;
@@ -9,12 +10,13 @@ import reactor.core.publisher.Mono;
 import java.util.Map;
 
 /**
- * TODO: add javadoc.
+ * Control panel that displays information about the application health.
  *
  * @author Álvaro Sánchez-Mariscal
  * @since 1.0.0
  */
 @Singleton
+@Requires(beans = HealthEndpoint.class)
 public class HealthControlPanel implements ControlPanel {
 
     public static final int ORDER = 0;
