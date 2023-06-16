@@ -3,7 +3,8 @@ plugins {
 }
 
 dependencies {
-    api(projects.controlPanelCore)
+    implementation mn.micronaut.http
+    api(projects.micronautControlPanelCore)
     api(mnViews.micronaut.views.handlebars)
     api(libs.handlebars.humanize) {
         version {

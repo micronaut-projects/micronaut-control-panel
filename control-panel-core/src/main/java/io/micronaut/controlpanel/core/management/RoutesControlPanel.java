@@ -1,13 +1,9 @@
 package io.micronaut.controlpanel.core.management;
 
 import io.micronaut.controlpanel.core.ControlPanel;
-import io.micronaut.core.util.functional.ThrowingFunction;
-import io.micronaut.management.endpoint.routes.RouteDataCollector;
-import io.micronaut.web.router.MethodBasedRoute;
 import io.micronaut.web.router.Router;
-import io.micronaut.web.router.UriRoute;
+import io.micronaut.web.router.UriRouteInfo;
 import jakarta.inject.Singleton;
-import reactor.core.publisher.Flux;
 
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -16,7 +12,6 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * TODO: add javadoc.
@@ -27,21 +22,21 @@ import java.util.stream.Stream;
 @Singleton
 public class RoutesControlPanel implements ControlPanel {
 
-    private final Map<String, List<UriRoute>> appRoutes;
-    private final Map<String, List<UriRoute>> micronautRoutes;
+    private final Map<String, List<UriRouteInfo<?,?>>> appRoutes;
+    private final Map<String, List<UriRouteInfo<?,?>>> micronautRoutes;
 
     public RoutesControlPanel(Router router) {
-        Function<UriRoute, String> keyMapper = (UriRoute r) -> ((MethodBasedRoute) r).getTargetMethod().getDeclaringType().getName();
-        Comparator<UriRoute> byUri = Comparator.comparing((UriRoute r) -> r.getUriMatchTemplate().toPathString());
-        Predicate<UriRoute> isMicronautRoute = (UriRoute r) -> ((MethodBasedRoute) r).getTargetMethod().getDeclaringType().getPackage().getName().startsWith("io.micronaut");
+        Function<UriRouteInfo<?,?>, String> keyMapper = r -> r.getTargetMethod().getDeclaringType().getName();
+        Comparator<UriRouteInfo<?,?>> byUri = Comparator.comparing(r -> r.getUriMatchTemplate().toPathString());
+        Predicate<UriRouteInfo<?,?>> isMicronautRoute = r -> r.getTargetMethod().getDeclaringType().getPackage().getName().startsWith("io.micronaut");
 
         appRoutes = router.uriRoutes()
             .filter(isMicronautRoute.negate())
-            .sorted(byUri.thenComparing(UriRoute::getHttpMethodName))
+            .sorted(byUri.thenComparing(UriRouteInfo::getHttpMethodName))
             .collect(Collectors.groupingBy(keyMapper, LinkedHashMap::new, Collectors.toList()));
         micronautRoutes = router.uriRoutes()
             .filter(isMicronautRoute)
-            .sorted(byUri.thenComparing(UriRoute::getHttpMethodName))
+            .sorted(byUri.thenComparing(UriRouteInfo::getHttpMethodName))
             .collect(Collectors.groupingBy(keyMapper, LinkedHashMap::new, Collectors.toList()));
     }
 
