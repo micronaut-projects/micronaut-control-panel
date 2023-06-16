@@ -1,7 +1,3 @@
 plugins {
     id 'io.micronaut.build.internal.control-panel-module'
 }
-
-dependencies {
-    implementation mn.micronaut.management
-}

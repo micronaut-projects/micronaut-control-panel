@@ -14,7 +14,7 @@ rootProject.name = 'control-panel-parent'
 include 'control-panel-bom'
 include 'control-panel-core'
 include 'control-panel-management'
-include 'control-panel-web'
+include 'control-panel-ui'
 
 enableFeaturePreview 'TYPESAFE_PROJECT_ACCESSORS'
 

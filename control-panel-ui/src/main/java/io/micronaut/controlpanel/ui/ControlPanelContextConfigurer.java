@@ -4,17 +4,13 @@ import io.micronaut.context.ApplicationContextBuilder;
 import io.micronaut.context.ApplicationContextConfigurer;
 import io.micronaut.context.annotation.ContextConfigurer;
 import io.micronaut.context.env.PropertySource;
+import io.micronaut.core.annotation.Internal;
 
 import java.util.Map;
 
-/**
- * TODO: add javadoc.
- *
- * @author Álvaro Sánchez-Mariscal
- * @since 1.0.0
- */
 @ContextConfigurer
-public class ControlPanelContextConfigurer implements ApplicationContextConfigurer {
+@Internal
+class ControlPanelContextConfigurer implements ApplicationContextConfigurer {
 
     @Override
     public void configure(ApplicationContextBuilder builder) {
