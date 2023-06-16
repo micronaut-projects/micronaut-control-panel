@@ -115,7 +115,7 @@ Renovate and our workflow will keep sending PRs. You should also create an issue
 
 #### Files sync
 
-We have a [template repo](https://github.com/micronaut-projects/micronaut-control-panel) that we use as the single
+We have a [template repo](https://github.com/micronaut-projects/micronaut-project-template) that we use as the single
 source of truth for certain files. It is used as a template to create new repos, and changes to certain files in the
 template repo will get propagated automatically. The files propagated are:
 
