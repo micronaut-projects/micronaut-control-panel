@@ -4,6 +4,7 @@ import jakarta.inject.Singleton;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * TODO: add javadoc.
@@ -42,11 +43,10 @@ public class DefaultControlPanelRepository implements ControlPanelRepository {
     }
 
     @Override
-    public ControlPanel findByName(String name) {
+    public Optional<ControlPanel> findByName(String name) {
         return controlPanels.stream()
                 .filter(controlPanel -> controlPanel.getName().equals(name))
-                .findFirst()
-                .orElse(null);
+                .findFirst();
     }
 
     @Override
@@ -55,10 +55,9 @@ public class DefaultControlPanelRepository implements ControlPanelRepository {
     }
 
     @Override
-    public ControlPanel.Category findCategoryById(String categoryId) {
+    public Optional<ControlPanel.Category> findCategoryById(String categoryId) {
         return categories.stream()
                 .filter(category -> category.id().equals(categoryId))
-                .findFirst()
-                .orElse(null);
+                .findFirst();
     }
 }

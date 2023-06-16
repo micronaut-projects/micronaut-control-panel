@@ -14,8 +14,10 @@ import io.micronaut.http.annotation.Get;
 import io.micronaut.runtime.ApplicationConfiguration;
 import io.micronaut.views.View;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * TODO: add javadoc.
@@ -78,15 +80,15 @@ public class HomeController {
 
     @View("layout")
     @Get
-    public HttpResponse index() {
+    public HttpResponse<Map<String, Object>> index() {
         return byCategory(ControlPanel.Category.MAIN.id());
     }
 
     @View("layout")
     @Get("/categories/{categoryId}")
-    public HttpResponse byCategory(String categoryId) {
+    public HttpResponse<Map<String, Object>> byCategory(String categoryId) {
         List<ControlPanel.Category> categories = repository.findAllCategories();
-        ControlPanel.Category currentCategory = repository.findCategoryById(categoryId);
+        Optional<ControlPanel.Category> optionalCategory = repository.findCategoryById(categoryId);
         List<ControlPanel> controlPanels = repository.findAllByCategory(categoryId);
         return HttpResponse.ok(Map.of(
             "micronautVersion", VersionUtils.getMicronautVersion(),
@@ -94,7 +96,7 @@ public class HomeController {
             "activeEnvironments", environment.getActiveNames(),
             "controlPanels", controlPanels,
             "categories", categories,
-            "currentCategory", currentCategory,
+            "currentCategory", optionalCategory.get(),
             "contentView", "index"
         ));
 
@@ -102,18 +104,23 @@ public class HomeController {
 
     @View("layout")
     @Get("/{controlPanelName}")
-    public HttpResponse detail(String controlPanelName) {
+    public HttpResponse<Map<String, Object>> detail(String controlPanelName) {
         List<ControlPanel.Category> categories = repository.findAllCategories();
-        ControlPanel controlPanel = repository.findByName(controlPanelName);
-        ControlPanel.Category currentCategory = repository.findCategoryById(controlPanel.getCategory().id());
-        return HttpResponse.ok(Map.of(
-            "micronautVersion", VersionUtils.getMicronautVersion(),
-            "applicationName", applicationConfiguration.getName().orElse("(unnamed)"),
-            "activeEnvironments", environment.getActiveNames(),
-            "controlPanel", controlPanel,
-            "categories", categories,
-            "currentCategory", currentCategory,
-            "contentView", "detail"
-        ));
+        Map<String, Object> response = new HashMap<>();
+        response.put("micronautVersion", VersionUtils.getMicronautVersion());
+        response.put("applicationName", applicationConfiguration.getName().orElse("(unnamed)"));
+        response.put("activeEnvironments", environment.getActiveNames());
+        response.put("categories", categories);
+        response.put("contentView", "detail");
+
+        Optional<ControlPanel> optionalControlPanel = repository.findByName(controlPanelName);
+        if (optionalControlPanel.isPresent()) {
+            Optional<ControlPanel.Category> optionalCategory = repository.findCategoryById(optionalControlPanel.get().getCategory().id());
+            response.putAll(Map.of(
+                "controlPanel", optionalControlPanel,
+                "currentCategory", optionalCategory.get()
+            ));
+        }
+        return HttpResponse.ok(response);
     }
 }

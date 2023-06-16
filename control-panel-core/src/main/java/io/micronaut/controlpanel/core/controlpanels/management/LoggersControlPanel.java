@@ -1,4 +1,4 @@
-package io.micronaut.controlpanel.core.management;
+package io.micronaut.controlpanel.core.controlpanels.management;
 
 import io.micronaut.controlpanel.core.ControlPanel;
 import io.micronaut.logging.LogLevel;
