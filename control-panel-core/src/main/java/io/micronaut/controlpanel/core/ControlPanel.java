@@ -1,3 +1,18 @@
+/*
+ * Copyright 2017-2023 original authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package io.micronaut.controlpanel.core;
 
 import io.micronaut.core.naming.Named;
@@ -19,26 +34,34 @@ public interface ControlPanel extends Named, Ordered, Toggleable {
 
     /**
      * The title is displayed in the header of the card UI element.
+     *
+     * @return the title of the control panel.
      */
     String getTitle();
 
 
     /**
      * The model is used to render the body of the control panel.
+     *
+     * @return the model of the control panel.
      */
+    //TODO: introduce a type for the model
     Map<String, Object> getModel();
 
     /**
      * {@link View} that will be used to render the body of the control panel.
+     *
+     * @return the view of the control panel.
      */
     default View getBody() {
         return new View("/views/" + getName() + "/body");
     }
 
-
     /**
      * {@link View} that will be used to render the body of the control panel when it has been
      * selected.
+     *
+     * @return the view of the control panel.
      */
     default View getDetailedView() {
         return new View("/views/" + getName() + "/detail");
@@ -46,6 +69,8 @@ public interface ControlPanel extends Named, Ordered, Toggleable {
 
     /**
      * Badge text to be displayed in the header of the card UI element.
+     *
+     * @return the badge text of the control panel.
      */
     default String getBadge() {
         return EMPTY_STRING;
@@ -53,6 +78,8 @@ public interface ControlPanel extends Named, Ordered, Toggleable {
 
     /**
      * Icon class of the card UI element.
+     *
+     * @return the icon class of the control panel.
      */
     default String getIcon() {
         return "fa-cog";
@@ -60,6 +87,8 @@ public interface ControlPanel extends Named, Ordered, Toggleable {
 
     /**
      * The category of the control panel.
+     *
+     * @return the category of the control panel.
      */
     Category getCategory();
 

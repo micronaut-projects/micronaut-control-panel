@@ -8,3 +8,10 @@ repositories {
         url = uri('https://s01.oss.sonatype.org/content/repositories/snapshots/')
     }
 }
+
+micronautBuild {
+    // New module in 4.0
+    binaryCompatibility {
+        enabled = false
+    }
+}

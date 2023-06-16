@@ -1,10 +1,24 @@
+/*
+ * Copyright 2017-2023 original authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package io.micronaut.controlpanel.ui;
 
 import io.micronaut.context.env.Environment;
 import io.micronaut.controlpanel.core.ControlPanel;
 import io.micronaut.controlpanel.core.ControlPanelRepository;
 import io.micronaut.core.version.VersionUtils;
-import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.runtime.ApplicationConfiguration;
@@ -34,19 +48,31 @@ public class ControlPanelController {
         this.environment = environment;
     }
 
+    /**
+     * Renders the index view.
+     *
+     * @return the model
+     */
     @View("layout")
     @Get
-    public HttpResponse<Map<String, Object>> index() {
+    public Map<String, Object> index() {
         return byCategory(ControlPanel.Category.MAIN.id());
     }
 
+    /**
+     * Renders the category view.
+     *
+     * @param categoryId the category id.
+     *
+     * @return the model
+     */
     @View("layout")
     @Get("/categories/{categoryId}")
-    public HttpResponse<Map<String, Object>> byCategory(String categoryId) {
+    public Map<String, Object> byCategory(String categoryId) {
         List<ControlPanel.Category> categories = repository.findAllCategories();
         Optional<ControlPanel.Category> optionalCategory = repository.findCategoryById(categoryId);
         List<ControlPanel> controlPanels = repository.findAllByCategory(categoryId);
-        return HttpResponse.ok(Map.of(
+        return Map.of(
             "micronautVersion", VersionUtils.getMicronautVersion(),
             "applicationName", applicationConfiguration.getName().orElse("(unnamed)"),
             "activeEnvironments", environment.getActiveNames(),
@@ -54,13 +80,20 @@ public class ControlPanelController {
             "categories", categories,
             "currentCategory", optionalCategory.get(),
             "contentView", "index"
-        ));
+        );
 
     }
 
+    /**
+     * Renders the control panel detailed view.
+     *
+     * @param controlPanelName the control panel name.
+     *
+     * @return the model
+     */
     @View("layout")
     @Get("/{controlPanelName}")
-    public HttpResponse<Map<String, Object>> detail(String controlPanelName) {
+    public Map<String, Object> detail(String controlPanelName) {
         List<ControlPanel.Category> categories = repository.findAllCategories();
         Map<String, Object> response = new HashMap<>();
         response.put("micronautVersion", VersionUtils.getMicronautVersion());
@@ -77,6 +110,6 @@ public class ControlPanelController {
                 "currentCategory", optionalCategory.get()
             ));
         }
-        return HttpResponse.ok(response);
+        return response;
     }
 }

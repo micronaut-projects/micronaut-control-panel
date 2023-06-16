@@ -1,3 +1,10 @@
 plugins {
     id "io.micronaut.build.internal.bom"
 }
+
+micronautBuild {
+    // New module in 4.0
+    binaryCompatibility {
+        enabled = false
+    }
+}
