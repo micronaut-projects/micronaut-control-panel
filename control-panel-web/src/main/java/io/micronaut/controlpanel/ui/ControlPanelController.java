@@ -20,22 +20,20 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * TODO: add javadoc.
+ * Control panel web controller to render the UI.
  *
  * @author Álvaro Sánchez-Mariscal
  * @since 1.0.0
  */
 @Controller("/control-panel")
-public class HomeController {
+public class ControlPanelController {
 
-    private final Handlebars handlebars;
     private final ControlPanelRepository repository;
 
     private final ApplicationConfiguration applicationConfiguration;
     private final Environment environment;
 
-    public HomeController(Handlebars handlebars, ControlPanelRepository repository, ApplicationConfiguration applicationConfiguration, Environment environment) {
-        this.handlebars = handlebars;
+    public ControlPanelController(Handlebars handlebars, ControlPanelRepository repository, ApplicationConfiguration applicationConfiguration, Environment environment) {
         this.repository = repository;
         this.applicationConfiguration = applicationConfiguration;
         this.environment = environment;
@@ -117,7 +115,7 @@ public class HomeController {
         if (optionalControlPanel.isPresent()) {
             Optional<ControlPanel.Category> optionalCategory = repository.findCategoryById(optionalControlPanel.get().getCategory().id());
             response.putAll(Map.of(
-                "controlPanel", optionalControlPanel,
+                "controlPanel", optionalControlPanel.get(),
                 "currentCategory", optionalCategory.get()
             ));
         }
