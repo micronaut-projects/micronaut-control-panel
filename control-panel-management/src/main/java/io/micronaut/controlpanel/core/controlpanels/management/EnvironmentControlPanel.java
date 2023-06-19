@@ -15,6 +15,7 @@
  */
 package io.micronaut.controlpanel.core.controlpanels.management;
 
+import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.env.Environment;
 import io.micronaut.controlpanel.core.ControlPanel;
 import io.micronaut.management.endpoint.env.EnvironmentEndpoint;
@@ -30,6 +31,7 @@ import java.util.stream.StreamSupport;
  * @since 1.0.0
  */
 @Singleton
+@Requires(beans = EnvironmentEndpoint.class)
 public class EnvironmentControlPanel implements ControlPanel {
 
     private final EnvironmentEndpoint endpoint;

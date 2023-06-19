@@ -16,8 +16,10 @@
 package io.micronaut.controlpanel.core.controlpanels.management;
 
 import io.micronaut.context.BeanContext;
+import io.micronaut.context.annotation.Requires;
 import io.micronaut.controlpanel.core.ControlPanel;
 import io.micronaut.inject.BeanDefinition;
+import io.micronaut.management.endpoint.beans.BeansEndpoint;
 import io.micronaut.management.endpoint.beans.impl.DefaultBeanDefinitionData;
 import jakarta.inject.Singleton;
 
@@ -37,6 +39,7 @@ import java.util.stream.Collectors;
  * @since 1.0.0
  */
 @Singleton
+@Requires(beans = BeansEndpoint.class)
 public class BeansControlPanel implements ControlPanel {
 
     Map<String, List<Map<String, Object>>> micronautBeansByPackage;

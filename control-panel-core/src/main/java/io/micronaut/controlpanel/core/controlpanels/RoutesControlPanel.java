@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.micronaut.controlpanel.core.controlpanels.management;
+package io.micronaut.controlpanel.core.controlpanels;
 
 import io.micronaut.controlpanel.core.ControlPanel;
 import io.micronaut.web.router.Router;
@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
 @Singleton
 public class RoutesControlPanel implements ControlPanel {
 
+    private static final int ORDER = 20;
     private final Map<String, List<UriRouteInfo<?, ?>>> appRoutes;
     private final Map<String, List<UriRouteInfo<?, ?>>> micronautRoutes;
 
@@ -87,7 +88,7 @@ public class RoutesControlPanel implements ControlPanel {
 
     @Override
     public int getOrder() {
-        return HealthControlPanel.ORDER + 20;
+        return ORDER;
     }
 
     @Override
