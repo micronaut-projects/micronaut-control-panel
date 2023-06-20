@@ -33,9 +33,9 @@ import java.util.Set;
  * @author Álvaro Sánchez-Mariscal
  * @since 1.0.0
  */
-@Controller("/control-panel")
+@Controller(ControlPanelApi.PATH)
 @Refreshable
-public class ControlPanelController {
+public class ControlPanelController implements ControlPanelApi {
 
     private final ControlPanelRepository repository;
     private final String applicationName;
@@ -47,26 +47,14 @@ public class ControlPanelController {
         this.activeEnvironments = environment.getActiveNames();
     }
 
-    /**
-     * Renders the index view.
-     *
-     * @return the model
-     */
     @View("layout")
-    @Get
+    @Override
     public Model index() {
         return byCategory(ControlPanel.Category.MAIN.id());
     }
 
-    /**
-     * Renders the category view.
-     *
-     * @param categoryId the category id.
-     *
-     * @return the model
-     */
     @View("layout")
-    @Get("/categories/{categoryId}")
+    @Override
     public Model byCategory(String categoryId) {
         Map<String, Object> extraProperties = new HashMap<>();
         var categories = repository.findAllCategories();
@@ -80,15 +68,8 @@ public class ControlPanelController {
         return new Model(categories, applicationName, activeEnvironments, Model.ContentView.INDEX, extraProperties);
     }
 
-    /**
-     * Renders the control panel detailed view.
-     *
-     * @param controlPanelName the control panel name.
-     *
-     * @return the model
-     */
     @View("layout")
-    @Get("/{controlPanelName}")
+    @Override
     public Model detail(String controlPanelName) {
         var categories = repository.findAllCategories();
         Map<String, Object> extraProperties = new HashMap<>();

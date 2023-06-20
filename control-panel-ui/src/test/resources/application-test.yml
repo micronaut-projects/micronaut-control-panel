@@ -1,0 +1,15 @@
+micronaut:
+  application:
+    name: test-application
+netty:
+  default:
+    allocator:
+      max-order: 3
+endpoints:
+  all:
+    enabled: true
+    sensitive: false
+  health:
+    details-visible: ANONYMOUS
+  loggers:
+    write-sensitive: false

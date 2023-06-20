@@ -12,4 +12,14 @@ dependencies {
         }
     }
 
+    testCompileOnly mn.micronaut.inject.groovy
+
+    testImplementation mn.micronaut.http.client
+    testImplementation mn.micronaut.http.server.netty
+    testImplementation mnSerde.micronaut.serde.jackson
+    testImplementation mnReactor.micronaut.reactor
+    testImplementation mn.micronaut.management
+    testImplementation projects.micronautControlPanelManagement
+
+    testRuntimeOnly mn.snakeyaml
 }
