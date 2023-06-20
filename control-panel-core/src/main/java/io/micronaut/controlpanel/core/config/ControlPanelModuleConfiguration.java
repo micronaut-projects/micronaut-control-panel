@@ -27,8 +27,8 @@ import java.util.Set;
  * @author Álvaro Sánchez-Mariscal
  * @since 1.0.0
  */
-@ConfigurationProperties(ControlPanelConfiguration.PREFIX)
-public class ControlPanelConfiguration implements Toggleable {
+@ConfigurationProperties(ControlPanelModuleConfiguration.PREFIX)
+public class ControlPanelModuleConfiguration implements Toggleable {
 
     public static final boolean DEFAULT_ENABLED = true;
     public static final Set<String> DEFAULT_ALLOWED_ENVIRONMENTS = Set.of(Environment.DEVELOPMENT, Environment.TEST);

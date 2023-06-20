@@ -31,8 +31,8 @@ public class ControlPanelEnabledCondition implements Condition {
 
     @Override
     public boolean matches(ConditionContext context) {
-        ControlPanelConfiguration configuration = context.getBean(ControlPanelConfiguration.class);
-        Environment environment = context.getBean(Environment.class);
+        var configuration = context.getBean(ControlPanelModuleConfiguration.class);
+        var environment = context.getBean(Environment.class);
         if (!Collections.disjoint(configuration.getAllowedEnvironments(), environment.getActiveNames())) {
             return configuration.isEnabled();
         } else {

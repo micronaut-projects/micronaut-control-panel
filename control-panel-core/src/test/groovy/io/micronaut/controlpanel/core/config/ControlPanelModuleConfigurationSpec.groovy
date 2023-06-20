@@ -5,7 +5,7 @@ import io.micronaut.context.env.Environment
 import io.micronaut.controlpanel.core.ControlPanel
 import spock.lang.Specification
 
-class ControlPanelConfigurationSpec extends Specification {
+class ControlPanelModuleConfigurationSpec extends Specification {
 
     void "it is enabled by default in the environment #env"(String env) {
         given:
@@ -29,7 +29,7 @@ class ControlPanelConfigurationSpec extends Specification {
         def ctx = ApplicationContext.builder()
                 .deduceEnvironment(false)
                 .environments(Environment.TEST)
-                .properties([(ControlPanelConfiguration.PROPERTY_ENABLED): false])
+                .properties([(ControlPanelModuleConfiguration.PROPERTY_ENABLED): false])
                 .start()
 
         expect:
@@ -58,11 +58,39 @@ class ControlPanelConfigurationSpec extends Specification {
         def ctx = ApplicationContext.builder()
                 .deduceEnvironment(false)
                 .environments("prod")
-                .properties([(ControlPanelConfiguration.PROPERTY_ALLOWED_ENVIRONMENTS): "prod"])
+                .properties([(ControlPanelModuleConfiguration.PROPERTY_ALLOWED_ENVIRONMENTS): "prod"])
                 .start()
 
         expect:
         ctx.getBeansOfType(ControlPanel)
+
+        cleanup:
+        ctx.stop()
+    }
+
+    void "it is disabled when no environment is activated"() {
+        given:
+        def ctx = ApplicationContext.builder()
+                .deduceEnvironment(false)
+                .start()
+
+        expect:
+        !ctx.getBeansOfType(ControlPanel)
+
+        cleanup:
+        ctx.stop()
+    }
+
+    void "it is disabled when active environments don't match the allowed ones"() {
+        given:
+        def ctx = ApplicationContext.builder()
+                .deduceEnvironment(false)
+                .environments("prod")
+                .properties([(ControlPanelModuleConfiguration.PROPERTY_ALLOWED_ENVIRONMENTS): "staging"])
+                .start()
+
+        expect:
+        !ctx.getBeansOfType(ControlPanel)
 
         cleanup:
         ctx.stop()
