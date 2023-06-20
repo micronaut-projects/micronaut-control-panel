@@ -16,6 +16,7 @@
 package io.micronaut.controlpanel.core.controlpanels;
 
 import io.micronaut.controlpanel.core.ControlPanel;
+import io.micronaut.runtime.context.scope.Refreshable;
 import io.micronaut.web.router.Router;
 import io.micronaut.web.router.UriRouteInfo;
 import jakarta.inject.Singleton;
@@ -35,25 +36,32 @@ import java.util.stream.Collectors;
  * @since 1.0.0
  */
 @Singleton
+@Refreshable
 public class RoutesControlPanel implements ControlPanel<RoutesControlPanel.Body> {
 
     private static final int ORDER = 20;
-    private final Map<String, List<UriRouteInfo<?, ?>>> appRoutes;
-    private final Map<String, List<UriRouteInfo<?, ?>>> micronautRoutes;
+    private final Body body;
+    private final String badge;
 
     public RoutesControlPanel(Router router) {
         Function<UriRouteInfo<?, ?>, String> keyMapper = r -> r.getTargetMethod().getDeclaringType().getName();
         Comparator<UriRouteInfo<?, ?>> byUri = Comparator.comparing(r -> r.getUriMatchTemplate().toPathString());
         Predicate<UriRouteInfo<?, ?>> isMicronautRoute = r -> r.getTargetMethod().getDeclaringType().getPackage().getName().startsWith("io.micronaut");
 
-        appRoutes = router.uriRoutes()
+        var appRoutes = router.uriRoutes()
             .filter(isMicronautRoute.negate())
             .sorted(byUri.thenComparing(UriRouteInfo::getHttpMethodName))
             .collect(Collectors.groupingBy(keyMapper, LinkedHashMap::new, Collectors.toList()));
-        micronautRoutes = router.uriRoutes()
+        var micronautRoutes = router.uriRoutes()
             .filter(isMicronautRoute)
             .sorted(byUri.thenComparing(UriRouteInfo::getHttpMethodName))
             .collect(Collectors.groupingBy(keyMapper, LinkedHashMap::new, Collectors.toList()));
+
+        int totalAppRoutes = appRoutes.values().stream().mapToInt(List::size).sum();
+        int totalMicronautRoutes = micronautRoutes.values().stream().mapToInt(List::size).sum();
+
+        this.body = new Body(appRoutes, micronautRoutes);
+        this.badge = String.valueOf(totalAppRoutes + totalMicronautRoutes);
     }
 
     @Override
@@ -63,7 +71,7 @@ public class RoutesControlPanel implements ControlPanel<RoutesControlPanel.Body>
 
     @Override
     public Body getBody() {
-        return new Body(appRoutes, micronautRoutes);
+        return body;
     }
 
     @Override
@@ -78,9 +86,7 @@ public class RoutesControlPanel implements ControlPanel<RoutesControlPanel.Body>
 
     @Override
     public String getBadge() {
-        int totalAppRoutes = appRoutes.values().stream().mapToInt(List::size).sum();
-        int totalMicronautRoutes = micronautRoutes.values().stream().mapToInt(List::size).sum();
-        return String.valueOf(totalAppRoutes + totalMicronautRoutes);
+        return badge;
     }
 
     @Override

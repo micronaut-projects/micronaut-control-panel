@@ -19,6 +19,7 @@ import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.env.Environment;
 import io.micronaut.controlpanel.core.ControlPanel;
 import io.micronaut.management.endpoint.env.EnvironmentEndpoint;
+import io.micronaut.runtime.context.scope.Refreshable;
 import jakarta.inject.Singleton;
 
 import java.util.Map;
@@ -32,6 +33,7 @@ import java.util.stream.StreamSupport;
  */
 @Singleton
 @Requires(beans = EnvironmentEndpoint.class)
+@Refreshable
 public class EnvironmentControlPanel implements ControlPanel<Map<String, Object>> {
 
     private final EnvironmentEndpoint endpoint;

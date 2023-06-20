@@ -46,7 +46,7 @@ public class LoggersControlPanel implements ControlPanel<LoggersControlPanel.Bod
 
     public LoggersControlPanel(ManagedLoggingSystem loggingSystem) {
         this.loggingSystem = loggingSystem;
-        this.levels = Arrays.asList(io.micronaut.logging.LogLevel.values());
+        this.levels = Arrays.asList(LogLevel.values());
     }
 
     @Override
@@ -56,7 +56,7 @@ public class LoggersControlPanel implements ControlPanel<LoggersControlPanel.Bod
 
     @Override
     public Body getBody() {
-        LinkedHashMap<String, Map<String, Object>> loggers = getLoggers()
+        var loggers = getLoggers()
             .sorted(Comparator.comparing(LoggerConfiguration::getName))
             .collect(Collectors.toMap(LoggerConfiguration::getName, LoggerConfiguration::getData, (oldValue, newValue) -> oldValue, LinkedHashMap::new));
 

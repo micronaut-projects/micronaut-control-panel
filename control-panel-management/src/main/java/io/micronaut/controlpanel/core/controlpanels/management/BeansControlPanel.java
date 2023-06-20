@@ -21,9 +21,9 @@ import io.micronaut.controlpanel.core.ControlPanel;
 import io.micronaut.inject.BeanDefinition;
 import io.micronaut.management.endpoint.beans.BeansEndpoint;
 import io.micronaut.management.endpoint.beans.impl.DefaultBeanDefinitionData;
+import io.micronaut.runtime.context.scope.Refreshable;
 import jakarta.inject.Singleton;
 
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.LinkedHashMap;
@@ -40,29 +40,31 @@ import java.util.stream.Collectors;
  */
 @Singleton
 @Requires(beans = BeansEndpoint.class)
+@Refreshable
 public class BeansControlPanel implements ControlPanel<BeansControlPanel.Body> {
 
-    Map<String, List<Map<String, Object>>> micronautBeansByPackage;
-    Map<String, List<Map<String, Object>>> otherBeansByPackage;
+    private final Body body;
     private final long beanDefinitionsCount;
 
     public BeansControlPanel(BeanContext beanContext, DefaultBeanDefinitionData beanDefinitionData) {
         Function<BeanDefinition<?>, String> byPackage = beanDefinition -> beanDefinition.getBeanType().getPackage().getName();
         Function<BeanDefinition<?>, String> byMicronautPackage = beanDefinition -> beanDefinition.getBeanType().getPackage().getName().replaceAll("io\\.micronaut\\.(\\w+).*", "$1");
-        Comparator<BeanDefinition<?>> byName = Comparator.comparing(bd -> bd.getClass().getName());
+        var byName = Comparator.comparing(bd -> bd.getClass().getName());
         Predicate<BeanDefinition<?>> isMicronautPackage = bd -> bd.getBeanType().getPackage().getName().startsWith("io.micronaut");
-        Collection<BeanDefinition<?>> allBeanDefinitions = beanContext.getAllBeanDefinitions();
-        this.micronautBeansByPackage = allBeanDefinitions
+        var allBeanDefinitions = beanContext.getAllBeanDefinitions();
+        var micronautBeansByPackage = allBeanDefinitions
             .stream()
             .filter(isMicronautPackage)
             .sorted(byName)
             .collect(Collectors.groupingBy(byMicronautPackage, LinkedHashMap::new, Collectors.mapping(beanDefinitionData::getData, Collectors.toList())));
 
-        this.otherBeansByPackage = allBeanDefinitions
+        var otherBeansByPackage = allBeanDefinitions
             .stream()
             .filter(isMicronautPackage.negate())
             .sorted(byName)
             .collect(Collectors.groupingBy(byPackage, LinkedHashMap::new, Collectors.mapping(beanDefinitionData::getData, Collectors.toList())));
+
+        this.body = new Body(micronautBeansByPackage, otherBeansByPackage);
         this.beanDefinitionsCount = allBeanDefinitions.size();
     }
 
@@ -73,7 +75,7 @@ public class BeansControlPanel implements ControlPanel<BeansControlPanel.Body> {
 
     @Override
     public Body getBody() {
-        return new Body(micronautBeansByPackage, otherBeansByPackage);
+        return body;
     }
 
     @Override

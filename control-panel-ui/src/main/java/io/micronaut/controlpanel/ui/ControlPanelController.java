@@ -24,9 +24,7 @@ import io.micronaut.runtime.ApplicationConfiguration;
 import io.micronaut.runtime.context.scope.Refreshable;
 import io.micronaut.views.View;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -71,12 +69,12 @@ public class ControlPanelController {
     @Get("/categories/{categoryId}")
     public Model byCategory(String categoryId) {
         Map<String, Object> extraProperties = new HashMap<>();
-        List<ControlPanel.Category> categories = repository.findAllCategories();
+        var categories = repository.findAllCategories();
 
-        List<ControlPanel> controlPanels = repository.findAllByCategory(categoryId);
+        var controlPanels = repository.findAllByCategory(categoryId);
         extraProperties.put("controlPanels", controlPanels);
 
-        Optional<ControlPanel.Category> optionalCategory = repository.findCategoryById(categoryId);
+        var optionalCategory = repository.findCategoryById(categoryId);
         optionalCategory.ifPresent(category -> extraProperties.put("currentCategory", category));
 
         return new Model(categories, applicationName, activeEnvironments, Model.ContentView.INDEX, extraProperties);
@@ -92,13 +90,13 @@ public class ControlPanelController {
     @View("layout")
     @Get("/{controlPanelName}")
     public Model detail(String controlPanelName) {
-        List<ControlPanel.Category> categories = repository.findAllCategories();
+        var categories = repository.findAllCategories();
         Map<String, Object> extraProperties = new HashMap<>();
 
-        Optional<ControlPanel> optionalControlPanel = repository.findByName(controlPanelName);
+        var optionalControlPanel = repository.findByName(controlPanelName);
         if (optionalControlPanel.isPresent()) {
             extraProperties.put("controlPanel", optionalControlPanel.get());
-            Optional<ControlPanel.Category> optionalCategory = repository.findCategoryById(optionalControlPanel.get().getCategory().id());
+            var optionalCategory = repository.findCategoryById(optionalControlPanel.get().getCategory().id());
             optionalCategory.ifPresent(category -> extraProperties.put("currentCategory", category));
         }
         return new Model(categories, applicationName, activeEnvironments, Model.ContentView.DETAIL, extraProperties);
