@@ -4,4 +4,6 @@ plugins {
 
 dependencies {
     api(mn.micronaut.router)
+
+    testImplementation mn.micronaut.http
 }
