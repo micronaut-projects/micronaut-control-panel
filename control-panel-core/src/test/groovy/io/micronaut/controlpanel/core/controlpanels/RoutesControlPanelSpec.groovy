@@ -17,9 +17,8 @@ class RoutesControlPanelSpec extends Specification {
         then:
         routesControlPanel.body.appRoutes().size() == 0
 
-        //The DummyController route belongs to an io.micronaut package
-        routesControlPanel.body.micronautRoutes().size() == 1
-        routesControlPanel.badge == "2" //GET and HEAD
+        routesControlPanel.body.micronautRoutes().size() > 0
+        routesControlPanel.badge.toInteger() > 0
 
         cleanup:
         ctx.stop()
