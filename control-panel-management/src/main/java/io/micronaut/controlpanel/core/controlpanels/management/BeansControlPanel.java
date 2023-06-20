@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
  */
 @Singleton
 @Requires(beans = BeansEndpoint.class)
-public class BeansControlPanel implements ControlPanel {
+public class BeansControlPanel implements ControlPanel<BeansControlPanel.Body> {
 
     Map<String, List<Map<String, Object>>> micronautBeansByPackage;
     Map<String, List<Map<String, Object>>> otherBeansByPackage;
@@ -72,11 +72,8 @@ public class BeansControlPanel implements ControlPanel {
     }
 
     @Override
-    public Map<String, Object> getBody() {
-        return Map.of(
-            "micronautBeansByPackage", micronautBeansByPackage,
-            "otherBeansByPackage", otherBeansByPackage
-        );
+    public Body getBody() {
+        return new Body(micronautBeansByPackage, otherBeansByPackage);
     }
 
     @Override
@@ -102,5 +99,10 @@ public class BeansControlPanel implements ControlPanel {
     @Override
     public String getIcon() {
         return "fa-plug";
+    }
+
+    record Body(
+        Map<String, List<Map<String, Object>>> micronautBeansByPackage,
+        Map<String, List<Map<String, Object>>> otherBeansByPackage) {
     }
 }

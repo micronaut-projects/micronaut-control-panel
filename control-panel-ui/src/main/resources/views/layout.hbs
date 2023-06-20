@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>
         Micronaut Control Panel
-        {{#if controlPanel.title}}
-            - {{controlPanel.title}}
+        {{#if ext.controlPanel.title}}
+            - {{ext.controlPanel.title}}
         {{/if}}
     </title>
 
@@ -189,11 +189,11 @@
                     <div class="col-sm-6">
                         <nav aria-label="breadcrumb">
                             <ol class="breadcrumb">
-                                {{#if controlPanel }}
-                                    <li class="breadcrumb-item"><a href="/control-panel/categories/{{ currentCategory.id }}"><i class="fas {{ currentCategory.iconClass }}"></i> {{ currentCategory.name }}</a></li>
-                                    <li class="breadcrumb-item active" aria-current="page">{{controlPanel.title}}</li>
+                                {{#if ext.controlPanel }}
+                                    <li class="breadcrumb-item"><a href="/control-panel/categories/{{ ext.currentCategory.id }}"><i class="fas {{ ext.currentCategory.iconClass }}"></i> {{ ext.currentCategory.name }}</a></li>
+                                    <li class="breadcrumb-item active" aria-current="page">{{ext.controlPanel.title}}</li>
                                 {{else}}
-                                    <li class="breadcrumb-item active"><i class="fas {{ currentCategory.iconClass }}"></i> {{ currentCategory.name }}</li>
+                                    <li class="breadcrumb-item active"><i class="fas {{ ext.currentCategory.iconClass }}"></i> {{ ext.currentCategory.name }}</li>
                                 {{/if}}
                             </ol>
                         </nav>
@@ -218,9 +218,6 @@
     </div>
 
     <footer class="main-footer">
-        <div class="float-right d-none d-sm-block">
-            <b>Micronaut version</b> {{ micronautVersion }}
-        </div>
     </footer>
 
     <!-- Control Sidebar -->

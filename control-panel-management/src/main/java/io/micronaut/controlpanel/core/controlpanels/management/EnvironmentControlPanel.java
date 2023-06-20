@@ -32,7 +32,7 @@ import java.util.stream.StreamSupport;
  */
 @Singleton
 @Requires(beans = EnvironmentEndpoint.class)
-public class EnvironmentControlPanel implements ControlPanel {
+public class EnvironmentControlPanel implements ControlPanel<Map<String, Object>> {
 
     private final EnvironmentEndpoint endpoint;
 
@@ -53,10 +53,7 @@ public class EnvironmentControlPanel implements ControlPanel {
 
     @Override
     public Map<String, Object> getBody() {
-        Map<String, Object> environmentInfo = endpoint.getEnvironmentInfo();
-        return Map.of(
-            "environmentInfo", environmentInfo
-        );
+        return endpoint.getEnvironmentInfo();
     }
 
     @Override

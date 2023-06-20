@@ -19,17 +19,17 @@ import io.micronaut.core.naming.Named;
 import io.micronaut.core.order.Ordered;
 import io.micronaut.core.util.Toggleable;
 
-import java.util.Map;
-
 import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
 
 /**
  * A control panel is a UI component that displays some information about the application.
  *
+ * @param <B> the type of the body of the control panel.
+ *
  * @author Álvaro Sánchez-Mariscal
  * @since 1.0.0
  */
-public interface ControlPanel extends Named, Ordered, Toggleable {
+public interface ControlPanel<B> extends Named, Ordered, Toggleable {
 
 
     /**
@@ -43,9 +43,9 @@ public interface ControlPanel extends Named, Ordered, Toggleable {
     /**
      * Used to render the body of the control panel.
      *
-     * @return the model of the control panel.
+     * @return the body of the control panel.
      */
-    Map<String, Object> getBody();
+    B getBody();
 
     /**
      * {@link View} that will be used to render the body of the control panel.
@@ -112,8 +112,6 @@ public interface ControlPanel extends Named, Ordered, Toggleable {
      * View to be rendered by the control panel.
      * @param file view path in the classpath.
      */
-    record View (String file) {
-        public static final View CARD = new View("/views/card");
-    }
+    record View (String file) { }
 
 }

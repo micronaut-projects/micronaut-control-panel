@@ -22,8 +22,6 @@ import io.micronaut.management.health.indicator.HealthResult;
 import jakarta.inject.Singleton;
 import reactor.core.publisher.Mono;
 
-import java.util.Map;
-
 /**
  * Control panel that displays information about the application health.
  *
@@ -32,7 +30,7 @@ import java.util.Map;
  */
 @Singleton
 @Requires(beans = HealthEndpoint.class)
-public class HealthControlPanel implements ControlPanel {
+public class HealthControlPanel implements ControlPanel<HealthResult> {
 
     public static final int ORDER = 0;
 
@@ -48,11 +46,8 @@ public class HealthControlPanel implements ControlPanel {
     }
 
     @Override
-    public Map<String, Object> getBody() {
-        HealthResult healthResult = Mono.from(endpoint.getHealth(null)).block();
-        return Map.of(
-            "healthResult", healthResult
-        );
+    public HealthResult getBody() {
+        return Mono.from(endpoint.getHealth(null)).block();
     }
 
     @Override

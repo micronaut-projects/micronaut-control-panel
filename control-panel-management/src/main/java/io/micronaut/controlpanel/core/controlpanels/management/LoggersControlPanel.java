@@ -39,14 +39,12 @@ import java.util.stream.Stream;
  */
 @Singleton
 @Requires(beans = { LoggersEndpoint.class, ManagedLoggingSystem.class })
-public class LoggersControlPanel implements ControlPanel {
+public class LoggersControlPanel implements ControlPanel<LoggersControlPanel.Body> {
 
-    private final LoggersEndpoint endpoint;
     private final ManagedLoggingSystem loggingSystem;
     private final List<LogLevel> levels;
 
-    public LoggersControlPanel(LoggersEndpoint endpoint, ManagedLoggingSystem loggingSystem) {
-        this.endpoint = endpoint;
+    public LoggersControlPanel(ManagedLoggingSystem loggingSystem) {
         this.loggingSystem = loggingSystem;
         this.levels = Arrays.asList(io.micronaut.logging.LogLevel.values());
     }
@@ -57,15 +55,12 @@ public class LoggersControlPanel implements ControlPanel {
     }
 
     @Override
-    public Map<String, Object> getBody() {
+    public Body getBody() {
         LinkedHashMap<String, Map<String, Object>> loggers = getLoggers()
             .sorted(Comparator.comparing(LoggerConfiguration::getName))
             .collect(Collectors.toMap(LoggerConfiguration::getName, LoggerConfiguration::getData, (oldValue, newValue) -> oldValue, LinkedHashMap::new));
 
-        return Map.of(
-            "levels", levels,
-            "loggers", loggers
-        );
+        return new Body(levels, loggers);
     }
 
     @Override
@@ -98,4 +93,6 @@ public class LoggersControlPanel implements ControlPanel {
             .stream()
             .filter(loggerConfiguration -> loggerConfiguration.configuredLevel() != LogLevel.NOT_SPECIFIED);
     }
+
+    record Body(List<LogLevel> levels, Map<String, Map<String, Object>> loggers) { }
 }

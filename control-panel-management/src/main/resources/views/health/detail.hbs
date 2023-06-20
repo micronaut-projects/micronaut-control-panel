@@ -1,13 +1,13 @@
 {{#with controlPanel.body }}
 
-    {{#eq healthResult.status.name 'UP'}}
+    {{#eq status.name 'UP'}}
         <div class="alert alert-success">
             <h5><i class="icon fas fa-check"></i> All health checks passed</h5>
         </div>
     {{/eq}}
 
     <div class="card-columns">
-        {{#each healthResult.details as |subDetails|}}
+        {{#each details as |subDetails|}}
             {{#if subDetails.details}}
                 <div class="card card-success">
                     <div class="card-header">

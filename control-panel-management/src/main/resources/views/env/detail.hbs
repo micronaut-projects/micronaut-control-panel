@@ -3,8 +3,8 @@
     <dl class="row">
         <dt class="col-sm-2">Active environments</dt>
         <dd class="col-sm-10">
-            {{#if environmentInfo.activeEnvironments}}
-                {{#each environmentInfo.activeEnvironments }}
+            {{#if activeEnvironments}}
+                {{#each activeEnvironments }}
                     <span class="badge badge-primary">{{ this }}</span>
                 {{/each}}
             {{else}}
@@ -12,16 +12,16 @@
             {{/if}}
         </dd>
 
-        {{#if environmentInfo.packages}}
+        {{#if packages}}
             <dt class="col-sm-2">Packages</dt>
             <dd class="col-sm-10">
-                <code>{{join environmentInfo.packages ", "}}</code>
+                <code>{{join packages ", "}}</code>
             </dd>
         {{/if}}
     </dl>
 
     <div class="card-columns">
-        {{#each environmentInfo.propertySources as |ps|}}
+        {{#each propertySources as |ps|}}
             <div class="card card-light">
                 <div class="card-header">
                     <h3 class="card-title">Property source: <code>{{ps.name}}</code></h3>

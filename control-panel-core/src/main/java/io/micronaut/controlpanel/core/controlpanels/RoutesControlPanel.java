@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
  * @since 1.0.0
  */
 @Singleton
-public class RoutesControlPanel implements ControlPanel {
+public class RoutesControlPanel implements ControlPanel<RoutesControlPanel.Body> {
 
     private static final int ORDER = 20;
     private final Map<String, List<UriRouteInfo<?, ?>>> appRoutes;
@@ -62,11 +62,8 @@ public class RoutesControlPanel implements ControlPanel {
     }
 
     @Override
-    public Map<String, Object> getBody() {
-        return Map.of(
-            "appRoutes", appRoutes,
-            "micronautRoutes", micronautRoutes
-        );
+    public Body getBody() {
+        return new Body(appRoutes, micronautRoutes);
     }
 
     @Override
@@ -95,4 +92,6 @@ public class RoutesControlPanel implements ControlPanel {
     public String getIcon() {
         return "fa-route";
     }
+
+    record Body(Map<String, List<UriRouteInfo<?, ?>>> appRoutes, Map<String, List<UriRouteInfo<?, ?>>> micronautRoutes) { }
 }
