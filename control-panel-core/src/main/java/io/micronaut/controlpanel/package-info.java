@@ -17,10 +17,9 @@
  * Control Panel package.
  */
 @Configuration
-@Requires(property = ControlPanelConfiguration.PREFIX + ".enabled", notEquals = StringUtils.FALSE)
-package io.micronaut.controlpanel.core;
+@Requires(condition = ControlPanelEnabledCondition.class)
+package io.micronaut.controlpanel;
 
 import io.micronaut.context.annotation.Configuration;
 import io.micronaut.context.annotation.Requires;
-import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
-import io.micronaut.core.util.StringUtils;
+import io.micronaut.controlpanel.core.config.ControlPanelEnabledCondition;
