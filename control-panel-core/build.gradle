@@ -6,4 +6,6 @@ dependencies {
     api(mn.micronaut.router)
 
     testImplementation mn.micronaut.http
+    testImplementation mn.micronaut.management
+    testImplementation projects.micronautControlPanelManagement
 }

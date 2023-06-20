@@ -59,9 +59,9 @@ class ControlPanelControllerSpec extends Specification {
         controlPanelName                     || expectedCurrentCategoryId
         "routes"                             || ControlPanel.Category.MAIN.id()
         "beans"                              || ControlPanel.Category.MAIN.id()
+        "env"                                || ControlPanel.Category.MAIN.id()
         "loggers"                            || ControlPanel.Category.MAIN.id()
         "health"                             || ControlPanel.Category.MAIN.id()
-        "loggers"                            || ControlPanel.Category.MAIN.id()
         "test"                               || "application"
     }
 
