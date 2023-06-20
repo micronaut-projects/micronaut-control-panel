@@ -22,6 +22,7 @@ micronaut-docs = "2.0.0"
 micronaut-test = "4.0.0-M6"
 micronaut-views = '4.0.0-M5'
 micronaut-reactor = '3.0.0-M6'
+micronaut-logging = "1.0.0-M3"
 groovy = '4.0.12'
 spock = '2.3-groovy-4.0'
 micronaut-gradle-plugin = "4.0.0-M4"
@@ -33,6 +34,7 @@ micronaut-gradle-plugin = "4.0.0-M4"
 [libraries]
 micronaut-views = { module = 'io.micronaut.views:micronaut-views-bom', version.ref = 'micronaut-views' }
 micronaut-reactor = { module = 'io.micronaut.reactor:micronaut-reactor-bom', version.ref = 'micronaut-reactor' }
+micronaut-logging = { module = "io.micronaut.logging:micronaut-logging-bom", version.ref = "micronaut-logging" }
 handlebars-humanize = { module = 'com.github.jknack:handlebars-humanize' }
 
 # Plugins

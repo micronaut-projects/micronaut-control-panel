@@ -24,4 +24,5 @@ micronautBuild {
     importMicronautCatalog()
     importMicronautCatalog("micronaut-views")
     importMicronautCatalog("micronaut-reactor")
+    importMicronautCatalog("micronaut-logging")
 }
