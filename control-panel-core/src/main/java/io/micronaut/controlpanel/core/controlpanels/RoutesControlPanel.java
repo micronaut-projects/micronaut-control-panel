@@ -62,7 +62,7 @@ public class RoutesControlPanel implements ControlPanel {
     }
 
     @Override
-    public Map<String, Object> getModel() {
+    public Map<String, Object> getBody() {
         return Map.of(
             "appRoutes", appRoutes,
             "micronautRoutes", micronautRoutes

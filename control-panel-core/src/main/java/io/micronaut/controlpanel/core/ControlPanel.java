@@ -41,19 +41,18 @@ public interface ControlPanel extends Named, Ordered, Toggleable {
 
 
     /**
-     * The model is used to render the body of the control panel.
+     * Used to render the body of the control panel.
      *
      * @return the model of the control panel.
      */
-    //TODO: introduce a type for the model
-    Map<String, Object> getModel();
+    Map<String, Object> getBody();
 
     /**
      * {@link View} that will be used to render the body of the control panel.
      *
      * @return the view of the control panel.
      */
-    default View getBody() {
+    default View getBodyView() {
         return new View("/views/" + getName() + "/body");
     }
 

@@ -72,7 +72,7 @@ public class BeansControlPanel implements ControlPanel {
     }
 
     @Override
-    public Map<String, Object> getModel() {
+    public Map<String, Object> getBody() {
         return Map.of(
             "micronautBeansByPackage", micronautBeansByPackage,
             "otherBeansByPackage", otherBeansByPackage

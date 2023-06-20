@@ -48,7 +48,7 @@ public class HealthControlPanel implements ControlPanel {
     }
 
     @Override
-    public Map<String, Object> getModel() {
+    public Map<String, Object> getBody() {
         HealthResult healthResult = Mono.from(endpoint.getHealth(null)).block();
         return Map.of(
             "healthResult", healthResult

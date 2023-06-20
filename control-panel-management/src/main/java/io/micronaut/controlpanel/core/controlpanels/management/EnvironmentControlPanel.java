@@ -52,7 +52,7 @@ public class EnvironmentControlPanel implements ControlPanel {
     }
 
     @Override
-    public Map<String, Object> getModel() {
+    public Map<String, Object> getBody() {
         Map<String, Object> environmentInfo = endpoint.getEnvironmentInfo();
         return Map.of(
             "environmentInfo", environmentInfo

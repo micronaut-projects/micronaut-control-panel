@@ -5,7 +5,7 @@
 </style>
 
 <div class="card-columns">
-    {{#each controlPanels as |controlPanel|}}
+    {{#each ext.controlPanels as |controlPanel|}}
         <div class="card card-primary">
             <div class="card-header">
                 <div class="row">
@@ -30,7 +30,7 @@
 
             </div>
             <div class="card-body">
-                {{> (lookup . 'controlPanel.body.file') parameter=controlPanel }}
+                {{> (lookup . 'controlPanel.bodyView.file') parameter=controlPanel }}
             </div>
         </div>
         {{#mod @index 4 0}}

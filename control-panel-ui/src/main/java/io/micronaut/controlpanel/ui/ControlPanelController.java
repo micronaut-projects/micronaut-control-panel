@@ -18,15 +18,16 @@ package io.micronaut.controlpanel.ui;
 import io.micronaut.context.env.Environment;
 import io.micronaut.controlpanel.core.ControlPanel;
 import io.micronaut.controlpanel.core.ControlPanelRepository;
-import io.micronaut.core.version.VersionUtils;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.runtime.ApplicationConfiguration;
+import io.micronaut.runtime.context.scope.Refreshable;
 import io.micronaut.views.View;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Control panel web controller to render the UI.
@@ -35,17 +36,17 @@ import java.util.Optional;
  * @since 1.0.0
  */
 @Controller("/control-panel")
+@Refreshable
 public class ControlPanelController {
 
     private final ControlPanelRepository repository;
-
-    private final ApplicationConfiguration applicationConfiguration;
-    private final Environment environment;
+    private final String applicationName;
+    private final Set<String> activeEnvironments;
 
     public ControlPanelController(ControlPanelRepository repository, ApplicationConfiguration applicationConfiguration, Environment environment) {
         this.repository = repository;
-        this.applicationConfiguration = applicationConfiguration;
-        this.environment = environment;
+        this.applicationName = applicationConfiguration.getName().orElse("(unnamed)");
+        this.activeEnvironments = environment.getActiveNames();
     }
 
     /**
@@ -55,7 +56,7 @@ public class ControlPanelController {
      */
     @View("layout")
     @Get
-    public Map<String, Object> index() {
+    public Model index() {
         return byCategory(ControlPanel.Category.MAIN.id());
     }
 
@@ -68,20 +69,17 @@ public class ControlPanelController {
      */
     @View("layout")
     @Get("/categories/{categoryId}")
-    public Map<String, Object> byCategory(String categoryId) {
+    public Model byCategory(String categoryId) {
+        Map<String, Object> extraProperties = new HashMap<>();
         List<ControlPanel.Category> categories = repository.findAllCategories();
-        Optional<ControlPanel.Category> optionalCategory = repository.findCategoryById(categoryId);
-        List<ControlPanel> controlPanels = repository.findAllByCategory(categoryId);
-        return Map.of(
-            "micronautVersion", VersionUtils.getMicronautVersion(),
-            "applicationName", applicationConfiguration.getName().orElse("(unnamed)"),
-            "activeEnvironments", environment.getActiveNames(),
-            "controlPanels", controlPanels,
-            "categories", categories,
-            "currentCategory", optionalCategory.get(),
-            "contentView", "index"
-        );
 
+        List<ControlPanel> controlPanels = repository.findAllByCategory(categoryId);
+        extraProperties.put("controlPanels", controlPanels);
+
+        Optional<ControlPanel.Category> optionalCategory = repository.findCategoryById(categoryId);
+        optionalCategory.ifPresent(category -> extraProperties.put("currentCategory", category));
+
+        return new Model(categories, applicationName, activeEnvironments, Model.ContentView.INDEX, extraProperties);
     }
 
     /**
@@ -93,23 +91,16 @@ public class ControlPanelController {
      */
     @View("layout")
     @Get("/{controlPanelName}")
-    public Map<String, Object> detail(String controlPanelName) {
+    public Model detail(String controlPanelName) {
         List<ControlPanel.Category> categories = repository.findAllCategories();
-        Map<String, Object> response = new HashMap<>();
-        response.put("micronautVersion", VersionUtils.getMicronautVersion());
-        response.put("applicationName", applicationConfiguration.getName().orElse("(unnamed)"));
-        response.put("activeEnvironments", environment.getActiveNames());
-        response.put("categories", categories);
-        response.put("contentView", "detail");
+        Map<String, Object> extraProperties = new HashMap<>();
 
         Optional<ControlPanel> optionalControlPanel = repository.findByName(controlPanelName);
         if (optionalControlPanel.isPresent()) {
+            extraProperties.put("controlPanel", optionalControlPanel.get());
             Optional<ControlPanel.Category> optionalCategory = repository.findCategoryById(optionalControlPanel.get().getCategory().id());
-            response.putAll(Map.of(
-                "controlPanel", optionalControlPanel.get(),
-                "currentCategory", optionalCategory.get()
-            ));
+            optionalCategory.ifPresent(category -> extraProperties.put("currentCategory", category));
         }
-        return response;
+        return new Model(categories, applicationName, activeEnvironments, Model.ContentView.DETAIL, extraProperties);
     }
 }

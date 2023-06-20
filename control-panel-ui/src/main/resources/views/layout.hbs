@@ -212,7 +212,7 @@
                     </h5>
                     <span id="globalAlertMessage"></span>
                 </div>
-                {{> (stringFormat "views/%s" contentView) }}
+                {{> (stringFormat "views/%s" (lower contentView)) }}
             </div>
         </section>
     </div>

@@ -57,7 +57,7 @@ public class LoggersControlPanel implements ControlPanel {
     }
 
     @Override
-    public Map<String, Object> getModel() {
+    public Map<String, Object> getBody() {
         LinkedHashMap<String, Map<String, Object>> loggers = getLoggers()
             .sorted(Comparator.comparing(LoggerConfiguration::getName))
             .collect(Collectors.toMap(LoggerConfiguration::getName, LoggerConfiguration::getData, (oldValue, newValue) -> oldValue, LinkedHashMap::new));
