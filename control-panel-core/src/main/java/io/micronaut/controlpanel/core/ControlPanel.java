@@ -15,10 +15,6 @@
  */
 package io.micronaut.controlpanel.core;
 
-import io.micronaut.core.naming.Named;
-import io.micronaut.core.order.Ordered;
-import io.micronaut.core.util.Toggleable;
-
 import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
 
 /**
@@ -29,16 +25,12 @@ import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
  * @author Álvaro Sánchez-Mariscal
  * @since 1.0.0
  */
-public interface ControlPanel<B> extends Named, Ordered, Toggleable {
+public interface ControlPanel<B> extends ConfigurableControlPanel {
 
-
-    /**
-     * The title is displayed in the header of the card UI element.
-     *
-     * @return the title of the control panel.
-     */
-    String getTitle();
-
+    @Override
+    default boolean isEnabled() {
+        return DEFAULT_ENABLED;
+    }
 
     /**
      * Used to render the body of the control panel.
@@ -73,15 +65,6 @@ public interface ControlPanel<B> extends Named, Ordered, Toggleable {
      */
     default String getBadge() {
         return EMPTY_STRING;
-    }
-
-    /**
-     * Icon class of the card UI element.
-     *
-     * @return the icon class of the control panel.
-     */
-    default String getIcon() {
-        return "fa-cog";
     }
 
     /**

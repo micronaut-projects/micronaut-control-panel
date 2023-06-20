@@ -1,5 +1,6 @@
 package io.micronaut.controlpanel.ui
 
+import io.micronaut.controlpanel.core.ConfigurableControlPanel
 import io.micronaut.controlpanel.core.ControlPanel
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import jakarta.inject.Inject
@@ -67,6 +68,12 @@ class ControlPanelControllerSpec extends Specification {
 
     @Singleton
     static class DummyControlPanel implements ControlPanel<String> {
+
+        @Override
+        String getIcon() {
+            return ConfigurableControlPanel.DEFAULT_ICON
+        }
+
         @Override
         String getTitle() {
             return "Test Control Panel"

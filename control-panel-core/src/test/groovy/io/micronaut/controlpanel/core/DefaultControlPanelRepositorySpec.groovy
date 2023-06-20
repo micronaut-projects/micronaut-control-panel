@@ -90,6 +90,12 @@ class DefaultControlPanelRepositorySpec extends Specification {
 
     @Singleton
     static class DummyControlPanel implements ControlPanel<String> {
+
+        @Override
+        String getIcon() {
+            return ConfigurableControlPanel.DEFAULT_ICON
+        }
+
         @Override
         String getTitle() {
             return "Test Control Panel"

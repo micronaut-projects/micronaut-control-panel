@@ -17,6 +17,7 @@ package io.micronaut.controlpanel.core.config;
 
 import io.micronaut.context.annotation.ConfigurationProperties;
 import io.micronaut.context.env.Environment;
+import io.micronaut.core.bind.annotation.Bindable;
 import io.micronaut.core.util.Toggleable;
 
 import java.util.Set;
@@ -28,32 +29,21 @@ import java.util.Set;
  * @since 1.0.0
  */
 @ConfigurationProperties(ControlPanelModuleConfiguration.PREFIX)
-public class ControlPanelModuleConfiguration implements Toggleable {
+public interface ControlPanelModuleConfiguration extends Toggleable {
 
-    public static final boolean DEFAULT_ENABLED = true;
-    public static final Set<String> DEFAULT_ALLOWED_ENVIRONMENTS = Set.of(Environment.DEVELOPMENT, Environment.TEST);
+    String DEFAULT_ENABLED = "true";
+    String DEFAULT_ALLOWED_ENVIRONMENTS = Environment.DEVELOPMENT + "," + Environment.TEST;
 
-    public static final String PREFIX = "micronaut.control-panel";
-    public static final String PROPERTY_ENABLED = PREFIX + ".enabled";
-    public static final String PROPERTY_ALLOWED_ENVIRONMENTS = PREFIX + ".allowed-environments";
-
-    private boolean enabled = DEFAULT_ENABLED;
-
-    private Set<String> allowedEnvironments = DEFAULT_ALLOWED_ENVIRONMENTS;
+    String PREFIX = "micronaut.control-panel";
+    String PROPERTY_ENABLED = PREFIX + ".enabled";
+    String PROPERTY_ALLOWED_ENVIRONMENTS = PREFIX + ".allowed-environments";
 
     /**
      * Enables/disables the control panel module. Default value: {@value #DEFAULT_ENABLED}.
-     *
-     * @param enabled {@code true} to enable the module, {@code false} to disable it.
      */
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
     @Override
-    public boolean isEnabled() {
-        return enabled;
-    }
+    @Bindable(defaultValue = DEFAULT_ENABLED)
+    boolean isEnabled();
 
     /**
      * Configures the environments where the control panel module is enabled. By default, it is
@@ -61,16 +51,7 @@ public class ControlPanelModuleConfiguration implements Toggleable {
      *
      * @return the environments where the control panel module is enabled.
      */
-    public Set<String> getAllowedEnvironments() {
-        return allowedEnvironments;
-    }
+    @Bindable(defaultValue = DEFAULT_ALLOWED_ENVIRONMENTS)
+    Set<String> getAllowedEnvironments();
 
-    /**
-     * Configures the environments where the control panel module is enabled.
-     *
-     * @param allowedEnvironments the environments where the control panel module is enabled.
-     */
-    public void setAllowedEnvironments(Set<String> allowedEnvironments) {
-        this.allowedEnvironments = allowedEnvironments;
-    }
 }
