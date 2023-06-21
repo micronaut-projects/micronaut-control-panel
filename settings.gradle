@@ -16,6 +16,8 @@ include 'control-panel-core'
 include 'control-panel-management'
 include 'control-panel-ui'
 
+include 'doc-examples:example-java'
+
 enableFeaturePreview 'TYPESAFE_PROJECT_ACCESSORS'
 
 micronautBuild {

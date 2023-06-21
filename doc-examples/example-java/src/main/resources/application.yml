@@ -1,0 +1,19 @@
+micronaut:
+  control-panel:
+    panels:
+      my-application:
+        title: My Application Control Panel
+  application:
+    name: myApplication
+netty:
+  default:
+    allocator:
+      max-order: 3
+endpoints:
+  all:
+    enabled: true
+    sensitive: false
+  health:
+    details-visible: ANONYMOUS
+  loggers:
+    write-sensitive: false
