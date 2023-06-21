@@ -33,7 +33,6 @@ import java.util.Set;
  * @since 1.0.0
  */
 @Controller(ControlPanelApi.PATH)
-@Refreshable
 public class ControlPanelController implements ControlPanelApi {
 
     private final ControlPanelRepository repository;
