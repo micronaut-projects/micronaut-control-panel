@@ -1,0 +1,6 @@
+All Control Panels are configurable with the following properties:
+
+include::{includedir}configurationProperties/io.micronaut.controlpanel.core.config.ControlPanelConfiguration.adoc[]
+
+For example, to disable the routes control panel, set the property
+`micronaut.control-panel.panels.routes.enabled` to `false`.

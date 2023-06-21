@@ -1,7 +1,11 @@
-introduction:
-  title: Introduction
+introduction: Introduction
 releaseHistory: Release History
-quickStart:
-  title: Quick Start
+quickStart: Quick Start
+controlPanels:
+  title: Available Control Panels
+  builtIn: Built-in
+  management: Management
+
+custom: Creating Custom Control Panels
 repository: Repository
 

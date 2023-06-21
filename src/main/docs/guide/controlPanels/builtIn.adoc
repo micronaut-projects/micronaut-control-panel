@@ -1,0 +1,20 @@
+The following control panels are available by default with the UI module:
+
+* `routes`: displays information about the available HTTP routes.
+
+=== HTTP Routes
+
+This panel relies on the
+https://docs.micronaut.io/latest/guide/#routesEndpoint[Routes Endpoint] to display the information. This endpoint
+is sensitive by default, so if you want to see the HTTP routes in the control panel, you need to configure the
+endpoint to be accessible to anonymous users in the environments where the control panel is enabled:
+
+IMPORTANT: Make sure this is done in an environment-specific configuration file, for example, `application-dev.yml`.
+
+.Configuring the Routes Endpoint
+[configuration]
+----
+endpoints:
+  routes:
+    sensitive: false
+----

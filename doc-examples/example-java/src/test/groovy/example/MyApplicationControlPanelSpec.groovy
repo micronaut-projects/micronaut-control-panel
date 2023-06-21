@@ -22,8 +22,8 @@ class MyApplicationControlPanelSpec extends Specification {
 
         then:
         panel.title == "My Application Control Panel"
-        panel.icon == "fa-cog"
-        panel.order == 0
+        panel.icon == "fa-plug"
+        panel.order == 10
         panel.body == "This is an application-provided control panel. This text is coming from the body."
 
         cleanup:

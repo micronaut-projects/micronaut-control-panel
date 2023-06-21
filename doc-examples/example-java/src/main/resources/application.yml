@@ -1,8 +1,12 @@
+#tag::control-panel[]
 micronaut:
   control-panel:
     panels:
       my-application:
-        title: My Application Control Panel
+        title: My Application Control Panel # <1>
+        icon: fa-plug # <2>
+        order: 10 # <3>
+#end::control-panel[]
   application:
     name: myApplication
 netty:

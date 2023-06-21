@@ -1,0 +1,75 @@
+You can add your own control panels to the Control Panel UI. Creating custom panels requires the following:
+
+* An implementation of the api:controlpanel.core.ControlPanel[] interface.
+* Some configuration values.
+* The views.
+
+The Control Panel UI uses the open-source https://github.com/ColorlibHQ/AdminLTE[AdminLTE] template, including
+https://getbootstrap.com/docs/4.6/[Bootstrap] and https://fontawesome.com/search?o=r&m=free[Font Awesome].
+
+The categories are used to group the control panels in the UI. Categories are rendered as left side menu items. There is
+a default category called `Dashboard` that is used for all control panels that don't specify a category.
+
+=== Control Panel Implementation
+
+The easiest way to implement a custom panel is to extend from
+api:controlpanel.core.AbstractControlPanel[]. For example:
+
+snippet::example.MyApplicationControlPanel[project-base="doc-examples/example", source="main", indent="0", tags="class"]
+
+<1> The `String` type parameter indicates the object type of the body. You can use your own classes or records to return
+    custom data to the view. In this example, the control panel only returns a message.
+<2> Unique name for your control panel. This is used for the configuration properties prefix. In this case:
+    `micronaut.control-panel.panels.my-application`.
+<3> Call the parent constructor. You could inject any other beans in this constructor.
+<4> The category under which the control panel will be displayed, if other than the default.
+
+Check the api:controlpanel.core.ControlPanel[] interface to see the other methods that can be overridden, for example,
+to display a badge in the control panel header.
+
+=== Configuration
+
+There are some values for the UI that can be configured:
+
+[configuration]
+----
+include::doc-examples/example-java/src/main/resources/application.yml[tags=control-panel]
+----
+
+<1> Title to be displayed in the control panel headeer.
+<2> Icon class (from Font Awesome) of the control panel.
+<3> The order in which the control panel will be displayed in the UI.
+
+=== Views
+
+For rendering the views, the Control Panel uses
+https://micronaut-projects.github.io/micronaut-views/latest/guide/[Micronaut Views] with
+https://micronaut-projects.github.io/micronaut-views/latest/guide/#handlebars[Handlebars.java] templates.
+
+Each control panel needs to provide 2 views: one for the control panel list, that can contain a summary of the
+information to be displayed, and another one for the detailed view. The must be placed in a `views/<panel-name>` directory
+on the classpath, and names `body.hbs` and `detail.hbs`, respectively. For example, in the above example:
+
+.`src/main/resources/views/my-application/body.hbs`.
+[source, html]
+----
+include::doc-examples/example-java/src/main/resources/views/my-application/body.hbs[]
+----
+
+The api:controlpanel.core.ControlPanel[] instance (`MyApplicationControlPanel` in this case) is stored on the Handlebars
+context, so you can implicitly access its methods and properties. For example, to access the badge:
+
+.`src/main/resources/views/my-application/body.hbs`.
+[source, html]
+----
+include::control-panel-management/src/main/resources/views/beans/body.hbs[]
+----
+
+In the case of the detail view, the control panel instance is passed as an implicit `controlPanel` variable. For example,
+to access the body of our control panel example:
+
+.`src/main/resources/views/my-application/detail.hbs`.
+[source, html]
+----
+include::doc-examples/example-java/src/main/resources/views/my-application/detail.hbs[]
+----

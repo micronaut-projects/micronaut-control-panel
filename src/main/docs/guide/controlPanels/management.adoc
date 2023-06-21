@@ -1,0 +1,107 @@
+To add the management panels, include the following dependency:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-management[scope=developmentOnly]
+
+Note that you also need the
+https://docs.micronaut.io/latest/guide/#management[Management] module:
+
+dependency:io.micronaut.:micronaut-management[scope=runtimeOnly]
+
+The following panels are available:
+
+* `health`: Application Health
+* `env`: Environment Properties
+* `beans`: Bean Definitions
+* `loggers`: Logging Configuration
+
+=== Application Heath
+
+This panel displays the health information of your application, and relies on the
+https://docs.micronaut.io/latest/guide/#healthEndpoint[Health Endpoint] to display its information. Note that, by
+default, the health endpoint only displays the details to authenticated users. To be able to see the details in the
+control panel, you need to configure the health endpoint to expose the details to unauthenticated users:
+
+IMPORTANT: Make sure this is done in an environment-specific configuration file, for example, `application-dev.yml`.
+
+.Configuring the Health Endpoint to expose details to anonymous users
+[configuration]
+----
+endpoints:
+  health:
+    details-visible: ANONYMOUS
+----
+
+=== Environment Properties
+
+This panel displays all the configuration properties resolved, and relies on the
+https://docs.micronaut.io/latest/guide/#environmentEndpoint[Environment Endpoint] to display all the properties. This
+endpoint is disabled and sensitive (requires authentication to display the information) by default, so you need to
+configure it to be enabled and accessible to anonymous users in the environments where the control panel is enabled:
+
+IMPORTANT: Make sure this is done in an environment-specific configuration file, for example, `application-dev.yml`.
+
+.Configuring the Environment Endpoint
+[configuration]
+----
+endpoints:
+  env:
+    enabled: true
+    sensitive: false
+----
+
+Also, by default, all the values will be masked. If you want to see the actual configuration values in the control panel,
+you need to provide an implementation of the
+https://docs.micronaut.io/latest/api/io/micronaut/management/endpoint/env/EnvironmentEndpointFilter.html[`EnvironmentEndpointFilter`]
+interface and register it as a bean. For example:
+
+.Displaying the actual configuration values
+[source,java]
+----
+@Singleton
+@Requires(env = Environment.DEVELOPMENT)
+public class AllPlainEnvironmentEndpointFilter implements EnvironmentEndpointFilter {
+
+    @Override
+    public void specifyFiltering(@NonNull EnvironmentFilterSpecification specification) {
+        specification.legacyMasking();
+    }
+}
+----
+
+This will show all values apart from those that contain the words `password`, `credential`, `certificate`, `key`,
+`secret` or `token` anywhere in their name.
+
+=== Bean Definitions
+
+This panel displays all the beans, and their relationships, grouped by packages. It relies on the
+https://docs.micronaut.io/latest/guide/#beansEndpoint[Beans Endpoint] to display all the bean definitions. This endpoint
+is sensitive by default, so if you want to see the bean definitions in the control panel, you need to configure the
+endpoint to be accessible to anonymous users in the environments where the control panel is enabled:
+
+IMPORTANT: Make sure this is done in an environment-specific configuration file, for example, `application-dev.yml`.
+
+.Configuring the Beans Endpoint
+[configuration]
+----
+endpoints:
+  beans:
+    sensitive: false
+----
+
+=== Logging Configuration
+
+This panel allows you to view and re-configure the logging levels without restarting the application. It relies on the
+https://docs.micronaut.io/latest/guide/#loggersEndpoint[Loggers Endpoint] to display and update the logging levels. This
+endpoint is disabled by default, so if you want to manage the logging configuration in the control panel, you need to
+enable the endpoint. Also, by default, the endpoint is read-only, so you need to configure it to be writable:
+
+IMPORTANT: Make sure this is done in an environment-specific configuration file, for example, `application-dev.yml`.
+
+.Configuring the Loggers Endpoint
+[configuration]
+----
+endpoints:
+  loggers:
+    enabled: true
+    write-sensitive: false
+----

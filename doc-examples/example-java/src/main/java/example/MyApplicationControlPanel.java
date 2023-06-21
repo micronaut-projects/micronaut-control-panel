@@ -5,13 +5,14 @@ import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 
+//tag::class[]
 @Singleton
-public class MyApplicationControlPanel extends AbstractControlPanel<String> {
+public class MyApplicationControlPanel extends AbstractControlPanel<String> { // <1>
 
-    private static final String NAME = "my-application";
+    private static final String NAME = "my-application"; // <2>
 
     public MyApplicationControlPanel(@Named(NAME) ControlPanelConfiguration configuration) {
-        super(NAME, configuration);
+        super(NAME, configuration); // <3>
     }
 
     @Override
@@ -21,6 +22,7 @@ public class MyApplicationControlPanel extends AbstractControlPanel<String> {
 
     @Override
     public Category getCategory() {
-        return new Category(NAME, "My Application", "fa-copy");
+        return new Category(NAME, "My Application", "fa-copy"); // <4>
     }
 }
+//end::class[]

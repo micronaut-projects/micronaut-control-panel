@@ -1,1 +1,25 @@
-TODO
+To get started, add the UI module as a runtime dependency:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-ui[scope=developmentOnly]
+
+Then, add the control panel modules that you want. For example, if you already have the
+`io.micronaut:micronaut-management` module, you can add the `micronaut-control-panel-management` module:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-management[scope=developmentOnly]
+
+By default, the Control Panel is only enabled in the `dev` or `test` environments. You can change this and other settings
+in your configuration file:
+
+include::{includedir}configurationProperties/io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration.adoc[]
+
+Therefore, make sure you activate the appropriate environments when running locally, for example, using
+https://docs.micronaut.io/latest/guide/#_default_environment[default environments]:
+
+[source,bash]
+----
+# For Maven:
+MICRONAUT_ENVIRONMENTS=dev ./mvnw mn:run
+
+# For Gradle:
+MICRONAUT_ENVIRONMENTS=dev ./gradlew run
+----
