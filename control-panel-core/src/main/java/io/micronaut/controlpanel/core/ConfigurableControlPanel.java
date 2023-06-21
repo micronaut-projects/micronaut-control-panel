@@ -15,7 +15,6 @@
  */
 package io.micronaut.controlpanel.core;
 
-import io.micronaut.core.bind.annotation.Bindable;
 import io.micronaut.core.naming.Named;
 import io.micronaut.core.order.Ordered;
 import io.micronaut.core.util.Toggleable;
@@ -28,16 +27,11 @@ import io.micronaut.core.util.Toggleable;
  */
 public interface ConfigurableControlPanel extends Named, Ordered, Toggleable {
 
-    String DEFAULT_ICON = "fa-cog";
-    boolean DEFAULT_ENABLED = true;
-    String DEFAULT_ENABLED_STRING = "" + DEFAULT_ENABLED;
 
     /**
-     * Enables/disables this control panel. Default value: {@value #DEFAULT_ENABLED}.
+     * @return whether this control panel is enabled or not.
      */
-
     @Override
-    @Bindable(defaultValue = DEFAULT_ENABLED_STRING)
     boolean isEnabled();
 
     /**
@@ -48,10 +42,9 @@ public interface ConfigurableControlPanel extends Named, Ordered, Toggleable {
     String getTitle();
 
     /**
-     * Icon class of the card UI element.
+     * Icon CSS class of the card UI element.
      *
      * @return the icon class of the control panel.
      */
-    @Bindable(defaultValue = DEFAULT_ICON)
     String getIcon();
 }

@@ -12,12 +12,15 @@ class EnvironmentControlPanelSpec extends Specification {
         def ctx = ApplicationContext.run(["endpoints.env.enabled": true])
 
         when:
-        def environmentControlPanel = ctx.getBean(EnvironmentControlPanel)
+        def panel = ctx.getBean(EnvironmentControlPanel)
 
         then:
-        environmentControlPanel.body.activeEnvironments == [Environment.TEST] as Set
-        (environmentControlPanel.body.packages as List) == [EnvironmentControlPanel.class.packageName]
-        environmentControlPanel.body.propertySources.size() == 3 //env, system, context
+        panel.title == "Environment Properties"
+        panel.icon == "fa-sliders"
+        panel.order == 10
+        panel.body.activeEnvironments == [Environment.TEST] as Set
+        (panel.body.packages as List) == [EnvironmentControlPanel.class.packageName]
+        panel.body.propertySources.size() == 4 //env, system, context and control-panel
 
         cleanup:
         ctx.stop()

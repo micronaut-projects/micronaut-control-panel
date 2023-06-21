@@ -75,6 +75,11 @@ class ControlPanelControllerSpec extends Specification {
         }
 
         @Override
+        boolean isEnabled() {
+            return false
+        }
+
+        @Override
         String getTitle() {
             return "Test Control Panel"
         }

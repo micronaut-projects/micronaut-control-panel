@@ -17,11 +17,14 @@ package io.micronaut.controlpanel.core.controlpanels.management;
 
 import io.micronaut.context.BeanContext;
 import io.micronaut.context.annotation.Requires;
-import io.micronaut.controlpanel.core.ControlPanel;
+import io.micronaut.controlpanel.core.AbstractControlPanel;
+import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
+import io.micronaut.core.util.StringUtils;
 import io.micronaut.inject.BeanDefinition;
 import io.micronaut.management.endpoint.beans.BeansEndpoint;
 import io.micronaut.management.endpoint.beans.impl.DefaultBeanDefinitionData;
 import io.micronaut.runtime.context.scope.Refreshable;
+import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 
 import java.util.Comparator;
@@ -39,38 +42,35 @@ import java.util.stream.Collectors;
  * @since 1.0.0
  */
 @Singleton
-@Requires(beans = BeansEndpoint.class)
 @Refreshable
-public class BeansControlPanel implements ControlPanel<BeansControlPanel.Body> {
+@Requires(beans = BeansEndpoint.class)
+@Requires(property = BeansControlPanel.ENABLED_PROPERTY, notEquals = StringUtils.FALSE)
+public class BeansControlPanel extends AbstractControlPanel<BeansControlPanel.Body> {
+
+    public static final String NAME = "beans";
+    public static final String ENABLED_PROPERTY = ControlPanelConfiguration.PREFIX + "." + NAME + ".enabled";
+
+    private static final Function<BeanDefinition<?>, String> BY_PACKAGE =
+        bd -> bd.getBeanType().getPackage().getName();
+
+    private static final Function<BeanDefinition<?>, String> BY_MICRONAUT_PACKAGE =
+        bd -> bd.getBeanType().getPackage().getName().replaceAll("io\\.micronaut\\.(\\w+).*", "$1");
+
+    private static final Comparator<Object> COMPARATOR_BY_NAME = Comparator.comparing(bd -> bd.getClass().getName());
+
+    private static final Predicate<BeanDefinition<?>> IS_MICRONAUT_PACKAGE =
+        bd -> bd.getBeanType().getPackage().getName().startsWith("io.micronaut");
 
     private final Body body;
+
     private final long beanDefinitionsCount;
 
-    public BeansControlPanel(BeanContext beanContext, DefaultBeanDefinitionData beanDefinitionData) {
-        Function<BeanDefinition<?>, String> byPackage = beanDefinition -> beanDefinition.getBeanType().getPackage().getName();
-        Function<BeanDefinition<?>, String> byMicronautPackage = beanDefinition -> beanDefinition.getBeanType().getPackage().getName().replaceAll("io\\.micronaut\\.(\\w+).*", "$1");
-        var byName = Comparator.comparing(bd -> bd.getClass().getName());
-        Predicate<BeanDefinition<?>> isMicronautPackage = bd -> bd.getBeanType().getPackage().getName().startsWith("io.micronaut");
-        var allBeanDefinitions = beanContext.getAllBeanDefinitions();
-        var micronautBeansByPackage = allBeanDefinitions
-            .stream()
-            .filter(isMicronautPackage)
-            .sorted(byName)
-            .collect(Collectors.groupingBy(byMicronautPackage, LinkedHashMap::new, Collectors.mapping(beanDefinitionData::getData, Collectors.toList())));
-
-        var otherBeansByPackage = allBeanDefinitions
-            .stream()
-            .filter(isMicronautPackage.negate())
-            .sorted(byName)
-            .collect(Collectors.groupingBy(byPackage, LinkedHashMap::new, Collectors.mapping(beanDefinitionData::getData, Collectors.toList())));
-
+    public BeansControlPanel(BeanContext beanContext, DefaultBeanDefinitionData beanDefinitionData, @Named(NAME) ControlPanelConfiguration configuration) {
+        super(NAME, configuration);
+        var micronautBeansByPackage = computeBeansByPackage(beanContext, beanDefinitionData, IS_MICRONAUT_PACKAGE, BY_MICRONAUT_PACKAGE);
+        var otherBeansByPackage = computeBeansByPackage(beanContext, beanDefinitionData, IS_MICRONAUT_PACKAGE.negate(), BY_PACKAGE);
         this.body = new Body(micronautBeansByPackage, otherBeansByPackage);
-        this.beanDefinitionsCount = allBeanDefinitions.size();
-    }
-
-    @Override
-    public String getTitle() {
-        return "Bean Definitions";
+        this.beanDefinitionsCount = beanContext.getAllBeanDefinitions().size();
     }
 
     @Override
@@ -79,28 +79,16 @@ public class BeansControlPanel implements ControlPanel<BeansControlPanel.Body> {
     }
 
     @Override
-    public Category getCategory() {
-        return Category.MAIN;
-    }
-
-    @Override
-    public String getName() {
-        return "beans";
-    }
-
-    @Override
     public String getBadge() {
         return String.valueOf(beanDefinitionsCount);
     }
 
-    @Override
-    public int getOrder() {
-        return HealthControlPanel.ORDER + 30;
-    }
-
-    @Override
-    public String getIcon() {
-        return "fa-plug";
+    private LinkedHashMap<String, List<Map<String, Object>>> computeBeansByPackage(BeanContext beanContext, DefaultBeanDefinitionData beanDefinitionData, Predicate<BeanDefinition<?>> filter, Function<BeanDefinition<?>, String> groupBy) {
+        return beanContext.getAllBeanDefinitions()
+            .stream()
+            .filter(filter)
+            .sorted(COMPARATOR_BY_NAME)
+            .collect(Collectors.groupingBy(groupBy, LinkedHashMap::new, Collectors.mapping(beanDefinitionData::getData, Collectors.toList())));
     }
 
     record Body(

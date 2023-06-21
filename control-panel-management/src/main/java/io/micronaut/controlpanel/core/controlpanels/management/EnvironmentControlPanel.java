@@ -17,9 +17,12 @@ package io.micronaut.controlpanel.core.controlpanels.management;
 
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.env.Environment;
-import io.micronaut.controlpanel.core.ControlPanel;
+import io.micronaut.controlpanel.core.AbstractControlPanel;
+import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
+import io.micronaut.core.util.StringUtils;
 import io.micronaut.management.endpoint.env.EnvironmentEndpoint;
 import io.micronaut.runtime.context.scope.Refreshable;
+import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 
 import java.util.Map;
@@ -32,15 +35,19 @@ import java.util.stream.StreamSupport;
  * @since 1.0.0
  */
 @Singleton
-@Requires(beans = EnvironmentEndpoint.class)
 @Refreshable
-public class EnvironmentControlPanel implements ControlPanel<Map<String, Object>> {
+@Requires(beans = EnvironmentEndpoint.class)
+@Requires(property = EnvironmentControlPanel.ENABLED_PROPERTY, notEquals = StringUtils.FALSE)
+public class EnvironmentControlPanel extends AbstractControlPanel<Map<String, Object>> {
 
+    public static final String NAME = EnvironmentEndpoint.NAME;
+    public static final String ENABLED_PROPERTY = ControlPanelConfiguration.PREFIX + "." + NAME + ".enabled";
     private final EnvironmentEndpoint endpoint;
 
     private final long totalProperties;
 
-    public EnvironmentControlPanel(EnvironmentEndpoint endpoint, Environment environment) {
+    public EnvironmentControlPanel(EnvironmentEndpoint endpoint, Environment environment, @Named(NAME) ControlPanelConfiguration configuration) {
+        super(NAME, configuration);
         this.endpoint = endpoint;
         this.totalProperties = environment.getPropertySources().stream()
             .map(ps -> StreamSupport.stream(ps.spliterator(), false).count())
@@ -49,23 +56,8 @@ public class EnvironmentControlPanel implements ControlPanel<Map<String, Object>
     }
 
     @Override
-    public String getTitle() {
-        return "Environment properties";
-    }
-
-    @Override
     public Map<String, Object> getBody() {
         return endpoint.getEnvironmentInfo();
-    }
-
-    @Override
-    public Category getCategory() {
-        return Category.MAIN;
-    }
-
-    @Override
-    public String getName() {
-        return EnvironmentEndpoint.NAME;
     }
 
     @Override
@@ -73,13 +65,4 @@ public class EnvironmentControlPanel implements ControlPanel<Map<String, Object>
         return String.valueOf(totalProperties);
     }
 
-    @Override
-    public int getOrder() {
-        return HealthControlPanel.ORDER + 10;
-    }
-
-    @Override
-    public String getIcon() {
-        return "fa-sliders";
-    }
 }

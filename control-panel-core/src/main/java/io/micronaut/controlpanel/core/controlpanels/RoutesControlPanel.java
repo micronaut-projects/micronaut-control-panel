@@ -15,10 +15,14 @@
  */
 package io.micronaut.controlpanel.core.controlpanels;
 
-import io.micronaut.controlpanel.core.ControlPanel;
+import io.micronaut.context.annotation.Requires;
+import io.micronaut.controlpanel.core.AbstractControlPanel;
+import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
+import io.micronaut.core.util.StringUtils;
 import io.micronaut.runtime.context.scope.Refreshable;
 import io.micronaut.web.router.Router;
 import io.micronaut.web.router.UriRouteInfo;
+import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 
 import java.util.Comparator;
@@ -37,26 +41,29 @@ import java.util.stream.Collectors;
  */
 @Singleton
 @Refreshable
-public class RoutesControlPanel implements ControlPanel<RoutesControlPanel.Body> {
+@Requires(property = RoutesControlPanel.ENABLED_PROPERTY, notEquals = StringUtils.FALSE)
+public class RoutesControlPanel extends AbstractControlPanel<RoutesControlPanel.Body> {
 
-    private static final int ORDER = 20;
+    public static final String NAME = "routes";
+    public static final String ENABLED_PROPERTY = ControlPanelConfiguration.PREFIX + "." + NAME + ".enabled";
+
+    private static final Function<UriRouteInfo<?, ?>, String> KEY_MAPPER =
+        r -> r.getTargetMethod().getDeclaringType().getName();
+
+    private static final Comparator<UriRouteInfo<?, ?>> COMPARATOR_BY_URI =
+        Comparator.comparing(r -> r.getUriMatchTemplate().toPathString());
+
+    private static final Predicate<UriRouteInfo<?, ?>> IS_MICRONAUT_ROUTE =
+        r -> r.getTargetMethod().getDeclaringType().getPackage().getName().startsWith("io.micronaut");
+
     private final Body body;
+
     private final String badge;
 
-    public RoutesControlPanel(Router router) {
-        Function<UriRouteInfo<?, ?>, String> keyMapper = r -> r.getTargetMethod().getDeclaringType().getName();
-        Comparator<UriRouteInfo<?, ?>> byUri = Comparator.comparing(r -> r.getUriMatchTemplate().toPathString());
-        Predicate<UriRouteInfo<?, ?>> isMicronautRoute = r -> r.getTargetMethod().getDeclaringType().getPackage().getName().startsWith("io.micronaut");
-
-        var appRoutes = router.uriRoutes()
-            .filter(isMicronautRoute.negate())
-            .sorted(byUri.thenComparing(UriRouteInfo::getHttpMethodName))
-            .collect(Collectors.groupingBy(keyMapper, LinkedHashMap::new, Collectors.toList()));
-        var micronautRoutes = router.uriRoutes()
-            .filter(isMicronautRoute)
-            .sorted(byUri.thenComparing(UriRouteInfo::getHttpMethodName))
-            .collect(Collectors.groupingBy(keyMapper, LinkedHashMap::new, Collectors.toList()));
-
+    public RoutesControlPanel(Router router, @Named(NAME) ControlPanelConfiguration configuration) {
+        super(NAME, configuration);
+        var appRoutes = computeRoutes(router, IS_MICRONAUT_ROUTE.negate());
+        var micronautRoutes = computeRoutes(router, IS_MICRONAUT_ROUTE);
         int totalAppRoutes = appRoutes.values().stream().mapToInt(List::size).sum();
         int totalMicronautRoutes = micronautRoutes.values().stream().mapToInt(List::size).sum();
 
@@ -65,23 +72,8 @@ public class RoutesControlPanel implements ControlPanel<RoutesControlPanel.Body>
     }
 
     @Override
-    public String getTitle() {
-        return "HTTP Routes";
-    }
-
-    @Override
     public Body getBody() {
         return body;
-    }
-
-    @Override
-    public Category getCategory() {
-        return Category.MAIN;
-    }
-
-    @Override
-    public String getName() {
-        return "routes";
     }
 
     @Override
@@ -89,14 +81,11 @@ public class RoutesControlPanel implements ControlPanel<RoutesControlPanel.Body>
         return badge;
     }
 
-    @Override
-    public int getOrder() {
-        return ORDER;
-    }
-
-    @Override
-    public String getIcon() {
-        return "fa-route";
+    private static LinkedHashMap<String, List<UriRouteInfo<?, ?>>> computeRoutes(Router router, Predicate<UriRouteInfo<?, ?>> filter) {
+        return router.uriRoutes()
+            .filter(filter)
+            .sorted(COMPARATOR_BY_URI.thenComparing(UriRouteInfo::getHttpMethodName))
+            .collect(Collectors.groupingBy(KEY_MAPPER, LinkedHashMap::new, Collectors.toList()));
     }
 
     record Body(Map<String, List<UriRouteInfo<?, ?>>> appRoutes, Map<String, List<UriRouteInfo<?, ?>>> micronautRoutes) { }

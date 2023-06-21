@@ -28,13 +28,16 @@ import io.micronaut.core.annotation.NonNull;
  */
 @EachProperty(ControlPanelConfiguration.PREFIX)
 public class ControlPanelConfiguration implements ConfigurableControlPanel {
+    public static final String DEFAULT_ICON = "fa-cog";
+    public static final boolean DEFAULT_ENABLED = true;
+
     public static final String PREFIX = ControlPanelModuleConfiguration.PREFIX + ".panels";
 
     private String name;
-    private boolean enabled;
+    private boolean enabled = DEFAULT_ENABLED;
     private int order;
     private String title;
-    private String icon;
+    private String icon = DEFAULT_ICON;
 
     public ControlPanelConfiguration(@Parameter String name) {
         this.name = name;

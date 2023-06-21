@@ -16,11 +16,14 @@
 package io.micronaut.controlpanel.core.controlpanels.management;
 
 import io.micronaut.context.annotation.Requires;
-import io.micronaut.controlpanel.core.ControlPanel;
+import io.micronaut.controlpanel.core.AbstractControlPanel;
+import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
+import io.micronaut.core.util.StringUtils;
 import io.micronaut.logging.LogLevel;
 import io.micronaut.management.endpoint.loggers.LoggerConfiguration;
 import io.micronaut.management.endpoint.loggers.LoggersEndpoint;
 import io.micronaut.management.endpoint.loggers.ManagedLoggingSystem;
+import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 
 import java.util.Arrays;
@@ -39,19 +42,19 @@ import java.util.stream.Stream;
  */
 @Singleton
 @Requires(beans = { LoggersEndpoint.class, ManagedLoggingSystem.class })
-public class LoggersControlPanel implements ControlPanel<LoggersControlPanel.Body> {
+@Requires(property = LoggersControlPanel.ENABLED_PROPERTY, notEquals = StringUtils.FALSE)
+public class LoggersControlPanel extends AbstractControlPanel<LoggersControlPanel.Body> {
+
+    public static final String NAME = LoggersEndpoint.NAME;
+    public static final String ENABLED_PROPERTY = ControlPanelConfiguration.PREFIX + "." + NAME + ".enabled";
 
     private final ManagedLoggingSystem loggingSystem;
     private final List<LogLevel> levels;
 
-    public LoggersControlPanel(ManagedLoggingSystem loggingSystem) {
+    public LoggersControlPanel(ManagedLoggingSystem loggingSystem, @Named(NAME) ControlPanelConfiguration configuration) {
+        super(NAME, configuration);
         this.loggingSystem = loggingSystem;
         this.levels = Arrays.asList(LogLevel.values());
-    }
-
-    @Override
-    public String getTitle() {
-        return "Loggers";
     }
 
     @Override
@@ -64,28 +67,8 @@ public class LoggersControlPanel implements ControlPanel<LoggersControlPanel.Bod
     }
 
     @Override
-    public Category getCategory() {
-        return Category.MAIN;
-    }
-
-    @Override
-    public String getName() {
-        return LoggersEndpoint.NAME;
-    }
-
-    @Override
     public String getBadge() {
         return String.valueOf(getLoggers().count());
-    }
-
-    @Override
-    public int getOrder() {
-        return HealthControlPanel.ORDER + 40;
-    }
-
-    @Override
-    public String getIcon() {
-        return "fa-file-lines";
     }
 
     private Stream<LoggerConfiguration> getLoggers() {

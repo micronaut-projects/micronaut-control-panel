@@ -1,6 +1,7 @@
 package io.micronaut.controlpanel.core
 
 import io.micronaut.context.ApplicationContext
+import io.micronaut.controlpanel.core.config.ControlPanelConfiguration
 import jakarta.inject.Singleton
 import spock.lang.AutoCleanup
 import spock.lang.Shared
@@ -93,7 +94,12 @@ class DefaultControlPanelRepositorySpec extends Specification {
 
         @Override
         String getIcon() {
-            return ConfigurableControlPanel.DEFAULT_ICON
+            return ControlPanelConfiguration.DEFAULT_ICON
+        }
+
+        @Override
+        boolean isEnabled() {
+            return true
         }
 
         @Override

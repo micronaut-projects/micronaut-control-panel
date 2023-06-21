@@ -16,9 +16,12 @@
 package io.micronaut.controlpanel.core.controlpanels.management;
 
 import io.micronaut.context.annotation.Requires;
-import io.micronaut.controlpanel.core.ControlPanel;
+import io.micronaut.controlpanel.core.AbstractControlPanel;
+import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
+import io.micronaut.core.util.StringUtils;
 import io.micronaut.management.endpoint.health.HealthEndpoint;
 import io.micronaut.management.health.indicator.HealthResult;
+import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import reactor.core.publisher.Mono;
 
@@ -30,43 +33,22 @@ import reactor.core.publisher.Mono;
  */
 @Singleton
 @Requires(beans = HealthEndpoint.class)
-public class HealthControlPanel implements ControlPanel<HealthResult> {
+@Requires(property = HealthControlPanel.ENABLED_PROPERTY, notEquals = StringUtils.FALSE)
+public class HealthControlPanel extends AbstractControlPanel<HealthResult> {
 
-    public static final int ORDER = 0;
+    public static final String NAME = HealthEndpoint.NAME;
+    public static final String ENABLED_PROPERTY = ControlPanelConfiguration.PREFIX + "." + NAME + ".enabled";
 
     private final HealthEndpoint endpoint;
 
-    public HealthControlPanel(HealthEndpoint endpoint) {
+    public HealthControlPanel(HealthEndpoint endpoint, @Named(NAME) ControlPanelConfiguration configuration) {
+        super(NAME, configuration);
         this.endpoint = endpoint;
     }
-
-    @Override
-    public String getTitle() {
-        return "Application health";
-    }
-
+    
     @Override
     public HealthResult getBody() {
         return Mono.from(endpoint.getHealth(null)).block();
     }
 
-    @Override
-    public Category getCategory() {
-        return Category.MAIN;
-    }
-
-    @Override
-    public String getName() {
-        return HealthEndpoint.NAME;
-    }
-
-    @Override
-    public int getOrder() {
-        return ORDER;
-    }
-
-    @Override
-    public String getIcon() {
-        return "fa-laptop-medical";
-    }
 }

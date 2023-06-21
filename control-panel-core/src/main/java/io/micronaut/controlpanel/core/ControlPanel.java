@@ -27,11 +27,6 @@ import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
  */
 public interface ControlPanel<B> extends ConfigurableControlPanel {
 
-    @Override
-    default boolean isEnabled() {
-        return DEFAULT_ENABLED;
-    }
-
     /**
      * Used to render the body of the control panel.
      *
@@ -72,7 +67,9 @@ public interface ControlPanel<B> extends ConfigurableControlPanel {
      *
      * @return the category of the control panel.
      */
-    Category getCategory();
+    default Category getCategory() {
+        return Category.MAIN;
+    }
 
     /**
      * Control panels are grouped by category. Categories are used to render the menu items of the
