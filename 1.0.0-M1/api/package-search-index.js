@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"io.micronaut.controlpanel.core"},{"l":"io.micronaut.controlpanel.core.config"},{"l":"io.micronaut.controlpanel.core.panels"},{"l":"io.micronaut.controlpanel.panels.management"},{"l":"io.micronaut.controlpanel.ui"}];updateSearchResults();
