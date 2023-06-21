@@ -1,4 +1,4 @@
-package io.micronaut.controlpanel.core.controlpanels
+package io.micronaut.controlpanel.core.panels
 
 import io.micronaut.context.ApplicationContext
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration

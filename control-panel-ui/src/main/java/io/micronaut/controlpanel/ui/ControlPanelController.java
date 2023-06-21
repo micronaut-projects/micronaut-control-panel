@@ -20,7 +20,6 @@ import io.micronaut.controlpanel.core.ControlPanel;
 import io.micronaut.controlpanel.core.ControlPanelRepository;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.runtime.ApplicationConfiguration;
-import io.micronaut.runtime.context.scope.Refreshable;
 import io.micronaut.views.View;
 import java.util.HashMap;
 import java.util.Map;

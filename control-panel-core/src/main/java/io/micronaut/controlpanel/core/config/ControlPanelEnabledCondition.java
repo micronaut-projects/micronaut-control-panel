@@ -24,7 +24,7 @@ import java.util.Collections;
 
 
 /**
- * Condition that checks if the control panel module is enabled.
+ * Condition that checks if the control panel module should be enabled.
  */
 @Internal
 public class ControlPanelEnabledCondition implements Condition {

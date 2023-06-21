@@ -1,4 +1,4 @@
-package io.micronaut.controlpanel.core.controlpanels.management
+package io.micronaut.controlpanel.panels.management
 
 import io.micronaut.context.ApplicationContext
 import io.micronaut.context.env.Environment

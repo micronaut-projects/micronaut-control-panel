@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.micronaut.controlpanel.core.controlpanels.management;
+package io.micronaut.controlpanel.panels.management;
 
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.controlpanel.core.AbstractControlPanel;
@@ -45,7 +45,7 @@ public class HealthControlPanel extends AbstractControlPanel<HealthResult> {
         super(NAME, configuration);
         this.endpoint = endpoint;
     }
-    
+
     @Override
     public HealthResult getBody() {
         return Mono.from(endpoint.getHealth(null)).block();
