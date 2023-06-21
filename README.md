@@ -7,17 +7,10 @@
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=micronaut-projects_micronaut-template&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=micronaut-projects_micronaut-template)
 [![Revved up by Gradle Enterprise](https://img.shields.io/badge/Revved%20up%20by-Gradle%20Enterprise-06A0CE?logo=Gradle&labelColor=02303A)](https://ge.micronaut.io/scans)
 
-Micronaut control-panel
+The Micronaut Control Panel module provides a web UI that allows you to view and manage the state of your Micronaut
+application, typically in a development environment.
 
-## Reference links
-
-* [AdminLTE Docs](https://adminlte.io/docs/3.2/components/cards.html)
-* [AdminLTE Demo](https://adminlte.io/themes/v3/pages/UI/general.html)
-* [Bootstrap Docs](https://getbootstrap.com/docs/4.0/components/alerts/)
-* [handlebars.java docs](https://jknack.github.io/handlebars.java/)
-* [handlebars.java repo](https://github.com/jknack/handlebars.java)
-* [Handlebars Docs](https://handlebarsjs.com/guide/partials.html#basic-partials)
-* [Font Awesome](https://fontawesome.com/search?q=reload&o=r&m=free)
+![Micronaut Control Panel](src/main/docs/resources/img/control-panel.png)
 
 ## Documentation
 
