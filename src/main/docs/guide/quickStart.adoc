@@ -23,3 +23,5 @@ MICRONAUT_ENVIRONMENTS=dev ./mvnw mn:run
 # For Gradle:
 MICRONAUT_ENVIRONMENTS=dev ./gradlew run
 ----
+
+Once the application is running, you can access the control panel at http://localhost:8080/control-panel.

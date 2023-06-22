@@ -34,9 +34,12 @@ public interface ControlPanelModuleConfiguration extends Toggleable {
     String DEFAULT_ENABLED = "true";
     String DEFAULT_ALLOWED_ENVIRONMENTS = Environment.DEVELOPMENT + "," + Environment.TEST;
 
+    String DEFAULT_PATH = "/control-panel";
+
     String PREFIX = "micronaut.control-panel";
     String PROPERTY_ENABLED = PREFIX + ".enabled";
     String PROPERTY_ALLOWED_ENVIRONMENTS = PREFIX + ".allowed-environments";
+    String PROPERTY_PATH = PREFIX + ".path";
 
     /**
      * Enables/disables the control panel module. Default value: {@value #DEFAULT_ENABLED}.
@@ -53,5 +56,13 @@ public interface ControlPanelModuleConfiguration extends Toggleable {
      */
     @Bindable(defaultValue = DEFAULT_ALLOWED_ENVIRONMENTS)
     Set<String> getAllowedEnvironments();
+
+    /**
+     * Configures the path where the control panel can be accessed. Default value: {@value #DEFAULT_PATH}.
+     *
+     * @return the path where the control panel module is available.
+     */
+    @Bindable(defaultValue = DEFAULT_PATH)
+    String getPath();
 
 }

@@ -15,6 +15,7 @@
  */
 package io.micronaut.controlpanel.ui;
 
+import io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration;
 import io.micronaut.http.annotation.Get;
 
 /**
@@ -25,8 +26,7 @@ import io.micronaut.http.annotation.Get;
  */
 public interface ControlPanelApi {
 
-    //TODO make configurable
-    String PATH = "/control-panel";
+    String PATH = "${" + ControlPanelModuleConfiguration.PROPERTY_PATH + ":" + ControlPanelModuleConfiguration.DEFAULT_PATH + "}";
 
     /**
      * Renders the index view.
