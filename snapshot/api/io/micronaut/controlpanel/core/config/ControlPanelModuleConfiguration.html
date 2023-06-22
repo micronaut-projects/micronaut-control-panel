@@ -105,13 +105,19 @@ extends io.micronaut.core.util.Toggleable</span></div>
 <div class="col-second odd-row-color"><code><a href="#DEFAULT_ENABLED" class="member-name-link">DEFAULT_ENABLED</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
 <div class="col-first even-row-color"><code>static final <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
-<div class="col-second even-row-color"><code><a href="#PREFIX" class="member-name-link">PREFIX</a></code></div>
+<div class="col-second even-row-color"><code><a href="#DEFAULT_PATH" class="member-name-link">DEFAULT_PATH</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
 <div class="col-first odd-row-color"><code>static final <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
-<div class="col-second odd-row-color"><code><a href="#PROPERTY_ALLOWED_ENVIRONMENTS" class="member-name-link">PROPERTY_ALLOWED_ENVIRONMENTS</a></code></div>
+<div class="col-second odd-row-color"><code><a href="#PREFIX" class="member-name-link">PREFIX</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
 <div class="col-first even-row-color"><code>static final <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
-<div class="col-second even-row-color"><code><a href="#PROPERTY_ENABLED" class="member-name-link">PROPERTY_ENABLED</a></code></div>
+<div class="col-second even-row-color"><code><a href="#PROPERTY_ALLOWED_ENVIRONMENTS" class="member-name-link">PROPERTY_ALLOWED_ENVIRONMENTS</a></code></div>
+<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><code>static final <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second odd-row-color"><code><a href="#PROPERTY_ENABLED" class="member-name-link">PROPERTY_ENABLED</a></code></div>
+<div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-first even-row-color"><code>static final <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color"><code><a href="#PROPERTY_PATH" class="member-name-link">PROPERTY_PATH</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
 </div>
 </section>
@@ -132,9 +138,14 @@ extends io.micronaut.core.util.Toggleable</span></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
 <div class="block">Configures the environments where the control panel module is enabled.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>boolean</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#isEnabled()" class="member-name-link">isEnabled</a>()</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getPath()" class="member-name-link">getPath</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="block">Configures the path where the control panel can be accessed.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>boolean</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#isEnabled()" class="member-name-link">isEnabled</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
 <div class="block">Enables/disables the control panel module.</div>
 </div>
 </div>
@@ -174,6 +185,20 @@ extends io.micronaut.core.util.Toggleable</span></div>
 <dd>
 <ul class="see-list">
 <li><a href="../../../../../constant-values.html#io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration.DEFAULT_ALLOWED_ENVIRONMENTS">Constant Field Values</a></li>
+</ul>
+</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="DEFAULT_PATH">
+<h3>DEFAULT_PATH</h3>
+<div class="member-signature"><span class="modifiers">static final</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">DEFAULT_PATH</span></div>
+<dl class="notes">
+<dt>See Also:</dt>
+<dd>
+<ul class="see-list">
+<li><a href="../../../../../constant-values.html#io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration.DEFAULT_PATH">Constant Field Values</a></li>
 </ul>
 </dd>
 </dl>
@@ -221,6 +246,20 @@ extends io.micronaut.core.util.Toggleable</span></div>
 </dl>
 </section>
 </li>
+<li>
+<section class="detail" id="PROPERTY_PATH">
+<h3>PROPERTY_PATH</h3>
+<div class="member-signature"><span class="modifiers">static final</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">PROPERTY_PATH</span></div>
+<dl class="notes">
+<dt>See Also:</dt>
+<dd>
+<ul class="see-list">
+<li><a href="../../../../../constant-values.html#io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration.PROPERTY_PATH">Constant Field Values</a></li>
+</ul>
+</dd>
+</dl>
+</section>
+</li>
 </ul>
 </section>
 </li>
@@ -251,6 +290,18 @@ extends io.micronaut.core.util.Toggleable</span></div>
 <dl class="notes">
 <dt>Returns:</dt>
 <dd>the environments where the control panel module is enabled.</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="getPath()">
+<h3>getPath</h3>
+<div class="member-signature"><span class="annotations">@Bindable(defaultValue="/control-panel")
+</span><span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">getPath</span>()</div>
+<div class="block">Configures the path where the control panel can be accessed. Default value: <a href="#DEFAULT_PATH">"/control-panel"</a>.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the path where the control panel module is available.</dd>
 </dl>
 </section>
 </li>
