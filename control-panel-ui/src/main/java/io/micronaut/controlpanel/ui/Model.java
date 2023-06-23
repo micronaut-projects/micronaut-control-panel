@@ -29,6 +29,8 @@ import java.util.Set;
  * @param applicationName The application name.
  * @param activeEnvironments The active environments.
  * @param contentView The content view.
+ * @param canRefresh Whether the host application can be refreshed.
+ * @param canStop Whether the host application can be stopped.
  * @param ext Any additional data to be passed to the view.
  */
 public record Model(
@@ -36,6 +38,8 @@ public record Model(
     String applicationName,
     Set<String> activeEnvironments,
     ContentView contentView,
+    boolean canRefresh,
+    boolean canStop,
     Map<String, Object> ext) {
 
     /**
