@@ -82,10 +82,12 @@ loadScripts(document, 'script');</script>
 <dd><code><span id="param-applicationName">applicationName</span></code> - The application name.</dd>
 <dd><code><span id="param-activeEnvironments">activeEnvironments</span></code> - The active environments.</dd>
 <dd><code><span id="param-contentView">contentView</span></code> - The content view.</dd>
+<dd><code><span id="param-canRefresh">canRefresh</span></code> - Whether the host application can be refreshed.</dd>
+<dd><code><span id="param-canStop">canStop</span></code> - Whether the host application can be stopped.</dd>
 <dd><code><span id="param-ext">ext</span></code> - Any additional data to be passed to the view.</dd>
 </dl>
 <hr>
-<div class="type-signature"><span class="modifiers">public record </span><span class="element-name type-name-label">Model</span>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="../core/ControlPanel.Category.html" title="class in io.micronaut.controlpanel.core">ControlPanel.Category</a>&gt;&nbsp;categories, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;applicationName, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Set.html" title="class or interface in java.util" class="external-link">Set</a>&lt;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;&nbsp;activeEnvironments, io.micronaut.controlpanel.ui.Model.ContentView&nbsp;contentView, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Map.html" title="class or interface in java.util" class="external-link">Map</a>&lt;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>,<wbr><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&gt;&nbsp;ext)
+<div class="type-signature"><span class="modifiers">public record </span><span class="element-name type-name-label">Model</span>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="../core/ControlPanel.Category.html" title="class in io.micronaut.controlpanel.core">ControlPanel.Category</a>&gt;&nbsp;categories, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;applicationName, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Set.html" title="class or interface in java.util" class="external-link">Set</a>&lt;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;&nbsp;activeEnvironments, io.micronaut.controlpanel.ui.Model.ContentView&nbsp;contentView, boolean&nbsp;canRefresh, boolean&nbsp;canStop, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Map.html" title="class or interface in java.util" class="external-link">Map</a>&lt;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>,<wbr><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&gt;&nbsp;ext)
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Record.html" title="class or interface in java.lang" class="external-link">Record</a></span></div>
 <div class="block">Model to be passed to the view for rendering.</div>
 </section>
@@ -99,10 +101,12 @@ loadScripts(document, 'script');</script>
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Constructor</div>
 <div class="table-header col-last">Description</div>
-<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(java.util.List,java.lang.String,java.util.Set,io.micronaut.controlpanel.ui.Model.ContentView,java.util.Map)" class="member-name-link">Model</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="../core/ControlPanel.Category.html" title="class in io.micronaut.controlpanel.core">ControlPanel.Category</a>&gt;&nbsp;categories,
+<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(java.util.List,java.lang.String,java.util.Set,io.micronaut.controlpanel.ui.Model.ContentView,boolean,boolean,java.util.Map)" class="member-name-link">Model</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="../core/ControlPanel.Category.html" title="class in io.micronaut.controlpanel.core">ControlPanel.Category</a>&gt;&nbsp;categories,
  <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;applicationName,
  <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Set.html" title="class or interface in java.util" class="external-link">Set</a>&lt;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;&nbsp;activeEnvironments,
  io.micronaut.controlpanel.ui.Model.ContentView&nbsp;contentView,
+ boolean&nbsp;canRefresh,
+ boolean&nbsp;canStop,
  <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Map.html" title="class or interface in java.util" class="external-link">Map</a>&lt;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>,<wbr><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&gt;&nbsp;ext)</code></div>
 <div class="col-last even-row-color">
 <div class="block">Creates an instance of a <code>Model</code> record class.</div>
@@ -130,6 +134,16 @@ loadScripts(document, 'script');</script>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#applicationName()" class="member-name-link">applicationName</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns the value of the <a href="#param-applicationName"><code>applicationName</code></a> record component.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#canRefresh()" class="member-name-link">canRefresh</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Returns the value of the <a href="#param-canRefresh"><code>canRefresh</code></a> record component.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#canStop()" class="member-name-link">canStop</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Returns the value of the <a href="#param-canStop"><code>canStop</code></a> record component.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="../core/ControlPanel.Category.html" title="class in io.micronaut.controlpanel.core">ControlPanel.Category</a>&gt;</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#categories()" class="member-name-link">categories</a>()</code></div>
@@ -179,12 +193,14 @@ loadScripts(document, 'script');</script>
 <h2>Constructor Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="&lt;init&gt;(java.util.List,java.lang.String,java.util.Set,io.micronaut.controlpanel.ui.Model.ContentView,java.util.Map)">
+<section class="detail" id="&lt;init&gt;(java.util.List,java.lang.String,java.util.Set,io.micronaut.controlpanel.ui.Model.ContentView,boolean,boolean,java.util.Map)">
 <h3>Model</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">Model</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="../core/ControlPanel.Category.html" title="class in io.micronaut.controlpanel.core">ControlPanel.Category</a>&gt;&nbsp;categories,
  <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;applicationName,
  <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Set.html" title="class or interface in java.util" class="external-link">Set</a>&lt;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;&nbsp;activeEnvironments,
  io.micronaut.controlpanel.ui.Model.ContentView&nbsp;contentView,
+ boolean&nbsp;canRefresh,
+ boolean&nbsp;canStop,
  <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Map.html" title="class or interface in java.util" class="external-link">Map</a>&lt;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>,<wbr><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&gt;&nbsp;ext)</span></div>
 <div class="block">Creates an instance of a <code>Model</code> record class.</div>
 <dl class="notes">
@@ -193,6 +209,8 @@ loadScripts(document, 'script');</script>
 <dd><code>applicationName</code> - the value for the <a href="#param-applicationName"><code>applicationName</code></a> record component</dd>
 <dd><code>activeEnvironments</code> - the value for the <a href="#param-activeEnvironments"><code>activeEnvironments</code></a> record component</dd>
 <dd><code>contentView</code> - the value for the <a href="#param-contentView"><code>contentView</code></a> record component</dd>
+<dd><code>canRefresh</code> - the value for the <a href="#param-canRefresh"><code>canRefresh</code></a> record component</dd>
+<dd><code>canStop</code> - the value for the <a href="#param-canStop"><code>canStop</code></a> record component</dd>
 <dd><code>ext</code> - the value for the <a href="#param-ext"><code>ext</code></a> record component</dd>
 </dl>
 </section>
@@ -235,7 +253,7 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="equals(java.lang.Object)">
 <h3>equals</h3>
 <div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">equals</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&nbsp;o)</span></div>
-<div class="block">Indicates whether some other object is "equal to" this one. The objects are equal if the other object is of the same class and if all the record components are equal. All components in this record class are compared with <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Objects.html#equals(java.lang.Object,java.lang.Object)" title="class or interface in java.util" class="external-link"><code>Objects::equals(Object,Object)</code></a>.</div>
+<div class="block">Indicates whether some other object is "equal to" this one. The objects are equal if the other object is of the same class and if all the record components are equal. Reference components are compared with <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Objects.html#equals(java.lang.Object,java.lang.Object)" title="class or interface in java.util" class="external-link"><code>Objects::equals(Object,Object)</code></a>; primitive components are compared with '=='.</div>
 <dl class="notes">
 <dt>Specified by:</dt>
 <dd><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Record.html#equals(java.lang.Object)" title="class or interface in java.lang" class="external-link">equals</a></code>&nbsp;in class&nbsp;<code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Record.html" title="class or interface in java.lang" class="external-link">Record</a></code></dd>
@@ -287,6 +305,28 @@ loadScripts(document, 'script');</script>
 <dl class="notes">
 <dt>Returns:</dt>
 <dd>the value of the <a href="#param-contentView"><code>contentView</code></a> record component</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="canRefresh()">
+<h3>canRefresh</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">canRefresh</span>()</div>
+<div class="block">Returns the value of the <a href="#param-canRefresh"><code>canRefresh</code></a> record component.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the value of the <a href="#param-canRefresh"><code>canRefresh</code></a> record component</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="canStop()">
+<h3>canStop</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">canStop</span>()</div>
+<div class="block">Returns the value of the <a href="#param-canStop"><code>canStop</code></a> record component.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the value of the <a href="#param-canStop"><code>canStop</code></a> record component</dd>
 </dl>
 </section>
 </li>

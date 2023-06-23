@@ -84,6 +84,22 @@ loadScripts(document, 'script');</script>
 </dl>
 <h2 class="title" id="I:C">C</h2>
 <dl class="index">
+<dt><a href="io/micronaut/controlpanel/ui/Model.html#canRefresh()" class="member-name-link">canRefresh()</a> - Method in record class io.micronaut.controlpanel.ui.<a href="io/micronaut/controlpanel/ui/Model.html" title="class in io.micronaut.controlpanel.ui">Model</a></dt>
+<dd>
+<div class="block">Returns the value of the <a href="./io/micronaut/controlpanel/ui/Model.html#param-canRefresh"><code>canRefresh</code></a> record component.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/ui/util/EndpointUtils.html#canRefresh(io.micronaut.management.endpoint.refresh.RefreshEndpoint,io.micronaut.context.BeanContext)" class="member-name-link">canRefresh(RefreshEndpoint, BeanContext)</a> - Static method in class io.micronaut.controlpanel.ui.util.<a href="io/micronaut/controlpanel/ui/util/EndpointUtils.html" title="class in io.micronaut.controlpanel.ui.util">EndpointUtils</a></dt>
+<dd>
+<div class="block">Determines if the control panel can call the refresh endpoint.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/ui/Model.html#canStop()" class="member-name-link">canStop()</a> - Method in record class io.micronaut.controlpanel.ui.<a href="io/micronaut/controlpanel/ui/Model.html" title="class in io.micronaut.controlpanel.ui">Model</a></dt>
+<dd>
+<div class="block">Returns the value of the <a href="./io/micronaut/controlpanel/ui/Model.html#param-canStop"><code>canStop</code></a> record component.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/ui/util/EndpointUtils.html#canStop(io.micronaut.management.endpoint.stop.ServerStopEndpoint,io.micronaut.context.BeanContext)" class="member-name-link">canStop(ServerStopEndpoint, BeanContext)</a> - Static method in class io.micronaut.controlpanel.ui.util.<a href="io/micronaut/controlpanel/ui/util/EndpointUtils.html" title="class in io.micronaut.controlpanel.ui.util">EndpointUtils</a></dt>
+<dd>
+<div class="block">Determines if the control panel can call the stop endpoint.</div>
+</dd>
 <dt><a href="io/micronaut/controlpanel/ui/Model.html#categories()" class="member-name-link">categories()</a> - Method in record class io.micronaut.controlpanel.ui.<a href="io/micronaut/controlpanel/ui/Model.html" title="class in io.micronaut.controlpanel.ui">Model</a></dt>
 <dd>
 <div class="block">Returns the value of the <a href="./io/micronaut/controlpanel/ui/Model.html#param-categories"><code>categories</code></a> record component.</div>
@@ -141,7 +157,7 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Control panel web controller to render the UI.</div>
 </dd>
-<dt><a href="io/micronaut/controlpanel/ui/ControlPanelController.html#%3Cinit%3E(io.micronaut.controlpanel.core.ControlPanelRepository,io.micronaut.runtime.ApplicationConfiguration,io.micronaut.context.env.Environment)" class="member-name-link">ControlPanelController(ControlPanelRepository, ApplicationConfiguration, Environment)</a> - Constructor for class io.micronaut.controlpanel.ui.<a href="io/micronaut/controlpanel/ui/ControlPanelController.html" title="class in io.micronaut.controlpanel.ui">ControlPanelController</a></dt>
+<dt><a href="io/micronaut/controlpanel/ui/ControlPanelController.html#%3Cinit%3E(io.micronaut.controlpanel.core.ControlPanelRepository,io.micronaut.context.BeanContext,io.micronaut.management.endpoint.refresh.RefreshEndpoint,io.micronaut.management.endpoint.stop.ServerStopEndpoint)" class="member-name-link">ControlPanelController(ControlPanelRepository, BeanContext, RefreshEndpoint, ServerStopEndpoint)</a> - Constructor for class io.micronaut.controlpanel.ui.<a href="io/micronaut/controlpanel/ui/ControlPanelController.html" title="class in io.micronaut.controlpanel.ui">ControlPanelController</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/core/config/ControlPanelEnabledCondition.html" class="type-name-link" title="class in io.micronaut.controlpanel.core.config">ControlPanelEnabledCondition</a> - Class in <a href="io/micronaut/controlpanel/core/config/package-summary.html">io.micronaut.controlpanel.core.config</a></dt>
 <dd>
@@ -200,6 +216,10 @@ loadScripts(document, 'script');</script>
 <dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/panels/management/LoggersControlPanel.html#ENABLED_PROPERTY" class="member-name-link">ENABLED_PROPERTY</a> - Static variable in class io.micronaut.controlpanel.panels.management.<a href="io/micronaut/controlpanel/panels/management/LoggersControlPanel.html" title="class in io.micronaut.controlpanel.panels.management">LoggersControlPanel</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/ui/util/EndpointUtils.html" class="type-name-link" title="class in io.micronaut.controlpanel.ui.util">EndpointUtils</a> - Class in <a href="io/micronaut/controlpanel/ui/util/package-summary.html">io.micronaut.controlpanel.ui.util</a></dt>
+<dd>
+<div class="block">Utility methods for <code>Endpoint</code>.</div>
+</dd>
 <dt><a href="io/micronaut/controlpanel/panels/management/EnvironmentControlPanel.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.management">EnvironmentControlPanel</a> - Class in <a href="io/micronaut/controlpanel/panels/management/package-summary.html">io.micronaut.controlpanel.panels.management</a></dt>
 <dd>
 <div class="block">Control panel that displays information about the environment properties.</div>
@@ -379,6 +399,8 @@ loadScripts(document, 'script');</script>
 <dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/ui/package-summary.html">io.micronaut.controlpanel.ui</a> - package io.micronaut.controlpanel.ui</dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/ui/util/package-summary.html">io.micronaut.controlpanel.ui.util</a> - package io.micronaut.controlpanel.ui.util</dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/core/AbstractControlPanel.html#isEnabled()" class="member-name-link">isEnabled()</a> - Method in class io.micronaut.controlpanel.core.<a href="io/micronaut/controlpanel/core/AbstractControlPanel.html" title="class in io.micronaut.controlpanel.core">AbstractControlPanel</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/core/config/ControlPanelConfiguration.html#isEnabled()" class="member-name-link">isEnabled()</a> - Method in class io.micronaut.controlpanel.core.config.<a href="io/micronaut/controlpanel/core/config/ControlPanelConfiguration.html" title="class in io.micronaut.controlpanel.core.config">ControlPanelConfiguration</a></dt>
@@ -411,7 +433,7 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Model to be passed to the view for rendering.</div>
 </dd>
-<dt><a href="io/micronaut/controlpanel/ui/Model.html#%3Cinit%3E(java.util.List,java.lang.String,java.util.Set,io.micronaut.controlpanel.ui.Model.ContentView,java.util.Map)" class="member-name-link">Model(List&lt;ControlPanel.Category&gt;, String, Set&lt;String&gt;, Model.ContentView, Map&lt;String, Object&gt;)</a> - Constructor for record class io.micronaut.controlpanel.ui.<a href="io/micronaut/controlpanel/ui/Model.html" title="class in io.micronaut.controlpanel.ui">Model</a></dt>
+<dt><a href="io/micronaut/controlpanel/ui/Model.html#%3Cinit%3E(java.util.List,java.lang.String,java.util.Set,io.micronaut.controlpanel.ui.Model.ContentView,boolean,boolean,java.util.Map)" class="member-name-link">Model(List&lt;ControlPanel.Category&gt;, String, Set&lt;String&gt;, Model.ContentView, boolean, boolean, Map&lt;String, Object&gt;)</a> - Constructor for record class io.micronaut.controlpanel.ui.<a href="io/micronaut/controlpanel/ui/Model.html" title="class in io.micronaut.controlpanel.ui">Model</a></dt>
 <dd>
 <div class="block">Creates an instance of a <code>Model</code> record class.</div>
 </dd>

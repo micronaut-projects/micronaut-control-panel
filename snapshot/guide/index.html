@@ -311,6 +311,35 @@ MICRONAUT_ENVIRONMENTS=dev ./gradlew run</code></pre>
 <p>For example, to disable the routes control panel, set the property
 <code>micronaut.control-panel.panels.routes.enabled</code> to <code>false</code>.</p>
 </div>
+<div class="paragraph">
+<p>Beyond displaying the available panels, the control panel also allows to perform 2 additional actions, provided that the
+corresponding endpoints are enabled and non-sensitive:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Refresh</strong>: refreshing the application will cause all <code>@Refreshable</code> beans in the context to be destroyed and
+re-instantiated upon further requests. This requires the
+<a href="https://docs.micronaut.io/latest/guide/#refreshEndpoint">Refresh Endpoint</a> to be enabled and non-sensitive.</p>
+</li>
+<li>
+<p><strong>Stop</strong>: will shut down the application. This requires the
+<a href="https://docs.micronaut.io/latest/guide/#stopEndpoint">Stop Endpoint</a> to be enabled and non-sensitive.</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+Micronaut Endpoints require having the <code>io.micronanut:micronaut-management</code> dependency on the classpath.
+</td>
+</tr>
+</table>
+</div>
 
 <h2 id="builtIn"><a class="anchor" href="#builtIn"></a>4.1 Built-in</h2>
 
