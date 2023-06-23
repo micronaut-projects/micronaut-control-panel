@@ -47,17 +47,21 @@
 
         <!-- Right navbar links -->
         <ul class="navbar-nav ml-auto">
-            <li class="nav-item">
-                <a class="nav-link" id="refreshButton" role="button" data-toggle="modal" data-target="#stopRefreshModal" data-action="refresh">
-                    <i class="fas fa-arrows-rotate"></i>
-                </a>
-            </li>
+            {{#if canRefresh}}
+                <li class="nav-item">
+                    <a class="nav-link" id="refreshButton" role="button" data-toggle="modal" data-target="#stopRefreshModal" data-action="refresh">
+                        <i class="fas fa-arrows-rotate"></i>
+                    </a>
+                </li>
+            {{/if}}
 
-            <li class="nav-item">
-                <a class="nav-link" id="stopButton" role="button" data-toggle="modal" data-target="#stopRefreshModal" data-action="shutdown">
-                    <i class="fas fa-stop"></i>
-                </a>
-            </li>
+            {{#if canStop}}
+                <li class="nav-item">
+                    <a class="nav-link" id="stopButton" role="button" data-toggle="modal" data-target="#stopRefreshModal" data-action="shutdown">
+                        <i class="fas fa-stop"></i>
+                    </a>
+                </li>
+            {{/if}}
         </ul>
     </nav>
     <!-- /.navbar -->
