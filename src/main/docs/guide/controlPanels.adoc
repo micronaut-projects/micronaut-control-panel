@@ -4,3 +4,15 @@ include::{includedir}configurationProperties/io.micronaut.controlpanel.core.conf
 
 For example, to disable the routes control panel, set the property
 `micronaut.control-panel.panels.routes.enabled` to `false`.
+
+Beyond displaying the available panels, the control panel also allows to perform 2 additional actions, provided that the
+corresponding endpoints are enabled and non-sensitive:
+
+* *Refresh*: refreshing the application will cause all `@Refreshable` beans in the context to be destroyed and
+  re-instantiated upon further requests. This requires the
+  https://docs.micronaut.io/latest/guide/#refreshEndpoint[Refresh Endpoint] to be enabled and non-sensitive.
+
+* *Stop*: will shut down the application. This requires the
+  https://docs.micronaut.io/latest/guide/#stopEndpoint[Stop Endpoint] to be enabled and non-sensitive.
+
+WARNING: Micronaut Endpoints require having the `io.micronanut:micronaut-management` dependency on the classpath.
