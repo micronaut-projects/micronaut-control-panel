@@ -1,0 +1,1034 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <title>Micronaut Control Panel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="../css/main.css" type="text/css" media="screen, print" title="Style" charset="utf-8" />
+    <link rel="stylesheet" href="../css/custom.css" type="text/css" media="screen, print" title="Style" charset="utf-8" />
+    <link rel="stylesheet" href="../css/pdf.css" type="text/css" media="print" title="PDF" charset="utf-8" />
+    <link rel="stylesheet" href="../css/highlight/agate.css">
+    <script src="../js/highlight.pack.js"></script>
+    <script src="../js/guide.js"></script>
+    <script src="../js/multi-language-sample.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+    <link rel="stylesheet" href="../css/multi-language-sample.css"/>
+    <script src="../js/docs.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.5.13/clipboard.min.js"></script>
+    <script type="text/javascript">
+        function addJsClass(el) {
+            var classes = document.body.className.split(" ");
+            classes.push("js");
+            document.body.className = classes.join(" ");
+        }
+    </script>
+
+</head>
+
+<body class="body" id="docs" onload="addJsClass();" onhashchange="highlightMenu()">
+
+<div id="table-of-content-nav-link" class="desktop">
+    <a id="theme-switcher" title="Switch to dark theme" href="javascript:switchTheme(true)"><i class="fa fa-moon-o"></i></a>
+    <a title="Collapse/Open Table of contents" title="Hide Table of Contents" href="javascript:hideTableOfContents();" class="button">[ + ]</a>
+</div>
+
+<div id="main">
+    <div id="navigation" class="no-print">
+        <div class="navTitle">
+            <span id="logo"><a href="http://micronaut.io" title="Go to Micronaut Website"><img src="../img/micronaut-logo-white.svg" alt="Micronaut"/></a></span>
+        </div>
+        <div class="navLinks">
+            <ul>
+                    <li><div id="nav-summary" onmouseover="toggleNavSummary(false)" onmouseout="toggleNavSummary(true)" class="desktop">
+                            <a href="../guide/index.html" class="button">Table of contents</a>
+                            <div id="nav-summary-childs" style="display:none;">
+                                
+                                <div class="toc-item" style="margin-left:0"><a href="#introduction"><strong>1</strong><span>Introduction</span></a></div>
+                                
+                                <div class="toc-item" style="margin-left:0"><a href="#releaseHistory"><strong>2</strong><span>Release History</span></a></div>
+                                
+                                <div class="toc-item" style="margin-left:0"><a href="#quickStart"><strong>3</strong><span>Quick Start</span></a></div>
+                                
+                                <div class="toc-item" style="margin-left:0"><a href="#controlPanels"><strong>4</strong><span>Available Control Panels</span></a></div>
+                                
+                                <div class="toc-item" style="margin-left:0"><a href="#custom"><strong>5</strong><span>Creating Custom Control Panels</span></a></div>
+                                
+                                <div class="toc-item" style="margin-left:0"><a href="#repository"><strong>6</strong><span>Repository</span></a></div>
+                                
+                            </div>
+                        </div>
+                    </li>
+
+                <li id="table-of-content-nav-link-mobile" class="mobile">
+                    <a title="Scroll to Table of contents" href="javascript:scrollToTop();" class="button">Toc</a>
+                </li>
+                <li class="desktop">
+                    <a title="Go to API documentation" href="../api/index.html" class="button">API Reference</a>
+                </li>
+                <li class="mobile">
+                    <a title="Go to API documentation" href="../api/index.html" class="button">API</a>
+                </li>
+                <li class="desktop">
+                    <a title="Go to Configuration Reference documentation" href="../guide/configurationreference.html" class="button">Configuration Reference</a>
+                </li>
+                <li class="mobile">
+                    <a title="Go to Configuration Reference documentation" href="../guide/configurationreference.html" class="button">Conf</a>
+                </li>
+            </ul>
+
+        </div>
+    </div>
+    
+    <div id="table-of-content">
+        <div class="toc-content">
+
+        <h2>Table of Contents</h2>
+        
+        <div class="toc-item" style="margin-left:0px" id="toc-item-introduction"><a href="#introduction"><strong>1</strong><span>Introduction</span></a></div>
+        
+        <div class="toc-item" style="margin-left:0px" id="toc-item-releaseHistory"><a href="#releaseHistory"><strong>2</strong><span>Release History</span></a></div>
+        
+        <div class="toc-item" style="margin-left:0px" id="toc-item-quickStart"><a href="#quickStart"><strong>3</strong><span>Quick Start</span></a></div>
+        
+        <div class="toc-item" style="margin-left:0px" id="toc-item-controlPanels"><a href="#controlPanels"><strong>4</strong><span>Available Control Panels</span></a></div>
+        
+        <div class="toc-item" style="margin-left:10px" id="toc-item-builtIn"><a href="#builtIn"><strong>4.1</strong><span>Built-in</span></a></div>
+        
+        <div class="toc-item" style="margin-left:10px" id="toc-item-management"><a href="#management"><strong>4.2</strong><span>Management</span></a></div>
+        
+        <div class="toc-item" style="margin-left:0px" id="toc-item-custom"><a href="#custom"><strong>5</strong><span>Creating Custom Control Panels</span></a></div>
+        
+        <div class="toc-item" style="margin-left:0px" id="toc-item-repository"><a href="#repository"><strong>6</strong><span>Repository</span></a></div>
+        
+        </div>
+    </div>
+    
+    <div class="docs-content">
+    <div class="project">
+        <h1>Micronaut Control Panel</h1>
+        <p></p>
+        <p>The Micronaut Control Panel module provides a web UI that allows you to view and manage the state of your Micronaut application, typically in a development environment.</p>
+        <p><strong>Version:</strong> <select style='max-width: 200px' onChange='window.document.location.href=this.options[this.selectedIndex].value;'><option value='https://micronaut-projects.github.io/micronaut-control-panel/snapshot/guide/index.html'>SNAPSHOT</option><option value='https://micronaut-projects.github.io/micronaut-control-panel/latest/guide/index.html'>LATEST</option></select> </p>
+    </div>
+    
+<h1 id="introduction"><a class="anchor" href="#introduction"></a>1 Introduction</h1>
+
+<div class='contribute-btn'>
+    <button type='button' class='btn btn-default' onclick='window.location.href="https://github.com/micronaut-projects/micronaut-control-panel/edit/master/src/main/docs/guide/introduction.adoc"'>
+        <i class='fa fa-pencil-square-o'></i> Improve this doc
+    </button>
+</div>
+
+
+<div class="paragraph">
+<p>The Micronaut Control Panel module provides a web UI that allows you to view and manage the state of your Micronaut
+application, typically in a development environment.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../img/control-panel.png" alt="control panel">
+</div>
+</div>
+
+<h1 id="releaseHistory"><a class="anchor" href="#releaseHistory"></a>2 Release History</h1>
+
+<div class='contribute-btn'>
+    <button type='button' class='btn btn-default' onclick='window.location.href="https://github.com/micronaut-projects/micronaut-control-panel/edit/master/src/main/docs/guide/releaseHistory.adoc"'>
+        <i class='fa fa-pencil-square-o'></i> Improve this doc
+    </button>
+</div>
+
+
+<div class="paragraph">
+<p>For this project, you can find a list of releases (with release notes) here:</p>
+</div>
+<div class="paragraph">
+<p><a href="https://github.com/micronaut-projects/micronaut-control-panel/releases">https://github.com/micronaut-projects/micronaut-control-panel/releases</a></p>
+</div>
+
+<h1 id="quickStart"><a class="anchor" href="#quickStart"></a>3 Quick Start</h1>
+
+<div class='contribute-btn'>
+    <button type='button' class='btn btn-default' onclick='window.location.href="https://github.com/micronaut-projects/micronaut-control-panel/edit/master/src/main/docs/guide/quickStart.adoc"'>
+        <i class='fa fa-pencil-square-o'></i> Improve this doc
+    </button>
+</div>
+
+
+<div class="paragraph">
+<p>To get started, add the UI module as a runtime dependency:</p>
+</div>
+<div class="paragraph">
+<p>        <div class="listingblock multi-language-sample">
+<div class="title"></div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="gradle">developmentOnly(<span class="hljs-string">"io.micronaut.controlpanel:micronaut-control-panel-ui")</span></code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="maven">&lt;dependency&gt;
+    &lt;groupId&gt;io.micronaut.controlpanel&lt;/groupId&gt;
+    &lt;artifactId&gt;micronaut-control-panel-ui&lt;/artifactId&gt;
+    &lt;scope&gt;provided&lt;/scope&gt;
+&lt;/dependency&gt;</code></pre>
+</div>
+</div></p>
+</div>
+<div class="paragraph">
+<p>Then, add the control panel modules that you want. For example, if you already have the
+<code>io.micronaut:micronaut-management</code> module, you can add the <code>micronaut-control-panel-management</code> module:</p>
+</div>
+<div class="paragraph">
+<p>        <div class="listingblock multi-language-sample">
+<div class="title"></div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="gradle">developmentOnly(<span class="hljs-string">"io.micronaut.controlpanel:micronaut-control-panel-management")</span></code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="maven">&lt;dependency&gt;
+    &lt;groupId&gt;io.micronaut.controlpanel&lt;/groupId&gt;
+    &lt;artifactId&gt;micronaut-control-panel-management&lt;/artifactId&gt;
+    &lt;scope&gt;provided&lt;/scope&gt;
+&lt;/dependency&gt;</code></pre>
+</div>
+</div></p>
+</div>
+<div class="paragraph">
+<p>By default, the Control Panel is only enabled in the <code>dev</code> or <code>test</code> environments. You can change this and other settings
+in your configuration file:</p>
+</div>
+<a id="io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration" href="#io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration">&#128279;</a>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 1. Configuration Properties for <a href="../api/io/micronaut/controlpanel/core/config/ControlPanelModuleConfiguration.html">ControlPanelModuleConfiguration</a></caption>
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Property</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.enabled</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">boolean</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Enables/disables the control panel module. Default value: .</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.allowed-environments</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">java.util.Set</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Configures the environments where the control panel module is enabled. By default, it is
+ only enabled in the "dev" and "test" environments.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.path</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">java.lang.String</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Configures the path where the control panel can be accessed. Default value: .</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>Therefore, make sure you activate the appropriate environments when running locally, for example, using
+<a href="https://docs.micronaut.io/latest/guide/#_default_environment">default environments</a>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash"># For Maven:
+MICRONAUT_ENVIRONMENTS=dev ./mvnw mn:run
+
+# For Gradle:
+MICRONAUT_ENVIRONMENTS=dev ./gradlew run</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Once the application is running, you can access the control panel at <a href="http://localhost:8080/control-panel" class="bare">http://localhost:8080/control-panel</a>.</p>
+</div>
+
+<h1 id="controlPanels"><a class="anchor" href="#controlPanels"></a>4 Available Control Panels</h1>
+
+<div class='contribute-btn'>
+    <button type='button' class='btn btn-default' onclick='window.location.href="https://github.com/micronaut-projects/micronaut-control-panel/edit/master/src/main/docs/guide/controlPanels.adoc"'>
+        <i class='fa fa-pencil-square-o'></i> Improve this doc
+    </button>
+</div>
+
+
+<div class="paragraph">
+<p>All Control Panels are configurable with the following properties:</p>
+</div>
+<a id="io.micronaut.controlpanel.core.config.ControlPanelConfiguration" href="#io.micronaut.controlpanel.core.config.ControlPanelConfiguration">&#128279;</a>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 1. Configuration Properties for <a href="../api/io/micronaut/controlpanel/core/config/ControlPanelConfiguration.html">ControlPanelConfiguration</a></caption>
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Property</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.panels.*.enabled</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">boolean</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Enables/disables this control panel. Default value: .</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.panels.*.order</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">int</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Sets the order of this control panel, since they will be displayed sorted by order.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.panels.*.title</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">java.lang.String</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The title is displayed in the header of the card UI element.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.panels.*.icon</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">java.lang.String</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Icon class of the card UI element.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.panels.*.name</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">java.lang.String</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The unique name of the control panel. Can be used in URLs.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>For example, to disable the routes control panel, set the property
+<code>micronaut.control-panel.panels.routes.enabled</code> to <code>false</code>.</p>
+</div>
+<div class="paragraph">
+<p>Beyond displaying the available panels, the control panel also allows to perform 2 additional actions, provided that the
+corresponding endpoints are enabled and non-sensitive:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Refresh</strong>: refreshing the application will cause all <code>@Refreshable</code> beans in the context to be destroyed and
+re-instantiated upon further requests. This requires the
+<a href="https://docs.micronaut.io/latest/guide/#refreshEndpoint">Refresh Endpoint</a> to be enabled and non-sensitive.</p>
+</li>
+<li>
+<p><strong>Stop</strong>: will shut down the application. This requires the
+<a href="https://docs.micronaut.io/latest/guide/#stopEndpoint">Stop Endpoint</a> to be enabled and non-sensitive.</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+Micronaut Endpoints require having the <code>io.micronanut:micronaut-management</code> dependency on the classpath.
+</td>
+</tr>
+</table>
+</div>
+
+<h2 id="builtIn"><a class="anchor" href="#builtIn"></a>4.1 Built-in</h2>
+
+<div class='contribute-btn'>
+    <button type='button' class='btn btn-default' onclick='window.location.href="https://github.com/micronaut-projects/micronaut-control-panel/edit/master/src/main/docs/guide/controlPanels/builtIn.adoc"'>
+        <i class='fa fa-pencil-square-o'></i> Improve this doc
+    </button>
+</div>
+
+
+<div class="paragraph">
+<p>The following control panels are available by default with the UI module:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>routes</code>: displays information about the available HTTP routes.</p>
+</li>
+</ul>
+</div>
+
+<h2 id="management"><a class="anchor" href="#management"></a>4.2 Management</h2>
+
+<div class='contribute-btn'>
+    <button type='button' class='btn btn-default' onclick='window.location.href="https://github.com/micronaut-projects/micronaut-control-panel/edit/master/src/main/docs/guide/controlPanels/management.adoc"'>
+        <i class='fa fa-pencil-square-o'></i> Improve this doc
+    </button>
+</div>
+
+
+<div class="paragraph">
+<p>To add the management panels, include the following dependency:</p>
+</div>
+<div class="paragraph">
+<p>        <div class="listingblock multi-language-sample">
+<div class="title"></div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="gradle">developmentOnly(<span class="hljs-string">"io.micronaut.controlpanel:micronaut-control-panel-management")</span></code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="maven">&lt;dependency&gt;
+    &lt;groupId&gt;io.micronaut.controlpanel&lt;/groupId&gt;
+    &lt;artifactId&gt;micronaut-control-panel-management&lt;/artifactId&gt;
+    &lt;scope&gt;provided&lt;/scope&gt;
+&lt;/dependency&gt;</code></pre>
+</div>
+</div></p>
+</div>
+<div class="paragraph">
+<p>Note that you also need the
+<a href="https://docs.micronaut.io/latest/guide/#management">Management</a> module:</p>
+</div>
+<div class="paragraph">
+<p>        <div class="listingblock multi-language-sample">
+<div class="title"></div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="gradle">runtimeOnly(<span class="hljs-string">"io.micronaut.:micronaut-management")</span></code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="maven">&lt;dependency&gt;
+    &lt;groupId&gt;io.micronaut.&lt;/groupId&gt;
+    &lt;artifactId&gt;micronaut-management&lt;/artifactId&gt;
+    &lt;scope&gt;runtime&lt;/scope&gt;
+&lt;/dependency&gt;</code></pre>
+</div>
+</div></p>
+</div>
+<div class="paragraph">
+<p>The following panels are available:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>health</code>: Application Health</p>
+</li>
+<li>
+<p><code>env</code>: Environment Properties</p>
+</li>
+<li>
+<p><code>beans</code>: Bean Definitions</p>
+</li>
+<li>
+<p><code>loggers</code>: Logging Configuration</p>
+</li>
+</ul>
+</div>
+<div class="sect2">
+<h3 id="_application_heath">Application Heath</h3>
+<div class="paragraph">
+<p>This panel displays the health information of your application, and relies on the
+<a href="https://docs.micronaut.io/latest/guide/#healthEndpoint">Health Endpoint</a> to display its information. Note that, by
+default, the health endpoint only displays the details to authenticated users. To be able to see the details in the
+control panel, you need to configure the health endpoint to expose the details to unauthenticated users:</p>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+Make sure this is done in an environment-specific configuration file, for example, <code>application-dev.yml</code>.
+</td>
+</tr>
+</table>
+</div>
+<div class="openblock">
+<div class="title">Configuring the Health Endpoint to expose details to anonymous users</div>
+<div class="content">
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">endpoints.health.details-visible=ANONYMOUS</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">endpoints:
+  health:
+    details-visible: ANONYMOUS</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[endpoints]
+  [endpoints.health]
+    details-visible="ANONYMOUS"</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-groovy-config hljs" data-lang="groovy-config">endpoints {
+  health {
+    detailsVisible = "ANONYMOUS"
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-hocon hljs" data-lang="hocon">{
+  endpoints {
+    health {
+      details-visible = "ANONYMOUS"
+    }
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json-config hljs" data-lang="json-config">{
+  "endpoints": {
+    "health": {
+      "details-visible": "ANONYMOUS"
+    }
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_environment_properties">Environment Properties</h3>
+<div class="paragraph">
+<p>This panel displays all the configuration properties resolved, and relies on the
+<a href="https://docs.micronaut.io/latest/guide/#environmentEndpoint">Environment Endpoint</a> to display all the properties. This
+endpoint is disabled and sensitive (requires authentication to display the information) by default, so you need to
+configure it to be enabled and accessible to anonymous users in the environments where the control panel is enabled:</p>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+Make sure this is done in an environment-specific configuration file, for example, <code>application-dev.yml</code>.
+</td>
+</tr>
+</table>
+</div>
+<div class="openblock">
+<div class="title">Configuring the Environment Endpoint</div>
+<div class="content">
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">endpoints.env.enabled=true
+endpoints.env.sensitive=false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">endpoints:
+  env:
+    enabled: true
+    sensitive: false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[endpoints]
+  [endpoints.env]
+    enabled=true
+    sensitive=false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-groovy-config hljs" data-lang="groovy-config">endpoints {
+  env {
+    enabled = true
+    sensitive = false
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-hocon hljs" data-lang="hocon">{
+  endpoints {
+    env {
+      enabled = true
+      sensitive = false
+    }
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json-config hljs" data-lang="json-config">{
+  "endpoints": {
+    "env": {
+      "enabled": true,
+      "sensitive": false
+    }
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>Also, by default, all the values will be masked. If you want to see the actual configuration values in the control panel,
+you need to provide an implementation of the
+<a href="https://docs.micronaut.io/latest/api/io/micronaut/management/endpoint/env/EnvironmentEndpointFilter.html"><code>EnvironmentEndpointFilter</code></a>
+interface and register it as a bean. For example:</p>
+</div>
+<div class="listingblock">
+<div class="title">Displaying the actual configuration values</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Singleton
+@Requires(env = Environment.DEVELOPMENT)
+public class AllPlainEnvironmentEndpointFilter implements EnvironmentEndpointFilter {
+
+    @Override
+    public void specifyFiltering(@NonNull EnvironmentFilterSpecification specification) {
+        specification.legacyMasking();
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This will show all values apart from those that contain the words <code>password</code>, <code>credential</code>, <code>certificate</code>, <code>key</code>,
+<code>secret</code> or <code>token</code> anywhere in their name.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_bean_definitions">Bean Definitions</h3>
+<div class="paragraph">
+<p>This panel displays all the beans, and their relationships, grouped by packages. It relies on the
+<a href="https://docs.micronaut.io/latest/guide/#beansEndpoint">Beans Endpoint</a> to display all the bean definitions. This endpoint
+is sensitive by default, so if you want to see the bean definitions in the control panel, you need to configure the
+endpoint to be accessible to anonymous users in the environments where the control panel is enabled:</p>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+Make sure this is done in an environment-specific configuration file, for example, <code>application-dev.yml</code>.
+</td>
+</tr>
+</table>
+</div>
+<div class="openblock">
+<div class="title">Configuring the Beans Endpoint</div>
+<div class="content">
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">endpoints.beans.sensitive=false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">endpoints:
+  beans:
+    sensitive: false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[endpoints]
+  [endpoints.beans]
+    sensitive=false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-groovy-config hljs" data-lang="groovy-config">endpoints {
+  beans {
+    sensitive = false
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-hocon hljs" data-lang="hocon">{
+  endpoints {
+    beans {
+      sensitive = false
+    }
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json-config hljs" data-lang="json-config">{
+  "endpoints": {
+    "beans": {
+      "sensitive": false
+    }
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_logging_configuration">Logging Configuration</h3>
+<div class="paragraph">
+<p>This panel allows you to view and re-configure the logging levels without restarting the application. It relies on the
+<a href="https://docs.micronaut.io/latest/guide/#loggersEndpoint">Loggers Endpoint</a> to display and update the logging levels. This
+endpoint is disabled by default, so if you want to manage the logging configuration in the control panel, you need to
+enable the endpoint. Also, by default, the endpoint is read-only, so you need to configure it to be writable:</p>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+Make sure this is done in an environment-specific configuration file, for example, <code>application-dev.yml</code>.
+</td>
+</tr>
+</table>
+</div>
+<div class="openblock">
+<div class="title">Configuring the Loggers Endpoint</div>
+<div class="content">
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">endpoints.loggers.enabled=true
+endpoints.loggers.write-sensitive=false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">endpoints:
+  loggers:
+    enabled: true
+    write-sensitive: false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[endpoints]
+  [endpoints.loggers]
+    enabled=true
+    write-sensitive=false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-groovy-config hljs" data-lang="groovy-config">endpoints {
+  loggers {
+    enabled = true
+    writeSensitive = false
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-hocon hljs" data-lang="hocon">{
+  endpoints {
+    loggers {
+      enabled = true
+      write-sensitive = false
+    }
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json-config hljs" data-lang="json-config">{
+  "endpoints": {
+    "loggers": {
+      "enabled": true,
+      "write-sensitive": false
+    }
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<h1 id="custom"><a class="anchor" href="#custom"></a>5 Creating Custom Control Panels</h1>
+
+<div class='contribute-btn'>
+    <button type='button' class='btn btn-default' onclick='window.location.href="https://github.com/micronaut-projects/micronaut-control-panel/edit/master/src/main/docs/guide/custom.adoc"'>
+        <i class='fa fa-pencil-square-o'></i> Improve this doc
+    </button>
+</div>
+
+
+<div class="paragraph">
+<p>You can add your own control panels to the Control Panel UI. Creating custom panels requires the following:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>An implementation of the <a href="../api/io/micronaut/controlpanel/core/ControlPanel.html">ControlPanel</a> interface.</p>
+</li>
+<li>
+<p>Some configuration values.</p>
+</li>
+<li>
+<p>The views.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The Control Panel UI uses the open-source <a href="https://github.com/ColorlibHQ/AdminLTE">AdminLTE</a> template, including
+<a href="https://getbootstrap.com/docs/4.6/">Bootstrap</a> and <a href="https://fontawesome.com/search?o=r&amp;m=free">Font Awesome</a>.</p>
+</div>
+<div class="paragraph">
+<p>The categories are used to group the control panels in the UI. Categories are rendered as left side menu items. There is
+a default category called <code>Dashboard</code> that is used for all control panels that don&#8217;t specify a category.</p>
+</div>
+<div class="sect2">
+<h3 id="_control_panel_implementation">Control Panel Implementation</h3>
+<div class="paragraph">
+<p>The easiest way to implement a custom panel is to extend from
+<a href="../api/io/micronaut/controlpanel/core/AbstractControlPanel.html">AbstractControlPanel</a>. For example:</p>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Singleton
+public class MyApplicationControlPanel extends AbstractControlPanel&lt;String&gt; { // <b class="conum">(1)</b>
+
+    private static final String NAME = "my-application"; // <b class="conum">(2)</b>
+
+    public MyApplicationControlPanel(@Named(NAME) ControlPanelConfiguration configuration) {
+        super(NAME, configuration); // <b class="conum">(3)</b>
+    }
+
+    @Override
+    public String getBody() {
+        return "This is an application-provided control panel. This text is coming from the body.";
+    }
+
+    @Override
+    public Category getCategory() {
+        return new Category(NAME, "My Application", "fa-copy"); // <b class="conum">(4)</b>
+    }
+}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>The <code>String</code> type parameter indicates the object type of the body. You can use your own classes or records to return
+custom data to the view. In this example, the control panel only returns a message.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Unique name for your control panel. This is used for the configuration properties prefix. In this case:
+<code>micronaut.control-panel.panels.my-application</code>.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Call the parent constructor. You could inject any other beans in this constructor.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>The category under which the control panel will be displayed, if other than the default.</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Check the <a href="../api/io/micronaut/controlpanel/core/ControlPanel.html">ControlPanel</a> interface to see the other methods that can be overridden, for example,
+to display a badge in the control panel header.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_configuration">Configuration</h3>
+<div class="paragraph">
+<p>There are some values for the UI that can be configured:</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">micronaut.control-panel.panels.my-application.title=My Application Control Panel
+micronaut.control-panel.panels.my-application.icon=fa-plug
+micronaut.control-panel.panels.my-application.order=10</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">micronaut:
+  control-panel:
+    panels:
+      my-application:
+        title: My Application Control Panel # <b class="conum">(1)</b>
+        icon: fa-plug # <b class="conum">(2)</b>
+        order: 10 # <b class="conum">(3)</b></code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[micronaut]
+  [micronaut.control-panel]
+    [micronaut.control-panel.panels]
+      [micronaut.control-panel.panels.my-application]
+        title="My Application Control Panel"
+        icon="fa-plug"
+        order=10</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-groovy-config hljs" data-lang="groovy-config">micronaut {
+  controlPanel {
+    panels {
+      myApplication {
+        title = "My Application Control Panel"
+        icon = "fa-plug"
+        order = 10
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-hocon hljs" data-lang="hocon">{
+  micronaut {
+    control-panel {
+      panels {
+        my-application {
+          title = "My Application Control Panel"
+          icon = "fa-plug"
+          order = 10
+        }
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json-config hljs" data-lang="json-config">{
+  "micronaut": {
+    "control-panel": {
+      "panels": {
+        "my-application": {
+          "title": "My Application Control Panel",
+          "icon": "fa-plug",
+          "order": 10
+        }
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Title to be displayed in the control panel headeer.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Icon class (from Font Awesome) of the control panel.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>The order in which the control panel will be displayed in the UI.</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_views">Views</h3>
+<div class="paragraph">
+<p>For rendering the views, the Control Panel uses
+<a href="https://micronaut-projects.github.io/micronaut-views/latest/guide/">Micronaut Views</a> with
+<a href="https://micronaut-projects.github.io/micronaut-views/latest/guide/#handlebars">Handlebars.java</a> templates.</p>
+</div>
+<div class="paragraph">
+<p>Each control panel needs to provide 2 views: one for the control panel list, that can contain a summary of the
+information to be displayed, and another one for the detailed view. The must be placed in a <code>views/&lt;panel-name&gt;</code> directory
+on the classpath, and names <code>body.hbs</code> and <code>detail.hbs</code>, respectively. For example, in the above example:</p>
+</div>
+<div class="listingblock">
+<div class="title"><code>src/main/resources/views/my-application/body.hbs</code>.</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-html hljs" data-lang="html">&lt;p class="card-text"&gt;
+    This is the body of the application-provided control panel
+&lt;/p&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <a href="../api/io/micronaut/controlpanel/core/ControlPanel.html">ControlPanel</a> instance (<code>MyApplicationControlPanel</code> in this case) is stored on the Handlebars
+context, so you can implicitly access its methods and properties. For example, to access the badge:</p>
+</div>
+<div class="listingblock">
+<div class="title"><code>src/main/resources/views/my-application/body.hbs</code>.</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-html hljs" data-lang="html">&lt;p class="card-text"&gt;
+    &lt;strong&gt;{{badge}}&lt;/strong&gt; bean definitions active.
+&lt;/p&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In the case of the detail view, the control panel instance is passed as an implicit <code>controlPanel</code> variable. For example,
+to access the body of our control panel example:</p>
+</div>
+<div class="listingblock">
+<div class="title"><code>src/main/resources/views/my-application/detail.hbs</code>.</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-html hljs" data-lang="html">{{ controlPanel.body }}</code></pre>
+</div>
+</div>
+</div>
+
+<h1 id="repository"><a class="anchor" href="#repository"></a>6 Repository</h1>
+
+<div class='contribute-btn'>
+    <button type='button' class='btn btn-default' onclick='window.location.href="https://github.com/micronaut-projects/micronaut-control-panel/edit/master/src/main/docs/guide/repository.adoc"'>
+        <i class='fa fa-pencil-square-o'></i> Improve this doc
+    </button>
+</div>
+
+
+<div class="paragraph">
+<p>You can find the source code of this project in this repository:</p>
+</div>
+<div class="paragraph">
+<p><a href="https://github.com/micronaut-projects/micronaut-control-panel">https://github.com/micronaut-projects/micronaut-control-panel</a></p>
+</div>
+
+    </div>
+</div>
+
+<script type="text/javascript">
+
+</script>
+</body>
+</html>
