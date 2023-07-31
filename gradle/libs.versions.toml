@@ -26,7 +26,7 @@ micronaut-logging = "1.0.0"
 micronaut-serde = "2.0.1"
 groovy = '4.0.13'
 spock = '2.3-groovy-4.0'
-micronaut-gradle-plugin = "4.0.1"
+micronaut-gradle-plugin = "4.0.2"
 
 # Managed versions appear in the BOM
 # managed-somelib = "1.0"
