@@ -5,7 +5,7 @@
 [![Maven Central](https://img.shields.io/maven-central/v/io.micronaut.controlpanel/micronaut-control-panel-bom.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22io.micronaut.controlpanel%22%20AND%20a:%22micronaut-control-panel-bom%22)
 [![Build Status](https://github.com/micronaut-projects/micronaut-control-panel/workflows/Java%20CI/badge.svg)](https://github.com/micronaut-projects/micronaut-control-panel/actions)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=micronaut-projects_micronaut-control-panel&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=micronaut-projects_micronaut-control-panel)
-[![Revved up by Gradle Enterprise](https://img.shields.io/badge/Revved%20up%20by-Gradle%20Enterprise-06A0CE?logo=Gradle&labelColor=02303A)](https://ge.micronaut.io/scans)
+[![Revved up by Develocity](https://img.shields.io/badge/Revved%20up%20by-Develocity-06A0CE?logo=Gradle&labelColor=02303A)](https://ge.micronaut.io/scans)
 
 The Micronaut Control Panel module provides a web UI that allows you to view and manage the state of your Micronaut
 application, typically in a development environment.
