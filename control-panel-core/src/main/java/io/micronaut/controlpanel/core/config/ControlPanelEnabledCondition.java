@@ -31,10 +31,16 @@ public class ControlPanelEnabledCondition implements Condition {
 
     @Override
     public boolean matches(ConditionContext context) {
-        var configuration = context.getBean(ControlPanelModuleConfiguration.class);
+        var configuration = context.findBean(ControlPanelModuleConfiguration.class);
         var environment = context.getBean(Environment.class);
-        if (!Collections.disjoint(configuration.getAllowedEnvironments(), environment.getActiveNames())) {
-            return configuration.isEnabled();
+        var allowedEnvironments = configuration
+            .map(ControlPanelModuleConfiguration::getAllowedEnvironments)
+            .orElse(Collections.emptySet());
+        var enabled = configuration
+            .map(ControlPanelModuleConfiguration::isEnabled)
+            .orElse(Boolean.valueOf(ControlPanelModuleConfiguration.DEFAULT_ENABLED));
+        if (!Collections.disjoint(allowedEnvironments, environment.getActiveNames())) {
+            return enabled;
         } else {
             return false;
         }
