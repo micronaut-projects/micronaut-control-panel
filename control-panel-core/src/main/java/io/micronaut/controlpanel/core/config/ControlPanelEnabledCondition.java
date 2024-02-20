@@ -21,6 +21,7 @@ import io.micronaut.context.env.Environment;
 import io.micronaut.core.annotation.Internal;
 
 import java.util.Collections;
+import java.util.Set;
 
 
 /**
@@ -35,7 +36,7 @@ public class ControlPanelEnabledCondition implements Condition {
         var environment = context.getBean(Environment.class);
         var allowedEnvironments = configuration
             .map(ControlPanelModuleConfiguration::getAllowedEnvironments)
-            .orElse(Collections.emptySet());
+            .orElse(Set.of(ControlPanelModuleConfiguration.DEFAULT_ALLOWED_ENVIRONMENTS.split(",")));
         var enabled = configuration
             .map(ControlPanelModuleConfiguration::isEnabled)
             .orElse(Boolean.valueOf(ControlPanelModuleConfiguration.DEFAULT_ENABLED));
