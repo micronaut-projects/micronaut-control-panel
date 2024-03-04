@@ -24,7 +24,7 @@ micronaut-views = '5.1.0'
 micronaut-reactor = '3.2.1'
 micronaut-logging = "1.2.3"
 micronaut-serde = "2.8.1"
-groovy = '4.0.18'
+groovy = '4.0.19'
 spock = '2.3-groovy-4.0'
 micronaut-gradle-plugin = "4.3.4"
 
