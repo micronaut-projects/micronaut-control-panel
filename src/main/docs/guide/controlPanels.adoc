@@ -15,4 +15,4 @@ corresponding endpoints are enabled and non-sensitive:
 * *Stop*: will shut down the application. This requires the
   https://docs.micronaut.io/latest/guide/#stopEndpoint[Stop Endpoint] to be enabled and non-sensitive.
 
-WARNING: Micronaut Endpoints require having the `io.micronanut:micronaut-management` dependency on the classpath.
+WARNING: Micronaut Endpoints require having the `io.micronaut:micronaut-management` dependency on the classpath.
