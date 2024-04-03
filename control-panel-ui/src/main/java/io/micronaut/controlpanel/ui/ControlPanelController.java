@@ -25,6 +25,8 @@ import io.micronaut.http.annotation.Controller;
 import io.micronaut.management.endpoint.refresh.RefreshEndpoint;
 import io.micronaut.management.endpoint.stop.ServerStopEndpoint;
 import io.micronaut.runtime.ApplicationConfiguration;
+import io.micronaut.scheduling.TaskExecutors;
+import io.micronaut.scheduling.annotation.ExecuteOn;
 import io.micronaut.views.View;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,6 +39,7 @@ import java.util.Set;
  * @since 1.0.0
  */
 @Controller(ControlPanelApi.PATH)
+@ExecuteOn(TaskExecutors.BLOCKING)
 public class ControlPanelController implements ControlPanelApi {
 
     private final ControlPanelRepository repository;
