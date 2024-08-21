@@ -28,10 +28,6 @@ groovy = '4.0.22'
 spock = '2.3-groovy-4.0'
 micronaut-gradle-plugin = "4.4.2"
 
-# Managed versions appear in the BOM
-# managed-somelib = "1.0"
-# managed-somebom = "1.1"
-
 [libraries]
 micronaut-core = { module = 'io.micronaut:micronaut-core-bom', version.ref = 'micronaut' }
 micronaut-platform = { module = "io.micronaut.platform:micronaut-platform", version.ref = "micronaut-platform"}
