@@ -1,0 +1,11 @@
+{{#with subDetails.details}}
+    <p class="card-text">
+        {{#each details as |dataSource|}}
+            <p><strong>URL</strong>: <code>{{@key}}</code></p>
+            {{#with dataSource.details as |db|}}
+                <p><strong>Database</strong>: {{db.database}}</p>
+                <p><strong>Version</strong>: {{db.version}}</p>
+            {{/with}}
+        {{/each}}
+    </p>
+{{/with}}
