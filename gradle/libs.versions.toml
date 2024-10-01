@@ -26,7 +26,7 @@ micronaut-logging = "1.4.0"
 micronaut-serde = "2.11.0"
 groovy = '4.0.23'
 spock = '2.3-groovy-4.0'
-micronaut-gradle-plugin = "4.4.2"
+micronaut-gradle-plugin = "4.4.3"
 
 [libraries]
 micronaut-core = { module = 'io.micronaut:micronaut-core-bom', version.ref = 'micronaut' }
