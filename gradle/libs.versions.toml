@@ -13,6 +13,7 @@
 # If a BOM needs to be imported in the BOM of the project, then it must be
 # declared with the "boms-" prefix.
 # Both managed dependencies and BOMs need to have their version declared via
+
 # a managed version (a version which alias starts with "managed-"
 
 [versions]
@@ -26,7 +27,7 @@ micronaut-logging = "1.6.1"
 micronaut-serde = "2.14.0"
 groovy = '4.0.26'
 spock = '2.3-groovy-4.0'
-micronaut-gradle-plugin = "4.4.5"
+micronaut-gradle-plugin = "4.5.0"
 sonatype-scan = "3.0.0"
 
 [libraries]
