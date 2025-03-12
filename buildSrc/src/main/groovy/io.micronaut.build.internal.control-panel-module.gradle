@@ -5,11 +5,12 @@ plugins {
 String ossIndexUsername = System.getenv("OSS_INDEX_USERNAME") ?: project.properties["ossIndexUsername"]
 String ossIndexPassword = System.getenv("OSS_INDEX_PASSWORD") ?: project.properties["ossIndexPassword"]
 boolean sonatypePluginConfigured = ossIndexUsername != null && ossIndexPassword != null
+ossIndexAudit {
+    excludeCoordinates = ["com.google.guava:guava:18.0"]
 if (sonatypePluginConfigured) {
-    ossIndexAudit {
-        username = ossIndexUsername
-        password = ossIndexPassword
-    }
+    username = ossIndexUsername
+    password = ossIndexPassword
+}
 }
 
 repositories {
