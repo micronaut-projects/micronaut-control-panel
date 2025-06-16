@@ -18,7 +18,7 @@
 
 [versions]
 micronaut = "4.8.18"
-micronaut-platform = "4.7.6"
+micronaut-platform = "4.8.3"
 micronaut-docs = "2.0.0"
 micronaut-test = "4.7.0"
 micronaut-views = '5.7.0'
