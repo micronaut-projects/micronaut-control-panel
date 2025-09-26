@@ -84,7 +84,7 @@ class HandlebarsHelperRegistrar implements BeanCreatedEventListener<Handlebars> 
                 String separator = opts.param(0, ", ");
                 return ((Collection<?>) ctx).stream()
                     .map(Object::toString)
-                    .collect(java.util.stream.Collectors.joining(separator));
+                    .collect(Collectors.joining(separator));
             }
             return ctx != null ? ctx.toString() : "";
         });

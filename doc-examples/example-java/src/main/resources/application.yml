@@ -21,5 +21,3 @@ endpoints:
     details-visible: ANONYMOUS
   loggers:
     write-sensitive: false
-loggers:
-  io.micronaut.http: DEBUG
