@@ -40,6 +40,7 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.jar.JarFile;
 
 @Internal
 @Singleton
@@ -103,6 +104,7 @@ class HandlebarsHelperRegistrar implements BeanCreatedEventListener<Handlebars> 
     private static Helper<String> partialExistsHelper(Handlebars handlebars) {
         return (partialName, opts) -> {
             try {
+                // Try to compile the template - this will use the cache if available
                 handlebars.compile(partialName);
                 return opts.fn(); // Partial exists, render the block
             } catch (Exception e) {
@@ -117,21 +119,24 @@ class HandlebarsHelperRegistrar implements BeanCreatedEventListener<Handlebars> 
     }
 
     private void precompileTemplates(Handlebars handlebars) {
-        LOG.info("Pre-compiling Handlebars templates and partials");
-        
-        // Instead of trying to pre-compile all templates (which may have complex dependencies),
-        // let's configure the template loader to scan for templates and cache them on first use
-        // The HighConcurrencyTemplateCache will handle caching automatically when templates are accessed
+        LOG.debug("Pre-compiling Handlebars templates and partials");
         
         Set<String> templatePaths = findAllTemplates();
-        LOG.info("Found {} template paths for pre-compilation", templatePaths.size());
+        LOG.debug("Found {} template paths for pre-compilation", templatePaths.size());
         
-        // Log the templates that were found
+        // Actually pre-compile the templates to populate the cache
+        int compiledCount = 0;
         for (String templatePath : templatePaths) {
-            LOG.debug("Available template: {}", templatePath);
+            try {
+                handlebars.compile(templatePath);
+                compiledCount++;
+                LOG.debug("Pre-compiled template: {}", templatePath);
+            } catch (Exception e) {
+                LOG.debug("Could not pre-compile template: {} - {}", templatePath, e.getMessage());
+            }
         }
         
-        LOG.info("Templates will be cached on first use by HighConcurrencyTemplateCache");
+        LOG.debug("Pre-compiled {} templates successfully. Templates cached by HighConcurrencyTemplateCache", compiledCount);
     }
 
     private Set<String> findAllTemplates() {
@@ -157,11 +162,11 @@ class HandlebarsHelperRegistrar implements BeanCreatedEventListener<Handlebars> 
 
     private void scanDirectoryForTemplates(URL baseUrl, Set<String> templates, String relativePath) {
         try {
-            // This is a simplified approach - in a real implementation, you might need to handle JAR files differently
             String path = baseUrl.getPath();
+            
             if (path.contains("!")) {
-                // Handle JAR file case - for now, we'll use the known template paths
-                addKnownTemplatePaths(templates);
+                // Handle JAR file case - scan JAR entries
+                scanJarForTemplates(baseUrl, templates);
                 return;
             }
             
@@ -183,31 +188,31 @@ class HandlebarsHelperRegistrar implements BeanCreatedEventListener<Handlebars> 
                 }
             }
         } catch (Exception e) {
-            LOG.debug("Error scanning directory for templates", e);
-            // Fallback to known template paths
-            addKnownTemplatePaths(templates);
+            LOG.debug("Error scanning directory for templates: {}", e.getMessage());
         }
     }
 
-    private void addKnownTemplatePaths(Set<String> templates) {
-        // Add known template paths that we've discovered from the codebase
-        templates.add("index");
-        templates.add("detail");
-        templates.add("layout");
-        templates.add("routes/body");
-        templates.add("routes/detail");
-        templates.add("routes/routes");
-        templates.add("beans/body");
-        templates.add("beans/detail");
-        templates.add("beans/package");
-        templates.add("health/body");
-        templates.add("health/detail");
-        templates.add("health/compositeDiscoveryClient");
-        templates.add("health/diskSpace");
-        templates.add("health/jdbc");
-        templates.add("loggers/body");
-        templates.add("loggers/detail");
-        templates.add("env/body");
-        templates.add("env/detail");
+    private void scanJarForTemplates(URL baseUrl, Set<String> templates) {
+        try {
+            // For JAR files, we need to scan the entries
+            // This is a simplified implementation that uses the JAR file path
+            String jarPath = baseUrl.toString();
+            if (jarPath.startsWith("jar:file:") && jarPath.contains("!/views")) {
+                // Extract jar file path and scan it
+                String jarFilePath = jarPath.substring("jar:file:".length(), jarPath.indexOf("!/"));
+                try (java.util.jar.JarFile jarFile = new java.util.jar.JarFile(jarFilePath)) {
+                    jarFile.stream()
+                        .filter(entry -> entry.getName().startsWith("views/") && entry.getName().endsWith(".hbs"))
+                        .forEach(entry -> {
+                            String templatePath = entry.getName()
+                                .substring("views/".length())
+                                .replace(".hbs", "");
+                            templates.add(templatePath);
+                        });
+                }
+            }
+        } catch (Exception e) {
+            LOG.debug("Error scanning JAR for templates: {}", e.getMessage());
+        }
     }
 }
