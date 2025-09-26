@@ -22,6 +22,7 @@ import io.micronaut.controlpanel.core.ControlPanelRepository;
 import io.micronaut.controlpanel.ui.util.EndpointUtils;
 import io.micronaut.core.annotation.Nullable;
 import io.micronaut.http.annotation.Controller;
+import io.micronaut.http.annotation.Get;
 import io.micronaut.management.endpoint.refresh.RefreshEndpoint;
 import io.micronaut.management.endpoint.stop.ServerStopEndpoint;
 import io.micronaut.runtime.ApplicationConfiguration;
@@ -96,5 +97,14 @@ public class ControlPanelController implements ControlPanelApi {
         }
         return new Model(categories, applicationName, activeEnvironments, Model.ContentView.DETAIL,
             canRefresh, canStop, extraProperties);
+    }
+
+    /**
+     * Simple test endpoint to verify native image functionality.
+     * @return simple text response
+     */
+    @Get("/test")
+    public String test() {
+        return "Control Panel Test - Native Image Working!";
     }
 }
