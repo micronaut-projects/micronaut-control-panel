@@ -42,6 +42,7 @@ class HandlebarsHelperRegistrar implements BeanCreatedEventListener<Handlebars> 
         handlebars.registerHelper("minus", minusHelper());
         handlebars.registerHelper("mod", modHelper());
         handlebars.registerHelper("size", (ctx, opts) -> ((Collection<?>) ctx).size());
+        handlebars.registerHelper("partialExists", partialExistsHelper(handlebars));
         return handlebars;
     }
 
@@ -85,6 +86,17 @@ class HandlebarsHelperRegistrar implements BeanCreatedEventListener<Handlebars> 
                 return 0;
             }
             return (int) Math.ceil((value / total) * 100);
+        };
+    }
+
+    private static Helper<String> partialExistsHelper(Handlebars handlebars) {
+        return (partialName, opts) -> {
+            try {
+                handlebars.compile(partialName);
+                return opts.fn(); // Partial exists, render the block
+            } catch (Exception e) {
+                return opts.inverse(); // Partial doesn't exist, render the inverse block
+            }
         };
     }
 }
