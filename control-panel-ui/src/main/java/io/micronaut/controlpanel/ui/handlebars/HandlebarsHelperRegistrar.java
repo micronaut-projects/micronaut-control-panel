@@ -18,6 +18,7 @@ package io.micronaut.controlpanel.ui.handlebars;
 import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.Helper;
 import com.github.jknack.handlebars.HumanizeHelper;
+import com.github.jknack.handlebars.cache.ConcurrentMapTemplateCache;
 import com.github.jknack.handlebars.helper.ConditionalHelpers;
 import com.github.jknack.handlebars.helper.StringHelpers;
 import io.micronaut.context.event.BeanCreatedEvent;
@@ -42,6 +43,7 @@ class HandlebarsHelperRegistrar implements BeanCreatedEventListener<Handlebars> 
         handlebars.registerHelper("minus", minusHelper());
         handlebars.registerHelper("mod", modHelper());
         handlebars.registerHelper("size", (ctx, opts) -> ((Collection<?>) ctx).size());
+        handlebars.registerHelper("partialExists", partialExistsHelper(handlebars));
         return handlebars;
     }
 
@@ -72,6 +74,17 @@ class HandlebarsHelperRegistrar implements BeanCreatedEventListener<Handlebars> 
             Double value = ctx.doubleValue();
             Double total = ((Long) opts.param(0)).doubleValue();
             return (int) Math.ceil((value / total) * 100);
+        };
+    }
+
+    private static Helper<String> partialExistsHelper(Handlebars handlebars) {
+        return (partialName, opts) -> {
+            try {
+                handlebars.compile(partialName);
+                return opts.fn(); // Partial exists, render the block
+            } catch (Exception e) {
+                return opts.inverse(); // Partial doesn't exist, render the inverse block
+            }
         };
     }
 }
