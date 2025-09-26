@@ -50,16 +50,30 @@ endpoints:
 ----
 
 Also, by default, all the values will be masked. If you want to see the actual configuration values in the control panel,
-you need to provide an implementation of the
+you can enable the built-in filter by setting the following configuration property:
+
+.Displaying the actual configuration values
+[configuration]
+----
+micronaut:
+  control-panel:
+    env:
+      show-values: true
+----
+
+This will show all values apart from those that contain the words `password`, `credential`, `certificate`, `key`,
+`secret` or `token` anywhere in their name.
+
+Alternatively, you can provide your own implementation of the
 https://docs.micronaut.io/latest/api/io/micronaut/management/endpoint/env/EnvironmentEndpointFilter.html[`EnvironmentEndpointFilter`]
 interface and register it as a bean. For example:
 
-.Displaying the actual configuration values
+.Custom environment endpoint filter
 [source,java]
 ----
 @Singleton
 @Requires(env = Environment.DEVELOPMENT)
-public class AllPlainEnvironmentEndpointFilter implements EnvironmentEndpointFilter {
+public class CustomEnvironmentEndpointFilter implements EnvironmentEndpointFilter {
 
     @Override
     public void specifyFiltering(@NonNull EnvironmentFilterSpecification specification) {
@@ -67,9 +81,6 @@ public class AllPlainEnvironmentEndpointFilter implements EnvironmentEndpointFil
     }
 }
 ----
-
-This will show all values apart from those that contain the words `password`, `credential`, `certificate`, `key`,
-`secret` or `token` anywhere in their name.
 
 === Bean Definitions
 
