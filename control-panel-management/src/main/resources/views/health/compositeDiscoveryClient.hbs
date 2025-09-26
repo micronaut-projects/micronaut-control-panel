@@ -1,19 +1,23 @@
-{{#neq subDetails.details.services.size 0 }}
-    <table class="table">
-        <thead>
-        <tr>
-            <th>Service</th>
-        </tr>
-        </thead>
-        <tbody>
-        {{#each subDetails.details.services as |service| }}
+{{#if subDetails.details.services}}
+    {{#neq subDetails.details.services.size 0 }}
+        <table class="table">
+            <thead>
             <tr>
-                <td>{{ service }}</td>
+                <th>Service</th>
             </tr>
-        {{/each}}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+            {{#each subDetails.details.services as |service| }}
+                <tr>
+                    <td>{{ service }}</td>
+                </tr>
+            {{/each}}
+            </tbody>
+        </table>
+    {{else}}
+        No services are discovered
+    {{/neq}}
 {{else}}
-    No services are discovered
-{{/neq}}
+    Services information not available
+{{/if}}
 
