@@ -62,6 +62,9 @@ class HandlebarsHelperRegistrar implements BeanCreatedEventListener<Handlebars> 
 
     private static Helper<Integer> minusHelper() {
         return (ctx, opts) -> {
+            if (ctx == null) {
+                return 0;
+            }
             int a = ctx;
             int b = opts.param(0);
             return a - b;
@@ -70,8 +73,18 @@ class HandlebarsHelperRegistrar implements BeanCreatedEventListener<Handlebars> 
 
     private static Helper<Long> percentageHelper() {
         return (ctx, opts) -> {
+            if (ctx == null) {
+                return 0;
+            }
+            Object totalParam = opts.param(0);
+            if (totalParam == null) {
+                return 0;
+            }
             Double value = ctx.doubleValue();
-            Double total = ((Long) opts.param(0)).doubleValue();
+            Double total = ((Long) totalParam).doubleValue();
+            if (total == 0) {
+                return 0;
+            }
             return (int) Math.ceil((value / total) * 100);
         };
     }
