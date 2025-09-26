@@ -11,5 +11,16 @@
             </div>
         </div>
     {{/eq}}
+    {{#eq status.name 'DOWN'}}
+        <div class="small-box bg-danger">
+            <div class="inner">
+                <h3>Down</h3>
+                <p>One or more healthchecks failed</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-circle-exclamation"></i>
+            </div>
+        </div>
+    {{/eq}}
 
 {{/with}}
