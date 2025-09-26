@@ -55,6 +55,8 @@ class BeansControlPanelSpec extends Specification {
         panel != null
         panel.body.micronautBeansByPackage() != null
         panel.body.otherBeansByPackage() != null
+        // Primitive types should be categorized under "primitive" package in otherBeansByPackage
+        panel.body.otherBeansByPackage().containsKey("primitive")
 
         cleanup:
         ctx.stop()
