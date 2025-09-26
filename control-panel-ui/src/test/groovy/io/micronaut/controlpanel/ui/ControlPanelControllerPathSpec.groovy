@@ -49,15 +49,15 @@ class ControlPanelControllerPathSpec extends Specification {
         then:
         response.status() == HttpStatus.OK
         def html = response.body()
-        
+
         // Check that the brand logo link uses the custom path
         html.contains('href="/admin"')
-        
+
         // Check that category links use the custom path
         html.contains('href="/admin/categories/')
-        
+
         // Check that control panel detail links use the custom path (if present in index view)
-        html.contains('"/admin/') || !html.contains('"/control-panel/')
+        html.contains('"/admin/') && !html.contains('"/control-panel/')
     }
 
 }

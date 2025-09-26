@@ -29,6 +29,8 @@ import io.micronaut.runtime.ApplicationConfiguration;
 import io.micronaut.scheduling.TaskExecutors;
 import io.micronaut.scheduling.annotation.ExecuteOn;
 import io.micronaut.views.View;
+import jakarta.inject.Inject;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -50,6 +52,21 @@ public class ControlPanelController implements ControlPanelApi {
     private final boolean canStop;
     private final String controlPanelPath;
 
+    @Deprecated
+    public ControlPanelController(ControlPanelRepository repository, BeanContext beanContext,
+                                  @Nullable RefreshEndpoint refreshEndpoint,
+                                  @Nullable ServerStopEndpoint stopEndpoint) {
+        ApplicationConfiguration applicationConfiguration = beanContext.getBean(ApplicationConfiguration.class);
+        Environment environment = beanContext.getBean(Environment.class);
+        this.repository = repository;
+        this.applicationName = applicationConfiguration.getName().orElse("(unnamed)");
+        this.activeEnvironments = environment.getActiveNames();
+        this.canRefresh = EndpointUtils.canRefresh(refreshEndpoint, beanContext);
+        this.canStop = stopEndpoint != null;
+        this.controlPanelPath = ControlPanelModuleConfiguration.DEFAULT_PATH;
+    }
+
+    @Inject
     public ControlPanelController(ControlPanelRepository repository, BeanContext beanContext,
                                   @Nullable RefreshEndpoint refreshEndpoint,
                                   @Nullable ServerStopEndpoint stopEndpoint,
