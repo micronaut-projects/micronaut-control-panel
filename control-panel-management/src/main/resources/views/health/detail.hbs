@@ -10,7 +10,16 @@
         {{#each details as |subDetails|}}
             {{#if subDetails.details}}
                 {{#partialExists (stringFormat "views/health/%s" (cut @key '()'))}}
-                    <div class="card card-success">
+                    {{#eq subDetails.status.name 'UP'}}
+                        <div class="card card-success">
+                    {{/eq}}
+                    {{#eq subDetails.status.name 'DOWN'}}
+                        <div class="card card-danger">
+                    {{/eq}}
+                    {{#eq subDetails.status.name 'UNKNOWN'}}
+                        <div class="card card-warning">
+                    {{/eq}}
+
                         <div class="card-header">
                             <h3 class="card-title">{{titleize (decamelize (cut @key '()')) }}</h3>
                         </div>
