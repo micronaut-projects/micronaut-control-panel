@@ -19,6 +19,7 @@ import io.micronaut.context.BeanContext;
 import io.micronaut.context.env.Environment;
 import io.micronaut.controlpanel.core.ControlPanel;
 import io.micronaut.controlpanel.core.ControlPanelRepository;
+import io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration;
 import io.micronaut.controlpanel.ui.util.EndpointUtils;
 import io.micronaut.core.annotation.Nullable;
 import io.micronaut.http.annotation.Controller;
@@ -47,10 +48,12 @@ public class ControlPanelController implements ControlPanelApi {
     private final Set<String> activeEnvironments;
     private final boolean canRefresh;
     private final boolean canStop;
+    private final String controlPanelPath;
 
     public ControlPanelController(ControlPanelRepository repository, BeanContext beanContext,
                                   @Nullable RefreshEndpoint refreshEndpoint,
-                                  @Nullable ServerStopEndpoint stopEndpoint) {
+                                  @Nullable ServerStopEndpoint stopEndpoint,
+                                  ControlPanelModuleConfiguration configuration) {
         ApplicationConfiguration applicationConfiguration = beanContext.getBean(ApplicationConfiguration.class);
         Environment environment = beanContext.getBean(Environment.class);
         this.repository = repository;
@@ -58,6 +61,7 @@ public class ControlPanelController implements ControlPanelApi {
         this.activeEnvironments = environment.getActiveNames();
         this.canRefresh = EndpointUtils.canRefresh(refreshEndpoint, beanContext);
         this.canStop = stopEndpoint != null;
+        this.controlPanelPath = configuration.getPath();
     }
 
     @View("layout")
@@ -74,6 +78,7 @@ public class ControlPanelController implements ControlPanelApi {
 
         var controlPanels = repository.findAllByCategory(categoryId);
         extraProperties.put("controlPanels", controlPanels);
+        extraProperties.put("controlPanelPath", controlPanelPath);
 
         var optionalCategory = repository.findCategoryById(categoryId);
         optionalCategory.ifPresent(category -> extraProperties.put("currentCategory", category));
@@ -87,6 +92,7 @@ public class ControlPanelController implements ControlPanelApi {
     public Model detail(String controlPanelName) {
         var categories = repository.findAllCategories();
         Map<String, Object> extraProperties = new HashMap<>();
+        extraProperties.put("controlPanelPath", controlPanelPath);
 
         var optionalControlPanel = repository.findByName(controlPanelName);
         if (optionalControlPanel.isPresent()) {
