@@ -3,6 +3,7 @@ package io.micronaut.controlpanel.panels.management
 import io.micronaut.context.ApplicationContext
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration
 import io.micronaut.inject.qualifiers.Qualifiers
+import jakarta.inject.Singleton
 import spock.lang.Specification
 
 class BeansControlPanelSpec extends Specification {
@@ -35,6 +36,25 @@ class BeansControlPanelSpec extends Specification {
         then:
         !cfg.enabled
         !ctx.containsBean(BeansControlPanel)
+
+        cleanup:
+        ctx.stop()
+    }
+
+    void "it handles primitive type beans correctly"() {
+        given:
+        def ctx = ApplicationContext.run()
+        
+        // Register a primitive type bean
+        ctx.registerSingleton(int.class, 42)
+
+        when:
+        def panel = ctx.getBean(BeansControlPanel)
+
+        then:
+        panel != null
+        panel.body.micronautBeansByPackage() != null
+        panel.body.otherBeansByPackage() != null
 
         cleanup:
         ctx.stop()
