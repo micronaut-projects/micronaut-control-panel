@@ -84,6 +84,7 @@ public class RoutesControlPanel extends AbstractControlPanel<RoutesControlPanel.
     private static LinkedHashMap<String, List<UriRouteInfo<?, ?>>> computeRoutes(Router router, Predicate<UriRouteInfo<?, ?>> filter) {
         return router.uriRoutes()
             .filter(filter)
+            .distinct()
             .sorted(COMPARATOR_BY_URI.thenComparing(UriRouteInfo::getHttpMethodName))
             .collect(Collectors.groupingBy(KEY_MAPPER, LinkedHashMap::new, Collectors.toList()));
     }
