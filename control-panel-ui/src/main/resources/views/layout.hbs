@@ -156,7 +156,7 @@
     <!-- Main Sidebar Container -->
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
         <!-- Brand Logo -->
-        <a href="/control-panel" class="brand-link">
+        <a href="{{ext.controlPanelPath}}" class="brand-link">
             <img src="https://docs.micronaut.io/latest/img/micronaut-logo-white.svg" alt="Micronaut Logo" class="brand-image" style="opacity: .8">
             <span class="brand-text font-weight-light">&nbsp;</span>
         </a>
@@ -171,7 +171,7 @@
                          with font-awesome or any other icon font library -->
                     {{#each categories as |category|}}
                         <li class="nav-item">
-                            <a href="/control-panel/categories/{{ category.id }}" class="nav-link {{#eq currentCategory.id category.id}}active{{/eq}}">
+                            <a href="{{ext.controlPanelPath}}/categories/{{ category.id }}" class="nav-link {{#eq currentCategory.id category.id}}active{{/eq}}">
                                 <i class="nav-icon fas {{ category.iconClass }}"></i>
                                 <p>{{ category.name }}</p>
                             </a>
@@ -194,7 +194,7 @@
                         <nav aria-label="breadcrumb">
                             <ol class="breadcrumb">
                                 {{#if ext.controlPanel }}
-                                    <li class="breadcrumb-item"><a href="/control-panel/categories/{{ ext.currentCategory.id }}"><i class="fas {{ ext.currentCategory.iconClass }}"></i> {{ ext.currentCategory.name }}</a></li>
+                                    <li class="breadcrumb-item"><a href="{{ext.controlPanelPath}}/categories/{{ ext.currentCategory.id }}"><i class="fas {{ ext.currentCategory.iconClass }}"></i> {{ ext.currentCategory.name }}</a></li>
                                     <li class="breadcrumb-item active" aria-current="page">{{ext.controlPanel.title}}</li>
                                 {{else}}
                                     <li class="breadcrumb-item active"><i class="fas {{ ext.currentCategory.iconClass }}"></i> {{ ext.currentCategory.name }}</li>
