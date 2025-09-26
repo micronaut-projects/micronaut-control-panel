@@ -16,15 +16,15 @@
         <tbody>
             <tr>
                 <td>Total</td>
-                <td>{{binaryPrefix total }}</td>
+                <td>{{#if total}}{{binaryPrefix total }}{{else}}N/A{{/if}}</td>
             </tr>
             <tr>
                 <td>Free</td>
-                <td>{{binaryPrefix free }}</td>
+                <td>{{#if free}}{{binaryPrefix free }}{{else}}N/A{{/if}}</td>
             </tr>
             <tr>
                 <td>Threshold</td>
-                <td>{{binaryPrefix threshold }}</td>
+                <td>{{#if threshold}}{{binaryPrefix threshold }}{{else}}N/A{{/if}}</td>
             </tr>
         </tbody>
     </table>
