@@ -1,56 +1,475 @@
 [
-  {
-    "name": "com.github.jknack.handlebars.helper.ConditionalHelpers",
-    "allDeclaredConstructors": true,
-    "allPublicConstructors": true,
-    "allDeclaredMethods": true,
-    "allPublicMethods": true,
-    "allDeclaredFields": true,
-    "allPublicFields": true
-  },
-  {
-    "name": "com.github.jknack.handlebars.helper.StringHelpers",
-    "allDeclaredConstructors": true,
-    "allPublicConstructors": true,
-    "allDeclaredMethods": true,
-    "allPublicMethods": true,
-    "allDeclaredFields": true,
-    "allPublicFields": true
-  },
-  {
-    "name": "com.github.jknack.handlebars.HumanizeHelper",
-    "allDeclaredConstructors": true,
-    "allPublicConstructors": true,
-    "allDeclaredMethods": true,
-    "allPublicMethods": true,
-    "allDeclaredFields": true,
-    "allPublicFields": true
-  },
-  {
-    "name": "com.github.jknack.handlebars.Handlebars",
-    "allDeclaredConstructors": true,
-    "allPublicConstructors": true,
-    "allDeclaredMethods": true,
-    "allPublicMethods": true,
-    "allDeclaredFields": true,
-    "allPublicFields": true
-  },
-  {
-    "name": "com.github.jknack.handlebars.Template",
-    "allDeclaredConstructors": true,
-    "allPublicConstructors": true,
-    "allDeclaredMethods": true,
-    "allPublicMethods": true,
-    "allDeclaredFields": true,
-    "allPublicFields": true
-  },
-  {
-    "name": "com.github.jknack.handlebars.Context",
-    "allDeclaredConstructors": true,
-    "allPublicConstructors": true,
-    "allDeclaredMethods": true,
-    "allPublicMethods": true,
-    "allDeclaredFields": true,
-    "allPublicFields": true
-  }
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.HumanizeHelper$1"},
+  "name":"com.google.common.util.concurrent.AbstractFuture",
+  "fields":[{"name":"listeners"}, {"name":"value"}, {"name":"waiters"}]
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.HumanizeHelper$1"},
+  "name":"com.google.common.util.concurrent.AbstractFuture$Waiter",
+  "fields":[{"name":"next"}, {"name":"thread"}]
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.aop.Intercepted",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.aop.InterceptedProxy",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.context.DefaultBeanContext$AbstractExecutionHandle",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.context.DefaultBeanContext$BeanContextExecutionHandle",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.context.DefaultBeanContext$BeanContextUnsafeExecutionHandle",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.context.DefaultBeanContext$BeanExecutionHandle",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.controlpanel.core.AbstractControlPanel",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.controlpanel.core.ConfigurableControlPanel",
+  "queryAllDeclaredMethods":true,
+  "methods":[{"name":"getIcon","parameterTypes":[] }, {"name":"getTitle","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.Context"},
+  "name":"io.micronaut.controlpanel.core.ControlPanel"
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.Context$ParentFirst"},
+  "name":"io.micronaut.controlpanel.core.ControlPanel"
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.helper.LookupHelper"},
+  "name":"io.micronaut.controlpanel.core.ControlPanel"
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.controlpanel.core.ControlPanel",
+  "queryAllDeclaredMethods":true,
+  "methods":[{"name":"getBadge","parameterTypes":[] }, {"name":"getBody","parameterTypes":[] }, {"name":"getBodyView","parameterTypes":[] }, {"name":"getDetailedView","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.Options"},
+  "name":"io.micronaut.controlpanel.core.ControlPanel$Category",
+  "methods":[{"name":"iconClass","parameterTypes":[] }, {"name":"name","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.controlpanel.core.ControlPanel$Category",
+  "queryAllDeclaredMethods":true,
+  "methods":[{"name":"iconClass","parameterTypes":[] }, {"name":"id","parameterTypes":[] }, {"name":"name","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.Context$ParentFirst"},
+  "name":"io.micronaut.controlpanel.core.ControlPanel$View",
+  "methods":[{"name":"file","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.controlpanel.core.ControlPanel$View",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.controlpanel.core.panels.$RoutesControlPanel$Definition$Intercepted",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.controlpanel.core.panels.RoutesControlPanel",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.controlpanel.core.panels.RoutesControlPanel$Body",
+  "queryAllDeclaredMethods":true,
+  "methods":[{"name":"appRoutes","parameterTypes":[] }, {"name":"micronautRoutes","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.controlpanel.panels.management.$BeansControlPanel$Definition$Intercepted",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.controlpanel.panels.management.$EnvironmentControlPanel$Definition$Intercepted",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.controlpanel.panels.management.BeansControlPanel",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.controlpanel.panels.management.BeansControlPanel$Body",
+  "queryAllDeclaredMethods":true,
+  "methods":[{"name":"micronautBeansByPackage","parameterTypes":[] }, {"name":"otherBeansByPackage","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.controlpanel.panels.management.EnvironmentControlPanel",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.controlpanel.panels.management.HealthControlPanel",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.controlpanel.panels.management.LoggersControlPanel",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.controlpanel.panels.management.LoggersControlPanel$Body",
+  "queryAllDeclaredMethods":true,
+  "methods":[{"name":"levels","parameterTypes":[] }, {"name":"loggers","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.Options"},
+  "name":"io.micronaut.controlpanel.ui.Model",
+  "methods":[{"name":"ext","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.controlpanel.ui.Model",
+  "queryAllDeclaredMethods":true,
+  "methods":[{"name":"activeEnvironments","parameterTypes":[] }, {"name":"applicationName","parameterTypes":[] }, {"name":"canRefresh","parameterTypes":[] }, {"name":"canStop","parameterTypes":[] }, {"name":"categories","parameterTypes":[] }, {"name":"contentView","parameterTypes":[] }, {"name":"ext","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.core.annotation.AnnotatedElement",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.core.annotation.AnnotationMetadata",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.core.annotation.AnnotationMetadataDelegate",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.core.annotation.AnnotationMetadataProvider",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.core.annotation.AnnotationSource",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.core.naming.Named",
+  "queryAllDeclaredMethods":true,
+  "methods":[{"name":"getName","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.core.order.Ordered",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.core.util.Toggleable",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.health.HealthStatus",
+  "queryAllDeclaredMethods":true,
+  "methods":[{"name":"getName","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.http.uri.UriMatcher",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.inject.ExecutionHandle",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.inject.MethodExecutionHandle",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.inject.MethodReference",
+  "queryAllDeclaredMethods":true,
+  "methods":[{"name":"getArguments","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.inject.UnsafeExecutionHandle",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.inject.proxy.InterceptedBean",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.inject.proxy.InterceptedBeanProxy",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.inject.qualifiers.Qualified",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.logging.LogLevel",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.management.health.indicator.DefaultHealthResult",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.management.health.indicator.HealthResult",
+  "queryAllDeclaredMethods":true,
+  "methods":[{"name":"getDetails","parameterTypes":[] }, {"name":"getStatus","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.web.router.DefaultMethodBasedRouteInfo",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.web.router.DefaultRequestMatcher",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.web.router.DefaultRouteInfo",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.web.router.DefaultUrlRouteInfo",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.web.router.MethodBasedRouteInfo",
+  "queryAllDeclaredMethods":true,
+  "methods":[{"name":"getTargetMethod","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.web.router.RequestMatcher",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.web.router.RouteInfo",
+  "queryAllDeclaredMethods":true,
+  "methods":[{"name":"getConsumes","parameterTypes":[] }, {"name":"getProduces","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.web.router.UriRouteInfo",
+  "queryAllDeclaredMethods":true,
+  "methods":[{"name":"getHttpMethodName","parameterTypes":[] }, {"name":"getUriMatchTemplate","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.helper.ConditionalHelpers$2"},
+  "name":"java.io.Serializable",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"java.io.Serializable",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.helper.ConditionalHelpers$2"},
+  "name":"java.lang.CharSequence",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"java.lang.Cloneable",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.helper.ConditionalHelpers$2"},
+  "name":"java.lang.Comparable",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"java.lang.Comparable",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"java.lang.Enum",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"java.lang.Iterable",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"java.lang.Record",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.helper.ConditionalHelpers$2"},
+  "name":"java.lang.String",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.helper.ConditionalHelpers$2"},
+  "name":"java.lang.constant.Constable",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"java.lang.constant.Constable",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.helper.ConditionalHelpers$2"},
+  "name":"java.lang.constant.ConstantDesc",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"java.util.AbstractCollection",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"java.util.AbstractList",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"java.util.AbstractMap",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"java.util.ArrayList",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"java.util.Collection",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"java.util.Collections$EmptyMap",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"java.util.HashMap",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"java.util.LinkedHashMap",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"java.util.List",
+  "queryAllDeclaredMethods":true,
+  "methods":[{"name":"size","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"java.util.Map",
+  "queryAllDeclaredMethods":true,
+  "methods":[{"name":"size","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.Partial"},
+  "name":"java.util.Map",
+  "methods":[{"name":"isEmpty","parameterTypes":[] }, {"name":"size","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"java.util.RandomAccess",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"java.util.SequencedCollection",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"java.util.SequencedMap",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"reactor.core.publisher.FlatMapTracker",
+  "fields":[{"name":"size"}]
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"reactor.core.publisher.FluxFlatMap$FlatMapInner",
+  "fields":[{"name":"s"}]
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"reactor.core.publisher.FluxFlatMap$FlatMapMain",
+  "fields":[{"name":"error"}, {"name":"requested"}, {"name":"wip"}]
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"reactor.core.publisher.FluxIterable$IterableSubscription",
+  "fields":[{"name":"requested"}]
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"reactor.core.publisher.Operators$BaseFluxToMonoOperator",
+  "fields":[{"name":"state"}]
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.HumanizeHelper$1"},
+  "name":"sun.misc.Unsafe",
+  "allDeclaredFields":true
+}
 ]
