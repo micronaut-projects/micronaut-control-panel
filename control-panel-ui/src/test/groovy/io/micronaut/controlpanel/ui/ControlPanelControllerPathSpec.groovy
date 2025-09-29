@@ -36,4 +36,28 @@ class ControlPanelControllerPathSpec extends Specification {
         status == HttpStatus.OK
     }
 
+    void "control panel HTML templates use the custom path in links"() {
+        given:
+        def customPath = "/admin"
+        def server = ApplicationContext.run(EmbeddedServer, [(ControlPanelModuleConfiguration.PROPERTY_PATH): customPath] as Map)
+        def ctx = server.applicationContext
+        def client = ctx.createBean(HttpClient, server.URL).toBlocking()
+
+        when:
+        def response = client.exchange(customPath, String)
+
+        then:
+        response.status() == HttpStatus.OK
+        def html = response.body()
+
+        // Check that the brand logo link uses the custom path
+        html.contains('href="/admin"')
+
+        // Check that category links use the custom path
+        html.contains('href="/admin/categories/')
+
+        // Check that control panel detail links use the custom path (if present in index view)
+        html.contains('"/admin/') && !html.contains('"/control-panel/')
+    }
+
 }
