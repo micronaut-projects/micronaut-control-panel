@@ -53,4 +53,5 @@ graalvmNative {
         resources.autodetect()
         quickBuild.set(true)
     }
+    testSupport.set(false)
 }
