@@ -51,15 +51,27 @@ public class BeansControlPanel extends AbstractControlPanel<BeansControlPanel.Bo
     public static final String ENABLED_PROPERTY = ControlPanelConfiguration.PREFIX + "." + NAME + ".enabled";
 
     private static final Function<BeanDefinition<?>, String> BY_PACKAGE =
-        bd -> bd.getBeanType().getPackage().getName();
+        bd -> {
+            Package pkg = bd.getBeanType().getPackage();
+            return pkg != null ? pkg.getName() : "primitive";
+        };
 
     private static final Function<BeanDefinition<?>, String> BY_MICRONAUT_PACKAGE =
-        bd -> bd.getBeanType().getPackage().getName().replaceAll("io\\.micronaut\\.(\\w+).*", "$1");
+        bd -> {
+            Package pkg = bd.getBeanType().getPackage();
+            if (pkg == null) {
+                return "primitive";
+            }
+            return pkg.getName().replaceAll("io\\.micronaut\\.(\\w+).*", "$1");
+        };
 
     private static final Comparator<Object> COMPARATOR_BY_NAME = Comparator.comparing(bd -> bd.getClass().getName());
 
     private static final Predicate<BeanDefinition<?>> IS_MICRONAUT_PACKAGE =
-        bd -> bd.getBeanType().getPackage().getName().startsWith("io.micronaut");
+        bd -> {
+            Package pkg = bd.getBeanType().getPackage();
+            return pkg != null && pkg.getName().startsWith("io.micronaut");
+        };
 
     private final Body body;
 
