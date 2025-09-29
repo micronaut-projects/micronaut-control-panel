@@ -51,6 +51,6 @@ graalvmNative {
     }
     binaries.all {
         resources.autodetect()
-        buildArgs.add('-Ob')
+        quickBuild.set(true)
     }
 }
