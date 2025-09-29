@@ -17,12 +17,13 @@ api:controlpanel.core.AbstractControlPanel[]. For example:
 
 snippet::example.MyApplicationControlPanel[project-base="doc-examples/example", source="main", indent="0", tags="class"]
 
-<1> The `String` type parameter indicates the object type of the body. You can use your own classes or records to return
-    custom data to the view. In this example, the control panel only returns a message.
+<1> The type parameter indicates the object type of the body. You can use your own classes or records to return
+    custom data to the view.
 <2> Unique name for your control panel. This is used for the configuration properties prefix. In this case:
     `micronaut.control-panel.panels.my-application`.
-<3> Call the parent constructor. You could inject any other beans in this constructor.
+<3> Call the parent constructor. You can inject any other beans in this constructor.
 <4> The category under which the control panel will be displayed, if other than the default.
+<5> Use `@ReflectiveAccess` for GraalVM Native Image compatibility.
 
 Check the api:controlpanel.core.ControlPanel[] interface to see the other methods that can be overridden, for example,
 to display a badge in the control panel header.

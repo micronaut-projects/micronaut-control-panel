@@ -18,6 +18,7 @@ package io.micronaut.controlpanel.core.panels;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.controlpanel.core.AbstractControlPanel;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
+import io.micronaut.core.annotation.ReflectiveAccess;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.runtime.context.scope.Refreshable;
 import io.micronaut.web.router.Router;
@@ -89,5 +90,6 @@ public class RoutesControlPanel extends AbstractControlPanel<RoutesControlPanel.
             .collect(Collectors.groupingBy(KEY_MAPPER, LinkedHashMap::new, Collectors.toList()));
     }
 
+    @ReflectiveAccess
     record Body(Map<String, List<UriRouteInfo<?, ?>>> appRoutes, Map<String, List<UriRouteInfo<?, ?>>> micronautRoutes) { }
 }

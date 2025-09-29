@@ -18,6 +18,7 @@ package io.micronaut.controlpanel.panels.management;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.controlpanel.core.AbstractControlPanel;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
+import io.micronaut.core.annotation.ReflectiveAccess;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.logging.LogLevel;
 import io.micronaut.management.endpoint.loggers.LoggerConfiguration;
@@ -77,5 +78,6 @@ public class LoggersControlPanel extends AbstractControlPanel<LoggersControlPane
             .filter(loggerConfiguration -> loggerConfiguration.configuredLevel() != LogLevel.NOT_SPECIFIED);
     }
 
-    record Body(List<LogLevel> levels, Map<String, Map<String, Object>> loggers) { }
+    @ReflectiveAccess
+    public record Body(List<LogLevel> levels, Map<String, Map<String, Object>> loggers) { }
 }
