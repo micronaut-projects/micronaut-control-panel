@@ -11,7 +11,7 @@ micronaut {
     version libs.versions.micronaut.platform.get()
     coreVersion.set(libs.versions.micronaut.asProvider().get())
     runtime("netty")
-    testRuntime("spock2")
+    testRuntime("junit5")
 }
 
 dependencies {
@@ -26,6 +26,7 @@ dependencies {
     runtimeOnly mn.snakeyaml
 
     testImplementation mn.micronaut.http.client
+    testImplementation mnTest.micronaut.test.junit5
 }
 graalvmNative {
     agent {
@@ -53,5 +54,4 @@ graalvmNative {
         resources.autodetect()
         quickBuild.set(true)
     }
-    testSupport.set(false)
 }
