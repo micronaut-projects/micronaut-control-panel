@@ -29,7 +29,6 @@ import jakarta.inject.Singleton;
  * This filter can be enabled by setting the configuration property:
  * {@code micronaut.control-panel.env.show-values=true}
  *
- * @author Copilot
  * @since 1.8.0
  */
 @Singleton

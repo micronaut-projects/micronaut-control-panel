@@ -64,24 +64,6 @@ micronaut:
 This will show all values apart from those that contain the words `password`, `credential`, `certificate`, `key`,
 `secret` or `token` anywhere in their name.
 
-Alternatively, you can provide your own implementation of the
-https://docs.micronaut.io/latest/api/io/micronaut/management/endpoint/env/EnvironmentEndpointFilter.html[`EnvironmentEndpointFilter`]
-interface and register it as a bean. For example:
-
-.Custom environment endpoint filter
-[source,java]
-----
-@Singleton
-@Requires(env = Environment.DEVELOPMENT)
-public class CustomEnvironmentEndpointFilter implements EnvironmentEndpointFilter {
-
-    @Override
-    public void specifyFiltering(@NonNull EnvironmentFilterSpecification specification) {
-        specification.legacyMasking();
-    }
-}
-----
-
 === Bean Definitions
 
 This panel displays all the beans, and their relationships, grouped by packages. It relies on the
