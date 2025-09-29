@@ -24,7 +24,7 @@ class MyApplicationControlPanelSpec extends Specification {
         panel.title == "My Application Control Panel"
         panel.icon == "fa-plug"
         panel.order == 10
-        panel.body == "This is an application-provided control panel. This text is coming from the body."
+        panel.body.text() == "This is an application-provided control panel. This text is coming from the body."
 
         cleanup:
         ctx.stop()
