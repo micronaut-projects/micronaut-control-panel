@@ -78,6 +78,12 @@ public class LoggersControlPanel extends AbstractControlPanel<LoggersControlPane
             .filter(loggerConfiguration -> loggerConfiguration.configuredLevel() != LogLevel.NOT_SPECIFIED);
     }
 
+    /**
+     * Represents the body of this control panel, which contains the list of loggers and their corresponding log levels.
+     *
+     * @param levels  the list of available log levels
+     * @param loggers a map of logger names to their corresponding data
+     */
     @ReflectiveAccess
     public record Body(List<LogLevel> levels, Map<String, Map<String, Object>> loggers) { }
 }

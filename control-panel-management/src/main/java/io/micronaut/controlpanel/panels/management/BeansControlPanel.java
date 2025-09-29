@@ -104,6 +104,12 @@ public class BeansControlPanel extends AbstractControlPanel<BeansControlPanel.Bo
             .collect(Collectors.groupingBy(groupBy, LinkedHashMap::new, Collectors.mapping(beanDefinitionData::getData, Collectors.toList())));
     }
 
+    /**
+     * The body of the panel, which contains information about the Micronaut and non-Micronaut beans loaded in the application.
+     *
+     * @param micronautBeansByPackage a map of Micronaut beans by package
+     * @param otherBeansByPackage a map of non-Micronaut beans by package
+     */
     @ReflectiveAccess
     public record Body(
         Map<String, List<Map<String, Object>>> micronautBeansByPackage,
