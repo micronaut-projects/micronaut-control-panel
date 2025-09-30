@@ -109,7 +109,7 @@
         <h1>Micronaut Control Panel</h1>
         <p></p>
         <p>The Micronaut Control Panel module provides a web UI that allows you to view and manage the state of your Micronaut application, typically in a development environment.</p>
-        <p><strong>Version:</strong> 1.8.0 </p>
+        <p><strong>Version:</strong> 1.8.1 </p>
     </div>
     
 <h1 id="introduction"><a class="anchor" href="#introduction"></a>1 Introduction</h1>
@@ -589,22 +589,69 @@ endpoints.env.sensitive=false</code></pre>
 </div>
 <div class="paragraph">
 <p>Also, by default, all the values will be masked. If you want to see the actual configuration values in the control panel,
-you need to provide an implementation of the
-<a href="https://docs.micronaut.io/latest/api/io/micronaut/management/endpoint/env/EnvironmentEndpointFilter.html"><code>EnvironmentEndpointFilter</code></a>
-interface and register it as a bean. For example:</p>
+you can enable the built-in filter by setting the following configuration property:</p>
 </div>
-<div class="listingblock">
+<div class="openblock">
 <div class="title">Displaying the actual configuration values</div>
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Singleton
-@Requires(env = Environment.DEVELOPMENT)
-public class AllPlainEnvironmentEndpointFilter implements EnvironmentEndpointFilter {
-
-    @Override
-    public void specifyFiltering(@NonNull EnvironmentFilterSpecification specification) {
-        specification.legacyMasking();
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">micronaut.control-panel.env.show-values=true</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">micronaut:
+  control-panel:
+    env:
+      show-values: true</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[micronaut]
+  [micronaut.control-panel]
+    [micronaut.control-panel.env]
+      show-values=true</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-groovy-config hljs" data-lang="groovy-config">micronaut {
+  controlPanel {
+    env {
+      showValues = true
     }
+  }
 }</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-hocon hljs" data-lang="hocon">{
+  micronaut {
+    control-panel {
+      env {
+        show-values = true
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json-config hljs" data-lang="json-config">{
+  "micronaut": {
+    "control-panel": {
+      "env": {
+        "show-values": true
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
 </div>
 </div>
 <div class="paragraph">
@@ -813,7 +860,7 @@ a default category called <code>Dashboard</code> that is used for all control pa
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Singleton
-public class MyApplicationControlPanel extends AbstractControlPanel&lt;String&gt; { // <b class="conum">(1)</b>
+public class MyApplicationControlPanel extends AbstractControlPanel&lt;MyApplicationControlPanel.Body&gt; { // <b class="conum">(1)</b>
 
     private static final String NAME = "my-application"; // <b class="conum">(2)</b>
 
@@ -822,14 +869,17 @@ public class MyApplicationControlPanel extends AbstractControlPanel&lt;String&gt
     }
 
     @Override
-    public String getBody() {
-        return "This is an application-provided control panel. This text is coming from the body.";
+    public Body getBody() {
+        return new Body("This is an application-provided control panel. This text is coming from the body.");
     }
 
     @Override
     public Category getCategory() {
         return new Category(NAME, "My Application", "fa-copy"); // <b class="conum">(4)</b>
     }
+
+    @ReflectiveAccess // <b class="conum">(5)</b>
+    public record Body(String text){}
 }</code></pre>
 </div>
 </div>
@@ -837,8 +887,8 @@ public class MyApplicationControlPanel extends AbstractControlPanel&lt;String&gt
 <table>
 <tr>
 <td><i class="conum" data-value="1"></i><b>1</b></td>
-<td>The <code>String</code> type parameter indicates the object type of the body. You can use your own classes or records to return
-custom data to the view. In this example, the control panel only returns a message.</td>
+<td>The type parameter indicates the object type of the body. You can use your own classes or records to return
+custom data to the view.</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="2"></i><b>2</b></td>
@@ -847,11 +897,15 @@ custom data to the view. In this example, the control panel only returns a messa
 </tr>
 <tr>
 <td><i class="conum" data-value="3"></i><b>3</b></td>
-<td>Call the parent constructor. You could inject any other beans in this constructor.</td>
+<td>Call the parent constructor. You can inject any other beans in this constructor.</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="4"></i><b>4</b></td>
 <td>The category under which the control panel will be displayed, if other than the default.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="5"></i><b>5</b></td>
+<td>Use <code>@ReflectiveAccess</code> for GraalVM Native Image compatibility.</td>
 </tr>
 </table>
 </div>
@@ -869,7 +923,8 @@ to display a badge in the control panel header.</p>
 <div class="content">
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">micronaut.control-panel.panels.my-application.title=My Application Control Panel
+<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">micronaut.control-panel.env.show-values=true
+micronaut.control-panel.panels.my-application.title=My Application Control Panel
 micronaut.control-panel.panels.my-application.icon=fa-plug
 micronaut.control-panel.panels.my-application.order=10</code></pre>
 </div>
@@ -878,6 +933,8 @@ micronaut.control-panel.panels.my-application.order=10</code></pre>
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">micronaut:
   control-panel:
+    env:
+      show-values: true # <b class="conum">(4)</b>
     panels:
       my-application:
         title: My Application Control Panel # <b class="conum">(1)</b>
@@ -889,6 +946,8 @@ micronaut.control-panel.panels.my-application.order=10</code></pre>
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[micronaut]
   [micronaut.control-panel]
+    [micronaut.control-panel.env]
+      show-values=true
     [micronaut.control-panel.panels]
       [micronaut.control-panel.panels.my-application]
         title="My Application Control Panel"
@@ -900,6 +959,9 @@ micronaut.control-panel.panels.my-application.order=10</code></pre>
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-groovy-config hljs" data-lang="groovy-config">micronaut {
   controlPanel {
+    env {
+      showValues = true
+    }
     panels {
       myApplication {
         title = "My Application Control Panel"
@@ -916,6 +978,9 @@ micronaut.control-panel.panels.my-application.order=10</code></pre>
 <pre class="highlightjs highlight"><code class="language-hocon hljs" data-lang="hocon">{
   micronaut {
     control-panel {
+      env {
+        show-values = true
+      }
       panels {
         my-application {
           title = "My Application Control Panel"
@@ -933,6 +998,9 @@ micronaut.control-panel.panels.my-application.order=10</code></pre>
 <pre class="highlightjs highlight"><code class="language-json-config hljs" data-lang="json-config">{
   "micronaut": {
     "control-panel": {
+      "env": {
+        "show-values": true
+      },
       "panels": {
         "my-application": {
           "title": "My Application Control Panel",
@@ -1003,7 +1071,7 @@ to access the body of our control panel example:</p>
 <div class="listingblock">
 <div class="title"><code>src/main/resources/views/my-application/detail.hbs</code>.</div>
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-html hljs" data-lang="html">{{ controlPanel.body }}</code></pre>
+<pre class="highlightjs highlight"><code class="language-html hljs" data-lang="html">{{ controlPanel.body.text }}</code></pre>
 </div>
 </div>
 </div>
