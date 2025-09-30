@@ -83,12 +83,38 @@ class AllPlainEnvironmentEndpointFilterSpec extends Specification {
         def endpoint = ctx.getBean(EnvironmentEndpoint)
         def filters = ctx.getBeansOfType(EnvironmentEndpointFilter)
         def environmentInfo = endpoint.getEnvironmentInfo()
+        // Build a combined properties map across all property sources
+        Map allProps = [:]
+        def propertySources = environmentInfo?.propertySources
+        propertySources?.each { ps ->
+            def props = ps.properties
+            if (props instanceof Map) {
+                props.each { k, v -> allProps[k] = v }
+            }
+        }
+        // Helper to extract the underlying value whether the entry is a Map or a bean with a 'value' property
+        def extractValue = { obj ->
+            if (obj == null) return null
+            if (obj instanceof Map) {
+                return obj.get('value')
+            }
+            try {
+                return obj.value
+            } catch (ignored) {
+                return obj?.toString()
+            }
+        }
+        def username = extractValue(allProps['test.username'])
+        def password = extractValue(allProps['test.password'])
 
         then:
         filters.size() == 1
         filters[0] instanceof AllPlainEnvironmentEndpointFilter
         environmentInfo != null
-        // The filter should be applied by the endpoint itself
+        // Plain value is exposed for non-sensitive properties
+        username == 'john'
+        // Sensitive values are not exposed in plain text when legacy masking is used
+        password != 'secret123'
 
         cleanup:
         ctx.stop()
