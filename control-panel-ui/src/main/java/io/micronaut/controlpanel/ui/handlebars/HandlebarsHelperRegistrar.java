@@ -123,16 +123,9 @@ class HandlebarsHelperRegistrar implements BeanCreatedEventListener<Handlebars> 
     }
 
     private static void enableCache(Handlebars handlebars) {
-        try {
-            handlebars.with(new HighConcurrencyTemplateCache());
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Configured Handlebars with HighConcurrencyTemplateCache");
-            }
-        } catch (Throwable t) {
-            // Never fail startup if cache cannot be configured
-            if (LOG.isWarnEnabled()) {
-                LOG.warn("Unable to configure HighConcurrencyTemplateCache: {}", t.getMessage());
-            }
+        handlebars.with(new HighConcurrencyTemplateCache());
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Configured Handlebars with HighConcurrencyTemplateCache");
         }
     }
 
@@ -203,53 +196,10 @@ class HandlebarsHelperRegistrar implements BeanCreatedEventListener<Handlebars> 
                 String protocol = root.getProtocol();
                 if ("file".equals(protocol)) {
                     // File-system resources (e.g., exploded classes)
-                    try {
-                        Path dir = Paths.get(root.toURI());
-                        if (Files.exists(dir) && Files.isDirectory(dir)) {
-                            Files.walk(dir)
-                                .filter(Files::isRegularFile)
-                                .filter(p -> p.getFileName().toString().endsWith(suffix))
-                                .forEach(p -> {
-                                    Path rel = dir.relativize(p);
-                                    String logical = rel.toString().replace('\\', '/');
-                                    logical = stripSuffix(logical, suffix);
-                                    results.add(logical);
-                                });
-                        }
-                    } catch (Exception e) {
-                        if (LOG.isDebugEnabled()) {
-                            LOG.debug("Error scanning file resources for Handlebars templates: {}", e.getMessage());
-                        }
-                    }
+                    processFileSystem(suffix, root, results);
                 } else if ("jar".equals(protocol)) {
                     // Templates packaged inside JARs
-                    try {
-                        JarURLConnection conn = (JarURLConnection) root.openConnection();
-                        String entryPrefix = conn.getEntryName();
-                        if (entryPrefix == null) {
-                            entryPrefix = prefix;
-                        }
-                        if (!entryPrefix.endsWith("/")) {
-                            entryPrefix = entryPrefix + "/";
-                        }
-                        try (JarFile jar = conn.getJarFile()) {
-                            Enumeration<JarEntry> entries = jar.entries();
-                            while (entries.hasMoreElements()) {
-                                JarEntry je = entries.nextElement();
-                                String name = je.getName();
-                                if (!je.isDirectory() && name.startsWith(entryPrefix) && name.endsWith(suffix)) {
-                                    String rel = name.substring(entryPrefix.length());
-                                    rel = rel.replace('\\', '/');
-                                    rel = stripSuffix(rel, suffix);
-                                    results.add(rel);
-                                }
-                            }
-                        }
-                    } catch (IOException e) {
-                        if (LOG.isDebugEnabled()) {
-                            LOG.debug("Error scanning JAR resources for Handlebars templates: {}", e.getMessage());
-                        }
-                    }
+                    processJar(prefix, suffix, root, results);
                 } else {
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("Unsupported URL protocol '{}' while scanning '{}'", protocol, root);
@@ -262,6 +212,58 @@ class HandlebarsHelperRegistrar implements BeanCreatedEventListener<Handlebars> 
             }
         }
         return results;
+    }
+
+    private static void processJar(final String prefix, final String suffix, final URL root, final Set<String> results) {
+        try {
+            JarURLConnection conn = (JarURLConnection) root.openConnection();
+            String entryPrefix = conn.getEntryName();
+            if (entryPrefix == null) {
+                entryPrefix = prefix;
+            }
+            if (!entryPrefix.endsWith("/")) {
+                entryPrefix = entryPrefix + "/";
+            }
+            try (JarFile jar = conn.getJarFile()) {
+                Enumeration<JarEntry> entries = jar.entries();
+                while (entries.hasMoreElements()) {
+                    JarEntry je = entries.nextElement();
+                    String name = je.getName();
+                    if (!je.isDirectory() && name.startsWith(entryPrefix) && name.endsWith(suffix)) {
+                        String rel = name.substring(entryPrefix.length());
+                        rel = rel.replace('\\', '/');
+                        rel = stripSuffix(rel, suffix);
+                        results.add(rel);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Error scanning JAR resources for Handlebars templates: {}", e.getMessage());
+            }
+        }
+    }
+
+    private static void processFileSystem(final String suffix, final URL root, final Set<String> results) {
+        try {
+            Path dir = Paths.get(root.toURI());
+            if (Files.exists(dir) && Files.isDirectory(dir)) {
+                try(var stream = Files.walk(dir)) {
+                    stream.filter(Files::isRegularFile)
+                        .filter(p -> p.getFileName().toString().endsWith(suffix))
+                        .forEach(p -> {
+                            Path rel = dir.relativize(p);
+                            String logical = rel.toString().replace('\\', '/');
+                            logical = stripSuffix(logical, suffix);
+                            results.add(logical);
+                        });
+                }
+            }
+        } catch (Exception e) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Error scanning file resources for Handlebars templates: {}", e.getMessage());
+            }
+        }
     }
 
     private static String stripSuffix(String name, String suffix) {
