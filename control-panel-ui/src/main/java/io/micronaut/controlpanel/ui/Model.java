@@ -17,6 +17,7 @@ package io.micronaut.controlpanel.ui;
 
 
 import io.micronaut.controlpanel.core.ControlPanel;
+import io.micronaut.core.annotation.ReflectiveAccess;
 
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,7 @@ import java.util.Set;
  * @param canStop Whether the host application can be stopped.
  * @param ext Any additional data to be passed to the view.
  */
+@ReflectiveAccess
 public record Model(
     List<ControlPanel.Category> categories,
     String applicationName,
@@ -45,6 +47,7 @@ public record Model(
     /**
      * Content view to be rendered by the control panel.
      */
+    @ReflectiveAccess
     enum ContentView {
         INDEX, DETAIL
     }

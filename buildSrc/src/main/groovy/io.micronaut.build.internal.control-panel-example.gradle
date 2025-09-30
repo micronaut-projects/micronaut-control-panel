@@ -1,6 +1,6 @@
 plugins {
     id 'groovy'
-    id 'io.micronaut.minimal.application'
+    id 'io.micronaut.application'
 }
 
 application {
@@ -11,7 +11,7 @@ micronaut {
     version libs.versions.micronaut.platform.get()
     coreVersion.set(libs.versions.micronaut.asProvider().get())
     runtime("netty")
-    testRuntime("spock2")
+    testRuntime("junit5")
 }
 
 dependencies {
@@ -26,4 +26,32 @@ dependencies {
     runtimeOnly mn.snakeyaml
 
     testImplementation mn.micronaut.http.client
+    testImplementation mnTest.micronaut.test.junit5
+}
+graalvmNative {
+    agent {
+        enabled.set(true)
+        defaultMode.set("conditional")
+        modes {
+            conditional {
+                userCodeFilterPath.set("src/main/native-image/filters/user-code-filter.json")
+                callerFilterFiles.from("src/main/native-image/filters/user-code-filter.json")
+                accessFilterFiles.from("src/main/native-image/filters/user-code-filter.json")
+                builtinCallerFilter.set(true)
+                builtinHeuristicFilter.set(true)
+                enableExperimentalPredefinedClasses.set(true)
+                enableExperimentalUnsafeAllocationTracing.set(true)
+                trackReflectionMetadata.set(true)
+            }
+        }
+    }
+    metadataCopy {
+        inputTaskNames.add("run")
+        outputDirectories.add("${rootDir.toString()}/control-panel-ui/src/main/resources/META-INF/native-image/io.micronaut.controlpanel/micronaut-control-panel-ui")
+        mergeWithExisting.set(false)
+    }
+    binaries.all {
+        resources.autodetect()
+        quickBuild.set(true)
+    }
 }

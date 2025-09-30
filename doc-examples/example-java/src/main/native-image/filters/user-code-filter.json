@@ -1,0 +1,13 @@
+{
+  "rules": [
+    {
+      "includeClasses": "com.github.jknack.**"
+    }
+  ],
+  "regexRules": [
+
+    {
+      "excludeClasses": ".*\\$\\$Generated[0-9]+"
+    }
+  ]
+}

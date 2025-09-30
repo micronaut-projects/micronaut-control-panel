@@ -15,6 +15,8 @@
  */
 package io.micronaut.controlpanel.core;
 
+import io.micronaut.core.annotation.ReflectiveAccess;
+
 import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
 
 /**
@@ -80,6 +82,7 @@ public interface ControlPanel<B> extends ConfigurableControlPanel {
      * @param iconClass category icon class, displayed in the menu.
      * @param order category order, used to sort the menu items.
      */
+    @ReflectiveAccess
     record Category (String id, String name, String iconClass, Integer order) {
         public static final Category MAIN = new Category("main", "Dashboard", "fa-tachometer-alt", Integer.MIN_VALUE);
 
@@ -92,6 +95,7 @@ public interface ControlPanel<B> extends ConfigurableControlPanel {
      * View to be rendered by the control panel.
      * @param file view path in the classpath.
      */
+    @ReflectiveAccess
     record View (String file) { }
 
 }
