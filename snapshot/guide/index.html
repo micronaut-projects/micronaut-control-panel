@@ -589,22 +589,69 @@ endpoints.env.sensitive=false</code></pre>
 </div>
 <div class="paragraph">
 <p>Also, by default, all the values will be masked. If you want to see the actual configuration values in the control panel,
-you need to provide an implementation of the
-<a href="https://docs.micronaut.io/latest/api/io/micronaut/management/endpoint/env/EnvironmentEndpointFilter.html"><code>EnvironmentEndpointFilter</code></a>
-interface and register it as a bean. For example:</p>
+you can enable the built-in filter by setting the following configuration property:</p>
 </div>
-<div class="listingblock">
+<div class="openblock">
 <div class="title">Displaying the actual configuration values</div>
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Singleton
-@Requires(env = Environment.DEVELOPMENT)
-public class AllPlainEnvironmentEndpointFilter implements EnvironmentEndpointFilter {
-
-    @Override
-    public void specifyFiltering(@NonNull EnvironmentFilterSpecification specification) {
-        specification.legacyMasking();
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">micronaut.control-panel.env.show-values=true</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">micronaut:
+  control-panel:
+    env:
+      show-values: true</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[micronaut]
+  [micronaut.control-panel]
+    [micronaut.control-panel.env]
+      show-values=true</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-groovy-config hljs" data-lang="groovy-config">micronaut {
+  controlPanel {
+    env {
+      showValues = true
     }
+  }
 }</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-hocon hljs" data-lang="hocon">{
+  micronaut {
+    control-panel {
+      env {
+        show-values = true
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json-config hljs" data-lang="json-config">{
+  "micronaut": {
+    "control-panel": {
+      "env": {
+        "show-values": true
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
 </div>
 </div>
 <div class="paragraph">
@@ -876,7 +923,8 @@ to display a badge in the control panel header.</p>
 <div class="content">
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">micronaut.control-panel.panels.my-application.title=My Application Control Panel
+<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">micronaut.control-panel.env.show-values=true
+micronaut.control-panel.panels.my-application.title=My Application Control Panel
 micronaut.control-panel.panels.my-application.icon=fa-plug
 micronaut.control-panel.panels.my-application.order=10</code></pre>
 </div>
@@ -885,6 +933,8 @@ micronaut.control-panel.panels.my-application.order=10</code></pre>
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">micronaut:
   control-panel:
+    env:
+      show-values: true # <b class="conum">(4)</b>
     panels:
       my-application:
         title: My Application Control Panel # <b class="conum">(1)</b>
@@ -896,6 +946,8 @@ micronaut.control-panel.panels.my-application.order=10</code></pre>
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[micronaut]
   [micronaut.control-panel]
+    [micronaut.control-panel.env]
+      show-values=true
     [micronaut.control-panel.panels]
       [micronaut.control-panel.panels.my-application]
         title="My Application Control Panel"
@@ -907,6 +959,9 @@ micronaut.control-panel.panels.my-application.order=10</code></pre>
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-groovy-config hljs" data-lang="groovy-config">micronaut {
   controlPanel {
+    env {
+      showValues = true
+    }
     panels {
       myApplication {
         title = "My Application Control Panel"
@@ -923,6 +978,9 @@ micronaut.control-panel.panels.my-application.order=10</code></pre>
 <pre class="highlightjs highlight"><code class="language-hocon hljs" data-lang="hocon">{
   micronaut {
     control-panel {
+      env {
+        show-values = true
+      }
       panels {
         my-application {
           title = "My Application Control Panel"
@@ -940,6 +998,9 @@ micronaut.control-panel.panels.my-application.order=10</code></pre>
 <pre class="highlightjs highlight"><code class="language-json-config hljs" data-lang="json-config">{
   "micronaut": {
     "control-panel": {
+      "env": {
+        "show-values": true
+      },
       "panels": {
         "my-application": {
           "title": "My Application Control Panel",
