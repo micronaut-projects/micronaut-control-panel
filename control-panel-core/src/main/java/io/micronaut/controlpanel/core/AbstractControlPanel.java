@@ -17,6 +17,7 @@ package io.micronaut.controlpanel.core;
 
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.core.annotation.NonNull;
+import io.micronaut.core.annotation.ReflectiveAccess;
 
 /**
  * Base class for control panels that can delegate some of its values to a {@link ControlPanelConfiguration}.
@@ -26,6 +27,7 @@ import io.micronaut.core.annotation.NonNull;
  * @author Álvaro Sánchez-Mariscal
  * @since 1.0.0
  */
+@ReflectiveAccess
 public abstract class AbstractControlPanel<B> implements ControlPanel<B> {
 
     @NonNull

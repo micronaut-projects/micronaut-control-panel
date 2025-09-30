@@ -19,6 +19,7 @@ import io.micronaut.context.BeanContext;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.controlpanel.core.AbstractControlPanel;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
+import io.micronaut.core.annotation.ReflectiveAccess;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.inject.BeanDefinition;
 import io.micronaut.management.endpoint.beans.BeansEndpoint;
@@ -103,7 +104,14 @@ public class BeansControlPanel extends AbstractControlPanel<BeansControlPanel.Bo
             .collect(Collectors.groupingBy(groupBy, LinkedHashMap::new, Collectors.mapping(beanDefinitionData::getData, Collectors.toList())));
     }
 
-    record Body(
+    /**
+     * The body of the panel, which contains information about the Micronaut and non-Micronaut beans loaded in the application.
+     *
+     * @param micronautBeansByPackage a map of Micronaut beans by package
+     * @param otherBeansByPackage a map of non-Micronaut beans by package
+     */
+    @ReflectiveAccess
+    public record Body(
         Map<String, List<Map<String, Object>>> micronautBeansByPackage,
         Map<String, List<Map<String, Object>>> otherBeansByPackage) {
     }

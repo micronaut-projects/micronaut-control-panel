@@ -1,0 +1,45 @@
+[
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.web.router.DefaultMethodBasedRouteInfo",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.web.router.DefaultRequestMatcher",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.web.router.DefaultRouteInfo",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.web.router.DefaultUrlRouteInfo",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.web.router.MethodBasedRouteInfo",
+  "queryAllDeclaredMethods":true,
+  "methods":[{"name":"getTargetMethod","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.web.router.RequestMatcher",
+  "queryAllDeclaredMethods":true
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.web.router.RouteInfo",
+  "queryAllDeclaredMethods":true,
+  "methods":[{"name":"getConsumes","parameterTypes":[] }, {"name":"getProduces","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.github.jknack.handlebars.internal.ForwardingTemplate"},
+  "name":"io.micronaut.web.router.UriRouteInfo",
+  "queryAllDeclaredMethods":true,
+  "methods":[{"name":"getHttpMethodName","parameterTypes":[] }, {"name":"getUriMatchTemplate","parameterTypes":[] }]
+}
+]
