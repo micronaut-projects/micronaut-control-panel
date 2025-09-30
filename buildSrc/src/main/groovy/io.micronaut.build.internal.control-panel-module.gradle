@@ -7,7 +7,7 @@ String ossIndexUsername = System.getenv("OSS_INDEX_USERNAME") ?: project.propert
 String ossIndexPassword = System.getenv("OSS_INDEX_PASSWORD") ?: project.properties["ossIndexPassword"]
 boolean sonatypePluginConfigured = ossIndexUsername != null && ossIndexPassword != null
 ossIndexAudit {
-    excludeCoordinates = ["com.google.guava:guava:18.0"]
+    excludeCoordinates = ["com.google.guava:guava:33.5.0-jre"]
     if (sonatypePluginConfigured) {
         username = ossIndexUsername
         password = ossIndexPassword
