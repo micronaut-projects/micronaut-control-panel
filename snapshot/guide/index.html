@@ -813,7 +813,7 @@ a default category called <code>Dashboard</code> that is used for all control pa
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Singleton
-public class MyApplicationControlPanel extends AbstractControlPanel&lt;String&gt; { // <b class="conum">(1)</b>
+public class MyApplicationControlPanel extends AbstractControlPanel&lt;MyApplicationControlPanel.Body&gt; { // <b class="conum">(1)</b>
 
     private static final String NAME = "my-application"; // <b class="conum">(2)</b>
 
@@ -822,14 +822,17 @@ public class MyApplicationControlPanel extends AbstractControlPanel&lt;String&gt
     }
 
     @Override
-    public String getBody() {
-        return "This is an application-provided control panel. This text is coming from the body.";
+    public Body getBody() {
+        return new Body("This is an application-provided control panel. This text is coming from the body.");
     }
 
     @Override
     public Category getCategory() {
         return new Category(NAME, "My Application", "fa-copy"); // <b class="conum">(4)</b>
     }
+
+    @ReflectiveAccess // <b class="conum">(5)</b>
+    public record Body(String text){}
 }</code></pre>
 </div>
 </div>
@@ -837,8 +840,8 @@ public class MyApplicationControlPanel extends AbstractControlPanel&lt;String&gt
 <table>
 <tr>
 <td><i class="conum" data-value="1"></i><b>1</b></td>
-<td>The <code>String</code> type parameter indicates the object type of the body. You can use your own classes or records to return
-custom data to the view. In this example, the control panel only returns a message.</td>
+<td>The type parameter indicates the object type of the body. You can use your own classes or records to return
+custom data to the view.</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="2"></i><b>2</b></td>
@@ -847,11 +850,15 @@ custom data to the view. In this example, the control panel only returns a messa
 </tr>
 <tr>
 <td><i class="conum" data-value="3"></i><b>3</b></td>
-<td>Call the parent constructor. You could inject any other beans in this constructor.</td>
+<td>Call the parent constructor. You can inject any other beans in this constructor.</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="4"></i><b>4</b></td>
 <td>The category under which the control panel will be displayed, if other than the default.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="5"></i><b>5</b></td>
+<td>Use <code>@ReflectiveAccess</code> for GraalVM Native Image compatibility.</td>
 </tr>
 </table>
 </div>
@@ -1003,7 +1010,7 @@ to access the body of our control panel example:</p>
 <div class="listingblock">
 <div class="title"><code>src/main/resources/views/my-application/detail.hbs</code>.</div>
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-html hljs" data-lang="html">{{ controlPanel.body }}</code></pre>
+<pre class="highlightjs highlight"><code class="language-html hljs" data-lang="html">{{ controlPanel.body.text }}</code></pre>
 </div>
 </div>
 </div>
