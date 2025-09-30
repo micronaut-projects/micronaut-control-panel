@@ -1,6 +1,8 @@
 #tag::control-panel[]
 micronaut:
   control-panel:
+    env:
+      show-values: true # <4>
     panels:
       my-application:
         title: My Application Control Panel # <1>
@@ -9,6 +11,14 @@ micronaut:
 #end::control-panel[]
   application:
     name: myApplication
+
+# Test properties to verify environment endpoint filtering
+test:
+  username: john
+  password: secret123
+  api-key: abc123
+  token: xyz789
+  normal-config: some-value
 netty:
   default:
     allocator:
