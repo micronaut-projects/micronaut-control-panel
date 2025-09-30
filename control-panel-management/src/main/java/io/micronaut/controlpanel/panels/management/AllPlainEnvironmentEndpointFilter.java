@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2023 original authors
+ * Copyright 2017-2025 original authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,10 @@
 package io.micronaut.controlpanel.panels.management;
 
 import io.micronaut.context.annotation.Requires;
+import io.micronaut.controlpanel.core.config.ControlPanelEnabledCondition;
 import io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration;
 import io.micronaut.core.annotation.NonNull;
+import io.micronaut.core.util.StringUtils;
 import io.micronaut.management.endpoint.env.EnvironmentEndpointFilter;
 import io.micronaut.management.endpoint.env.EnvironmentFilterSpecification;
 import jakarta.inject.Singleton;
@@ -25,15 +27,17 @@ import jakarta.inject.Singleton;
 /**
  * Built-in environment endpoint filter that can be enabled via configuration to display
  * actual configuration values with legacy masking (masking only sensitive keys like passwords).
- * 
+ *
  * This filter can be enabled by setting the configuration property:
  * {@code micronaut.control-panel.env.show-values=true}
  *
- * @since 1.8.0
+ * @author Álvaro Sánchez-Mariscal
+ * @since 1.8.1
  */
 @Singleton
-@Requires(property = AllPlainEnvironmentEndpointFilter.ENABLED_PROPERTY, value = "true")
+@Requires(property = AllPlainEnvironmentEndpointFilter.ENABLED_PROPERTY, value = StringUtils.TRUE, defaultValue = StringUtils.FALSE)
 @Requires(classes = EnvironmentEndpointFilter.class)
+@Requires(condition = ControlPanelEnabledCondition.class)
 public class AllPlainEnvironmentEndpointFilter implements EnvironmentEndpointFilter {
 
     public static final String ENABLED_PROPERTY = ControlPanelModuleConfiguration.PREFIX + ".env.show-values";
