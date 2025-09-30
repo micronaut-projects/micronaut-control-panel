@@ -18,6 +18,8 @@ package io.micronaut.controlpanel.ui.handlebars;
 import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.Helper;
 import com.github.jknack.handlebars.HumanizeHelper;
+import com.github.jknack.handlebars.cache.HighConcurrencyTemplateCache;
+import com.github.jknack.handlebars.io.TemplateLoader;
 import com.github.jknack.handlebars.helper.ConditionalHelpers;
 import com.github.jknack.handlebars.helper.StringHelpers;
 import io.micronaut.context.event.BeanCreatedEvent;
@@ -26,11 +28,26 @@ import io.micronaut.core.annotation.Internal;
 import io.micronaut.core.annotation.NonNull;
 import jakarta.inject.Singleton;
 
+import java.io.IOException;
+import java.net.JarURLConnection;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Internal
 @Singleton
 class HandlebarsHelperRegistrar implements BeanCreatedEventListener<Handlebars> {
+    private static final Logger LOG = LoggerFactory.getLogger(HandlebarsHelperRegistrar.class);
 
     @Override
     public Handlebars onCreated(@NonNull BeanCreatedEvent<Handlebars> event) {
@@ -43,6 +60,11 @@ class HandlebarsHelperRegistrar implements BeanCreatedEventListener<Handlebars> 
         handlebars.registerHelper("mod", modHelper());
         handlebars.registerHelper("size", (ctx, opts) -> ((Collection<?>) ctx).size());
         handlebars.registerHelper("partialExists", partialExistsHelper(handlebars));
+
+        // Enable a high concurrency template cache and precompile all templates/partials available on the classpath
+        enableCache(handlebars);
+        precompileAllTemplates(handlebars);
+
         return handlebars;
     }
 
@@ -98,5 +120,151 @@ class HandlebarsHelperRegistrar implements BeanCreatedEventListener<Handlebars> 
                 return opts.inverse(); // Partial doesn't exist, render the inverse block
             }
         };
+    }
+
+    private static void enableCache(Handlebars handlebars) {
+        try {
+            handlebars.with(new HighConcurrencyTemplateCache());
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Configured Handlebars with HighConcurrencyTemplateCache");
+            }
+        } catch (Throwable t) {
+            // Never fail startup if cache cannot be configured
+            if (LOG.isWarnEnabled()) {
+                LOG.warn("Unable to configure HighConcurrencyTemplateCache: {}", t.getMessage());
+            }
+        }
+    }
+
+    private static void precompileAllTemplates(Handlebars handlebars) {
+        TemplateLoader loader = handlebars.getLoader();
+        String prefix = normalizePrefix(loader);
+        String suffix = loader.getSuffix() != null ? loader.getSuffix() : ".hbs";
+
+        if (prefix.isEmpty()) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Template loader prefix is empty; skipping template precompilation.");
+            }
+            return;
+        }
+
+        Set<String> names = discoverTemplateNames(prefix, suffix);
+        if (names.isEmpty()) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("No Handlebars templates discovered under prefix '{}'", prefix);
+            }
+            return;
+        }
+
+        int compiled = 0;
+        for (String name : names) {
+            try {
+                // Compile by logical name (relative to the loader's prefix, without suffix)
+                handlebars.compile(name);
+                compiled++;
+            } catch (Exception e) {
+                // Don't fail startup on individual template failures; log at debug level
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Failed to precompile template '{}': {}", name, e.getMessage());
+                }
+            }
+        }
+        if (LOG.isInfoEnabled()) {
+            LOG.info("Precompiled {} Handlebars templates/partials from classpath (prefix='{}')", compiled, prefix);
+        }
+    }
+
+    @NonNull
+    private static String normalizePrefix(@NonNull TemplateLoader loader) {
+        String p = loader.getPrefix();
+        if (p == null) {
+            return "";
+        }
+        // Remove leading/trailing slashes
+        while (p.startsWith("/")) {
+            p = p.substring(1);
+        }
+        while (p.endsWith("/")) {
+            p = p.substring(0, p.length() - 1);
+        }
+        return p;
+    }
+
+    private static Set<String> discoverTemplateNames(String prefix, String suffix) {
+        Set<String> results = new HashSet<>();
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        if (cl == null) {
+            cl = HandlebarsHelperRegistrar.class.getClassLoader();
+        }
+        try {
+            Enumeration<URL> roots = cl.getResources(prefix);
+            while (roots.hasMoreElements()) {
+                URL root = roots.nextElement();
+                String protocol = root.getProtocol();
+                if ("file".equals(protocol)) {
+                    // File-system resources (e.g., exploded classes)
+                    try {
+                        Path dir = Paths.get(root.toURI());
+                        if (Files.exists(dir) && Files.isDirectory(dir)) {
+                            Files.walk(dir)
+                                .filter(Files::isRegularFile)
+                                .filter(p -> p.getFileName().toString().endsWith(suffix))
+                                .forEach(p -> {
+                                    Path rel = dir.relativize(p);
+                                    String logical = rel.toString().replace('\\', '/');
+                                    logical = stripSuffix(logical, suffix);
+                                    results.add(logical);
+                                });
+                        }
+                    } catch (Exception e) {
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("Error scanning file resources for Handlebars templates: {}", e.getMessage());
+                        }
+                    }
+                } else if ("jar".equals(protocol)) {
+                    // Templates packaged inside JARs
+                    try {
+                        JarURLConnection conn = (JarURLConnection) root.openConnection();
+                        String entryPrefix = conn.getEntryName();
+                        if (entryPrefix == null) {
+                            entryPrefix = prefix;
+                        }
+                        if (!entryPrefix.endsWith("/")) {
+                            entryPrefix = entryPrefix + "/";
+                        }
+                        try (JarFile jar = conn.getJarFile()) {
+                            Enumeration<JarEntry> entries = jar.entries();
+                            while (entries.hasMoreElements()) {
+                                JarEntry je = entries.nextElement();
+                                String name = je.getName();
+                                if (!je.isDirectory() && name.startsWith(entryPrefix) && name.endsWith(suffix)) {
+                                    String rel = name.substring(entryPrefix.length());
+                                    rel = rel.replace('\\', '/');
+                                    rel = stripSuffix(rel, suffix);
+                                    results.add(rel);
+                                }
+                            }
+                        }
+                    } catch (IOException e) {
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("Error scanning JAR resources for Handlebars templates: {}", e.getMessage());
+                        }
+                    }
+                } else {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Unsupported URL protocol '{}' while scanning '{}'", protocol, root);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Failed to discover Handlebars templates from classpath: {}", e.getMessage());
+            }
+        }
+        return results;
+    }
+
+    private static String stripSuffix(String name, String suffix) {
+        return name.endsWith(suffix) ? name.substring(0, name.length() - suffix.length()) : name;
     }
 }
