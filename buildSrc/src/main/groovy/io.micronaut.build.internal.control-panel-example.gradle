@@ -27,8 +27,16 @@ dependencies {
 
     testImplementation mn.micronaut.http.client
     testImplementation mnTest.micronaut.test.junit5
+    testImplementation libs.playwright
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
+
+tasks.register('playwrightCodegen', JavaExec) {
+    mainClass = 'com.microsoft.playwright.CLI'
+    classpath = sourceSets.test.runtimeClasspath // or sourceSets.main.runtimeClasspath
+    args 'codegen', 'http://localhost:8080/control-panel'
+}
+
 graalvmNative {
     agent {
         enabled.set(true)
