@@ -29,7 +29,7 @@ tasks.register<JavaExec>("playwrightInstall") {
     args("install", "--with-deps")
 }
 
-tasks.named<Test>("test") {
+tasks.withType<Test> {
     dependsOn(tasks.named("playwrightInstall"))
 }
 
