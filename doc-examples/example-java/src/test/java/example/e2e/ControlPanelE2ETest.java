@@ -3,14 +3,22 @@ package example.e2e;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Page.GetByRoleOptions;
+import com.microsoft.playwright.impl.driver.jar.DriverJar;
 import com.microsoft.playwright.junit.UsePlaywright;
 import com.microsoft.playwright.options.AriaRole;
 import io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration;
+import io.micronaut.core.util.StringUtils;
 import io.micronaut.runtime.server.EmbeddedServer;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import jakarta.inject.Inject;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.FileSystems;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -21,6 +29,20 @@ class ControlPanelE2ETest {
 
     @Inject
     EmbeddedServer server;
+
+    @BeforeAll
+    static void graalVmSetup() {
+        if (StringUtils.hasText(System.getProperty("org.graalvm.nativeimage.imagecode"))) {
+            try {
+                URI uri = DriverJar.getDriverResourceURI();
+                FileSystems.newFileSystem(uri, Map.of());
+                new DriverJar();
+            } catch (URISyntaxException | IOException e) {
+                // Wrap and throw any exceptions that occur during initialization
+                throw new RuntimeException(e);
+            }
+        }
+    }
 
     @Test
     void testDashboard(Page page) {
@@ -72,6 +94,6 @@ class ControlPanelE2ETest {
     }
 
     private String baseUrl() {
-        return "%s://%s:%s%s".formatted(server.getScheme(), server.getHost(), server.getPort(), ControlPanelModuleConfiguration.DEFAULT_PATH);
+        return "%s%s".formatted(server.getURL(), ControlPanelModuleConfiguration.DEFAULT_PATH);
     }
 }

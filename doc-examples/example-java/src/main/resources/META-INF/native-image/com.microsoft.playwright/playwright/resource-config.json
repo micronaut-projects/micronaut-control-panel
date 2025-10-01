@@ -1,0 +1,8 @@
+{
+  "resources":{
+  "includes":[{
+    "condition":{"typeReachable":"com.microsoft.playwright.impl.driver.jar.DriverJar"},
+    "pattern":"\\Qdriver/\\E.*"
+  }]},
+  "bundles":[]
+}

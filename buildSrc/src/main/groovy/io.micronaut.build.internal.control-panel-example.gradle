@@ -33,8 +33,18 @@ dependencies {
 
 tasks.register('playwrightCodegen', JavaExec) {
     mainClass = 'com.microsoft.playwright.CLI'
-    classpath = sourceSets.test.runtimeClasspath // or sourceSets.main.runtimeClasspath
+    classpath = sourceSets.test.runtimeClasspath
     args 'codegen', 'http://localhost:8080/control-panel'
+}
+
+tasks.register('playwrightInstall', JavaExec) {
+    mainClass = 'com.microsoft.playwright.CLI'
+    classpath = sourceSets.test.runtimeClasspath
+    args 'install', '--with-deps'
+}
+
+tasks.named('test') {
+    dependsOn tasks.named('playwrightInstall')
 }
 
 graalvmNative {
