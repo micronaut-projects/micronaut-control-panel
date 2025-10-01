@@ -1,0 +1,6 @@
+io.micronaut.controlpanel.core
+io.micronaut.controlpanel.core.config
+io.micronaut.controlpanel.core.panels
+io.micronaut.controlpanel.panels.management
+io.micronaut.controlpanel.ui
+io.micronaut.controlpanel.ui.util
