@@ -29,6 +29,7 @@ groovy = '4.0.28'
 spock = '2.3-groovy-4.0'
 micronaut-gradle-plugin = "4.5.5"
 kotlin-gradle-plugin = "1.9.25"
+micronaut-shared-settings = "7.6.4"
 sonatype-scan = "3.1.4"
 playwright = "1.54.0"
 
@@ -49,6 +50,7 @@ handlebars-humanize = { module = 'com.github.jknack:handlebars-humanize' }
 
 # Plugins
 gradle-micronaut = { module = 'io.micronaut.gradle:micronaut-gradle-plugin', version.ref = 'micronaut-gradle-plugin' }
+micronaut-shared-settings = { module = "io.micronaut.build.shared.settings:io.micronaut.build.shared.settings.gradle.plugin", version.ref = "micronaut-shared-settings" }
 gradle-kotlin = { module = 'org.jetbrains.kotlin:kotlin-gradle-plugin', version.ref = 'kotlin-gradle-plugin' }
 sonatype-scan = { module = "org.sonatype.gradle.plugins:scan-gradle-plugin", version.ref = "sonatype-scan" }
 

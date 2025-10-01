@@ -1,5 +1,5 @@
 plugins {
-    `groovy-gradle-plugin`
+    `kotlin-dsl`
 }
 
 repositories {
@@ -11,4 +11,5 @@ dependencies {
     implementation(libs.gradle.micronaut)
     implementation(libs.gradle.kotlin)
     implementation(libs.sonatype.scan)
+    implementation(libs.micronaut.shared.settings)
 }
