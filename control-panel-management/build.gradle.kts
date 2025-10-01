@@ -1,0 +1,9 @@
+plugins {
+    io.micronaut.build.internal.`control-panel-module`
+}
+
+dependencies {
+    api(projects.micronautControlPanelCore)
+    implementation(mn.micronaut.management)
+    implementation(mnReactor.micronaut.reactor)
+}

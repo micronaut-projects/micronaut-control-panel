@@ -1,5 +1,5 @@
 plugins {
-    id 'groovy-gradle-plugin'
+    `groovy-gradle-plugin`
 }
 
 repositories {
@@ -9,5 +9,6 @@ repositories {
 
 dependencies {
     implementation(libs.gradle.micronaut)
+    implementation(libs.gradle.kotlin)
     implementation(libs.sonatype.scan)
 }

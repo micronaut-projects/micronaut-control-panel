@@ -1,0 +1,11 @@
+plugins {
+    io.micronaut.build.internal.`control-panel-module`
+}
+
+dependencies {
+    api(mn.micronaut.router)
+
+    testImplementation(mn.micronaut.http)
+    testImplementation(mn.micronaut.management)
+    testImplementation(projects.micronautControlPanelManagement)
+}
