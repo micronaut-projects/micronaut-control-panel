@@ -1,0 +1,415 @@
+[
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.BrowserImpl"},
+  "name":"[B"
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.AssertionsBase"},
+  "name":"[Lcom.microsoft.playwright.impl.Channel;"
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.Connection$Root"},
+  "name":"[Lcom.microsoft.playwright.impl.SerializedValue$O;"
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.LocatorAssertionsImpl"},
+  "name":"[Lcom.microsoft.playwright.impl.SerializedValue$O;"
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.Connection$Root"},
+  "name":"[Lcom.microsoft.playwright.impl.SerializedValue;"
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.RequestImpl"},
+  "name":"[Lcom.microsoft.playwright.options.HttpHeader;"
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.ResponseImpl"},
+  "name":"[Lcom.microsoft.playwright.options.HttpHeader;"
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.APIRequestContextImpl"},
+  "name":"com.microsoft.playwright.APIRequestContext$DisposeOptions",
+  "allDeclaredFields":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.BrowserContextImpl"},
+  "name":"com.microsoft.playwright.APIRequestContext$DisposeOptions",
+  "allDeclaredFields":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.BrowserImpl"},
+  "name":"com.microsoft.playwright.Browser$NewContextOptions",
+  "allDeclaredFields":true,
+  "fields":[{"name":"acceptDownloads"}, {"name":"baseURL"}, {"name":"bypassCSP"}, {"name":"clientCertificates"}, {"name":"colorScheme"}, {"name":"contrast"}, {"name":"deviceScaleFactor"}, {"name":"extraHTTPHeaders"}, {"name":"forcedColors"}, {"name":"geolocation"}, {"name":"hasTouch"}, {"name":"httpCredentials"}, {"name":"ignoreHTTPSErrors"}, {"name":"isMobile"}, {"name":"javaScriptEnabled"}, {"name":"locale"}, {"name":"offline"}, {"name":"permissions"}, {"name":"proxy"}, {"name":"recordHarContent"}, {"name":"recordHarMode"}, {"name":"recordHarOmitContent"}, {"name":"recordHarPath"}, {"name":"recordHarUrlFilter"}, {"name":"recordVideoDir"}, {"name":"recordVideoSize"}, {"name":"reducedMotion"}, {"name":"screenSize"}, {"name":"serviceWorkers"}, {"name":"storageState"}, {"name":"storageStatePath"}, {"name":"strictSelectors"}, {"name":"timezoneId"}, {"name":"userAgent"}, {"name":"viewportSize"}],
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.Utils"},
+  "name":"com.microsoft.playwright.Browser$NewContextOptions",
+  "allDeclaredFields":true,
+  "fields":[{"name":"acceptDownloads"}, {"name":"baseURL"}, {"name":"bypassCSP"}, {"name":"clientCertificates"}, {"name":"colorScheme"}, {"name":"contrast"}, {"name":"deviceScaleFactor"}, {"name":"extraHTTPHeaders"}, {"name":"forcedColors"}, {"name":"geolocation"}, {"name":"hasTouch"}, {"name":"httpCredentials"}, {"name":"ignoreHTTPSErrors"}, {"name":"isMobile"}, {"name":"javaScriptEnabled"}, {"name":"locale"}, {"name":"offline"}, {"name":"permissions"}, {"name":"proxy"}, {"name":"recordHarContent"}, {"name":"recordHarMode"}, {"name":"recordHarOmitContent"}, {"name":"recordHarPath"}, {"name":"recordHarUrlFilter"}, {"name":"recordVideoDir"}, {"name":"recordVideoSize"}, {"name":"reducedMotion"}, {"name":"screenSize"}, {"name":"serviceWorkers"}, {"name":"storageState"}, {"name":"storageStatePath"}, {"name":"strictSelectors"}, {"name":"timezoneId"}, {"name":"userAgent"}, {"name":"viewportSize"}],
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.BrowserContextImpl"},
+  "name":"com.microsoft.playwright.BrowserContext$CloseOptions",
+  "allDeclaredFields":true,
+  "fields":[{"name":"reason"}],
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.BrowserTypeImpl"},
+  "name":"com.microsoft.playwright.BrowserType$LaunchOptions",
+  "allDeclaredFields":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.FrameImpl"},
+  "name":"com.microsoft.playwright.Frame$ClickOptions",
+  "allDeclaredFields":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.LocatorImpl"},
+  "name":"com.microsoft.playwright.Frame$ClickOptions",
+  "allDeclaredFields":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.FrameImpl"},
+  "name":"com.microsoft.playwright.Frame$GetByRoleOptions",
+  "fields":[{"name":"checked"}, {"name":"disabled"}, {"name":"exact"}, {"name":"expanded"}, {"name":"includeHidden"}, {"name":"level"}, {"name":"name"}, {"name":"pressed"}, {"name":"selected"}]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.PageImpl"},
+  "name":"com.microsoft.playwright.Frame$GetByRoleOptions",
+  "allDeclaredFields":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.FrameImpl"},
+  "name":"com.microsoft.playwright.Frame$NavigateOptions",
+  "allDeclaredFields":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.FrameImpl"},
+  "name":"com.microsoft.playwright.Frame$SelectOptionOptions",
+  "allDeclaredFields":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.LocatorImpl"},
+  "name":"com.microsoft.playwright.Frame$SelectOptionOptions",
+  "allDeclaredFields":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.LocatorImpl"},
+  "name":"com.microsoft.playwright.Locator$ClickOptions",
+  "fields":[{"name":"button"}, {"name":"clickCount"}, {"name":"delay"}, {"name":"force"}, {"name":"modifiers"}, {"name":"noWaitAfter"}, {"name":"position"}, {"name":"strict"}, {"name":"timeout"}, {"name":"trial"}]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.LocatorImpl"},
+  "name":"com.microsoft.playwright.Locator$FilterOptions",
+  "fields":[{"name":"has"}, {"name":"hasNot"}, {"name":"hasNotText"}, {"name":"hasText"}]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.FrameImpl"},
+  "name":"com.microsoft.playwright.Locator$GetByRoleOptions",
+  "allDeclaredFields":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.LocatorImpl"},
+  "name":"com.microsoft.playwright.Locator$LocatorOptions",
+  "allDeclaredFields":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.LocatorImpl"},
+  "name":"com.microsoft.playwright.Locator$SelectOptionOptions",
+  "fields":[{"name":"force"}, {"name":"noWaitAfter"}, {"name":"strict"}, {"name":"timeout"}]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.PageImpl"},
+  "name":"com.microsoft.playwright.Page$GetByRoleOptions",
+  "fields":[{"name":"checked"}, {"name":"disabled"}, {"name":"exact"}, {"name":"expanded"}, {"name":"includeHidden"}, {"name":"level"}, {"name":"name"}, {"name":"pressed"}, {"name":"selected"}]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.LocatorAssertionsImpl"},
+  "name":"com.microsoft.playwright.assertions.LocatorAssertions$HasCountOptions",
+  "fields":[{"name":"expectedNumber"}, {"name":"expectedText"}, {"name":"expectedValue"}, {"name":"expressionArg"}, {"name":"isNot"}, {"name":"selector"}, {"name":"timeout"}, {"name":"useInnerText"}]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.LocatorAssertionsImpl"},
+  "name":"com.microsoft.playwright.assertions.LocatorAssertions$MatchesAriaSnapshotOptions",
+  "fields":[{"name":"expectedNumber"}, {"name":"expectedText"}, {"name":"expectedValue"}, {"name":"expressionArg"}, {"name":"isNot"}, {"name":"selector"}, {"name":"timeout"}, {"name":"useInnerText"}]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.AssertionsBase"},
+  "name":"com.microsoft.playwright.impl.Channel",
+  "allDeclaredFields":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.AssertionsBase"},
+  "name":"com.microsoft.playwright.impl.ExpectedTextValue",
+  "allDeclaredFields":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.AssertionsBase"},
+  "name":"com.microsoft.playwright.impl.FrameExpectOptions",
+  "allDeclaredFields":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.LocatorAssertionsImpl"},
+  "name":"com.microsoft.playwright.impl.FrameExpectOptions",
+  "allDeclaredFields":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.AssertionsBase"},
+  "name":"com.microsoft.playwright.impl.FrameExpectResult",
+  "allDeclaredFields":true
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.FrameImpl"},
+  "name":"com.microsoft.playwright.impl.FrameExpectResult",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.Connection"},
+  "name":"com.microsoft.playwright.impl.Message",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.Connection$Root"},
+  "name":"com.microsoft.playwright.impl.Message",
+  "allDeclaredFields":true
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.AssertionsBase"},
+  "name":"com.microsoft.playwright.impl.SerializedArgument",
+  "allDeclaredFields":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.Connection$Root"},
+  "name":"com.microsoft.playwright.impl.SerializedError",
+  "allDeclaredFields":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.Connection$Root"},
+  "name":"com.microsoft.playwright.impl.SerializedError$Error",
+  "allDeclaredFields":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.Connection$Root"},
+  "name":"com.microsoft.playwright.impl.SerializedValue",
+  "allDeclaredFields":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.FrameImpl"},
+  "name":"com.microsoft.playwright.impl.SerializedValue",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.Connection$Root"},
+  "name":"com.microsoft.playwright.impl.SerializedValue$E",
+  "allDeclaredFields":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.Connection$Root"},
+  "name":"com.microsoft.playwright.impl.SerializedValue$O",
+  "allDeclaredFields":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.LocatorAssertionsImpl"},
+  "name":"com.microsoft.playwright.impl.SerializedValue$O",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.Connection$Root"},
+  "name":"com.microsoft.playwright.impl.SerializedValue$R",
+  "allDeclaredFields":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.driver.Driver"},
+  "name":"com.microsoft.playwright.impl.driver.jar.DriverJar",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.junit.OptionsExtension"},
+  "name":"com.microsoft.playwright.impl.junit.DefaultOptions",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.BrowserImpl"},
+  "name":"com.microsoft.playwright.options.ClientCertificate",
+  "allDeclaredFields":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.BrowserImpl"},
+  "name":"com.microsoft.playwright.options.Geolocation",
+  "allDeclaredFields":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.BrowserImpl"},
+  "name":"com.microsoft.playwright.options.HarContentPolicy",
+  "allDeclaredFields":true
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.BrowserImpl"},
+  "name":"com.microsoft.playwright.options.HarMode",
+  "allDeclaredFields":true
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.BrowserImpl"},
+  "name":"com.microsoft.playwright.options.HttpCredentials",
+  "allDeclaredFields":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.FrameImpl"},
+  "name":"com.microsoft.playwright.options.HttpHeader",
+  "allDeclaredFields":true
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.RequestImpl"},
+  "name":"com.microsoft.playwright.options.HttpHeader",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.ResponseImpl"},
+  "name":"com.microsoft.playwright.options.HttpHeader",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.FrameImpl"},
+  "name":"com.microsoft.playwright.options.Position",
+  "allDeclaredFields":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.BrowserTypeImpl"},
+  "name":"com.microsoft.playwright.options.Proxy",
+  "allDeclaredFields":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.BrowserImpl"},
+  "name":"com.microsoft.playwright.options.RecordVideoSize",
+  "allDeclaredFields":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.BrowserImpl"},
+  "name":"com.microsoft.playwright.options.ScreenSize",
+  "allDeclaredFields":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.FrameImpl"},
+  "name":"com.microsoft.playwright.options.Timing",
+  "allDeclaredFields":true
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.ResponseImpl"},
+  "name":"com.microsoft.playwright.options.Timing",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.PageImpl"},
+  "name":"com.microsoft.playwright.options.ViewportSize",
+  "allDeclaredFields":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.APIRequestContextImpl"},
+  "name":"java.lang.Class",
+  "methods":[{"name":"isRecord","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.AssertionsBase"},
+  "name":"java.lang.Class",
+  "methods":[{"name":"isRecord","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.BrowserContextImpl"},
+  "name":"java.lang.Class",
+  "methods":[{"name":"isRecord","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.BrowserImpl"},
+  "name":"java.lang.Class",
+  "methods":[{"name":"isRecord","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.BrowserTypeImpl"},
+  "name":"java.lang.Class",
+  "methods":[{"name":"isRecord","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.Connection$Root"},
+  "name":"java.lang.Class",
+  "methods":[{"name":"getRecordComponents","parameterTypes":[] }, {"name":"isRecord","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.FrameImpl"},
+  "name":"java.lang.Class",
+  "methods":[{"name":"isRecord","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.PageImpl"},
+  "name":"java.lang.Class",
+  "methods":[{"name":"isRecord","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.Connection$Root"},
+  "name":"java.lang.reflect.RecordComponent",
+  "methods":[{"name":"getName","parameterTypes":[] }, {"name":"getType","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.driver.jar.DriverJar"},
+  "name":"java.security.SecureRandomParameters"
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.Serialization"},
+  "name":"java.sql.Date"
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.BrowserImpl"},
+  "name":"java.util.ArrayList",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.PageImpl"},
+  "name":"sun.misc.Unsafe",
+  "fields":[{"name":"theUnsafe"}],
+  "methods":[{"name":"allocateInstance","parameterTypes":["java.lang.Class"] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.driver.jar.DriverJar"},
+  "name":"sun.security.provider.NativePRNG",
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"<init>","parameterTypes":["java.security.SecureRandomParameters"] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.driver.jar.DriverJar"},
+  "name":"sun.security.provider.SHA",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+}
+]
