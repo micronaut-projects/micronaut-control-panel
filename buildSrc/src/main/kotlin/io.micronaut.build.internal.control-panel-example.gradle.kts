@@ -35,13 +35,15 @@ tasks.withType<Test> {
 
 graalvmNative {
     agent {
-        enabled.set(false)
+        enabled.set(true)
         defaultMode.set("conditional")
         modes {
             conditional {
-                userCodeFilterPath.set("src/main/native-image/filters/user-code-filter.json")
-                callerFilterFiles.from("src/main/native-image/filters/user-code-filter.json")
-                accessFilterFiles.from("src/main/native-image/filters/user-code-filter.json")
+                val filterFile = "src/test/native-image/filters/playwright-filter.json"
+
+                userCodeFilterPath.set(filterFile)
+                callerFilterFiles.from(filterFile)
+                accessFilterFiles.from(filterFile)
                 builtinCallerFilter.set(true)
                 builtinHeuristicFilter.set(true)
                 enableExperimentalPredefinedClasses.set(true)
@@ -54,7 +56,7 @@ graalvmNative {
         }
         metadataCopy {
             inputTaskNames.addAll("run", "test")
-            outputDirectories.add("${rootDir.toString()}/control-panel-ui/src/main/resources/META-INF/native-image/io.micronaut.controlpanel/micronaut-control-panel-ui")
+            outputDirectories.add("${rootDir}/doc-examples/example-java/src/main/resources/META-INF/native-image/com.microsoft.playwright/playwright")
             mergeWithExisting.set(false)
         }
     }
