@@ -26,6 +26,7 @@ import io.micronaut.context.event.BeanCreatedEvent;
 import io.micronaut.context.event.BeanCreatedEventListener;
 import io.micronaut.core.annotation.Internal;
 import io.micronaut.core.annotation.NonNull;
+import io.micronaut.views.ViewsConfigurationProperties;
 import jakarta.inject.Singleton;
 
 import java.io.IOException;
@@ -48,6 +49,12 @@ import org.slf4j.LoggerFactory;
 @Singleton
 class HandlebarsHelperRegistrar implements BeanCreatedEventListener<Handlebars> {
     private static final Logger LOG = LoggerFactory.getLogger(HandlebarsHelperRegistrar.class);
+
+    private final ViewsConfigurationProperties viewsConfiguration;
+
+    HandlebarsHelperRegistrar(final ViewsConfigurationProperties viewsConfiguration) {
+        this.viewsConfiguration = viewsConfiguration;
+    }
 
     @Override
     public Handlebars onCreated(@NonNull BeanCreatedEvent<Handlebars> event) {
@@ -129,17 +136,10 @@ class HandlebarsHelperRegistrar implements BeanCreatedEventListener<Handlebars> 
         }
     }
 
-    private static void precompileAllTemplates(Handlebars handlebars) {
+    private void precompileAllTemplates(Handlebars handlebars) {
         TemplateLoader loader = handlebars.getLoader();
-        String prefix = normalizePrefix(loader);
+        String prefix = viewsConfiguration.getFolder();
         String suffix = loader.getSuffix() != null ? loader.getSuffix() : ".hbs";
-
-        if (prefix.isEmpty()) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Template loader prefix is empty; skipping template precompilation.");
-            }
-            return;
-        }
 
         Set<String> names = discoverTemplateNames(prefix, suffix);
         if (names.isEmpty()) {
@@ -167,23 +167,7 @@ class HandlebarsHelperRegistrar implements BeanCreatedEventListener<Handlebars> 
         }
     }
 
-    @NonNull
-    private static String normalizePrefix(@NonNull TemplateLoader loader) {
-        String p = loader.getPrefix();
-        if (p == null) {
-            return "";
-        }
-        // Remove leading/trailing slashes
-        while (p.startsWith("/")) {
-            p = p.substring(1);
-        }
-        while (p.endsWith("/")) {
-            p = p.substring(0, p.length() - 1);
-        }
-        return p;
-    }
-
-    private static Set<String> discoverTemplateNames(String prefix, String suffix) {
+    private Set<String> discoverTemplateNames(String prefix, String suffix) {
         Set<String> results = new HashSet<>();
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         if (cl == null) {
@@ -196,7 +180,7 @@ class HandlebarsHelperRegistrar implements BeanCreatedEventListener<Handlebars> 
                 String protocol = root.getProtocol();
                 if ("file".equals(protocol)) {
                     // File-system resources (e.g., exploded classes)
-                    processFileSystem(suffix, root, results);
+                    processFileSystem(prefix, suffix, root, results);
                 } else if ("jar".equals(protocol)) {
                     // Templates packaged inside JARs
                     processJar(prefix, suffix, root, results);
@@ -244,18 +228,18 @@ class HandlebarsHelperRegistrar implements BeanCreatedEventListener<Handlebars> 
         }
     }
 
-    private static void processFileSystem(final String suffix, final URL root, final Set<String> results) {
+    private void processFileSystem(final String prefix, final String suffix, final URL root, final Set<String> results) {
         try {
             Path dir = Paths.get(root.toURI());
             if (Files.exists(dir) && Files.isDirectory(dir)) {
-                try(var stream = Files.walk(dir)) {
+                try (var stream = Files.walk(dir)) {
                     stream.filter(Files::isRegularFile)
                         .filter(p -> p.getFileName().toString().endsWith(suffix))
                         .forEach(p -> {
                             Path rel = dir.relativize(p);
                             String logical = rel.toString().replace('\\', '/');
                             logical = stripSuffix(logical, suffix);
-                            results.add(logical);
+                            results.add(prefix + logical);
                         });
                 }
             }

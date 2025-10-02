@@ -18,14 +18,17 @@ package io.micronaut.controlpanel.ui.handlebars
 import com.github.jknack.handlebars.Handlebars
 import com.github.jknack.handlebars.cache.HighConcurrencyTemplateCache
 import io.micronaut.context.event.BeanCreatedEvent
+import io.micronaut.views.ViewsConfigurationProperties
 import spock.lang.Specification
 
 class HandlebarsCacheConfigSpec extends Specification {
 
     HandlebarsHelperRegistrar registrar
 
-    def setup() {
-        registrar = new HandlebarsHelperRegistrar()
+    void setup() {
+        def config = new ViewsConfigurationProperties()
+        config.folder = "/views"
+        registrar = new HandlebarsHelperRegistrar(config)
     }
 
     void "configures HighConcurrencyTemplateCache on Handlebars instance"() {
