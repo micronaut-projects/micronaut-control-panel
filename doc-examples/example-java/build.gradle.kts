@@ -1,5 +1,6 @@
 plugins {
     io.micronaut.build.internal.`control-panel-example`
+    id("com.gradleup.shadow") version "8.3.9"
 }
 
 dependencies {
