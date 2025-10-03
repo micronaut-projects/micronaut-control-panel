@@ -3,7 +3,6 @@ plugins {
 }
 
 dependencies {
-    implementation(mn.micronaut.http)
     api(projects.micronautControlPanelCore)
     api(mnViews.micronaut.views.handlebars)
     api(libs.handlebars.humanize) {
@@ -11,6 +10,7 @@ dependencies {
             require(mnViews.versions.handlebars.get())
         }
     }
+    implementation(mn.micronaut.http.server)
     compileOnly(mn.micronaut.management)
 
     testCompileOnly(mn.micronaut.inject.groovy)

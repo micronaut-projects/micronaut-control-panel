@@ -23,6 +23,7 @@ import io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration;
 import io.micronaut.controlpanel.ui.util.EndpointUtils;
 import io.micronaut.core.annotation.Nullable;
 import io.micronaut.http.annotation.Controller;
+import io.micronaut.http.server.HttpServerConfiguration;
 import io.micronaut.management.endpoint.refresh.RefreshEndpoint;
 import io.micronaut.management.endpoint.stop.ServerStopEndpoint;
 import io.micronaut.runtime.ApplicationConfiguration;
@@ -33,7 +34,10 @@ import jakarta.inject.Inject;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+
+import static io.micronaut.controlpanel.util.ControlPanelUtils.computeControlPanelPath;
 
 /**
  * Control panel web controller to render the UI.
@@ -50,6 +54,7 @@ public class ControlPanelController implements ControlPanelApi {
     private final Set<String> activeEnvironments;
     private final boolean canRefresh;
     private final boolean canStop;
+    private final String appPath;
     private final String controlPanelPath;
 
     @Deprecated
@@ -63,6 +68,7 @@ public class ControlPanelController implements ControlPanelApi {
         this.activeEnvironments = environment.getActiveNames();
         this.canRefresh = EndpointUtils.canRefresh(refreshEndpoint, beanContext);
         this.canStop = stopEndpoint != null;
+        this.appPath = "/";
         this.controlPanelPath = ControlPanelModuleConfiguration.DEFAULT_PATH;
     }
 
@@ -72,13 +78,15 @@ public class ControlPanelController implements ControlPanelApi {
                                   @Nullable ServerStopEndpoint stopEndpoint,
                                   ControlPanelModuleConfiguration configuration) {
         ApplicationConfiguration applicationConfiguration = beanContext.getBean(ApplicationConfiguration.class);
+        HttpServerConfiguration  serverConfiguration = beanContext.getBean(HttpServerConfiguration.class);
         Environment environment = beanContext.getBean(Environment.class);
         this.repository = repository;
         this.applicationName = applicationConfiguration.getName().orElse("(unnamed)");
         this.activeEnvironments = environment.getActiveNames();
         this.canRefresh = EndpointUtils.canRefresh(refreshEndpoint, beanContext);
         this.canStop = stopEndpoint != null;
-        this.controlPanelPath = configuration.getPath();
+        this.appPath = Optional.ofNullable(serverConfiguration.getContextPath()).orElse("");
+        this.controlPanelPath = computeControlPanelPath(appPath, configuration.getPath());
     }
 
     @View("layout")
@@ -96,6 +104,7 @@ public class ControlPanelController implements ControlPanelApi {
         var controlPanels = repository.findAllByCategory(categoryId);
         extraProperties.put("controlPanels", controlPanels);
         extraProperties.put("controlPanelPath", controlPanelPath);
+        extraProperties.put("appPath", appPath);
 
         var optionalCategory = repository.findCategoryById(categoryId);
         optionalCategory.ifPresent(category -> extraProperties.put("currentCategory", category));
@@ -110,6 +119,7 @@ public class ControlPanelController implements ControlPanelApi {
         var categories = repository.findAllCategories();
         Map<String, Object> extraProperties = new HashMap<>();
         extraProperties.put("controlPanelPath", controlPanelPath);
+        extraProperties.put("appPath", appPath);
 
         var optionalControlPanel = repository.findByName(controlPanelName);
         if (optionalControlPanel.isPresent()) {
