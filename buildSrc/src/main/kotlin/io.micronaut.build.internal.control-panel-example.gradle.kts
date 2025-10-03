@@ -5,6 +5,7 @@ plugins {
     id("groovy")
     id("io.micronaut.application")
     id("com.gradleup.shadow")
+    id("com.adarshr.test-logger")
 }
 
 application {

@@ -26,6 +26,7 @@ import io.micronaut.context.event.BeanCreatedEvent;
 import io.micronaut.context.event.BeanCreatedEventListener;
 import io.micronaut.core.annotation.Internal;
 import io.micronaut.core.annotation.NonNull;
+import io.micronaut.core.util.StringUtils;
 import io.micronaut.views.ViewsConfigurationProperties;
 import jakarta.inject.Singleton;
 
@@ -137,6 +138,10 @@ class HandlebarsHelperRegistrar implements BeanCreatedEventListener<Handlebars> 
     }
 
     private void precompileAllTemplates(Handlebars handlebars) {
+        if (StringUtils.hasText(System.getProperty("org.graalvm.nativeimage.imagecode"))) {
+            //Skip pre-compilation in a native image
+            return;
+        }
         TemplateLoader loader = handlebars.getLoader();
         String prefix = viewsConfiguration.getFolder();
         String suffix = loader.getSuffix() != null ? loader.getSuffix() : ".hbs";

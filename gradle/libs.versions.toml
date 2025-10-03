@@ -33,6 +33,7 @@ micronaut-shared-settings = "7.6.4"
 sonatype-scan = "3.1.4"
 playwright = "1.54.0"
 shadow-plugin = "9.2.2"
+test-logger-plugin = "4.0.0"
 
 [libraries]
 micronaut-core = { module = 'io.micronaut:micronaut-core-bom', version.ref = 'micronaut' }
@@ -55,6 +56,7 @@ micronaut-shared-settings = { module = "io.micronaut.build.shared.settings:io.mi
 gradle-kotlin = { module = 'org.jetbrains.kotlin:kotlin-gradle-plugin', version.ref = 'kotlin-gradle-plugin' }
 sonatype-scan = { module = "org.sonatype.gradle.plugins:scan-gradle-plugin", version.ref = "sonatype-scan" }
 shadow-plugin = { module = "com.gradleup.shadow:com.gradleup.shadow.gradle.plugin", version.ref = "shadow-plugin" }
+test-logger-plugin = { module = "com.adarshr.test-logger:com.adarshr.test-logger.gradle.plugin", version.ref = "test-logger-plugin"}
 
 [bundles]
 
