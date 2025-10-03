@@ -20,6 +20,7 @@ import com.github.jknack.handlebars.Template
 import com.github.jknack.handlebars.io.ClassPathTemplateLoader
 import com.github.jknack.handlebars.io.TemplateLoader
 import io.micronaut.context.event.BeanCreatedEvent
+import io.micronaut.views.ViewsConfigurationProperties
 import spock.lang.Specification
 
 /**
@@ -49,7 +50,9 @@ class HandlebarsPrecompileSpec extends Specification {
     HandlebarsHelperRegistrar registrar
 
     def setup() {
-        registrar = new HandlebarsHelperRegistrar()
+        def config = new ViewsConfigurationProperties()
+        config.folder = "/views"
+        registrar = new HandlebarsHelperRegistrar(config)
     }
 
     void "precompiles templates under views prefix"() {
@@ -66,24 +69,8 @@ class HandlebarsPrecompileSpec extends Specification {
 
         then:
         // Expect at least the top-level templates to be compiled (others may also be compiled)
-        handlebars.compiled.contains("index")
-        handlebars.compiled.contains("layout")
+        handlebars.compiled.contains("views/index")
+        handlebars.compiled.contains("views/layout")
         handlebars.compiled.size() >= 2
-    }
-
-    void "skips precompile when loader prefix is empty"() {
-        given:
-        // Default Handlebars uses a loader with prefix "/", which normalizes to an empty prefix in the registrar.
-        def handlebars = new RecordingHandlebars()
-        def event = Mock(BeanCreatedEvent) {
-            getBean() >> handlebars
-        }
-
-        when:
-        registrar.onCreated(event)
-
-        then:
-        // When prefix is empty, the registrar should skip precompilation.
-        handlebars.compiled.isEmpty()
     }
 }

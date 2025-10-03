@@ -4,6 +4,8 @@ import io.micronaut.gradle.MicronautTestRuntime
 plugins {
     id("groovy")
     id("io.micronaut.application")
+    id("com.gradleup.shadow")
+    id("com.adarshr.test-logger")
 }
 
 application {
@@ -35,7 +37,7 @@ tasks.withType<Test> {
 
 graalvmNative {
     agent {
-        enabled.set(System.getenv("CI") == null)
+        enabled.set(false)
         defaultMode.set("conditional")
         modes {
             conditional {

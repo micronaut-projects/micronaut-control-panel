@@ -17,6 +17,7 @@ package io.micronaut.controlpanel.ui.handlebars
 
 import com.github.jknack.handlebars.Handlebars
 import io.micronaut.context.event.BeanCreatedEvent
+import io.micronaut.views.ViewsConfigurationProperties
 import spock.lang.Specification
 
 class HandlebarsHelperRegistrarSpec extends Specification {
@@ -25,7 +26,9 @@ class HandlebarsHelperRegistrarSpec extends Specification {
     Handlebars handlebars
 
     def setup() {
-        registrar = new HandlebarsHelperRegistrar()
+        def config = new ViewsConfigurationProperties()
+        config.folder = "/views"
+        registrar = new HandlebarsHelperRegistrar(config)
         handlebars = new Handlebars()
         // Register the helpers using a mocked event
         def event = Mock(BeanCreatedEvent) {
