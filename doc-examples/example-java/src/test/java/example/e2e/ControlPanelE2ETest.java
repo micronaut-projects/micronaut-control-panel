@@ -133,6 +133,10 @@ class ControlPanelE2ETest {
 
         page.getByText("Close").click();
         assertThat(page.getByRole(AriaRole.DEFINITION).nth(1)).containsText("DEBUG");
+
+        page.getByRole(AriaRole.CELL, new Page.GetByRoleOptions().setName(nameRegex("Reconfigure"))).first().getByRole(AriaRole.BUTTON).click();
+        page.getByLabel("Level:").selectOption("INFO");
+        button(page, "Submit").click();
     }
 
     @Test
