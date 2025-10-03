@@ -118,7 +118,7 @@
         }
         $.ajax({
             type: "POST",
-            url: "/loggers/" + logger,
+            url: "{{ ext.appPath }}/loggers/" + logger,
             data: JSON.stringify(payload),
             contentType: "application/json; charset=utf-8",
         }).done(function (data) {

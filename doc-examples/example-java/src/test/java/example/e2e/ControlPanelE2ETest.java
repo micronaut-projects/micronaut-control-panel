@@ -1,48 +1,17 @@
 package example.e2e;
 
-import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Page.GetByRoleOptions;
-import com.microsoft.playwright.impl.driver.jar.DriverJar;
 import com.microsoft.playwright.junit.UsePlaywright;
 import com.microsoft.playwright.options.AriaRole;
-import io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration;
-import io.micronaut.core.util.StringUtils;
-import io.micronaut.runtime.server.EmbeddedServer;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
-import jakarta.inject.Inject;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.FileSystems;
-import java.util.Map;
-import java.util.regex.Pattern;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
 @UsePlaywright
 @MicronautTest
-class ControlPanelE2ETest {
-
-    @Inject
-    EmbeddedServer server;
-
-    @BeforeAll
-    static void graalVmSetup() {
-        if (StringUtils.hasText(System.getProperty("org.graalvm.nativeimage.imagecode"))) {
-            try {
-                URI uri = DriverJar.getDriverResourceURI();
-                FileSystems.newFileSystem(uri, Map.of());
-                new DriverJar();
-            } catch (URISyntaxException | IOException e) {
-                // Wrap and throw any exceptions that occur during initialization
-                throw new RuntimeException(e);
-            }
-        }
-    }
+class ControlPanelE2ETest extends AbstractE2ETest {
 
     @Test
     void testDashboard(Page page) {
@@ -147,42 +116,26 @@ class ControlPanelE2ETest {
         assertThat(body(page)).containsText("My Application Control Panel");
         assertThat(body(page)).containsText("This is the body of the application-provided control panel");
 
-        button(page, "Details").click();
+        page.getByRole(AriaRole.BUTTON, new GetByRoleOptions().setName("Details")).click();
         assertThat(body(page)).containsText("This is an application-provided control panel. This text is coming from the body");
     }
 
-    private static Locator button(final Page page, final String name) {
-        return page.getByRole(AriaRole.BUTTON, new GetByRoleOptions().setName(name));
+    @Test
+    void testRefresh(Page page) {
+        page.navigate(baseUrl());
+        id(page,"refreshButton").click();
+
+        assertThat(page.locator("#stopRefreshModalLabel")).containsText("Confirm application refresh");
+        button(page, "Refresh").click();
+
+        assertThat(page.locator("#globalAlertTitle")).containsText("Application refreshed");
+        assertThat(page.locator("#globalAlertMessage")).containsText("All Refreshable beans have been recreated.");
+
+        id(page,"refreshButton").click();
+        button(page, "Force refresh").click();
+
+        assertThat(page.locator("#globalAlertTitle")).containsText("Application refreshed");
+        assertThat(page.locator("#globalAlertMessage")).containsText("All Refreshable beans have been recreated regardless of environment changes.");
     }
 
-
-    private static Locator body(final Page page) {
-        return page.locator("body");
-    }
-
-    private static Locator id(final Page page, final String id) {
-        return page.locator("id=" + id);
-    }
-
-    private static Locator controlPanelDetails(final Page page, final String name) {
-        return page
-            .locator(".row")
-            .filter(
-                new Locator.FilterOptions()
-                    .setHas(page.getByRole(AriaRole.HEADING, new GetByRoleOptions().setName(nameRegex(name))))
-            )
-            .getByRole(AriaRole.BUTTON);
-    }
-
-    private static Locator categoryLink(final Page page, final String name) {
-        return page.getByRole(AriaRole.LINK, new GetByRoleOptions().setName(nameRegex(name)));
-    }
-
-    private static Pattern nameRegex(final String name) {
-        return Pattern.compile("^.*" + name + ".*$");
-    }
-
-    private String baseUrl() {
-        return "%s%s".formatted(server.getURL(), ControlPanelModuleConfiguration.DEFAULT_PATH);
-    }
 }

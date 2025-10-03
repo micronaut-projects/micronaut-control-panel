@@ -107,7 +107,7 @@
 
         $('#stopConfirm').click(function() {
             $.ajax({
-                url: '/stop',
+                url: '{{ ext.appPath }}/stop',
                 type: 'POST',
                 success: function(result) {
                     $('#stopRefreshModal').modal('hide')
@@ -122,7 +122,7 @@
 
         $('#refreshConfirm').click(function() {
             $.ajax({
-                url: '/refresh',
+                url: '{{ ext.appPath }}/refresh',
                 type: 'POST',
                 success: function(result) {
                     $('#stopRefreshModal').modal('hide')
@@ -136,7 +136,7 @@
 
         $('#refreshForce').click(function() {
             $.ajax({
-                url: '/refresh',
+                url: '{{ ext.appPath }}/refresh',
                 data: JSON.stringify({force: true}),
                 contentType: "application/json; charset=utf-8",
                 type: 'POST',

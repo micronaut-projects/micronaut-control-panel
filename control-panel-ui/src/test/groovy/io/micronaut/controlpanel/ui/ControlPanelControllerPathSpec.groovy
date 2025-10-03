@@ -5,6 +5,7 @@ import io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration
 import io.micronaut.http.HttpStatus
 import io.micronaut.http.client.HttpClient
 import io.micronaut.runtime.server.EmbeddedServer
+import spock.lang.Issue
 import spock.lang.Specification
 
 class ControlPanelControllerPathSpec extends Specification {
@@ -58,6 +59,38 @@ class ControlPanelControllerPathSpec extends Specification {
 
         // Check that control panel detail links use the custom path (if present in index view)
         html.contains('"/admin/') && !html.contains('"/control-panel/')
+    }
+
+    @Issue("https://github.com/micronaut-projects/micronaut-control-panel/issues/281")
+    void "control panel honours application context path"() {
+        given:
+        def appPath = "/app"
+        def controlPanelPath = "/cp"
+
+        def server = ApplicationContext.run(EmbeddedServer,
+                [
+                        "micronaut.server.context-path": appPath,
+                        (ControlPanelModuleConfiguration.PROPERTY_PATH): controlPanelPath
+                ] as Map)
+        def ctx = server.applicationContext
+        def client = ctx.createBean(HttpClient, server.URL).toBlocking()
+
+        when:
+        def response = client.exchange("/app/cp", String)
+
+        then:
+        response.status() == HttpStatus.OK
+        def html = response.body()
+
+        // Check that the brand logo link uses the custom path
+        html.contains('href="/app/cp"')
+
+        // Check that category links use the custom path
+        html.contains('href="/app/cp/categories/')
+
+        // Check that control panel detail links use the custom path (if present in index view)
+        html.contains('"/app/cp/') && !html.contains('"/control-panel/')
+
     }
 
 }
