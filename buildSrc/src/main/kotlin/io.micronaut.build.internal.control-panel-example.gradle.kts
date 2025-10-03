@@ -36,7 +36,7 @@ tasks.withType<Test> {
 
 graalvmNative {
     agent {
-        enabled.set(System.getenv("CI") == null)
+        enabled.set(false)
         defaultMode.set("conditional")
         modes {
             conditional {

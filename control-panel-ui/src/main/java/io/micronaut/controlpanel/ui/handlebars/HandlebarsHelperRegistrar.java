@@ -162,8 +162,8 @@ class HandlebarsHelperRegistrar implements BeanCreatedEventListener<Handlebars> 
                 }
             }
         }
-        if (LOG.isInfoEnabled()) {
-            LOG.info("Precompiled {} Handlebars templates/partials from classpath (prefix='{}')", compiled, prefix);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Precompiled {} Handlebars templates/partials from classpath (prefix='{}')", compiled, prefix);
         }
     }
 
@@ -217,7 +217,7 @@ class HandlebarsHelperRegistrar implements BeanCreatedEventListener<Handlebars> 
                         String rel = name.substring(entryPrefix.length());
                         rel = rel.replace('\\', '/');
                         rel = stripSuffix(rel, suffix);
-                        results.add(rel);
+                        results.add(prefix + rel);
                     }
                 }
             }
