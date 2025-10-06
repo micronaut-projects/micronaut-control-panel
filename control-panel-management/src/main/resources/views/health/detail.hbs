@@ -27,6 +27,24 @@
                             {{> (stringFormat "views/health/%s" (cut @key '()')) parameter=subDetails }}
                         </div>
                     </div>
+                {{else}}
+                    {{#eq subDetails.status.name 'UP'}}
+                        <div class="card card-success">
+                    {{/eq}}
+                    {{#eq subDetails.status.name 'DOWN'}}
+                        <div class="card card-danger">
+                    {{/eq}}
+                    {{#eq subDetails.status.name 'UNKNOWN'}}
+                        <div class="card card-warning">
+                    {{/eq}}
+
+                        <div class="card-header">
+                            <h3 class="card-title">{{titleize (decamelize (cut @key '()')) }}</h3>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">No detailed information available.</p>
+                        </div>
+                    </div>
                 {{/partialExists}}
             {{/if}}
         {{/each}}
