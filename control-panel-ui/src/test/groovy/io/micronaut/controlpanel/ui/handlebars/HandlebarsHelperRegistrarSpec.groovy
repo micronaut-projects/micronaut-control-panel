@@ -122,4 +122,21 @@ class HandlebarsHelperRegistrarSpec extends Specification {
         then:
         result == "Used: 75%, Free: 25%" // Used = 100 - 25 = 75%, Free = 25%
     }
+
+    void "test isMap"() {
+        given:
+        def template = handlebars.compileInline("{{#isMap myParam}}is map{{else}}is not map{{/isMap}}")
+
+        when:
+        def result = template.apply(["myParam": [a: 1, b: 2]])
+
+        then:
+        result == "is map"
+
+        when:
+        result = template.apply(["myParam": "something else"])
+
+        then:
+        result == "is not map"
+    }
 }

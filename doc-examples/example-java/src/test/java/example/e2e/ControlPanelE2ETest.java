@@ -77,7 +77,7 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         assertThat(body(page)).containsText("Other beans");
         button(page, "Package example").first().click();
         assertThat(page.locator("#theGraph"))
-            .matchesAriaSnapshot("- document: example.DemoController example.MyApplicationControlPanel io.micronaut.controlpanel.core.config.ControlPanelConfiguration");
+            .matchesAriaSnapshot("- document: example.CustomHealthIndicator example.DemoController example.MyApplicationControlPanel io.micronaut.controlpanel.core.config.ControlPanelConfiguration");
 
         assertThat(body(page)).containsText("Micronaut Framework beans");
     }
