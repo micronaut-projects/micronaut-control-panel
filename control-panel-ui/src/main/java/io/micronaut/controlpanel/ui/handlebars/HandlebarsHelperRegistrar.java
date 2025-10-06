@@ -67,6 +67,7 @@ class HandlebarsHelperRegistrar implements BeanCreatedEventListener<Handlebars> 
         handlebars.registerHelper("minus", minusHelper());
         handlebars.registerHelper("mod", modHelper());
         handlebars.registerHelper("size", (ctx, opts) -> ((Collection<?>) ctx).size());
+        handlebars.registerHelper("isMap", isMapHelper());
         handlebars.registerHelper("partialExists", partialExistsHelper(handlebars));
 
         // Enable a high concurrency template cache and precompile all templates/partials available on the classpath
@@ -116,6 +117,16 @@ class HandlebarsHelperRegistrar implements BeanCreatedEventListener<Handlebars> 
                 return 0;
             }
             return (int) Math.ceil((value / total) * 100);
+        };
+    }
+
+    private static Helper<Object> isMapHelper() {
+        return (ctx, opts) -> {
+            if (ctx instanceof java.util.Map) {
+                return opts.fn(); // It's a Map, render the block
+            } else {
+                return opts.inverse(); // It's not a Map, render the inverse block
+            }
         };
     }
 

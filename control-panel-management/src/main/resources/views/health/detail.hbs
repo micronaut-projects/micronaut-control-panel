@@ -42,7 +42,28 @@
                             <h3 class="card-title">{{titleize (decamelize (cut @key '()')) }}</h3>
                         </div>
                         <div class="card-body">
-                            <p class="card-text">No detailed information available.</p>
+                            <p class="card-text">
+                                {{#isMap subDetails.details}}
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Property</th>
+                                                <th>Value</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {{#each subDetails.details as |it|}}
+                                                <tr>
+                                                    <td>{{titleize (decamelize (cut @key '()')) }}</td>
+                                                    <td>{{it}}</td>
+                                                </tr>
+                                            {{/each}}
+                                        </tbody>
+                                    </table>
+                                {{else}}
+                                    {{subDetails.details}}
+                                {{/isMap}}
+                            </p>
                         </div>
                     </div>
                 {{/partialExists}}
