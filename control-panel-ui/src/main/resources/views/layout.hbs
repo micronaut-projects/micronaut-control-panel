@@ -6,7 +6,7 @@
     <title>
         Micronaut Control Panel
         {{#if ext.controlPanel.title}}
-            - {{ext.controlPanel.title}}
+            - {{{ ext.controlPanel.title }}}
         {{/if}}
     </title>
 
@@ -195,7 +195,7 @@
                             <ol class="breadcrumb">
                                 {{#if ext.controlPanel }}
                                     <li class="breadcrumb-item"><a href="{{ext.controlPanelPath}}/categories/{{ ext.currentCategory.id }}"><i class="fas {{ ext.currentCategory.iconClass }}"></i> {{ ext.currentCategory.name }}</a></li>
-                                    <li class="breadcrumb-item active" aria-current="page">{{ext.controlPanel.title}}</li>
+                                    <li class="breadcrumb-item active" aria-current="page">{{{ ext.controlPanel.title }}}</li>
                                 {{else}}
                                     <li class="breadcrumb-item active"><i class="fas {{ ext.currentCategory.iconClass }}"></i> {{ ext.currentCategory.name }}</li>
                                 {{/if}}

@@ -8,8 +8,11 @@ dependencies {
 
     runtimeOnly(projects.micronautControlPanelUi)
     implementation(projects.micronautControlPanelManagement)
-
     implementation(mn.micronaut.management)
+
+    implementation(projects.micronautControlPanelObjectStorage)
+    implementation(mnObjectStorage.micronaut.`object`.storage.local)
+
     runtimeOnly(mnLogging.logback.classic)
     runtimeOnly(mn.snakeyaml)
 

@@ -9,6 +9,14 @@ micronaut:
         icon: fa-plug # <2>
         order: 10 # <3>
 #end::control-panel[]
+      object-storage:
+        enabled: true
+  object-storage:
+    local:
+      foo:
+        enabled: true
+      bar:
+        enabled: true
   application:
     name: myApplication
 
