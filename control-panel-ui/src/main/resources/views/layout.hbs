@@ -113,6 +113,10 @@
                     $('#stopRefreshModal').modal('hide')
                     $('#globalAlertTitle').text('Application is shutting down')
                     $('#globalAlertMessage').text('The application is shutting down. Please wait for the server to stop.')
+
+                    $('#globalAlert i').removeClass()
+                    $('#globalAlert i').addClass("icon fas fa-arrows-rotate")
+
                     $('#globalAlert').removeClass('alert-success')
                     $('#globalAlert').addClass('alert-danger')
                     $('#globalAlert').show()
@@ -129,6 +133,9 @@
                     $('#globalAlertTitle').text('Application refreshed')
                     $('#globalAlertMessage').text('All Refreshable beans have been recreated.')
 
+                    $('#globalAlert i').removeClass()
+                    $('#globalAlert i').addClass("icon fas fa-arrows-rotate")
+
                     $('#globalAlert').show()
                 }
             });
@@ -144,6 +151,9 @@
                     $('#stopRefreshModal').modal('hide')
                     $('#globalAlertTitle').text('Application refreshed')
                     $('#globalAlertMessage').text('All Refreshable beans have been recreated regardless of environment changes.')
+
+                    $('#globalAlert i').removeClass()
+                    $('#globalAlert i').addClass("icon fas fa-arrows-rotate")
 
                     $('#globalAlert').show()
                 }
@@ -247,6 +257,20 @@
 <script>
     // Don't try to render immediately
     mermaid.initialize({startOnLoad:false});
+
+    if (sessionStorage.getItem("globalAlertTitle") != null) {
+        $('#globalAlertTitle').text(sessionStorage.getItem("globalAlertTitle"))
+        $('#globalAlertMessage').text(sessionStorage.getItem("globalAlertMessage"))
+        $('#globalAlert').removeClass()
+        $('#globalAlert').addClass("alert")
+        $('#globalAlert').addClass(sessionStorage.getItem("globalAlertClass"))
+        $('#globalAlert i').removeClass()
+        $('#globalAlert i').addClass("icon fas")
+        $('#globalAlert i').addClass(sessionStorage.getItem("globalAlertIconClass"))
+        $('#globalAlert').show()
+
+        sessionStorage.clear()
+    }
 </script>
 </body>
 </html>

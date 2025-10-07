@@ -2,7 +2,7 @@
     <p class="card-text">
     <dl class="row">
         {{#each metadata}}
-            <dt class="col-sm-2">{{ titleize (decamelize (cut @key '()')) }}</dt>
+            <dt class="col-sm-2">{{ titleize (decamelize @key) }}</dt>
             <dd class="col-sm-10"><code>{{this}}</code></dd>
         {{/each}}
     </dl>
@@ -32,15 +32,11 @@
                         {{ unwrapOptional entry.contentType }}
                     </td>
                     <td>
-                        <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
-                                data-target="#actionsModal" data-logger="{{@key}}"
-                                data-currentlevel="{{ logger.configuredLevel }}">
+                        <button type="button" class="btn btn-primary btn-sm">
                             <i class="fa fa-download"></i>
                             Download
                         </button>
-                        <button type="button" class="btn btn-danger btn-sm" data-toggle="modal"
-                                data-target="#actionsModal" data-logger="{{@key}}"
-                                data-currentlevel="{{ logger.configuredLevel }}">
+                        <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteConfirmModal" data-key="{{entry.key}}">
                             <i class="fa fa-trash"></i>
                             Delete
                         </button>
@@ -50,6 +46,54 @@
             </tbody>
         </table>
         </p>
+
+        <div class="modal fade" id="deleteConfirmModal" tabindex="-1" role="dialog" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteConfirmModalLabel">Confirm deletion</h5>
+                    </div>
+                    <div class="modal-body">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-danger" id="deleteConfirm">Delete</button>
+                    </div>
+                    <input type="hidden" id="fileKey"/>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            $('#deleteConfirmModal').on('show.bs.modal', function (event) {
+                var modal = $(this)
+                var button = $(event.relatedTarget) // Button that triggered the modal
+                var key = button.data('key') // Extract info from data-* attributes
+                var body = "Are you sure you want to delete the file " + key + "?"
+                modal.find('.modal-body').html('<p class="card-text">' + body + '</p>')
+                $('#fileKey').val(key)
+            })
+
+            $('#deleteConfirm').click(function(event) {
+                var fileKey = $('#fileKey').val();
+                $.ajax({
+                    url: '{{ ext.appPath }}/object-storage-control-panel-controller',
+                    data: JSON.stringify({objectStorage: '{{ controlPanel.title }}', key: fileKey}),
+                    type: 'DELETE',
+                    contentType: "application/json; charset=utf-8",
+                    success: function(result) {
+                        $('#deleteConfirmModal').modal('hide')
+                        $('#fileKey').val('')
+                        sessionStorage.setItem('globalAlertTitle', 'Success')
+                        sessionStorage.setItem('globalAlertMessage', "File " + fileKey + " deleted successfully")
+                        sessionStorage.setItem('globalAlertClass', "alert-success")
+                        sessionStorage.setItem('globalAlertIconClass', "fa-check")
+                        location.reload();
+                    }
+                });
+            })
+        </script>
+
     {{/if}}
 
 {{/with}}

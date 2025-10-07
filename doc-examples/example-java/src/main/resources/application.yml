@@ -14,9 +14,9 @@ micronaut:
   object-storage:
     local:
       foo:
-        enabled: true
+        path: /tmp/foo/
       bar:
-        enabled: true
+        path: /tmp/bar/
   application:
     name: myApplication
 
