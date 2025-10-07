@@ -5,6 +5,7 @@ plugins {
 dependencies {
     api(projects.micronautControlPanelCore)
     implementation(mnObjectStorage.micronaut.`object`.storage.core)
+    implementation(mn.micronaut.http.server)
 
     compileOnly(mnObjectStorage.micronaut.`object`.storage.aws)
     compileOnly(mnObjectStorage.micronaut.`object`.storage.azure)

@@ -32,7 +32,7 @@
                         {{ unwrapOptional entry.contentType }}
                     </td>
                     <td>
-                        <button type="button" class="btn btn-primary btn-sm">
+                        <button type="button" class="btn btn-primary btn-sm" data-key="{{entry.key}}" onclick="download('{{ controlPanel.title }}', '{{entry.key}}')">
                             <i class="fa fa-download"></i>
                             Download
                         </button>
@@ -92,6 +92,27 @@
                     }
                 });
             })
+
+            function download(objectStorageName, fileKey) {
+                $.ajax({
+                    url: '{{ ext.appPath }}/object-storage-control-panel-controller/' + objectStorageName + '/' + fileKey,
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    xhrFields: {
+                        responseType: 'blob'
+                    },
+                    success: function(data) {
+                        var url = window.URL.createObjectURL(data);
+                        var a = document.createElement('a');
+                        a.href = url;
+                        a.download = fileKey; // desired file name
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                        window.URL.revokeObjectURL(url);
+                    }
+                });
+            }
         </script>
 
     {{/if}}
