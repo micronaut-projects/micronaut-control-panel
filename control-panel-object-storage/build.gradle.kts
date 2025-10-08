@@ -14,4 +14,12 @@ dependencies {
     compileOnly(mnObjectStorage.micronaut.`object`.storage.local)
 
     testImplementation(mnObjectStorage.micronaut.`object`.storage.local)
+    testImplementation(mnObjectStorage.micronaut.`object`.storage.aws)
+    testImplementation(mnObjectStorage.micronaut.`object`.storage.azure)
+    testImplementation(mnObjectStorage.micronaut.`object`.storage.gcp)
+    testImplementation(mnObjectStorage.micronaut.`object`.storage.oracle.cloud)
+}
+
+micronautBuild {
+    binaryCompatibility.enabledAfter("1.10.0")
 }

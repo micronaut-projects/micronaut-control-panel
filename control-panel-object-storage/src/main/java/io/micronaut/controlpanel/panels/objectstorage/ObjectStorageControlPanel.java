@@ -104,7 +104,7 @@ public class ObjectStorageControlPanel extends AbstractControlPanel<ObjectStorag
         return DEFAULT_ICON_CLASS;
     }
 
-    private Map<String, Object> computeMetadata() {
+    Map<String, Object> computeMetadata() {
         var metadata = new HashMap<String, Object>();
         if (objectStorageConfiguration instanceof LocalStorageConfiguration localConfiguration) {
             metadata.put("path", localConfiguration.getPath());

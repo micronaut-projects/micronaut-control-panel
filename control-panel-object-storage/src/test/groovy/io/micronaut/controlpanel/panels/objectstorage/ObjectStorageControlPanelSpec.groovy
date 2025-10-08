@@ -5,6 +5,7 @@ import io.micronaut.controlpanel.core.config.ControlPanelConfiguration
 import io.micronaut.inject.qualifiers.Qualifiers
 import io.micronaut.objectstorage.ObjectStorageEntry
 import io.micronaut.objectstorage.ObjectStorageOperations
+import io.micronaut.objectstorage.aws.AwsS3Configuration
 import io.micronaut.objectstorage.configuration.AbstractObjectStorageConfiguration
 import io.micronaut.objectstorage.local.LocalStorageConfiguration
 import spock.lang.Specification
@@ -54,7 +55,7 @@ class ObjectStorageControlPanelSpec extends Specification {
         def panel = createPanel(Mock(ObjectStorageOperations), Mock(AbstractObjectStorageConfiguration), Mock(ControlPanelConfiguration))
 
         then:
-        panel.getIcon() == "fa-hard-drive"
+        panel.getIcon() == "fa-cloud-arrow-down"
     }
 
     void "it has correct body view"() {
@@ -80,7 +81,7 @@ class ObjectStorageControlPanelSpec extends Specification {
         then:
         panel.getCategory().id() == "object-storage"
         panel.getCategory().name() == "Object Storage"
-        panel.getCategory().iconClass() == "fa-hard-drive"
+        panel.getCategory().iconClass() == "fa-cloud-arrow-down"
     }
 
     void "getBody returns entries from operations"() {
@@ -147,22 +148,23 @@ class ObjectStorageControlPanelSpec extends Specification {
         panel.getBadge() == "0"
     }
 
-    void "computeMetadata returns empty map for non-local configuration"() {
+    void "computeMetadata returns bucket for aws"() {
         when:
-        def panel = createPanel(Mock(ObjectStorageOperations), Mock(AbstractObjectStorageConfiguration), Mock(ControlPanelConfiguration))
+        def awsConfig = Mock(AwsS3Configuration)
+        awsConfig.getBucket() >> "mybucket"
+        def panel = new ObjectStorageControlPanel(Mock(ObjectStorageOperations), awsConfig, Mock(ControlPanelConfiguration))
         def metadata = panel.computeMetadata()
 
         then:
-        metadata.isEmpty()
+        metadata.size() == 1
+        metadata.get("bucket") == "mybucket"
     }
 
     void "computeMetadata includes path for LocalStorageConfiguration"() {
         given:
-        def operations = Mock(ObjectStorageOperations)
-        def controlPanelConfig = Mock(ControlPanelConfiguration)
         def localConfig = Mock(LocalStorageConfiguration)
         localConfig.getPath() >> Path.of("/tmp/test-storage")
-        def panel = new ObjectStorageControlPanel(operations, localConfig, controlPanelConfig)
+        def panel = new ObjectStorageControlPanel(Mock(ObjectStorageOperations), localConfig, Mock(ControlPanelConfiguration))
 
         when:
         def metadata = panel.computeMetadata()

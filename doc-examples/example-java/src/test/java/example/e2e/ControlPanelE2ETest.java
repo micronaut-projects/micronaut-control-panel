@@ -138,4 +138,17 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         assertThat(page.locator("#globalAlertMessage")).containsText("All Refreshable beans have been recreated regardless of environment changes.");
     }
 
+    @Test
+    void testObjectStorage(Page page) {
+        page.navigate(baseUrl());
+        categoryLink(page, "Object Storage").click();
+
+        assertThat(body(page)).containsText("mylocal");
+        assertThat(body(page)).containsText("0 files stored.");
+
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Details")).click();
+
+        assertThat(page.getByRole(AriaRole.DEFINITION)).containsText("/tmp/foo");
+    }
+
 }
