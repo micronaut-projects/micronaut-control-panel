@@ -11,6 +11,7 @@ dependencies {
         }
     }
     implementation(mn.micronaut.http.server)
+    implementation(mnSerde.micronaut.serde.api)
     compileOnly(mn.micronaut.management)
 
     testCompileOnly(mn.micronaut.inject.groovy)

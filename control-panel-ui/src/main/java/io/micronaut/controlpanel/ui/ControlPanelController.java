@@ -22,6 +22,7 @@ import io.micronaut.controlpanel.core.ControlPanelRepository;
 import io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration;
 import io.micronaut.controlpanel.ui.util.EndpointUtils;
 import io.micronaut.core.annotation.Nullable;
+import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.server.HttpServerConfiguration;
 import io.micronaut.management.endpoint.refresh.RefreshEndpoint;
@@ -29,7 +30,7 @@ import io.micronaut.management.endpoint.stop.ServerStopEndpoint;
 import io.micronaut.runtime.ApplicationConfiguration;
 import io.micronaut.scheduling.TaskExecutors;
 import io.micronaut.scheduling.annotation.ExecuteOn;
-import io.micronaut.views.View;
+import io.micronaut.views.ModelAndView;
 import jakarta.inject.Inject;
 
 import java.util.HashMap;
@@ -89,15 +90,13 @@ public class ControlPanelController implements ControlPanelApi {
         this.controlPanelPath = computeControlPanelPath(appPath, configuration.getPath());
     }
 
-    @View("layout")
     @Override
-    public Model index() {
+    public HttpResponse<ModelAndView<?>> index() {
         return byCategory(ControlPanel.Category.MAIN.id());
     }
 
-    @View("layout")
     @Override
-    public Model byCategory(String categoryId) {
+    public HttpResponse<ModelAndView<?>> byCategory(String categoryId) {
         Map<String, Object> extraProperties = new HashMap<>();
         var categories = repository.findAllCategories();
 
@@ -107,15 +106,19 @@ public class ControlPanelController implements ControlPanelApi {
         extraProperties.put("appPath", appPath);
 
         var optionalCategory = repository.findCategoryById(categoryId);
-        optionalCategory.ifPresent(category -> extraProperties.put("currentCategory", category));
 
-        return new Model(categories, applicationName, activeEnvironments, Model.ContentView.INDEX,
-            canRefresh, canStop, extraProperties);
+        if (optionalCategory.isPresent()) {
+            extraProperties.put("currentCategory", optionalCategory.get());
+            var model = new Model(categories, applicationName, activeEnvironments, Model.ContentView.INDEX,
+                canRefresh, canStop, extraProperties);
+            return HttpResponse.ok(new ModelAndView<>("layout", model));
+        } else {
+            return HttpResponse.notFound();
+        }
     }
 
-    @View("layout")
     @Override
-    public Model detail(String controlPanelName) {
+    public HttpResponse<ModelAndView<?>> detail(String controlPanelName) {
         var categories = repository.findAllCategories();
         Map<String, Object> extraProperties = new HashMap<>();
         extraProperties.put("controlPanelPath", controlPanelPath);
@@ -126,8 +129,11 @@ public class ControlPanelController implements ControlPanelApi {
             extraProperties.put("controlPanel", optionalControlPanel.get());
             var optionalCategory = repository.findCategoryById(optionalControlPanel.get().getCategory().id());
             optionalCategory.ifPresent(category -> extraProperties.put("currentCategory", category));
+            var model = new Model(categories, applicationName, activeEnvironments, Model.ContentView.DETAIL,
+                canRefresh, canStop, extraProperties);
+            return HttpResponse.ok(new ModelAndView<>("layout", model));
+        } else {
+            return HttpResponse.notFound();
         }
-        return new Model(categories, applicationName, activeEnvironments, Model.ContentView.DETAIL,
-            canRefresh, canStop, extraProperties);
     }
 }

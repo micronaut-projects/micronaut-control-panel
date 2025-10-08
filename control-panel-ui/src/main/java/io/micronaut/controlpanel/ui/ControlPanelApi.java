@@ -16,7 +16,9 @@
 package io.micronaut.controlpanel.ui;
 
 import io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration;
+import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.Get;
+import io.micronaut.views.ModelAndView;
 
 /**
  * HTTP API for the control panel UI.
@@ -34,17 +36,16 @@ public interface ControlPanelApi {
      * @return the model
      */
     @Get
-    Model index();
+    HttpResponse<ModelAndView<?>> index();
 
     /**
      * Renders the category view.
      *
      * @param categoryId the category id.
-     *
      * @return the model
      */
     @Get("/categories/{categoryId}")
-    Model byCategory(String categoryId);
+    HttpResponse<ModelAndView<?>> byCategory(String categoryId);
 
     /**
      * Renders the control panel detailed view.
@@ -54,5 +55,5 @@ public interface ControlPanelApi {
      * @return the model
      */
     @Get("/{controlPanelName}")
-    Model detail(String controlPanelName);
+    HttpResponse<ModelAndView<?>> detail(String controlPanelName);
 }

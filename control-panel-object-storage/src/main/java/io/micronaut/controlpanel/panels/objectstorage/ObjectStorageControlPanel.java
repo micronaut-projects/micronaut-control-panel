@@ -2,10 +2,8 @@ package io.micronaut.controlpanel.panels.objectstorage;
 
 import io.micronaut.context.annotation.EachBean;
 import io.micronaut.context.annotation.Parameter;
-import io.micronaut.context.annotation.Requires;
 import io.micronaut.controlpanel.core.AbstractControlPanel;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
-import io.micronaut.core.util.StringUtils;
 import io.micronaut.objectstorage.ObjectStorageEntry;
 import io.micronaut.objectstorage.ObjectStorageOperations;
 import io.micronaut.objectstorage.configuration.AbstractObjectStorageConfiguration;
@@ -18,7 +16,6 @@ import java.util.Map;
 import java.util.Optional;
 
 @EachBean(AbstractObjectStorageConfiguration.class)
-@Requires(property = ObjectStorageControlPanel.ENABLED_PROPERTY, notEquals = StringUtils.FALSE)
 public class ObjectStorageControlPanel extends AbstractControlPanel<ObjectStorageControlPanel.Body> {
 
     public static final String NAME = "object-storage";
