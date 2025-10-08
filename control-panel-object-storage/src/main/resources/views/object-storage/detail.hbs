@@ -73,9 +73,13 @@
                     <h5 class="modal-title" id="uploadModalLabel">Upload file</h5>
                 </div>
                 <div class="modal-body">
-                    <form id="uploadForm" class="dropzone" action="{{ ext.appPath }}/object-storage-control-panel-controller/{{ controlPanel.title }}">
-                        <input type="file" name="file">
-                    </form>
+                    <div class="form-group">
+                        <form id="uploadForm" enctype="multipart/form-data" action="{{ ext.appPath }}/object-storage-control-panel-controller/{{ controlPanel.title }}">
+                            <label for="fileUpload" class="col-form-label">File:</label>
+                            <input type="file" name="fileUpload">
+                        </form>
+                    </div>
+
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
@@ -86,6 +90,31 @@
     </div>
 
     <script>
+
+        $('#upload').click(function(e){
+            var form = $('#uploadForm')[0]
+            var formData = new FormData(form)
+
+            $.ajax({
+                url: form.action, // Uses the action attribute from your form
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    $('#uploadModal').modal('hide')
+                    sessionStorage.setItem('globalAlertTitle', 'Success')
+                    sessionStorage.setItem('globalAlertMessage', "File uploaded successfully")
+                    sessionStorage.setItem('globalAlertClass', "alert-success")
+                    sessionStorage.setItem('globalAlertIconClass', "fa-check")
+                    location.reload()
+                },
+                error: function(xhr, status, error) {
+                    alert('Upload failed');
+                }
+            });
+        })
+
         $('#deleteConfirmModal').on('show.bs.modal', function (event) {
             var modal = $(this)
             var button = $(event.relatedTarget) // Button that triggered the modal

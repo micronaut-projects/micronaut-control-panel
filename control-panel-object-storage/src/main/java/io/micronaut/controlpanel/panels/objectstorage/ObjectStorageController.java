@@ -25,6 +25,7 @@ import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Delete;
 import io.micronaut.http.annotation.Get;
+import io.micronaut.http.annotation.Part;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.http.multipart.CompletedFileUpload;
 import io.micronaut.http.server.types.files.StreamedFile;
@@ -71,11 +72,11 @@ public final class ObjectStorageController {
     }
 
     @Post(value = "/{objectStorage}", consumes = MediaType.MULTIPART_FORM_DATA)
-    public HttpResponse<?> upload(CompletedFileUpload file, String objectStorage, HttpRequest<?> request) {
+    public HttpResponse<?> upload(CompletedFileUpload fileUpload, String objectStorage, HttpRequest<?> request) {
         var operations = operationsMap.get(objectStorage);
         if (operations != null) {
             try {
-                UploadRequest uploadRequest = UploadRequest.fromCompletedFileUpload(file);
+                UploadRequest uploadRequest = UploadRequest.fromCompletedFileUpload(fileUpload, fileUpload.getFilename());
                 UploadResponse<?> response = operations.upload(uploadRequest);
                 return HttpResponse
                     .created(location(request, uploadRequest.getKey()))
