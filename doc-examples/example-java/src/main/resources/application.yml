@@ -9,20 +9,12 @@ micronaut:
         icon: fa-plug # <2>
         order: 10 # <3>
 #end::control-panel[]
-      object-storage:
-        enabled: true
   object-storage:
     local:
       mylocal:
         path: /tmp/foo/
-    aws:
-      myaws:
-        bucket: alvaro-control-panel-demo
   application:
     name: myApplication
-
-aws:
-  region: eu-west-3
 
 # Test properties to verify environment endpoint filtering
 test:
