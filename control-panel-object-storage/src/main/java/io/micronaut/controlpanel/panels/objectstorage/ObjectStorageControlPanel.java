@@ -49,6 +49,7 @@ public class ObjectStorageControlPanel extends AbstractControlPanel<ObjectStorag
     public static final String NAME = "object-storage";
     public static final String ENABLED_PROPERTY = ControlPanelConfiguration.PREFIX + "." + NAME + ".enabled";
     public static final String DEFAULT_ICON_CLASS = "fa-cloud-arrow-down";
+    public static final String BUCKET = "bucket";
 
     private final ObjectStorageOperations<?, ?, ?> operations;
     private final AbstractObjectStorageConfiguration objectStorageConfiguration;
@@ -123,14 +124,14 @@ public class ObjectStorageControlPanel extends AbstractControlPanel<ObjectStorag
         if (objectStorageConfiguration instanceof LocalStorageConfiguration localConfiguration) {
             metadata.put("path", localConfiguration.getPath());
         } else if (objectStorageConfiguration instanceof AwsS3Configuration awsS3Configuration) {
-            metadata.put("bucket", awsS3Configuration.getBucket());
+            metadata.put(BUCKET, awsS3Configuration.getBucket());
         } else if (objectStorageConfiguration instanceof AzureBlobStorageConfiguration azureBlobConfiguration) {
             metadata.put("container", azureBlobConfiguration.getContainer());
             metadata.put("endpoint", azureBlobConfiguration.getEndpoint());
         } else if (objectStorageConfiguration instanceof GoogleCloudStorageConfiguration googleCloudConfiguration) {
-            metadata.put("bucket", googleCloudConfiguration.getBucket());
+            metadata.put(BUCKET, googleCloudConfiguration.getBucket());
         } else if (objectStorageConfiguration instanceof OracleCloudStorageConfiguration oracleCloudConfiguration) {
-            metadata.put("bucket", oracleCloudConfiguration.getBucket());
+            metadata.put(BUCKET, oracleCloudConfiguration.getBucket());
             metadata.put("namespace", oracleCloudConfiguration.getNamespace());
         }
         return metadata;
@@ -138,7 +139,7 @@ public class ObjectStorageControlPanel extends AbstractControlPanel<ObjectStorag
 
     @Override
     public Category getCategory() {
-        return new Category("object-storage", "Object Storage", DEFAULT_ICON_CLASS);
+        return new Category(NAME, "Object Storage", DEFAULT_ICON_CLASS);
     }
 
     /**
