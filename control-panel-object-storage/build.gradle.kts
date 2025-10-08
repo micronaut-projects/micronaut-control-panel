@@ -12,4 +12,6 @@ dependencies {
     compileOnly(mnObjectStorage.micronaut.`object`.storage.gcp)
     compileOnly(mnObjectStorage.micronaut.`object`.storage.oracle.cloud)
     compileOnly(mnObjectStorage.micronaut.`object`.storage.local)
+
+    testImplementation(mnObjectStorage.micronaut.`object`.storage.local)
 }
