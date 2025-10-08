@@ -7,7 +7,7 @@
         {{/each}}
     </dl>
 
-    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#actionsModal">
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#uploadModal">
         <i class="fa fa-upload"></i>
         Upload file
     </button>
@@ -63,58 +63,75 @@
                 </div>
             </div>
         </div>
-
-        <script>
-            $('#deleteConfirmModal').on('show.bs.modal', function (event) {
-                var modal = $(this)
-                var button = $(event.relatedTarget) // Button that triggered the modal
-                var key = button.data('key') // Extract info from data-* attributes
-                var body = "Are you sure you want to delete the file " + key + "?"
-                modal.find('.modal-body').html('<p class="card-text">' + body + '</p>')
-                $('#fileKey').val(key)
-            })
-
-            $('#deleteConfirm').click(function(event) {
-                var fileKey = $('#fileKey').val();
-                $.ajax({
-                    url: '{{ ext.appPath }}/object-storage-control-panel-controller',
-                    data: JSON.stringify({objectStorage: '{{ controlPanel.title }}', key: fileKey}),
-                    type: 'DELETE',
-                    contentType: "application/json; charset=utf-8",
-                    success: function(result) {
-                        $('#deleteConfirmModal').modal('hide')
-                        $('#fileKey').val('')
-                        sessionStorage.setItem('globalAlertTitle', 'Success')
-                        sessionStorage.setItem('globalAlertMessage', "File " + fileKey + " deleted successfully")
-                        sessionStorage.setItem('globalAlertClass', "alert-success")
-                        sessionStorage.setItem('globalAlertIconClass', "fa-check")
-                        location.reload();
-                    }
-                });
-            })
-
-            function download(objectStorageName, fileKey) {
-                $.ajax({
-                    url: '{{ ext.appPath }}/object-storage-control-panel-controller/' + objectStorageName + '/' + fileKey,
-                    type: 'GET',
-                    contentType: "application/json; charset=utf-8",
-                    xhrFields: {
-                        responseType: 'blob'
-                    },
-                    success: function(data) {
-                        var url = window.URL.createObjectURL(data);
-                        var a = document.createElement('a');
-                        a.href = url;
-                        a.download = fileKey; // desired file name
-                        document.body.appendChild(a);
-                        a.click();
-                        a.remove();
-                        window.URL.revokeObjectURL(url);
-                    }
-                });
-            }
-        </script>
-
     {{/if}}
 
+
+    <div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="uploadModalLabel">Upload file</h5>
+                </div>
+                <div class="modal-body">
+                    <form id="uploadForm" class="dropzone" action="{{ ext.appPath }}/object-storage-control-panel-controller/{{ controlPanel.title }}">
+                        <input type="file" name="file">
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="upload">Upload</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $('#deleteConfirmModal').on('show.bs.modal', function (event) {
+            var modal = $(this)
+            var button = $(event.relatedTarget) // Button that triggered the modal
+            var key = button.data('key') // Extract info from data-* attributes
+            var body = "Are you sure you want to delete the file " + key + "?"
+            modal.find('.modal-body').html('<p class="card-text">' + body + '</p>')
+            $('#fileKey').val(key)
+        })
+
+        $('#deleteConfirm').click(function(event) {
+            var fileKey = $('#fileKey').val();
+            $.ajax({
+                url: '{{ ext.appPath }}/object-storage-control-panel-controller/{{ controlPanel.title }}/' + fileKey,
+                type: 'DELETE',
+                contentType: "application/json; charset=utf-8",
+                success: function(result) {
+                    $('#deleteConfirmModal').modal('hide')
+                    $('#fileKey').val('')
+                    sessionStorage.setItem('globalAlertTitle', 'Success')
+                    sessionStorage.setItem('globalAlertMessage', "File " + fileKey + " deleted successfully")
+                    sessionStorage.setItem('globalAlertClass', "alert-success")
+                    sessionStorage.setItem('globalAlertIconClass', "fa-check")
+                    location.reload();
+                }
+            });
+        })
+
+        function download(objectStorageName, fileKey) {
+            $.ajax({
+                url: '{{ ext.appPath }}/object-storage-control-panel-controller/' + objectStorageName + '/' + fileKey,
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                xhrFields: {
+                    responseType: 'blob'
+                },
+                success: function(data) {
+                    var url = window.URL.createObjectURL(data);
+                    var a = document.createElement('a');
+                    a.href = url;
+                    a.download = fileKey; // desired file name
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    window.URL.revokeObjectURL(url);
+                }
+            });
+        }
+    </script>
 {{/with}}
