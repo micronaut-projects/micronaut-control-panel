@@ -21,8 +21,12 @@ import io.micronaut.controlpanel.core.AbstractControlPanel;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.objectstorage.ObjectStorageEntry;
 import io.micronaut.objectstorage.ObjectStorageOperations;
+import io.micronaut.objectstorage.aws.AwsS3Configuration;
+import io.micronaut.objectstorage.azure.AzureBlobStorageConfiguration;
 import io.micronaut.objectstorage.configuration.AbstractObjectStorageConfiguration;
+import io.micronaut.objectstorage.googlecloud.GoogleCloudStorageConfiguration;
 import io.micronaut.objectstorage.local.LocalStorageConfiguration;
+import io.micronaut.objectstorage.oraclecloud.OracleCloudStorageConfiguration;
 import jakarta.inject.Named;
 
 import java.util.HashMap;
@@ -35,7 +39,7 @@ public class ObjectStorageControlPanel extends AbstractControlPanel<ObjectStorag
 
     public static final String NAME = "object-storage";
     public static final String ENABLED_PROPERTY = ControlPanelConfiguration.PREFIX + "." + NAME + ".enabled";
-    public static final String ICON_CLASS = "fa-hard-drive";
+    public static final String DEFAULT_ICON_CLASS = "fa-cloud-arrow-down";
 
     private final ObjectStorageOperations<?, ?, ?> operations;
     private final AbstractObjectStorageConfiguration objectStorageConfiguration;
@@ -88,20 +92,39 @@ public class ObjectStorageControlPanel extends AbstractControlPanel<ObjectStorag
 
     @Override
     public String getIcon() {
-        return ICON_CLASS;
+        if (objectStorageConfiguration instanceof LocalStorageConfiguration) {
+            return "fa-hard-drive";
+        } else if (objectStorageConfiguration instanceof AwsS3Configuration) {
+            return "fa-brands fa-aws";
+        } else if (objectStorageConfiguration instanceof AzureBlobStorageConfiguration) {
+            return "fa-brands fa-microsoft";
+        } else if (objectStorageConfiguration instanceof GoogleCloudStorageConfiguration) {
+            return "fa-brands fa-google";
+        }
+        return DEFAULT_ICON_CLASS;
     }
 
     private Map<String, Object> computeMetadata() {
         var metadata = new HashMap<String, Object>();
         if (objectStorageConfiguration instanceof LocalStorageConfiguration localConfiguration) {
             metadata.put("path", localConfiguration.getPath());
+        } else if (objectStorageConfiguration instanceof AwsS3Configuration awsS3Configuration) {
+            metadata.put("bucket", awsS3Configuration.getBucket());
+        } else if (objectStorageConfiguration instanceof AzureBlobStorageConfiguration azureBlobConfiguration) {
+            metadata.put("container", azureBlobConfiguration.getContainer());
+            metadata.put("endpoint", azureBlobConfiguration.getEndpoint());
+        } else if (objectStorageConfiguration instanceof GoogleCloudStorageConfiguration googleCloudConfiguration) {
+            metadata.put("bucket", googleCloudConfiguration.getBucket());
+        } else if (objectStorageConfiguration instanceof OracleCloudStorageConfiguration oracleCloudConfiguration) {
+            metadata.put("bucket", oracleCloudConfiguration.getBucket());
+            metadata.put("namespace", oracleCloudConfiguration.getNamespace());
         }
         return metadata;
     }
 
     @Override
     public Category getCategory() {
-        return new Category("object-storage", "Object Storage", ICON_CLASS);
+        return new Category("object-storage", "Object Storage", DEFAULT_ICON_CLASS);
     }
 
     public record Body(List<? extends ObjectStorageEntry<?>> entries, Map<String, Object> metadata) { }

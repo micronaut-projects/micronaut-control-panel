@@ -13,12 +13,16 @@ micronaut:
         enabled: true
   object-storage:
     local:
-      foo:
+      mylocal:
         path: /tmp/foo/
-      bar:
-        path: /tmp/bar/
+    aws:
+      myaws:
+        bucket: alvaro-control-panel-demo
   application:
     name: myApplication
+
+aws:
+  region: eu-west-3
 
 # Test properties to verify environment endpoint filtering
 test:
