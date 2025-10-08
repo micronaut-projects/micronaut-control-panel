@@ -25,11 +25,9 @@ import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Delete;
 import io.micronaut.http.annotation.Get;
-import io.micronaut.http.annotation.Part;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.http.multipart.CompletedFileUpload;
 import io.micronaut.http.server.types.files.StreamedFile;
-import io.micronaut.http.server.types.files.SystemFile;
 import io.micronaut.http.server.util.HttpHostResolver;
 import io.micronaut.http.uri.UriBuilder;
 import io.micronaut.objectstorage.ObjectStorageEntry;
@@ -89,12 +87,6 @@ public final class ObjectStorageController {
         }
     }
 
-    private URI location(HttpRequest<?> request, String key) {
-        return UriBuilder.of(httpHostResolver.resolve(request))
-            .path(key)
-            .build();
-    }
-
     @Delete("/{objectStorage}/{key}")
     public HttpResponse<Void> delete(String objectStorage, String key) {
         var operations = operationsMap.get(objectStorage);
@@ -105,4 +97,11 @@ public final class ObjectStorageController {
             return HttpResponse.notFound();
         }
     }
+
+    private URI location(HttpRequest<?> request, String key) {
+        return UriBuilder.of(httpHostResolver.resolve(request))
+            .path(key)
+            .build();
+    }
+
 }

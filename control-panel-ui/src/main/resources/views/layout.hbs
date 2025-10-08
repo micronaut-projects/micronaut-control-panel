@@ -18,8 +18,6 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
     <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/styles/default.min.css">
     <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/highlight.js@11.7.0/styles/androidstudio.css">
-    <!-- Dropzone -->
-    <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
 </head>
 <body class="hold-transition sidebar-mini">
 
@@ -113,15 +111,7 @@
                 type: 'POST',
                 success: function(result) {
                     $('#stopRefreshModal').modal('hide')
-                    $('#globalAlertTitle').text('Application is shutting down')
-                    $('#globalAlertMessage').text('The application is shutting down. Please wait for the server to stop.')
-
-                    $('#globalAlert i').removeClass()
-                    $('#globalAlert i').addClass("icon fas fa-arrows-rotate")
-
-                    $('#globalAlert').removeClass('alert-success')
-                    $('#globalAlert').addClass('alert-danger')
-                    $('#globalAlert').show()
+                    globalAlertMessageDisplay('Application is shutting down', 'The application is shutting down. Please wait for the server to stop.', 'alert-danger', 'fa-arrows-rotate')
                 }
             });
         })
@@ -132,13 +122,7 @@
                 type: 'POST',
                 success: function(result) {
                     $('#stopRefreshModal').modal('hide')
-                    $('#globalAlertTitle').text('Application refreshed')
-                    $('#globalAlertMessage').text('All Refreshable beans have been recreated.')
-
-                    $('#globalAlert i').removeClass()
-                    $('#globalAlert i').addClass("icon fas fa-arrows-rotate")
-
-                    $('#globalAlert').show()
+                    globalAlertMessageDisplay('Application refreshed', 'All Refreshable beans have been recreated.', 'alert-success', 'fa-arrows-rotate')
                 }
             });
         })
@@ -151,13 +135,7 @@
                 type: 'POST',
                 success: function(result) {
                     $('#stopRefreshModal').modal('hide')
-                    $('#globalAlertTitle').text('Application refreshed')
-                    $('#globalAlertMessage').text('All Refreshable beans have been recreated regardless of environment changes.')
-
-                    $('#globalAlert i').removeClass()
-                    $('#globalAlert i').addClass("icon fas fa-arrows-rotate")
-
-                    $('#globalAlert').show()
+                    globalAlertMessageDisplay('Application refreshed', 'All Refreshable beans have been recreated regardless of environment changes.', 'alert-success', 'fa-arrows-rotate')
                 }
             });
         })
@@ -256,24 +234,41 @@
 <script>hljs.highlightAll();</script>
 <!--mermaid -->
 <script src="https://cdn.jsdelivr.net/npm/mermaid@9/dist/mermaid.min.js"></script>
-<!-- Dropzone -->
-<script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
 <script>
     // Don't try to render immediately
     mermaid.initialize({startOnLoad:false});
 
-    if (sessionStorage.getItem("globalAlertTitle") != null) {
-        $('#globalAlertTitle').text(sessionStorage.getItem("globalAlertTitle"))
-        $('#globalAlertMessage').text(sessionStorage.getItem("globalAlertMessage"))
+    let title = sessionStorage.getItem("globalAlertTitle");
+    if (title != null) {
+        let message = sessionStorage.getItem("globalAlertMessage");
+        let cssClass = sessionStorage.getItem("globalAlertClass");
+        let iconClass = sessionStorage.getItem("globalAlertIconClass");
+        globalAlertMessageDisplay(title, message, cssClass, iconClass);
+        sessionStorage.clear()
+    }
+
+    function globalAlertMessageReload(title, message, cssClass, iconClass) {
+        sessionStorage.setItem('globalAlertTitle', title);
+        sessionStorage.setItem('globalAlertMessage', message);
+        sessionStorage.setItem('globalAlertClass', cssClass);
+        sessionStorage.setItem('globalAlertIconClass', iconClass);
+        location.reload();
+    }
+
+    function globalAlertMessageDisplay(title, message, cssClass, iconClass) {
+        $('#globalAlertTitle').text(title)
+        $('#globalAlertMessage').text(message)
+
         $('#globalAlert').removeClass()
         $('#globalAlert').addClass("alert")
-        $('#globalAlert').addClass(sessionStorage.getItem("globalAlertClass"))
+        $('#globalAlert').addClass(cssClass)
+
         $('#globalAlert i').removeClass()
         $('#globalAlert i').addClass("icon fas")
-        $('#globalAlert i').addClass(sessionStorage.getItem("globalAlertIconClass"))
+        $('#globalAlert i').addClass(iconClass)
+
         $('#globalAlert').show()
 
-        sessionStorage.clear()
     }
 </script>
 </body>

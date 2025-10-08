@@ -103,14 +103,11 @@
                 contentType: false,
                 success: function(response) {
                     $('#uploadModal').modal('hide')
-                    sessionStorage.setItem('globalAlertTitle', 'Success')
-                    sessionStorage.setItem('globalAlertMessage', "File uploaded successfully")
-                    sessionStorage.setItem('globalAlertClass', "alert-success")
-                    sessionStorage.setItem('globalAlertIconClass', "fa-check")
-                    location.reload()
+                    globalAlertMessageReload('Success', 'File uploaded successfully', 'alert-success', 'fa-check')
                 },
                 error: function(xhr, status, error) {
-                    alert('Upload failed');
+                    $('#uploadModal').modal('hide')
+                    globalAlertMessageDisplay('Error', error, 'alert-danger', 'fa-circle-exclamation')
                 }
             });
         })
@@ -133,11 +130,11 @@
                 success: function(result) {
                     $('#deleteConfirmModal').modal('hide')
                     $('#fileKey').val('')
-                    sessionStorage.setItem('globalAlertTitle', 'Success')
-                    sessionStorage.setItem('globalAlertMessage', "File " + fileKey + " deleted successfully")
-                    sessionStorage.setItem('globalAlertClass', "alert-success")
-                    sessionStorage.setItem('globalAlertIconClass', "fa-check")
-                    location.reload();
+                    globalAlertMessageReload("Success", "File " + fileKey + " deleted successfully", "alert-success", "fa-check")
+                },
+                error: function(xhr, status, error) {
+                    $('#deleteConfirmModal').modal('hide')
+                    globalAlertMessageDisplay('Error', error, 'alert-danger', 'fa-circle-exclamation')
                 }
             });
         })
@@ -159,6 +156,9 @@
                     a.click();
                     a.remove();
                     window.URL.revokeObjectURL(url);
+                },
+                error: function(xhr, status, error) {
+                    globalAlertMessageDisplay('Error', error, 'alert-danger', 'fa-circle-exclamation')
                 }
             });
         }

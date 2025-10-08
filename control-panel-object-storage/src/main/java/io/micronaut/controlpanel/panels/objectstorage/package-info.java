@@ -13,6 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/**
+ * Object Storage Control Panel classes.
+ */
 @Configuration
 @Requires(property = ObjectStorageControlPanel.ENABLED_PROPERTY, notEquals = StringUtils.FALSE)
 @Requires(condition = ControlPanelEnabledCondition.class)
