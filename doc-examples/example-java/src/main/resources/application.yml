@@ -1,14 +1,14 @@
 #tag::control-panel[]
 micronaut:
   control-panel:
-    env:
-      show-values: true # <4>
     panels:
       my-application:
         title: My Application Control Panel # <1>
         icon: fa-plug # <2>
         order: 10 # <3>
 #end::control-panel[]
+    env:
+      show-values: true
   object-storage:
     local:
       mylocal:
