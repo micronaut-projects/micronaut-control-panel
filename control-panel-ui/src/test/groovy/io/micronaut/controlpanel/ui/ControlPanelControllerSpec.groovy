@@ -15,7 +15,7 @@ class ControlPanelControllerSpec extends Specification {
 
     void "test the index view"() {
         when:
-        def model = controller.index()
+        def model = controller.index().body().model.get()
 
         then:
         model.categories().size() == 2
@@ -28,7 +28,7 @@ class ControlPanelControllerSpec extends Specification {
 
     void "test the by category view"(String categoryId, int expectedControlPanels) {
         when:
-        def model = controller.byCategory(categoryId)
+        def model = controller.byCategory(categoryId).body().model.get()
 
         then:
         model.categories().size() == 2
@@ -46,7 +46,7 @@ class ControlPanelControllerSpec extends Specification {
 
     void "test the detail view"(String controlPanelName, String expectedCurrentCategoryId) {
         when:
-        def model = controller.detail(controlPanelName)
+        def model = controller.detail(controlPanelName).body().model.get()
 
         then:
         model.categories().size() == 2

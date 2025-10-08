@@ -185,4 +185,24 @@ class ObjectStorageControlPanelSpec extends Specification {
         cleanup:
         ctx.stop()
     }
+
+    void "creates multiple panels for multiple object storage configurations"() {
+        given:
+        def ctx = ApplicationContext.run([
+            'micronaut.control-panel.panels.object-storage.enabled' : true,
+            'micronaut.object-storage.local.storage1.path': '/tmp/storage1',
+            'micronaut.object-storage.local.storage2.path': '/tmp/storage2'
+        ])
+
+        when:
+        def panels = ctx.getBeansOfType(ObjectStorageControlPanel)
+
+        then:
+        panels.size() == 2
+        panels*.name.contains("object-storage-storage1")
+        panels*.name.contains("object-storage-storage2")
+
+        cleanup:
+        ctx.stop()
+    }
 }
