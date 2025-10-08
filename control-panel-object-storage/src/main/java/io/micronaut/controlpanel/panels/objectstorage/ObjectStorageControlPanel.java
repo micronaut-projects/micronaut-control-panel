@@ -34,6 +34,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * A control panel for managing object storage.
+ *
+ * This control panel provides a user interface for viewing and managing object storage entries.
+ * It is configured using an {@link AbstractObjectStorageConfiguration} instance.
+ *
+ * @author Álvaro Sánchez-Mariscal
+ * @since 1.10.0
+ */
 @EachBean(AbstractObjectStorageConfiguration.class)
 public class ObjectStorageControlPanel extends AbstractControlPanel<ObjectStorageControlPanel.Body> {
 
@@ -104,6 +113,11 @@ public class ObjectStorageControlPanel extends AbstractControlPanel<ObjectStorag
         return DEFAULT_ICON_CLASS;
     }
 
+    /**
+     * Computes the metadata for this control panel, based on the object storage configuration.
+     *
+     * @return the metadata for this control panel
+     */
     Map<String, Object> computeMetadata() {
         var metadata = new HashMap<String, Object>();
         if (objectStorageConfiguration instanceof LocalStorageConfiguration localConfiguration) {
@@ -127,5 +141,11 @@ public class ObjectStorageControlPanel extends AbstractControlPanel<ObjectStorag
         return new Category("object-storage", "Object Storage", DEFAULT_ICON_CLASS);
     }
 
+    /**
+     * A record representing the body of this control panel, containing a list of object storage entries and metadata.
+     *
+     * @param entries the list of object storage entries
+     * @param metadata the metadata for this control panel
+     */
     public record Body(List<? extends ObjectStorageEntry<?>> entries, Map<String, Object> metadata) { }
 }

@@ -41,6 +41,13 @@ import io.micronaut.scheduling.annotation.ExecuteOn;
 import java.net.URI;
 import java.util.Map;
 
+/**
+ * Controller class for managing object storage operations.
+ * Provides RESTful endpoints for downloading, uploading, and deleting objects from various object storage systems.
+ *
+ * @author Álvaro Sánchez-Mariscal
+ * @since 1.10.0
+ */
 @Controller("/object-storage-control-panel-controller")
 @ExecuteOn(TaskExecutors.BLOCKING)
 @Internal
