@@ -19,14 +19,21 @@ import io.micronaut.context.annotation.EachBean;
 import io.micronaut.context.annotation.Parameter;
 import io.micronaut.controlpanel.core.AbstractControlPanel;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
+import io.micronaut.core.annotation.ReflectiveAccess;
+import io.micronaut.core.annotation.TypeHint;
 import io.micronaut.objectstorage.ObjectStorageEntry;
 import io.micronaut.objectstorage.ObjectStorageOperations;
 import io.micronaut.objectstorage.aws.AwsS3Configuration;
+import io.micronaut.objectstorage.aws.AwsS3ObjectStorageEntry;
 import io.micronaut.objectstorage.azure.AzureBlobStorageConfiguration;
+import io.micronaut.objectstorage.azure.AzureBlobStorageEntry;
 import io.micronaut.objectstorage.configuration.AbstractObjectStorageConfiguration;
 import io.micronaut.objectstorage.googlecloud.GoogleCloudStorageConfiguration;
+import io.micronaut.objectstorage.googlecloud.GoogleCloudStorageEntry;
 import io.micronaut.objectstorage.local.LocalStorageConfiguration;
+import io.micronaut.objectstorage.local.LocalStorageEntry;
 import io.micronaut.objectstorage.oraclecloud.OracleCloudStorageConfiguration;
+import io.micronaut.objectstorage.oraclecloud.OracleCloudStorageEntry;
 import jakarta.inject.Named;
 
 import java.util.HashMap;
@@ -148,5 +155,16 @@ public class ObjectStorageControlPanel extends AbstractControlPanel<ObjectStorag
      * @param entries the list of object storage entries
      * @param metadata the metadata for this control panel
      */
+    @ReflectiveAccess
+    @TypeHint(
+        value = {
+            LocalStorageEntry.class,
+            AwsS3ObjectStorageEntry.class,
+            AzureBlobStorageEntry.class,
+            GoogleCloudStorageEntry.class,
+            OracleCloudStorageEntry.class
+        },
+        accessType = TypeHint.AccessType.ALL_PUBLIC
+    )
     public record Body(List<? extends ObjectStorageEntry<?>> entries, Map<String, Object> metadata) { }
 }
