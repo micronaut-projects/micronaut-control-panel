@@ -97,6 +97,8 @@
         
         <div class="toc-item" style="margin-left:10px" id="toc-item-management"><a href="#management"><strong>4.2</strong><span>Management</span></a></div>
         
+        <div class="toc-item" style="margin-left:10px" id="toc-item-objectStorage"><a href="#objectStorage"><strong>4.3</strong><span>Object Storage</span></a></div>
+        
         <div class="toc-item" style="margin-left:0px" id="toc-item-custom"><a href="#custom"><strong>5</strong><span>Creating Custom Control Panels</span></a></div>
         
         <div class="toc-item" style="margin-left:0px" id="toc-item-repository"><a href="#repository"><strong>6</strong><span>Repository</span></a></div>
@@ -818,6 +820,153 @@ endpoints.loggers.write-sensitive=false</code></pre>
 </div>
 </div>
 
+<h2 id="objectStorage"><a class="anchor" href="#objectStorage"></a>4.3 Object Storage</h2>
+
+<div class='contribute-btn'>
+    <button type='button' class='btn btn-default' onclick='window.location.href="https://github.com/micronaut-projects/micronaut-control-panel/edit/1.10.x/src/main/docs/guide/controlPanels/objectStorage.adoc"'>
+        <i class='fa fa-pencil-square-o'></i> Improve this doc
+    </button>
+</div>
+
+
+<div class="paragraph">
+<p>The Object Storage control panel provides a web-based interface for managing files stored in various object storage systems supported by the <a href="https://micronaut-projects.github.io/micronaut-object-storage/latest/guide/">Micronaut Object Storage</a> module.</p>
+</div>
+<div class="paragraph">
+<p>Assuming you already have one or more Micronaut Object Storage dependencies, to add the Object Storage panels, add the following dependency:</p>
+</div>
+<div class="paragraph">
+<p>        <div class="listingblock multi-language-sample">
+<div class="title"></div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="gradle">developmentOnly(<span class="hljs-string">"io.micronaut.controlpanel:micronaut-control-panel-object-storage")</span></code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="maven">&lt;dependency&gt;
+    &lt;groupId&gt;io.micronaut.controlpanel&lt;/groupId&gt;
+    &lt;artifactId&gt;micronaut-control-panel-object-storage&lt;/artifactId&gt;
+    &lt;scope&gt;provided&lt;/scope&gt;
+&lt;/dependency&gt;</code></pre>
+</div>
+</div></p>
+</div>
+<div class="paragraph">
+<p>This module automatically creates panels for each configured object storage system in your application. Each panel provides:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>A count of stored objects (displayed as a badge)</p>
+</li>
+<li>
+<p>Detailed metadata about the storage configuration</p>
+</li>
+<li>
+<p>A table listing all stored objects with their content types</p>
+</li>
+<li>
+<p>File management operations (download, upload, delete)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The control panel supports all object storage systems provided by Micronaut Object Storage:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Local Storage</strong> - Files stored on the local filesystem</p>
+</li>
+<li>
+<p><strong>Amazon S3</strong> - AWS Simple Storage Service</p>
+</li>
+<li>
+<p><strong>Azure Blob Storage</strong> - Microsoft Azure Blob Storage</p>
+</li>
+<li>
+<p><strong>Google Cloud Storage</strong> - Google Cloud Platform</p>
+</li>
+<li>
+<p><strong>Oracle Cloud Storage</strong> - Oracle Cloud Infrastructure</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The control panel is automatically enabled when you include the <code>control-panel-object-storage</code> module in your project. You can disable it by setting:</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">micronaut.control-panel.panels.object-storage.enabled=false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">micronaut:
+  control-panel:
+    panels:
+      object-storage:
+        enabled: false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[micronaut]
+  [micronaut.control-panel]
+    [micronaut.control-panel.panels]
+      [micronaut.control-panel.panels.object-storage]
+        enabled=false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-groovy-config hljs" data-lang="groovy-config">micronaut {
+  controlPanel {
+    panels {
+      objectStorage {
+        enabled = false
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-hocon hljs" data-lang="hocon">{
+  micronaut {
+    control-panel {
+      panels {
+        object-storage {
+          enabled = false
+        }
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json-config hljs" data-lang="json-config">{
+  "micronaut": {
+    "control-panel": {
+      "panels": {
+        "object-storage": {
+          "enabled": false
+        }
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+
 <h1 id="custom"><a class="anchor" href="#custom"></a>5 Creating Custom Control Panels</h1>
 
 <div class='contribute-btn'>
@@ -923,8 +1072,7 @@ to display a badge in the control panel header.</p>
 <div class="content">
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">micronaut.control-panel.env.show-values=true
-micronaut.control-panel.panels.my-application.title=My Application Control Panel
+<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">micronaut.control-panel.panels.my-application.title=My Application Control Panel
 micronaut.control-panel.panels.my-application.icon=fa-plug
 micronaut.control-panel.panels.my-application.order=10</code></pre>
 </div>
@@ -933,8 +1081,6 @@ micronaut.control-panel.panels.my-application.order=10</code></pre>
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">micronaut:
   control-panel:
-    env:
-      show-values: true # <b class="conum">(4)</b>
     panels:
       my-application:
         title: My Application Control Panel # <b class="conum">(1)</b>
@@ -946,8 +1092,6 @@ micronaut.control-panel.panels.my-application.order=10</code></pre>
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[micronaut]
   [micronaut.control-panel]
-    [micronaut.control-panel.env]
-      show-values=true
     [micronaut.control-panel.panels]
       [micronaut.control-panel.panels.my-application]
         title="My Application Control Panel"
@@ -959,9 +1103,6 @@ micronaut.control-panel.panels.my-application.order=10</code></pre>
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-groovy-config hljs" data-lang="groovy-config">micronaut {
   controlPanel {
-    env {
-      showValues = true
-    }
     panels {
       myApplication {
         title = "My Application Control Panel"
@@ -978,9 +1119,6 @@ micronaut.control-panel.panels.my-application.order=10</code></pre>
 <pre class="highlightjs highlight"><code class="language-hocon hljs" data-lang="hocon">{
   micronaut {
     control-panel {
-      env {
-        show-values = true
-      }
       panels {
         my-application {
           title = "My Application Control Panel"
@@ -998,9 +1136,6 @@ micronaut.control-panel.panels.my-application.order=10</code></pre>
 <pre class="highlightjs highlight"><code class="language-json-config hljs" data-lang="json-config">{
   "micronaut": {
     "control-panel": {
-      "env": {
-        "show-values": true
-      },
       "panels": {
         "my-application": {
           "title": "My Application Control Panel",
