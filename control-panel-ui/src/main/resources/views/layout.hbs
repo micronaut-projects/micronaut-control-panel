@@ -6,14 +6,14 @@
     <title>
         Micronaut Control Panel
         {{#if ext.controlPanel.title}}
-            - {{ext.controlPanel.title}}
+            - {{{ ext.controlPanel.title }}}
         {{/if}}
     </title>
 
     <!-- Google Font: Source Sans Pro -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
     <!-- Font Awesome -->
-    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css" rel="stylesheet">
     <!-- Theme style -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
     <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/styles/default.min.css">
@@ -111,11 +111,7 @@
                 type: 'POST',
                 success: function(result) {
                     $('#stopRefreshModal').modal('hide')
-                    $('#globalAlertTitle').text('Application is shutting down')
-                    $('#globalAlertMessage').text('The application is shutting down. Please wait for the server to stop.')
-                    $('#globalAlert').removeClass('alert-success')
-                    $('#globalAlert').addClass('alert-danger')
-                    $('#globalAlert').show()
+                    globalAlertMessageDisplay('Application is shutting down', 'The application is shutting down. Please wait for the server to stop.', 'alert-danger', 'fa-arrows-rotate')
                 }
             });
         })
@@ -126,10 +122,7 @@
                 type: 'POST',
                 success: function(result) {
                     $('#stopRefreshModal').modal('hide')
-                    $('#globalAlertTitle').text('Application refreshed')
-                    $('#globalAlertMessage').text('All Refreshable beans have been recreated.')
-
-                    $('#globalAlert').show()
+                    globalAlertMessageDisplay('Application refreshed', 'All Refreshable beans have been recreated.', 'alert-success', 'fa-arrows-rotate')
                 }
             });
         })
@@ -142,10 +135,7 @@
                 type: 'POST',
                 success: function(result) {
                     $('#stopRefreshModal').modal('hide')
-                    $('#globalAlertTitle').text('Application refreshed')
-                    $('#globalAlertMessage').text('All Refreshable beans have been recreated regardless of environment changes.')
-
-                    $('#globalAlert').show()
+                    globalAlertMessageDisplay('Application refreshed', 'All Refreshable beans have been recreated regardless of environment changes.', 'alert-success', 'fa-arrows-rotate')
                 }
             });
         })
@@ -195,7 +185,7 @@
                             <ol class="breadcrumb">
                                 {{#if ext.controlPanel }}
                                     <li class="breadcrumb-item"><a href="{{ext.controlPanelPath}}/categories/{{ ext.currentCategory.id }}"><i class="fas {{ ext.currentCategory.iconClass }}"></i> {{ ext.currentCategory.name }}</a></li>
-                                    <li class="breadcrumb-item active" aria-current="page">{{ext.controlPanel.title}}</li>
+                                    <li class="breadcrumb-item active" aria-current="page">{{{ ext.controlPanel.title }}}</li>
                                 {{else}}
                                     <li class="breadcrumb-item active"><i class="fas {{ ext.currentCategory.iconClass }}"></i> {{ ext.currentCategory.name }}</li>
                                 {{/if}}
@@ -247,6 +237,39 @@
 <script>
     // Don't try to render immediately
     mermaid.initialize({startOnLoad:false});
+
+    let title = sessionStorage.getItem("globalAlertTitle");
+    if (title != null) {
+        let message = sessionStorage.getItem("globalAlertMessage");
+        let cssClass = sessionStorage.getItem("globalAlertClass");
+        let iconClass = sessionStorage.getItem("globalAlertIconClass");
+        globalAlertMessageDisplay(title, message, cssClass, iconClass);
+        sessionStorage.clear()
+    }
+
+    function globalAlertMessageReload(title, message, cssClass, iconClass) {
+        sessionStorage.setItem('globalAlertTitle', title);
+        sessionStorage.setItem('globalAlertMessage', message);
+        sessionStorage.setItem('globalAlertClass', cssClass);
+        sessionStorage.setItem('globalAlertIconClass', iconClass);
+        location.reload();
+    }
+
+    function globalAlertMessageDisplay(title, message, cssClass, iconClass) {
+        $('#globalAlertTitle').text(title)
+        $('#globalAlertMessage').text(message)
+
+        $('#globalAlert').removeClass()
+        $('#globalAlert').addClass("alert")
+        $('#globalAlert').addClass(cssClass)
+
+        $('#globalAlert i').removeClass()
+        $('#globalAlert i').addClass("icon fas")
+        $('#globalAlert i').addClass(iconClass)
+
+        $('#globalAlert').show()
+
+    }
 </script>
 </body>
 </html>

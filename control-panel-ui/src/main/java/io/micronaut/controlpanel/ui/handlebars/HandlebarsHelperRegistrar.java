@@ -39,6 +39,7 @@ import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -69,12 +70,22 @@ class HandlebarsHelperRegistrar implements BeanCreatedEventListener<Handlebars> 
         handlebars.registerHelper("size", (ctx, opts) -> ((Collection<?>) ctx).size());
         handlebars.registerHelper("isMap", isMapHelper());
         handlebars.registerHelper("partialExists", partialExistsHelper(handlebars));
+        handlebars.registerHelper("unwrapOptional", unwrapOptional());
 
         // Enable a high concurrency template cache and precompile all templates/partials available on the classpath
         enableCache(handlebars);
         precompileAllTemplates(handlebars);
 
         return handlebars;
+    }
+
+    private static Helper<Object> unwrapOptional() {
+        return (context, options) -> {
+            if (context instanceof final Optional<?> opt) {
+                return opt.orElse(null);
+            }
+            return context != null ? context : "";
+        };
     }
 
     private static Helper<Integer> modHelper() {

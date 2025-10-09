@@ -8,7 +8,10 @@ val ossIndexPassword = System.getenv("OSS_INDEX_PASSWORD") ?: project.properties
 val sonatypePluginConfigured = ossIndexUsername != null && ossIndexPassword != null
 
 ossIndexAudit {
-    excludeCoordinates.add("com.google.guava:guava:18.0")
+    excludeCoordinates.addAll(listOf(
+        "com.google.guava:guava:18.0",
+        "io.projectreactor.netty:reactor-netty-http:1.0.48" // https://ossindex.sonatype.org/vulnerability/CVE-2025-22227?component-type=maven&component-name=io.projectreactor.netty%2Freactor-netty-http&utm_source=ossindex-client&utm_medium=integration&utm_content=1.8.2
+    ))
     if (sonatypePluginConfigured) {
         username = ossIndexUsername
         password = ossIndexPassword

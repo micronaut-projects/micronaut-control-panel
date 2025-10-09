@@ -8,8 +8,15 @@ dependencies {
 
     runtimeOnly(projects.micronautControlPanelUi)
     implementation(projects.micronautControlPanelManagement)
-
     implementation(mn.micronaut.management)
+
+    implementation(projects.micronautControlPanelObjectStorage)
+    implementation(mnObjectStorage.micronaut.`object`.storage.local)
+    implementation(mnObjectStorage.micronaut.`object`.storage.aws)
+    implementation(mnObjectStorage.micronaut.`object`.storage.azure)
+    implementation(mnObjectStorage.micronaut.`object`.storage.gcp)
+    implementation(mnObjectStorage.micronaut.`object`.storage.oracle.cloud)
+
     runtimeOnly(mnLogging.logback.classic)
     runtimeOnly(mn.snakeyaml)
 

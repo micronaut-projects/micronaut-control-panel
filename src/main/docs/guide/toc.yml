@@ -5,6 +5,7 @@ controlPanels:
   title: Available Control Panels
   builtIn: Built-in
   management: Management
+  objectStorage: Object Storage
 
 custom: Creating Custom Control Panels
 repository: Repository
