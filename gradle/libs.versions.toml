@@ -19,7 +19,7 @@
 [versions]
 micronaut = "4.10.3"
 micronaut-platform = "4.9.4"
-micronaut-docs = "2.0.0"
+micronaut-docs = "3.0.0"
 micronaut-test = "4.9.0"
 micronaut-views = '5.9.0'
 micronaut-reactor = '3.9.0'
