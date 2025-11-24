@@ -23,5 +23,5 @@ dependencies {
     testImplementation(mn.micronaut.http.client)
     testImplementation(mnTest.micronaut.test.junit5)
     testImplementation(libs.playwright)
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testRuntimeOnly(mnTest.junit.platform.suite)
 }
