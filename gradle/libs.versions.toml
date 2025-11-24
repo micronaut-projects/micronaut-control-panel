@@ -26,6 +26,7 @@ micronaut-reactor = '3.9.1'
 micronaut-logging = "1.7.1"
 micronaut-serde = "2.16.2"
 micronaut-object-storage = "2.10.0"
+micronaut-cache = "5.3.0"
 groovy = '4.0.29'
 spock = '2.3-groovy-4.0'
 micronaut-gradle-plugin = "4.6.1"
@@ -45,6 +46,7 @@ micronaut-reactor = { module = 'io.micronaut.reactor:micronaut-reactor-bom', ver
 micronaut-logging = { module = "io.micronaut.logging:micronaut-logging-bom", version.ref = "micronaut-logging" }
 micronaut-serde = { module = "io.micronaut.serde:micronaut-serde-bom", version.ref = "micronaut-serde" }
 micronaut-object-storage = { module = "io.micronaut.objectstorage:micronaut-object-storage-bom", version.ref = "micronaut-object-storage" }
+micronaut-cache = { module = "io.micronaut.cache:micronaut-cache-bom", version.ref = "micronaut-cache" }
 
 groovy = { module = "org.apache.groovy:groovy-bom", version.ref = "groovy" }
 spock = { module = "org.spockframework:spock-bom", version.ref = "spock" }
