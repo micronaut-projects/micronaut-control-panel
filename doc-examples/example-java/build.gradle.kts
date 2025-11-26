@@ -17,6 +17,12 @@ dependencies {
     implementation(mnObjectStorage.micronaut.`object`.storage.gcp)
     implementation(mnObjectStorage.micronaut.`object`.storage.oracle.cloud)
 
+    implementation(projects.micronautControlPanelCache)
+    implementation(mnCache.micronaut.cache.caffeine)
+    implementation(mnCache.micronaut.cache.ehcache)
+    implementation(mnCache.micronaut.cache.hazelcast)
+    implementation(mnCache.micronaut.cache.infinispan)
+
     runtimeOnly(mnLogging.logback.classic)
     runtimeOnly(mn.snakeyaml)
 

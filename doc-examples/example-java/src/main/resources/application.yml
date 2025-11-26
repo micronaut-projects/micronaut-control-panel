@@ -13,6 +13,9 @@ micronaut:
     local:
       mylocal:
         path: /tmp/foo/
+  caches:
+    my-cache:
+      initial-capacity: 1
   application:
     name: myApplication
 
