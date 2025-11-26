@@ -13,6 +13,7 @@ import io.micronaut.cache.jcache.JCacheSyncCache;
 import io.micronaut.controlpanel.core.AbstractEachBeanControlPanel;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.core.annotation.ReflectiveAccess;
+import io.micronaut.core.annotation.TypeHint;
 import jakarta.inject.Named;
 import reactor.core.publisher.Mono;
 
@@ -86,5 +87,6 @@ public abstract class AbstractCacheControlPanel<C extends Cache<?>> extends Abst
     }
 
     @ReflectiveAccess
+    @TypeHint(value = { Cache.class, CacheInfo.class }, accessType = TypeHint.AccessType.ALL_PUBLIC)
     public record Body(Cache<?> cache, CacheInfo cacheInfo, Map<String, Object> cacheAsMap) {}
 }
