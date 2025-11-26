@@ -14,6 +14,11 @@ dependencies {
     testImplementation(mnTest.micronaut.test.junit5)
     testRuntimeOnly(mnTest.junit.jupiter.engine)
 
+    testAnnotationProcessor(mn.micronaut.inject.java)
+    testImplementation(mn.micronaut.http.server.netty)
+    testImplementation(mn.micronaut.http.client)
+    testImplementation(mnSerde.micronaut.serde.jackson)
+
     testImplementation(mnCache.micronaut.cache.caffeine)
     testImplementation(mnCache.micronaut.cache.ehcache)
     testImplementation(mnCache.micronaut.cache.hazelcast)

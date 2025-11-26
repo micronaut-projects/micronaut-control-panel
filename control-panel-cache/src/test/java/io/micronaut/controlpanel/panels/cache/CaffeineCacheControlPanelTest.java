@@ -1,25 +1,33 @@
 package io.micronaut.controlpanel.panels.cache;
 
-import io.micronaut.context.ApplicationContext;
-import io.micronaut.inject.qualifiers.Qualifiers;
+import io.micronaut.cache.caffeine.DefaultSyncCache;
+import io.micronaut.context.annotation.Property;
+import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
+import jakarta.inject.Named;
 import org.junit.jupiter.api.Test;
 
-import java.util.Map;
+import static org.junit.jupiter.api.Assertions.*;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
+@MicronautTest
+@Property(name = "micronaut.caches.counter.initialCapacity", value = "1")
 class CaffeineCacheControlPanelTest {
 
     @Test
-    void testControlPanelBean() {
-        var ctx = ApplicationContext.run(
-            Map.of("micronaut.caches.counter.initialCapacity", 1)
-        );
-        var controlPanelOptional = ctx.findBean(CaffeineCacheControlPanel.class, Qualifiers.byName("counter"));
+    void testControlPanelBean(@Named("counter") CaffeineCacheControlPanel controlPanel) {
+        assertNotNull(controlPanel);
+        assertTrue(controlPanel.getCacheSize().isPresent());
+        assertEquals(0,  controlPanel.getCacheSize().get());
+    }
 
-        assertTrue(controlPanelOptional.isPresent());
+    @Test
+    void testGetCacheSize(@Named("counter") CaffeineCacheControlPanel controlPanel, @Named("counter")DefaultSyncCache cache) {
+        cache.put("foo", "bar");
+        assertTrue(controlPanel.getCacheSize().isPresent());
+        assertEquals(1,  controlPanel.getCacheSize().get());
 
-        ctx.close();
+        cache.invalidateAll();
+        assertTrue(controlPanel.getCacheSize().isPresent());
+        assertEquals(0,  controlPanel.getCacheSize().get());
     }
 
 
