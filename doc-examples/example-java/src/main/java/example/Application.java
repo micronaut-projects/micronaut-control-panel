@@ -19,8 +19,9 @@ public class Application {
 
     public static void main(String[] args) {
         var ctx = Micronaut.run(Application.class, args);
-        ctx.findBean(CacheManager.class).ifPresent(cacheManager ->
-            cacheManager.getCache("my-cache").put("foo", "bar")
-        );
+        ctx.findBean(CacheManager.class).ifPresent(cacheManager -> {
+            cacheManager.getCache("my-cache").put("foo", "bar");
+            cacheManager.getCache("my-cache").put("counter", "1");
+        });
     }
 }

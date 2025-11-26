@@ -10,14 +10,15 @@
         {{/each}}
     </dl>
 
-    <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#uploadModal">
-        <i class="fa fa-trash"></i>
-        Invalidate all
-    </button>
-
     </p>
 
-    {{#if cacheAsMap }}
+    {{#not cacheAsMap.empty }}
+        <p class="card-text">
+            <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#invalidateAllConfirmModal">
+                <i class="fa fa-trash"></i>
+                Invalidate all keys
+            </button>
+        </p>
         <p class="card-text">
         <table class="table">
             <thead>
@@ -35,7 +36,7 @@
                         {{ this }}
                     </td>
                     <td>
-                        <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteConfirmModal" data-key="{{entry.key}}">
+                        <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#invalidateConfirmModal" data-key="{{ @key }}">
                             <i class="fa fa-trash"></i>
                             Invalidate
                         </button>
@@ -46,90 +47,62 @@
         </table>
         </p>
 
-        <div class="modal fade" id="deleteConfirmModal" tabindex="-1" role="dialog" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+        <div class="modal fade" id="invalidateAllConfirmModal" tabindex="-1" role="dialog" aria-labelledby="invalidateAllConfirmModalLabel" aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="deleteConfirmModalLabel">Confirm deletion</h5>
+                        <h5 class="modal-title" id="invalidateAllConfirmModalLabel">Confirm invalidation</h5>
+                    </div>
+                    <div class="modal-body">
+                        Are you sure you want to evict all objects from the <code>{{ cache.name }}</code> cache?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-danger" id="invalidateAllConfirm">Invalidate</button>
+                    </div>
+                    <input type="hidden" id="cacheKey"/>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="invalidateConfirmModal" tabindex="-1" role="dialog" aria-labelledby="invalidateConfirmModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="invalidateConfirmModalLabel">Confirm invalidation</h5>
                     </div>
                     <div class="modal-body">
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-danger" id="deleteConfirm">Delete</button>
+                        <button type="button" class="btn btn-danger" id="invalidateConfirm">Invalidate</button>
                     </div>
-                    <input type="hidden" id="fileKey"/>
+                    <input type="hidden" id="cacheKey"/>
                 </div>
             </div>
         </div>
-    {{/if}}
-
-
-    <div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="uploadModalLabel">Upload file</h5>
-                </div>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <form id="uploadForm" enctype="multipart/form-data" action="{{ ext.appPath }}/object-storage-control-panel-controller/{{ controlPanel.title }}">
-                            <label for="fileUpload" class="col-form-label">File:</label>
-                            <input type="file" name="fileUpload">
-                        </form>
-                    </div>
-
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="upload">Upload</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    {{/not}}
 
     <script>
-
-        $('#upload').click(function(e){
-            var form = $('#uploadForm')[0]
-            var formData = new FormData(form)
-
-            $.ajax({
-                url: form.action, // Uses the action attribute from your form
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    $('#uploadModal').modal('hide')
-                    globalAlertMessageReload('Success', 'File uploaded successfully', 'alert-success', 'fa-check')
-                },
-                error: function(xhr, status, error) {
-                    $('#uploadModal').modal('hide')
-                    globalAlertMessageDisplay('Error', error, 'alert-danger', 'fa-circle-exclamation')
-                }
-            });
-        })
-
-        $('#deleteConfirmModal').on('show.bs.modal', function (event) {
+        $('#invalidateConfirmModal').on('show.bs.modal', function (event) {
             var modal = $(this)
             var button = $(event.relatedTarget) // Button that triggered the modal
             var key = button.data('key') // Extract info from data-* attributes
-            var body = "Are you sure you want to delete the file " + key + "?"
+            var body = "Are you sure you want to evict object with key <code>" + key + "</code> from the <code>{{ cache.name }}</code> cache?"
             modal.find('.modal-body').html('<p class="card-text">' + body + '</p>')
-            $('#fileKey').val(key)
+            $('#cacheKey').val(key)
         })
 
-        $('#deleteConfirm').click(function(event) {
-            var fileKey = $('#fileKey').val();
+        $('#invalidateConfirm').click(function(event) {
+            var cacheKey = $('#cacheKey').val();
             $.ajax({
-                url: '{{ ext.appPath }}/object-storage-control-panel-controller/{{ controlPanel.title }}/' + fileKey,
+                url: '{{ ext.appPath }}/cache-control-panel-controller/{{ cache.name }}/' + cacheKey,
                 type: 'DELETE',
                 contentType: "application/json; charset=utf-8",
                 success: function(result) {
-                    $('#deleteConfirmModal').modal('hide')
-                    $('#fileKey').val('')
-                    globalAlertMessageReload("Success", "File " + fileKey + " deleted successfully", "alert-success", "fa-check")
+                    $('#invalidateConfirmModal').modal('hide')
+                    $('#cacheKey').val('')
+                    globalAlertMessageReload("Success", "Object with key " + cacheKey + " successfully removed from the cache {{ cache.name}}", "alert-success", "fa-check")
                 },
                 error: function(xhr, status, error) {
                     $('#deleteConfirmModal').modal('hide')
@@ -138,28 +111,21 @@
             });
         })
 
-        function download(objectStorageName, fileKey) {
+        $('#invalidateAllConfirm').click(function(event) {
             $.ajax({
-                url: '{{ ext.appPath }}/object-storage-control-panel-controller/' + objectStorageName + '/' + fileKey,
-                type: 'GET',
+                url: '{{ ext.appPath }}/cache-control-panel-controller/{{ cache.name }}',
+                type: 'DELETE',
                 contentType: "application/json; charset=utf-8",
-                xhrFields: {
-                    responseType: 'blob'
-                },
-                success: function(data) {
-                    var url = window.URL.createObjectURL(data);
-                    var a = document.createElement('a');
-                    a.href = url;
-                    a.download = fileKey; // desired file name
-                    document.body.appendChild(a);
-                    a.click();
-                    a.remove();
-                    window.URL.revokeObjectURL(url);
+                success: function(result) {
+                    $('#invalidateAllConfirmModal').modal('hide')
+                    globalAlertMessageReload("Success", "Cache {{ cache.name}} emptied successfully", "alert-success", "fa-check")
                 },
                 error: function(xhr, status, error) {
+                    $('#deleteConfirmModal').modal('hide')
                     globalAlertMessageDisplay('Error', error, 'alert-danger', 'fa-circle-exclamation')
                 }
             });
-        }
+        })
+
     </script>
 {{/with}}
