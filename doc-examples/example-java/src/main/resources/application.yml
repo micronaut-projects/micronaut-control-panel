@@ -15,7 +15,7 @@ micronaut:
         path: /tmp/foo/
   caches:
     my-cache:
-      initial-capacity: 1
+      initial-capacity: 2
   application:
     name: myApplication
 
