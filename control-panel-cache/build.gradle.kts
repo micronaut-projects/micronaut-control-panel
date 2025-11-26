@@ -10,6 +10,14 @@ dependencies {
     compileOnly(mnCache.micronaut.cache.ehcache)
     compileOnly(mnCache.micronaut.cache.hazelcast)
     compileOnly(mnCache.micronaut.cache.infinispan)
+
+    testImplementation(mnTest.micronaut.test.junit5)
+    testRuntimeOnly(mnTest.junit.jupiter.engine)
+
+    testImplementation(mnCache.micronaut.cache.caffeine)
+    testImplementation(mnCache.micronaut.cache.ehcache)
+    testImplementation(mnCache.micronaut.cache.hazelcast)
+    testImplementation(mnCache.micronaut.cache.infinispan)
 }
 
 micronautBuild {

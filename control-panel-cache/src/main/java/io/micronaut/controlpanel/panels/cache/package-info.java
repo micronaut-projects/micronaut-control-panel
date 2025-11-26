@@ -17,9 +17,8 @@
  * Cache Control Panel classes.
  */
 @Configuration
-@Requires(property = CacheControlPanel.ENABLED_PROPERTY, notEquals = StringUtils.FALSE)
+@Requires(property = AbstractCacheControlPanel.ENABLED_PROPERTY, notEquals = StringUtils.FALSE)
 @Requires(condition = ControlPanelEnabledCondition.class)
-
 package io.micronaut.controlpanel.panels.cache;
 
 import io.micronaut.context.annotation.Configuration;
