@@ -2,6 +2,7 @@ package io.micronaut.controlpanel.panels.cache;
 
 import io.micronaut.cache.AbstractMapBasedSyncCache;
 import io.micronaut.cache.Cache;
+import io.micronaut.cache.CacheInfo;
 import io.micronaut.cache.caffeine.DefaultSyncCache;
 import io.micronaut.cache.ehcache.EhcacheSyncCache;
 import io.micronaut.cache.hazelcast.HazelcastAsyncCache;
@@ -13,7 +14,9 @@ import io.micronaut.controlpanel.core.AbstractEachBeanControlPanel;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.core.annotation.ReflectiveAccess;
 import jakarta.inject.Named;
+import reactor.core.publisher.Mono;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.StreamSupport;
 
@@ -41,7 +44,7 @@ public abstract class AbstractCacheControlPanel<C extends Cache<?>> extends Abst
 
     @Override
     public Body getBody() {
-        return new Body(getCache());
+        return new Body(getCache(), Mono.from(getCache().getCacheInfo()).block(), getCacheAsMap());
     }
 
     @Override
@@ -57,6 +60,8 @@ public abstract class AbstractCacheControlPanel<C extends Cache<?>> extends Abst
     }
 
     protected abstract Optional<Long> getCacheSize();
+
+    protected abstract Map<String, Object> getCacheAsMap();
 
     private Optional<Long> cacheSize(Cache<?> cache) {
         if (cache == null) {
@@ -81,5 +86,5 @@ public abstract class AbstractCacheControlPanel<C extends Cache<?>> extends Abst
     }
 
     @ReflectiveAccess
-    public record Body(Cache<?> cache){}
+    public record Body(Cache<?> cache, CacheInfo cacheInfo, Map<String, Object> cacheAsMap) {}
 }

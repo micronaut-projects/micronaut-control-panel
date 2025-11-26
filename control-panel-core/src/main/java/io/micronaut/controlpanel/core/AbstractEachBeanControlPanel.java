@@ -21,7 +21,7 @@ public abstract class AbstractEachBeanControlPanel<B> extends AbstractControlPan
 
     @Override
     public String getName() {
-        return getBeanName() + "-" + getPanelName();
+        return getPanelName() + "-" + getBeanName();
     }
 
     @Override

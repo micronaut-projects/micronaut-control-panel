@@ -18,6 +18,7 @@ dependencies {
     implementation(mnObjectStorage.micronaut.`object`.storage.oracle.cloud)
 
     implementation(projects.micronautControlPanelCache)
+    runtimeOnly(mnCache.micronaut.cache.management)
     implementation(mnCache.micronaut.cache.caffeine)
     implementation(mnCache.micronaut.cache.ehcache)
     implementation(mnCache.micronaut.cache.hazelcast)

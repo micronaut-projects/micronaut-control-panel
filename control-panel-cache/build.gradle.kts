@@ -5,6 +5,7 @@ plugins {
 dependencies {
     api(projects.micronautControlPanelCore)
     implementation(mnCache.micronaut.cache.core)
+    implementation(mnReactor.micronaut.reactor)
 
     compileOnly(mnCache.micronaut.cache.caffeine)
     compileOnly(mnCache.micronaut.cache.ehcache)

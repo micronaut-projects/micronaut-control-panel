@@ -11,7 +11,7 @@ micronaut:
       show-values: true
   object-storage:
     local:
-      mylocal:
+      my-object-storage:
         path: /tmp/foo/
   caches:
     my-cache:

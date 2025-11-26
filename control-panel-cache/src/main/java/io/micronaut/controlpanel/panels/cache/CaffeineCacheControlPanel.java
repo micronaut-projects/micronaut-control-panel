@@ -6,6 +6,7 @@ import io.micronaut.context.annotation.Parameter;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import jakarta.inject.Named;
 
+import java.util.Map;
 import java.util.Optional;
 
 @EachBean(DefaultSyncCache.class)
@@ -26,6 +27,12 @@ public class CaffeineCacheControlPanel extends AbstractCacheControlPanel<Default
     @Override
     protected Optional<Long> getCacheSize() {
         return Optional.of(cache.getNativeCache().estimatedSize());
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    protected Map<String, Object> getCacheAsMap() {
+        return cache.getNativeCache().asMap();
     }
 
     @Override

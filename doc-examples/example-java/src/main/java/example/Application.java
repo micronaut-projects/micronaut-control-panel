@@ -1,5 +1,6 @@
 package example;
 
+import io.micronaut.cache.CacheManager;
 import io.micronaut.context.ApplicationContextBuilder;
 import io.micronaut.context.ApplicationContextConfigurer;
 import io.micronaut.context.annotation.ContextConfigurer;
@@ -17,6 +18,9 @@ public class Application {
     }
 
     public static void main(String[] args) {
-        Micronaut.run(Application.class, args);
+        var ctx = Micronaut.run(Application.class, args);
+        ctx.findBean(CacheManager.class).ifPresent(cacheManager ->
+            cacheManager.getCache("my-cache").put("foo", "bar")
+        );
     }
 }
