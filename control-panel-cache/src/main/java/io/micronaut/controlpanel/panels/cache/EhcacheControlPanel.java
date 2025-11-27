@@ -8,7 +8,6 @@ import jakarta.inject.Named;
 import org.ehcache.Cache;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -26,12 +25,6 @@ public class EhcacheControlPanel extends AbstractCacheControlPanel<EhcacheSyncCa
     @Override
     protected EhcacheSyncCache getCache() {
         return cache;
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    protected Optional<Long> getCacheSize() {
-        return Optional.of(StreamSupport.stream(cache.getNativeCache().spliterator(), false).count());
     }
 
     @Override

@@ -17,6 +17,7 @@ import io.micronaut.core.annotation.TypeHint;
 import jakarta.inject.Named;
 import reactor.core.publisher.Mono;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.StreamSupport;
@@ -63,6 +64,8 @@ public abstract class AbstractCacheControlPanel<C extends Cache<?>> extends Abst
     protected Optional<Long> getCacheSize() {
         if (getCache().getNativeCache() instanceof Map mapBasedCache) {
             return Optional.of((long) mapBasedCache.size());
+        } else if (getCache().getNativeCache() instanceof Iterable<?> iterableCache) {
+            return Optional.of(StreamSupport.stream(iterableCache.spliterator(), false).count());
         }
         return Optional.empty();
     }
