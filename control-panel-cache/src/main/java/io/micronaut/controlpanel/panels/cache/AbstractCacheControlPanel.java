@@ -60,30 +60,23 @@ public abstract class AbstractCacheControlPanel<C extends Cache<?>> extends Abst
             .orElseGet(super::getBadge);
     }
 
-    protected abstract Optional<Long> getCacheSize();
+    protected Optional<Long> getCacheSize() {
+        if (getCache().getNativeCache() instanceof Map mapBasedCache) {
+            return Optional.of((long) mapBasedCache.size());
+        }
+        return Optional.empty();
+    }
 
     protected abstract Map<String, Object> getCacheAsMap();
-
-    private Optional<Long> cacheSize(Cache<?> cache) {
-        if (cache == null) {
-            return Optional.empty();
-        }
-        return switch (cache) {
-            case DefaultSyncCache caffeineCache -> Optional.of(caffeineCache.getNativeCache().estimatedSize());
-            case EhcacheSyncCache ehcache -> Optional.of(StreamSupport.stream(ehcache.getNativeCache().spliterator(), false).count());
-            case HazelcastSyncCache hazelcastCache -> Optional.of((long) hazelcastCache.getNativeCache().size());
-            case HazelcastAsyncCache hazelcastCache -> Optional.of((long) hazelcastCache.getNativeCache().size());
-            case InfinispanSyncCache infinispanCache -> Optional.of((long) infinispanCache.getNativeCache().size());
-            case InfinispanAsyncCache infinispanCache -> Optional.of((long) infinispanCache.getNativeCache().size());
-            case JCacheSyncCache jCache -> Optional.of(StreamSupport.stream(jCache.getNativeCache().spliterator(), false).count());
-            case AbstractMapBasedSyncCache mapCache -> Optional.of((long) mapCache.getNativeCache().size());
-            default -> Optional.empty();
-        };
-    }
 
     @Override
     public Category getCategory() {
         return new Category(NAME, "Cache", "fa-memory");
+    }
+
+    @Override
+    public String getIcon() {
+        return "fa-memory";
     }
 
     @ReflectiveAccess

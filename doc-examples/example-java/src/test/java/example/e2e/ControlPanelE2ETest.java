@@ -1,5 +1,6 @@
 package example.e2e;
 
+import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Page.GetByRoleOptions;
 import com.microsoft.playwright.junit.Options;
@@ -145,7 +146,7 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         page.navigate(baseUrl());
         categoryLink(page, "Object Storage").click();
 
-        assertThat(body(page)).containsText("my-object-storage");
+        assertThat(body(page)).containsText("my-local");
         assertThat(body(page)).containsText("0 files stored.");
 
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Details")).click();
@@ -158,36 +159,43 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         page.navigate(baseUrl());
         categoryLink(page, "Cache").click();
 
-        assertThat(body(page)).containsText("my-cache");
-        assertThat(body(page)).containsText("2 objects in the cache.");
+        assertThat(body(page)).containsText("my-caffeine");
+        assertThat(body(page)).containsText("my-ehcache");
 
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Details")).click();
+        for (var text : body(page).getByText("objects in the cache.").all()) {
+            assertThat(text).containsText("2 objects in the cache.");
+        }
 
-        assertThat(page.locator("tbody")).containsText("foo");
-        assertThat(body(page)).containsText("foo");
-        assertThat(body(page)).containsText("counter");
+        var buttons = page.getByRole(AriaRole.BUTTON, new GetByRoleOptions().setName("Details"));
+        for (int index = 1; index < buttons.count() ; index++) {
+            var button = buttons.nth(index);
+            button.click();
 
-        page.getByRole(AriaRole.ROW, new Page.GetByRoleOptions().setName("foo bar Invalidate")).getByRole(AriaRole.BUTTON).click();
-        id(page, "invalidateConfirm").click();
+            assertThat(page.locator("tbody")).containsText("foo");
+            assertThat(body(page)).containsText("foo");
+            assertThat(body(page)).containsText("counter");
 
-        assertThat(page.locator("#globalAlertTitle")).containsText("Success");
-        assertThat(page.locator("#globalAlertMessage")).containsText("Object with key foo successfully removed from the cache my-cache");
+            page.getByRole(AriaRole.ROW, new Page.GetByRoleOptions().setName("foo bar Invalidate")).getByRole(AriaRole.BUTTON).click();
+            id(page, "invalidateConfirm").click();
 
-        page.navigate(baseUrl());
-        categoryLink(page, "Cache").click();
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Details")).click();
+            assertThat(page.locator("#globalAlertTitle")).containsText("Success");
+            assertThat(page.locator("#globalAlertMessage")).containsText("Object with key foo successfully removed from the cache");
 
-        assertThat(body(page)).not().containsText("foo");
-        assertThat(body(page)).containsText("counter");
+            page.navigate(baseUrl());
+            categoryLink(page, "Cache").click();
+            button.click();
 
-        button(page, "Invalidate all keys").click();
-        id(page, "invalidateAllConfirm").click();
+            assertThat(body(page)).not().containsText("foo");
+            assertThat(body(page)).containsText("counter");
 
-        assertThat(page.locator("#globalAlertTitle")).containsText("Success");
-        assertThat(page.locator("#globalAlertMessage")).containsText("Cache my-cache emptied successfully");
-        assertThat(body(page)).not().containsText("foo");
-        assertThat(body(page)).not().containsText("counter");
+            button(page, "Invalidate all keys").click();
+            id(page, "invalidateAllConfirm").click();
 
+            assertThat(page.locator("#globalAlertTitle")).containsText("Success");
+            assertThat(page.locator("#globalAlertMessage")).containsText("emptied successfully");
+            assertThat(body(page)).not().containsText("foo");
+            assertThat(body(page)).not().containsText("counter");
+        }
     }
 
     public static class HeadlessBrowserOptions implements OptionsFactory {

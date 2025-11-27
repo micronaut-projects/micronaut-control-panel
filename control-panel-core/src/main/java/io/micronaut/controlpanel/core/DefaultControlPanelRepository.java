@@ -44,7 +44,7 @@ public class DefaultControlPanelRepository implements ControlPanelRepository {
         this.categories = controlPanels.stream()
                 .map(ControlPanel::getCategory)
                 .distinct()
-                .sorted(Comparator.comparing(ControlPanel.Category::order))
+                .sorted(Comparator.comparing(ControlPanel.Category::order).thenComparing(ControlPanel.Category::name))
                 .toList();
     }
 

@@ -1,6 +1,7 @@
 package example;
 
 import io.micronaut.cache.CacheManager;
+import io.micronaut.cache.SyncCache;
 import io.micronaut.context.ApplicationContextBuilder;
 import io.micronaut.context.ApplicationContextConfigurer;
 import io.micronaut.context.annotation.ContextConfigurer;
@@ -27,16 +28,19 @@ public class Application {
     @Singleton
     static class CacheInitializer {
 
-        private final CacheManager cacheManager;
+        private final CacheManager<?> cacheManager;
 
-        CacheInitializer(final CacheManager cacheManager) {
+        CacheInitializer(final CacheManager<?> cacheManager) {
             this.cacheManager = cacheManager;
         }
 
         @EventListener
         public void onStartupEvent(StartupEvent event) {
-            cacheManager.getCache("my-cache").put("foo", "bar");
-            cacheManager.getCache("my-cache").put("counter", "1");
+            for (String cacheName : cacheManager.getCacheNames()) {
+                var cache = cacheManager.getCache(cacheName);
+                cache.put("foo", "bar");
+                cache.put("counter", 1);
+            }
         }
     }
 }

@@ -8,6 +8,10 @@
             <dt class="col-sm-2">{{ titleize (decamelize @key) }}</dt>
             <dd class="col-sm-10"><code>{{this}}</code></dd>
         {{/each}}
+        {{#each cacheInfo.get.ehcache }}
+            <dt class="col-sm-2">{{ titleize (decamelize @key) }}</dt>
+            <dd class="col-sm-10"><code>{{this}}</code></dd>
+        {{/each}}
     </dl>
 
     </p>
