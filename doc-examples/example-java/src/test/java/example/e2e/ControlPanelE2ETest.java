@@ -160,7 +160,6 @@ class ControlPanelE2ETest extends AbstractE2ETest {
 
         assertThat(body(page)).containsText("my-caffeine");
         assertThat(body(page)).containsText("my-ehcache");
-        assertThat(body(page)).containsText("my-hazelcast");
 
         for (var text : body(page).getByText("objects in the cache.").all()) {
             assertThat(text).containsText("2 objects in the cache.");

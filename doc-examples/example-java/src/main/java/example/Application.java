@@ -22,7 +22,10 @@ public class Application {
     public static class Configurer implements ApplicationContextConfigurer {
         @Override
         public void configure(@NonNull ApplicationContextBuilder builder) {
-            builder.defaultEnvironments("dev", "hazelcast");
+            builder.defaultEnvironments("dev");
+            if (!NativeImageUtils.inImageCode()) {
+                builder.defaultEnvironments("hazelcast");
+            }
         }
     }
 
@@ -47,7 +50,9 @@ public class Application {
                 var cache = cacheManager.getCache(cacheName);
                 initCache(cache);
             }
-            initCache(hazelcastCacheManager.getCache("my-hazelcast"));
+            if (!NativeImageUtils.inImageCode()) {
+                initCache(hazelcastCacheManager.getCache("my-hazelcast"));
+            }
         }
 
         private static void initCache(final SyncCache<?> cache) {
