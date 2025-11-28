@@ -1,0 +1,18 @@
+test-resources:
+  containers:
+    hazelcast:
+      image-name: hazelcast/hazelcast
+      hostnames:
+        - hazelcast.host
+      exposed-ports:
+        - hazelcast.port: 5701
+
+hazelcast:
+  client:
+    cluster-name: dev
+    network:
+      addresses:
+        - ${hazelcast.host}:${hazelcast.port}
+
+infinispan:
+  enabled: false

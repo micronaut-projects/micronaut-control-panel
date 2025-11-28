@@ -1,6 +1,5 @@
 package example.e2e;
 
-import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Page.GetByRoleOptions;
 import com.microsoft.playwright.junit.Options;
@@ -13,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
 @UsePlaywright(ControlPanelE2ETest.HeadlessBrowserOptions.class)
-@MicronautTest
+@MicronautTest(environments = "hazelcast")
 class ControlPanelE2ETest extends AbstractE2ETest {
 
     @Test
@@ -80,7 +79,7 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         assertThat(body(page)).containsText("Other beans");
         button(page, "Package example").first().click();
         assertThat(page.locator("#theGraph"))
-            .matchesAriaSnapshot("- document: example.Application$CacheInitializer$ApplicationEventListener$onStartupEvent1$Intercepted io.micronaut.aop.InterceptorRegistry io.micronaut.context.BeanContext io.micronaut.context.BeanRegistration io.micronaut.context.BeanResolutionContext io.micronaut.context.Qualifier example.Application$CacheInitializer io.micronaut.cache.CacheManager example.CustomHealthIndicator example.DemoController example.MyApplicationControlPanel io.micronaut.controlpanel.core.config.ControlPanelConfiguration");
+            .matchesAriaSnapshot("- document: example.Application$CacheInitializer$ApplicationEventListener$onStartupEvent1$Intercepted io.micronaut.aop.InterceptorRegistry io.micronaut.context.BeanContext io.micronaut.context.BeanRegistration io.micronaut.context.BeanResolutionContext io.micronaut.context.Qualifier example.Application$CacheInitializer io.micronaut.cache.CacheManager io.micronaut.cache.hazelcast.HazelcastCacheManager example.CustomHealthIndicator example.DemoController example.MyApplicationControlPanel io.micronaut.controlpanel.core.config.ControlPanelConfiguration");
 
         assertThat(body(page)).containsText("Micronaut Framework beans");
     }
@@ -161,6 +160,7 @@ class ControlPanelE2ETest extends AbstractE2ETest {
 
         assertThat(body(page)).containsText("my-caffeine");
         assertThat(body(page)).containsText("my-ehcache");
+        assertThat(body(page)).containsText("my-hazelcast");
 
         for (var text : body(page).getByText("objects in the cache.").all()) {
             assertThat(text).containsText("2 objects in the cache.");

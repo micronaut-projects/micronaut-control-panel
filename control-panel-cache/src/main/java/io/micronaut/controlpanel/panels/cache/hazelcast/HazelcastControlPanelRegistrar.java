@@ -12,11 +12,15 @@ import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.core.type.Argument;
 import io.micronaut.inject.qualifiers.Qualifiers;
 import jakarta.inject.Named;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static io.micronaut.controlpanel.panels.cache.AbstractCacheControlPanel.NAME;
 
 @Context
 public class HazelcastControlPanelRegistrar implements DistributedObjectListener {
+
+    private static final Logger LOG = LoggerFactory.getLogger(HazelcastControlPanelRegistrar.class);
 
     private final ApplicationContext beanContext;
     private final ControlPanelConfiguration configuration;
@@ -37,6 +41,8 @@ public class HazelcastControlPanelRegistrar implements DistributedObjectListener
         var cacheName = event.getDistributedObject().getName();
         var syncCache = (HazelcastSyncCache) cacheManager.getCache(cacheName);
         var controlPanel = new HazelcastSyncCacheControlPanel(syncCache, configuration);
+
+        LOG.debug("Created HazelcastSyncCacheControlPanel for {}", cacheName);
         beanContext.registerBeanDefinition(RuntimeBeanDefinition
             .builder(Argument.of(HazelcastSyncCacheControlPanel.class), () -> controlPanel)
             .singleton(true)

@@ -15,8 +15,11 @@
  */
 package io.micronaut.controlpanel.core;
 
+import io.micronaut.context.BeanContext;
+import io.micronaut.core.annotation.NonNull;
 import jakarta.inject.Singleton;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -31,7 +34,7 @@ import java.util.Optional;
 @Singleton
 public class DefaultControlPanelRepository implements ControlPanelRepository {
 
-    private final List<ControlPanel> controlPanels;
+    private final Collection<ControlPanel> controlPanels;
     private final List<ControlPanel.Category> categories;
 
     /**
@@ -39,8 +42,8 @@ public class DefaultControlPanelRepository implements ControlPanelRepository {
      *
      * @param controlPanels the control panels available in the application context.
      */
-    public DefaultControlPanelRepository(List<ControlPanel> controlPanels) {
-        this.controlPanels = controlPanels;
+    public DefaultControlPanelRepository(BeanContext beanContext) {
+        this.controlPanels = beanContext.getBeansOfType(ControlPanel.class);
         this.categories = controlPanels.stream()
                 .map(ControlPanel::getCategory)
                 .distinct()

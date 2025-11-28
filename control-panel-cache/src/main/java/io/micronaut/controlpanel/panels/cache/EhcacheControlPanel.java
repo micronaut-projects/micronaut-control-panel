@@ -34,6 +34,10 @@ public class EhcacheControlPanel extends AbstractCacheControlPanel<EhcacheSyncCa
         Iterable<Cache.Entry<String,Object>> iterable = nativeCache;
         return StreamSupport.stream(iterable.spliterator(), false)
             .collect(Collectors.toMap(Cache.Entry::getKey, Cache.Entry::getValue));
+    }
 
+    @Override
+    public String getIcon() {
+        return "fa-e";
     }
 }

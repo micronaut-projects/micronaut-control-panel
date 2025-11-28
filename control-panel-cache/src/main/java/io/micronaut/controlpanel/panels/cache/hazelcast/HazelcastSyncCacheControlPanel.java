@@ -27,4 +27,9 @@ public class HazelcastSyncCacheControlPanel extends AbstractCacheControlPanel<Ha
         return StreamSupport.stream(cache.getNativeCache().spliterator(), false)
             .collect(Collectors.toMap(entry -> entry.getKey().toString(), Map.Entry::getValue));
     }
+
+    @Override
+    public String getIcon() {
+        return "fa-h";
+    }
 }

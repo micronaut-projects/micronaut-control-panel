@@ -2,16 +2,18 @@
 
     <p class="card-text">
     <dl class="row">
-        <dt class="col-sm-2">Implementation Class</dt>
-        <dd class="col-sm-10"><code>{{ cacheInfo.get.implementationClass }}</code></dd>
-        {{#each cacheInfo.get.caffeine }}
-            <dt class="col-sm-2">{{ titleize (decamelize @key) }}</dt>
-            <dd class="col-sm-10"><code>{{this}}</code></dd>
-        {{/each}}
-        {{#each cacheInfo.get.ehcache }}
-            <dt class="col-sm-2">{{ titleize (decamelize @key) }}</dt>
-            <dd class="col-sm-10"><code>{{this}}</code></dd>
-        {{/each}}
+        {{#if cacheInfo.get.implementationClass }}
+            <dt class="col-sm-2">Implementation Class</dt>
+            <dd class="col-sm-10"><code>{{ cacheInfo.get.implementationClass }}</code></dd>
+            {{#each cacheInfo.get.caffeine }}
+                <dt class="col-sm-2">{{ titleize (decamelize @key) }}</dt>
+                <dd class="col-sm-10"><code>{{this}}</code></dd>
+            {{/each}}
+            {{#each cacheInfo.get.ehcache }}
+                <dt class="col-sm-2">{{ titleize (decamelize @key) }}</dt>
+                <dd class="col-sm-10"><code>{{this}}</code></dd>
+            {{/each}}
+        {{/if}}
     </dl>
 
     </p>
