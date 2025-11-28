@@ -1,5 +1,15 @@
 plugins {
     io.micronaut.build.internal.`control-panel-module`
+    io.micronaut.`test-resources`
+}
+
+micronaut {
+    version = libs.versions.micronaut.platform.get()
+    testResources {
+        enabled = false
+        clientTimeout = 300
+        version = libs.versions.micronaut.testresources.get()
+    }
 }
 
 dependencies {

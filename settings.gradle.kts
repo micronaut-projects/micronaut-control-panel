@@ -33,4 +33,5 @@ configure<MicronautBuildSettingsExtension> {
     importMicronautCatalog("micronaut-serde")
     importMicronautCatalog("micronaut-object-storage")
     importMicronautCatalog("micronaut-cache")
+    importMicronautCatalog("micronaut-testresources")
 }
