@@ -20,7 +20,7 @@ import io.micronaut.context.ApplicationContextConfigurer;
 import io.micronaut.context.annotation.ContextConfigurer;
 import io.micronaut.context.env.MapPropertySource;
 import io.micronaut.context.env.SystemPropertiesPropertySource;
-import io.micronaut.core.annotation.NonNull;
+import org.jspecify.annotations.NonNull;
 import io.micronaut.core.io.scan.ClassPathResourceLoader;
 
 import java.io.IOException;
