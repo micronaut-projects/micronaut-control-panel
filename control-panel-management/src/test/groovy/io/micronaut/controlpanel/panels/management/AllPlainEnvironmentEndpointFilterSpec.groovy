@@ -87,7 +87,7 @@ class AllPlainEnvironmentEndpointFilterSpec extends Specification {
         Map allProps = [:]
         def propertySources = environmentInfo?.propertySources
         propertySources?.each { ps ->
-            def props = ps.properties
+            def props = ps.get('properties')
             if (props instanceof Map) {
                 props.each { k, v -> allProps[k] = v }
             }
