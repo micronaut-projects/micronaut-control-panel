@@ -16,7 +16,7 @@
 package io.micronaut.controlpanel.core;
 
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
-import io.micronaut.core.annotation.NonNull;
+import org.jspecify.annotations.NonNull;
 import io.micronaut.core.annotation.ReflectiveAccess;
 
 /**
