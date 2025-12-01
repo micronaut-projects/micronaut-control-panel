@@ -18,7 +18,7 @@ package io.micronaut.controlpanel.panels.management;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.controlpanel.core.config.ControlPanelEnabledCondition;
 import io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration;
-import io.micronaut.core.annotation.NonNull;
+import org.jspecify.annotations.NonNull;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.management.endpoint.env.EnvironmentEndpointFilter;
 import io.micronaut.management.endpoint.env.EnvironmentFilterSpecification;

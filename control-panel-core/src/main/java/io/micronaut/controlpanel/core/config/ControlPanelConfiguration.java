@@ -18,7 +18,7 @@ package io.micronaut.controlpanel.core.config;
 import io.micronaut.context.annotation.EachProperty;
 import io.micronaut.context.annotation.Parameter;
 import io.micronaut.controlpanel.core.ConfigurableControlPanel;
-import io.micronaut.core.annotation.NonNull;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Per-panel configuration properties.
