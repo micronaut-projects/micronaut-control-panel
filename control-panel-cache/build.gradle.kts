@@ -24,6 +24,7 @@ dependencies {
 
     testImplementation(mnTest.micronaut.test.junit5)
     testRuntimeOnly(mnTest.junit.jupiter.engine)
+    testRuntimeOnly(mn.snakeyaml)
 
     testAnnotationProcessor(mn.micronaut.inject.java)
     testImplementation(mn.micronaut.http.server.netty)

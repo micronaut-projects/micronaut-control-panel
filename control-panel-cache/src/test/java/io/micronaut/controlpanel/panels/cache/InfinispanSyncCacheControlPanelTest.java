@@ -1,9 +1,10 @@
 package io.micronaut.controlpanel.panels.cache;
 
-import io.micronaut.cache.infinispan.InfinispanCacheManager;
 import io.micronaut.controlpanel.panels.cache.infinispan.InfinispanSyncCacheControlPanel;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import jakarta.inject.Inject;
+import org.infinispan.client.hotrod.RemoteCacheManager;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,12 +15,12 @@ class InfinispanSyncCacheControlPanelTest extends AbstractCacheControlPanelTest<
     private static final Logger LOG = LoggerFactory.getLogger(InfinispanSyncCacheControlPanelTest.class);
 
     @Inject
-    InfinispanCacheManager cacheManager;
+    RemoteCacheManager remoteCacheManager;
 
     @BeforeEach
     void beforeEach() {
         LOG.info("Initializing mycache");
-        cacheManager.getCache("mycache");
+        remoteCacheManager.administration().getOrCreateCache("mycache", new ConfigurationBuilder().build());
     }
 
 }

@@ -1,0 +1,32 @@
+hazelcast.enabled: false
+
+test-resources:
+  containers:
+    infinispan:
+      image-name: infinispan/server
+      wait-strategy:
+        http:
+          path: /rest/v2/cache-managers/default/health/status
+      env:
+        - USER: admin
+          PASS: admin
+      exposed-ports:
+        - infinispan.port: 11222
+      hostnames:
+        - infinispan.host
+
+infinispan:
+  enabled: true
+  client:
+    hotrod:
+      force-return-values: true
+      security:
+        authentication:
+          password: admin
+          realm: default
+          sasl-mechanism: DIGEST-MD5
+          server-name: infinispan
+          username: admin
+      server:
+        host: ${infinispan.host}
+        port: ${infinispan.port}
