@@ -6,7 +6,7 @@ plugins {
 micronaut {
     version = libs.versions.micronaut.platform.get()
     testResources {
-        enabled = false
+        enabled = true
         clientTimeout = 300
         version = libs.versions.micronaut.testresources.get()
     }

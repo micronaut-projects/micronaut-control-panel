@@ -14,28 +14,36 @@ abstract class AbstractCacheControlPanelTest<CP extends AbstractCacheControlPane
     @Test
     void testControlPanelBean(@Named("mycache") CP controlPanel) {
         assertNotNull(controlPanel);
-        assertTrue(controlPanel.getCacheSize().isPresent());
-        assertEquals(0L,  controlPanel.getCacheSize().get());
+
+        var cacheSize = controlPanel.getCacheSize();
+        assertTrue(cacheSize.isPresent());
+        assertEquals(0L,  cacheSize.get());
     }
 
     @Test
     void testGetCacheSize(@Named("mycache") CP controlPanel, CacheManager<?> cacheManager) {
-        cacheManager.getCache("mycache").put("foo", "bar");
-        assertTrue(controlPanel.getCacheSize().isPresent());
-        assertEquals(1L,  controlPanel.getCacheSize().get());
+        var cache = cacheManager.getCache("mycache");
+        cache.put("foo", "bar");
+        var cacheSize = controlPanel.getCacheSize();
+        assertTrue(cacheSize.isPresent());
+        assertEquals(1L,  cacheSize.get());
 
-        cacheManager.getCache("mycache").invalidateAll();
-        assertTrue(controlPanel.getCacheSize().isPresent());
-        assertEquals(0L,  controlPanel.getCacheSize().get());
+        cache.invalidateAll();
+        cacheSize = controlPanel.getCacheSize();
+        assertTrue(cacheSize.isPresent());
+        assertEquals(0L,  cacheSize.get());
     }
 
     @Test
     void testGetCacheAsMap(@Named("mycache") CP controlPanel, CacheManager<?> cacheManager) {
-        cacheManager.getCache("mycache").put("foo", "bar");
-        assertEquals(1L, controlPanel.getCacheAsMap().size());
-        assertEquals("bar", controlPanel.getCacheAsMap().get("foo"));
+        var cache = cacheManager.getCache("mycache");
+        cache.put("foo", "bar");
+        var cacheAsMap = controlPanel.getCacheAsMap();
+        assertEquals(1L, cacheAsMap.size());
+        assertEquals("bar", cacheAsMap.get("foo"));
 
-        cacheManager.getCache("mycache").invalidateAll();
-        assertEquals(0L, controlPanel.getCacheAsMap().size());
+        cache.invalidateAll();
+        cacheAsMap = controlPanel.getCacheAsMap();
+        assertEquals(0L, cacheAsMap.size());
     }
 }

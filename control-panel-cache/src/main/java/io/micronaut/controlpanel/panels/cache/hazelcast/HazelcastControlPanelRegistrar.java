@@ -8,6 +8,7 @@ import io.micronaut.cache.hazelcast.HazelcastSyncCache;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.RuntimeBeanDefinition;
 import io.micronaut.context.annotation.Context;
+import io.micronaut.context.annotation.Requires;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.core.type.Argument;
 import io.micronaut.inject.qualifiers.Qualifiers;
@@ -18,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import static io.micronaut.controlpanel.panels.cache.AbstractCacheControlPanel.NAME;
 
 @Context
+@Requires(beans = {HazelcastCacheManager.class, HazelcastInstance.class})
 public class HazelcastControlPanelRegistrar implements DistributedObjectListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(HazelcastControlPanelRegistrar.class);
