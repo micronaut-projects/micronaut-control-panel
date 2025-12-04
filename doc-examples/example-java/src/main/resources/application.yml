@@ -18,10 +18,43 @@ micronaut:
       initial-capacity: 2
   application:
     name: myApplication
+
 ehcache:
   caches:
     my-ehcache:
       enabled: true
+
+infinispan:
+  enabled: true
+  client:
+    hotrod:
+      force-return-values: true
+      security:
+        authentication:
+          username: admin
+          password: admin
+          realm: default
+          sasl-mechanism: DIGEST-MD5
+          server-name: infinispan
+      server:
+        host: ${infinispan.host}
+        port: ${infinispan.port}
+
+test-resources:
+  containers:
+    infinispan:
+      image-name: infinispan/server
+      wait-strategy:
+        http:
+          path: /rest/v2/cache-managers/default/health/status
+      env:
+        - USER: admin
+          PASS: admin
+      exposed-ports:
+        - infinispan.port: 11222
+      hostnames:
+        - infinispan.host
+
 
 # Test properties to verify environment endpoint filtering
 test:

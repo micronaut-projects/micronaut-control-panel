@@ -13,6 +13,3 @@ hazelcast:
     network:
       addresses:
         - ${hazelcast.host}:${hazelcast.port}
-
-infinispan:
-  enabled: false

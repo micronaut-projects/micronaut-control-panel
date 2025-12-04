@@ -1,11 +1,13 @@
 package io.micronaut.controlpanel.panels.cache.infinispan;
 
+import io.micronaut.cache.infinispan.InfinispanCacheInfo;
 import io.micronaut.cache.infinispan.InfinispanCacheManager;
 import io.micronaut.cache.infinispan.InfinispanSyncCache;
 import io.micronaut.context.annotation.Context;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.controlpanel.core.ControlPanelLoader;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
+import io.micronaut.core.annotation.TypeHint;
 import io.micronaut.core.util.StringUtils;
 import jakarta.inject.Named;
 import org.infinispan.client.hotrod.RemoteCacheManager;
@@ -18,6 +20,7 @@ import static io.micronaut.controlpanel.panels.cache.AbstractCacheControlPanel.N
 @Context
 @Requires(beans = ControlPanelConfiguration.class)
 @Requires(property = "infinispan.enabled", notEquals = StringUtils.FALSE, defaultValue = StringUtils.FALSE)
+@TypeHint(value = { InfinispanCacheInfo.class }, accessType = TypeHint.AccessType.ALL_PUBLIC)
 public class InfinispanControlPanelLoader implements ControlPanelLoader {
 
     private final ControlPanelConfiguration configuration;

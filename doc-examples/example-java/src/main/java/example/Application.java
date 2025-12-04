@@ -3,6 +3,7 @@ package example;
 import io.micronaut.cache.CacheManager;
 import io.micronaut.cache.SyncCache;
 import io.micronaut.cache.hazelcast.HazelcastCacheManager;
+import io.micronaut.cache.infinispan.InfinispanCacheManager;
 import io.micronaut.context.ApplicationContextBuilder;
 import io.micronaut.context.ApplicationContextConfigurer;
 import io.micronaut.context.annotation.ContextConfigurer;
@@ -40,9 +41,13 @@ public class Application {
         private final CacheManager<?> cacheManager;
         private final HazelcastCacheManager hazelcastCacheManager;
 
-        CacheInitializer(CacheManager<?> cacheManager, HazelcastCacheManager hazelcastCacheManager) {
+        private final InfinispanCacheManager infinispanCacheManager;
+
+        CacheInitializer(CacheManager<?> cacheManager, HazelcastCacheManager hazelcastCacheManager,
+                         InfinispanCacheManager infinispanCacheManager) {
             this.cacheManager = cacheManager;
             this.hazelcastCacheManager = hazelcastCacheManager;
+            this.infinispanCacheManager = infinispanCacheManager;
         }
 
         @EventListener
@@ -54,6 +59,7 @@ public class Application {
             if (!NativeImageUtils.inImageCode()) {
                 initCache(hazelcastCacheManager.getCache("my-hazelcast"));
             }
+            initCache(infinispanCacheManager.getCache("my-infinispan"));
         }
 
         private static void initCache(final SyncCache<?> cache) {
