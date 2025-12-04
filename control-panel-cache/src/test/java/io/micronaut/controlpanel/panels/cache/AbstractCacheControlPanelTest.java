@@ -1,7 +1,7 @@
 package io.micronaut.controlpanel.panels.cache;
 
 import io.micronaut.cache.CacheManager;
-import jakarta.inject.Named;
+import io.micronaut.controlpanel.core.ControlPanelRepository;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -12,7 +12,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 abstract class AbstractCacheControlPanelTest<CP extends AbstractCacheControlPanel> {
 
     @Test
-    void testControlPanelBean(@Named("mycache") CP controlPanel) {
+    void testControlPanelBean(ControlPanelRepository repository) {
+        CP controlPanel = (CP) repository.findByName("cache-mycache").get();
         assertNotNull(controlPanel);
 
         var cacheSize = controlPanel.getCacheSize();
@@ -21,7 +22,8 @@ abstract class AbstractCacheControlPanelTest<CP extends AbstractCacheControlPane
     }
 
     @Test
-    void testGetCacheSize(@Named("mycache") CP controlPanel, CacheManager<?> cacheManager) {
+    void testGetCacheSize(ControlPanelRepository repository, CacheManager<?> cacheManager) {
+        CP controlPanel = (CP) repository.findByName("cache-mycache").get();
         var cache = cacheManager.getCache("mycache");
         cache.put("foo", "bar");
         var cacheSize = controlPanel.getCacheSize();
@@ -35,7 +37,8 @@ abstract class AbstractCacheControlPanelTest<CP extends AbstractCacheControlPane
     }
 
     @Test
-    void testGetCacheAsMap(@Named("mycache") CP controlPanel, CacheManager<?> cacheManager) {
+    void testGetCacheAsMap(ControlPanelRepository repository, CacheManager<?> cacheManager) {
+        CP controlPanel = (CP) repository.findByName("cache-mycache").get();
         var cache = cacheManager.getCache("mycache");
         cache.put("foo", "bar");
         var cacheAsMap = controlPanel.getCacheAsMap();
