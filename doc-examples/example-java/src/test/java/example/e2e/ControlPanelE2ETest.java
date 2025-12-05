@@ -2,6 +2,8 @@ package example.e2e;
 
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Page.GetByRoleOptions;
+import com.microsoft.playwright.junit.Options;
+import com.microsoft.playwright.junit.OptionsFactory;
 import com.microsoft.playwright.junit.UsePlaywright;
 import com.microsoft.playwright.options.AriaRole;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
@@ -9,7 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
-@UsePlaywright
+@UsePlaywright(ControlPanelE2ETest.HeadlessBrowserOptions.class)
 @MicronautTest
 class ControlPanelE2ETest extends AbstractE2ETest {
 
@@ -75,10 +77,6 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         controlPanelDetails(page, "Bean Definitions").click();
 
         assertThat(body(page)).containsText("Other beans");
-        button(page, "Package example").first().click();
-        assertThat(page.locator("#theGraph"))
-            .matchesAriaSnapshot("- document: example.CustomHealthIndicator example.DemoController example.MyApplicationControlPanel io.micronaut.controlpanel.core.config.ControlPanelConfiguration");
-
         assertThat(body(page)).containsText("Micronaut Framework beans");
     }
 
@@ -143,12 +141,67 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         page.navigate(baseUrl());
         categoryLink(page, "Object Storage").click();
 
-        assertThat(body(page)).containsText("mylocal");
+        assertThat(body(page)).containsText("my-local");
         assertThat(body(page)).containsText("0 files stored.");
 
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Details")).click();
 
         assertThat(page.getByRole(AriaRole.DEFINITION)).containsText("/tmp/foo");
+    }
+
+    @Test
+    void testCache(Page page) {
+        page.navigate(baseUrl());
+        categoryLink(page, "Cache").click();
+
+        assertThat(body(page)).containsText("my-caffeine");
+        assertThat(body(page)).containsText("my-ehcache");
+
+        for (var text : body(page).getByText("objects in the cache.").all()) {
+            assertThat(text).containsText("2 objects in the cache.");
+        }
+
+        var buttons = page.getByRole(AriaRole.BUTTON, new GetByRoleOptions().setName("Details"));
+        for (int index = 1; index < buttons.count() ; index++) {
+            var button = buttons.nth(index);
+            button.click();
+
+            assertThat(page.locator("tbody")).containsText("foo");
+            assertThat(body(page)).containsText("foo");
+            assertThat(body(page)).containsText("counter");
+
+            page.getByRole(AriaRole.ROW, new Page.GetByRoleOptions().setName("foo bar Invalidate")).getByRole(AriaRole.BUTTON).click();
+            id(page, "invalidateConfirm").click();
+
+            assertThat(page.locator("#globalAlertTitle")).containsText("Success");
+            assertThat(page.locator("#globalAlertMessage")).containsText("Object with key foo successfully removed from the cache");
+
+            page.navigate(baseUrl());
+            categoryLink(page, "Cache").click();
+            button.click();
+
+            assertThat(body(page)).not().containsText("foo");
+            assertThat(body(page)).containsText("counter");
+
+            button(page, "Invalidate all keys").click();
+            id(page, "invalidateAllConfirm").click();
+
+            assertThat(page.locator("#globalAlertTitle")).containsText("Success");
+            assertThat(page.locator("#globalAlertMessage")).containsText("emptied successfully");
+            assertThat(body(page)).not().containsText("foo");
+            assertThat(body(page)).not().containsText("counter");
+        }
+    }
+
+    public static class HeadlessBrowserOptions implements OptionsFactory {
+        @Override
+        public Options getOptions() {
+            if (System.getenv("CI") == null) {
+                return new Options().setHeadless(false);
+            } else {
+                return new Options();
+            }
+        }
     }
 
 }

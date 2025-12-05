@@ -4,6 +4,7 @@ import io.micronaut.gradle.MicronautTestRuntime
 plugins {
     id("groovy")
     id("io.micronaut.application")
+    id("io.micronaut.test-resources")
     id("com.gradleup.shadow")
     id("com.adarshr.test-logger")
 }

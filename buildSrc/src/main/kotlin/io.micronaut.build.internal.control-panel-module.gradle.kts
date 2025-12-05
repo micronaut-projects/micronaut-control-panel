@@ -26,4 +26,5 @@ val mn = versionCatalogs.named("mn")
 
 dependencies {
     annotationProcessor(mn.findLibrary("micronaut.graal").get())
+    implementation(mn.findLibrary("jspecify").get())
 }

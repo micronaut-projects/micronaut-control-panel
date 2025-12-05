@@ -15,15 +15,19 @@
  */
 package io.micronaut.controlpanel.core;
 
+import io.micronaut.context.BeanContext;
 import jakarta.inject.Singleton;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * Default implementation of {@link ControlPanelRepository} that gets the control panels injected
- * as beans.
+ * as beans, as well as dynamically created control panels.
  *
  * @author Álvaro Sánchez-Mariscal
  * @since 1.0.0
@@ -31,33 +35,28 @@ import java.util.Optional;
 @Singleton
 public class DefaultControlPanelRepository implements ControlPanelRepository {
 
-    private final List<ControlPanel> controlPanels;
-    private final List<ControlPanel.Category> categories;
+    private final BeanContext beanContext;
+
+    private final Collection<ControlPanelLoader> controlPanelLoaders;
 
     /**
      * Default constructor.
      *
-     * @param controlPanels the control panels available in the application context.
+     * @param beanContext the bean context.
      */
-    public DefaultControlPanelRepository(List<ControlPanel> controlPanels) {
-        this.controlPanels = controlPanels;
-        this.categories = controlPanels.stream()
-                .map(ControlPanel::getCategory)
-                .distinct()
-                .sorted(Comparator.comparing(ControlPanel.Category::order))
-                .toList();
+    public DefaultControlPanelRepository(BeanContext beanContext) {
+        this.beanContext = beanContext;
+        this.controlPanelLoaders = beanContext.getBeansOfType(ControlPanelLoader.class);
     }
 
     @Override
     public List<ControlPanel> findAll() {
-        return controlPanels.stream()
-            .sorted(Comparator.comparing(ControlPanel::getOrder))
-            .toList();
+        return getControlPanels().toList();
     }
 
     @Override
     public List<ControlPanel> findAllByCategory(String categoryId) {
-        return controlPanels.stream()
+        return getControlPanels()
                 .filter(controlPanel -> controlPanel.getCategory().id().equals(categoryId))
                 .sorted(Comparator.comparing(ControlPanel::getOrder))
                 .toList();
@@ -65,20 +64,45 @@ public class DefaultControlPanelRepository implements ControlPanelRepository {
 
     @Override
     public Optional<ControlPanel> findByName(String name) {
-        return controlPanels.stream()
+        return getControlPanels()
                 .filter(controlPanel -> controlPanel.getName().equals(name))
                 .findFirst();
     }
 
     @Override
     public List<ControlPanel.Category> findAllCategories() {
-        return categories;
+        return getCategories().toList();
     }
 
     @Override
     public Optional<ControlPanel.Category> findCategoryById(String categoryId) {
-        return categories.stream()
-                .filter(category -> category.id().equals(categoryId))
-                .findFirst();
+        return getCategories()
+            .filter(category -> category.id().equals(categoryId))
+            .findFirst();
+    }
+
+    @SuppressWarnings("rawtypes")
+    private Stream<ControlPanel> getControlPanels() {
+        Comparator<ControlPanel> byOrder = Comparator.comparing(ControlPanel::getOrder);
+        Comparator<ControlPanel> byOrderAndName = byOrder.thenComparing(ControlPanel::getName);
+        return Stream.concat(
+            beanContext.getBeansOfType(ControlPanel.class).stream(),
+            loadDynamicControlPanels().stream()
+        ).sorted(byOrderAndName);
+    }
+
+    private Stream<ControlPanel.Category> getCategories() {
+        return getControlPanels()
+            .map(ControlPanel::getCategory)
+            .distinct()
+            .sorted(Comparator.comparing(ControlPanel.Category::order).thenComparing(ControlPanel.Category::name));
+    }
+
+    private List<ControlPanel<?>> loadDynamicControlPanels() {
+        List<ControlPanel<?>> controlPanels = new ArrayList<>();
+        for (ControlPanelLoader loader : controlPanelLoaders) {
+            controlPanels.addAll(loader.loadControlPanels());
+        }
+        return controlPanels;
     }
 }
