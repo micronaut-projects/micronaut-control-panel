@@ -98,7 +98,7 @@ public abstract class AbstractCacheControlPanel<C extends SyncCache<?>> extends 
      * @return an Optional containing the cache size, or empty if it cannot be determined
      */
     protected Optional<Long> getCacheSize() {
-        if (getCache().getNativeCache() instanceof Map mapBasedCache) {
+        if (getCache().getNativeCache() instanceof Map<?,?> mapBasedCache) {
             return Optional.of((long) mapBasedCache.size());
         } else if (getCache().getNativeCache() instanceof Iterable<?> iterableCache) {
             return Optional.of(StreamSupport.stream(iterableCache.spliterator(), false).count());

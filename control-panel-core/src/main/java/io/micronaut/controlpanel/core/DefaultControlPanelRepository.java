@@ -81,6 +81,7 @@ public class DefaultControlPanelRepository implements ControlPanelRepository {
             .findFirst();
     }
 
+    @SuppressWarnings("rawtypes")
     private Stream<ControlPanel> getControlPanels() {
         Comparator<ControlPanel> byOrder = Comparator.comparing(ControlPanel::getOrder);
         Comparator<ControlPanel> byOrderAndName = byOrder.thenComparing(ControlPanel::getName);
