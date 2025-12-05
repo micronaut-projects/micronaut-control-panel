@@ -1,12 +1,10 @@
 package io.micronaut.controlpanel.panels.cache;
 
-import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import io.micronaut.context.annotation.Property;
 import io.micronaut.controlpanel.panels.cache.hazelcast.HazelcastSyncCacheControlPanel;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 
 @MicronautTest
@@ -16,14 +14,8 @@ class HazelcastSyncCacheControlPanelTest extends AbstractCacheControlPanelTest<H
     private static HazelcastInstance hazelcast;
 
     @BeforeAll
-    static void beforeAll() {
-        hazelcast = Hazelcast.newHazelcastInstance();
+    static void beforeAll(HazelcastInstance hazelcast) {
         hazelcast.getMap("mycache").clear();
-    }
-
-    @AfterAll
-    static void afterAll() {
-        Hazelcast.shutdownAll();
     }
 
 }
