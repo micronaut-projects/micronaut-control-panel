@@ -7,14 +7,18 @@ import io.micronaut.cache.infinispan.InfinispanCacheManager;
 import io.micronaut.context.ApplicationContextBuilder;
 import io.micronaut.context.ApplicationContextConfigurer;
 import io.micronaut.context.annotation.ContextConfigurer;
+import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.event.StartupEvent;
 import io.micronaut.core.util.NativeImageUtils;
 import org.jspecify.annotations.NonNull;
 import io.micronaut.runtime.Micronaut;
 import io.micronaut.runtime.event.annotation.EventListener;
 import jakarta.inject.Singleton;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Optional;
 
 public class Application {
 
@@ -27,6 +31,7 @@ public class Application {
             builder.defaultEnvironments("dev");
             if (!NativeImageUtils.inImageCode()) {
                 builder.defaultEnvironments("hazelcast");
+                builder.defaultEnvironments("infinispan");
             }
         }
     }
@@ -39,15 +44,19 @@ public class Application {
     static class CacheInitializer {
 
         private final CacheManager<?> cacheManager;
-        private final HazelcastCacheManager hazelcastCacheManager;
 
-        private final InfinispanCacheManager infinispanCacheManager;
+        @Nullable
+        private HazelcastCacheManager hazelcastCacheManager;
 
-        CacheInitializer(CacheManager<?> cacheManager, HazelcastCacheManager hazelcastCacheManager,
-                         InfinispanCacheManager infinispanCacheManager) {
+        @Nullable
+        private InfinispanCacheManager infinispanCacheManager;
+
+        CacheInitializer(CacheManager<?> cacheManager,
+                         Optional<HazelcastCacheManager> hazelcastCacheManager,
+                         Optional<InfinispanCacheManager> infinispanCacheManager) {
             this.cacheManager = cacheManager;
-            this.hazelcastCacheManager = hazelcastCacheManager;
-            this.infinispanCacheManager = infinispanCacheManager;
+            hazelcastCacheManager.ifPresent(it -> this.hazelcastCacheManager = it);
+            infinispanCacheManager.ifPresent(it -> this.infinispanCacheManager = it);
         }
 
         @EventListener
@@ -57,9 +66,13 @@ public class Application {
                 initCache(cache);
             }
             if (!NativeImageUtils.inImageCode()) {
-                initCache(hazelcastCacheManager.getCache("my-hazelcast"));
+                if (hazelcastCacheManager != null) {
+                    initCache(hazelcastCacheManager.getCache("my-hazelcast"));
+                }
+                if (infinispanCacheManager != null) {
+                    initCache(infinispanCacheManager.getCache("my-infinispan"));
+                }
             }
-            initCache(infinispanCacheManager.getCache("my-infinispan"));
         }
 
         private static void initCache(final SyncCache<?> cache) {

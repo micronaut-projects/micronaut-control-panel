@@ -8,6 +8,7 @@ test-resources:
         - hazelcast.port: 5701
 
 hazelcast:
+  enabled: true
   client:
     cluster-name: dev
     network:

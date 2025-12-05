@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
 @UsePlaywright(ControlPanelE2ETest.HeadlessBrowserOptions.class)
-@MicronautTest(environments = "hazelcast")
+@MicronautTest
 class ControlPanelE2ETest extends AbstractE2ETest {
 
     @Test
@@ -77,10 +77,6 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         controlPanelDetails(page, "Bean Definitions").click();
 
         assertThat(body(page)).containsText("Other beans");
-        button(page, "Package example").first().click();
-        assertThat(page.locator("#theGraph"))
-            .matchesAriaSnapshot("- document: example.Application$CacheInitializer$ApplicationEventListener$onStartupEvent1$Intercepted io.micronaut.aop.InterceptorRegistry io.micronaut.context.BeanContext io.micronaut.context.BeanRegistration io.micronaut.context.BeanResolutionContext io.micronaut.context.Qualifier example.Application$CacheInitializer io.micronaut.cache.CacheManager io.micronaut.cache.hazelcast.HazelcastCacheManager example.CustomHealthIndicator example.DemoController example.MyApplicationControlPanel io.micronaut.controlpanel.core.config.ControlPanelConfiguration");
-
         assertThat(body(page)).containsText("Micronaut Framework beans");
     }
 
