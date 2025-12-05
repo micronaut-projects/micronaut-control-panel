@@ -53,12 +53,32 @@ loadScripts(document, 'script');</script>
 <a href="#I:A">A</a>&nbsp;<a href="#I:B">B</a>&nbsp;<a href="#I:C">C</a>&nbsp;<a href="#I:D">D</a>&nbsp;<a href="#I:E">E</a>&nbsp;<a href="#I:F">F</a>&nbsp;<a href="#I:G">G</a>&nbsp;<a href="#I:H">H</a>&nbsp;<a href="#I:I">I</a>&nbsp;<a href="#I:L">L</a>&nbsp;<a href="#I:M">M</a>&nbsp;<a href="#I:N">N</a>&nbsp;<a href="#I:O">O</a>&nbsp;<a href="#I:P">P</a>&nbsp;<a href="#I:R">R</a>&nbsp;<a href="#I:S">S</a>&nbsp;<a href="#I:T">T</a>&nbsp;<a href="#I:U">U</a>&nbsp;<a href="#I:V">V</a>&nbsp;<br><a href="allclasses-index.html">All&nbsp;Classes&nbsp;and&nbsp;Interfaces</a><span class="vertical-separator">|</span><a href="allpackages-index.html">All&nbsp;Packages</a><span class="vertical-separator">|</span><a href="constant-values.html">Constant&nbsp;Field&nbsp;Values</a>
 <h2 class="title" id="I:A">A</h2>
 <dl class="index">
+<dt><a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.cache">AbstractCacheControlPanel&lt;C&gt;</a> - Class in <a href="io/micronaut/controlpanel/panels/cache/package-summary.html">io.micronaut.controlpanel.panels.cache</a></dt>
+<dd>
+<div class="block">Base class for control panels for managing caches.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.html#%3Cinit%3E(java.lang.String,io.micronaut.controlpanel.core.config.ControlPanelConfiguration)" class="member-name-link">AbstractCacheControlPanel(String, ControlPanelConfiguration)</a> - Constructor for class io.micronaut.controlpanel.panels.cache.<a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.html" title="class in io.micronaut.controlpanel.panels.cache">AbstractCacheControlPanel</a></dt>
+<dd>
+<div class="block">Constructor.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.Body.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.cache">AbstractCacheControlPanel.Body</a> - Record Class in <a href="io/micronaut/controlpanel/panels/cache/package-summary.html">io.micronaut.controlpanel.panels.cache</a></dt>
+<dd>
+<div class="block">Record containing the data to display in the cache control panel.</div>
+</dd>
 <dt><a href="io/micronaut/controlpanel/core/AbstractControlPanel.html" class="type-name-link" title="class in io.micronaut.controlpanel.core">AbstractControlPanel&lt;B&gt;</a> - Class in <a href="io/micronaut/controlpanel/core/package-summary.html">io.micronaut.controlpanel.core</a></dt>
 <dd>
 <div class="block">Base class for control panels that can delegate some of its values to a <a href="io/micronaut/controlpanel/core/config/ControlPanelConfiguration.html" title="class in io.micronaut.controlpanel.core.config"><code>ControlPanelConfiguration</code></a>.</div>
 </dd>
 <dt><a href="io/micronaut/controlpanel/core/AbstractControlPanel.html#%3Cinit%3E(java.lang.String,io.micronaut.controlpanel.core.config.ControlPanelConfiguration)" class="member-name-link">AbstractControlPanel(String, ControlPanelConfiguration)</a> - Constructor for class io.micronaut.controlpanel.core.<a href="io/micronaut/controlpanel/core/AbstractControlPanel.html" title="class in io.micronaut.controlpanel.core">AbstractControlPanel</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/core/AbstractEachBeanControlPanel.html" class="type-name-link" title="class in io.micronaut.controlpanel.core">AbstractEachBeanControlPanel&lt;B&gt;</a> - Class in <a href="io/micronaut/controlpanel/core/package-summary.html">io.micronaut.controlpanel.core</a></dt>
+<dd>
+<div class="block">Base class for control panels that are created for each bean of a specific type.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/core/AbstractEachBeanControlPanel.html#%3Cinit%3E(java.lang.String,io.micronaut.controlpanel.core.config.ControlPanelConfiguration)" class="member-name-link">AbstractEachBeanControlPanel(String, ControlPanelConfiguration)</a> - Constructor for class io.micronaut.controlpanel.core.<a href="io/micronaut/controlpanel/core/AbstractEachBeanControlPanel.html" title="class in io.micronaut.controlpanel.core">AbstractEachBeanControlPanel</a></dt>
+<dd>
+<div class="block">Constructor.</div>
+</dd>
 <dt><a href="io/micronaut/controlpanel/ui/Model.html#activeEnvironments()" class="member-name-link">activeEnvironments()</a> - Method in record class io.micronaut.controlpanel.ui.<a href="io/micronaut/controlpanel/ui/Model.html" title="class in io.micronaut.controlpanel.ui">Model</a></dt>
 <dd>
 <div class="block">Returns the value of the <a href="./io/micronaut/controlpanel/ui/Model.html#param-activeEnvironments"><code>activeEnvironments</code></a> record component.</div>
@@ -87,6 +107,10 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">The body of the panel, which contains information about the Micronaut and non-Micronaut beans loaded in the application.</div>
 </dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.Body.html#%3Cinit%3E(io.micronaut.cache.Cache,io.micronaut.cache.CacheInfo,java.util.Map)" class="member-name-link">Body(Cache&lt;?&gt;, CacheInfo, Map&lt;String, Object&gt;)</a> - Constructor for record class io.micronaut.controlpanel.panels.cache.<a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.Body.html" title="class in io.micronaut.controlpanel.panels.cache">AbstractCacheControlPanel.Body</a></dt>
+<dd>
+<div class="block">Creates an instance of a <code>Body</code> record class.</div>
+</dd>
 <dt><a href="io/micronaut/controlpanel/panels/objectstorage/ObjectStorageControlPanel.Body.html#%3Cinit%3E(java.util.List,java.util.Map)" class="member-name-link">Body(List&lt;? extends ObjectStorageEntry&lt;?&gt;&gt;, Map&lt;String, Object&gt;)</a> - Constructor for record class io.micronaut.controlpanel.panels.objectstorage.<a href="io/micronaut/controlpanel/panels/objectstorage/ObjectStorageControlPanel.Body.html" title="class in io.micronaut.controlpanel.panels.objectstorage">ObjectStorageControlPanel.Body</a></dt>
 <dd>
 <div class="block">Creates an instance of a <code>Body</code> record class.</div>
@@ -110,6 +134,34 @@ loadScripts(document, 'script');</script>
 </dl>
 <h2 class="title" id="I:C">C</h2>
 <dl class="index">
+<dt><a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.Body.html#cache()" class="member-name-link">cache()</a> - Method in record class io.micronaut.controlpanel.panels.cache.<a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.Body.html" title="class in io.micronaut.controlpanel.panels.cache">AbstractCacheControlPanel.Body</a></dt>
+<dd>
+<div class="block">Returns the value of the <a href="./io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.Body.html#param-cache"><code>cache</code></a> record component.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.Body.html#cacheAsMap()" class="member-name-link">cacheAsMap()</a> - Method in record class io.micronaut.controlpanel.panels.cache.<a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.Body.html" title="class in io.micronaut.controlpanel.panels.cache">AbstractCacheControlPanel.Body</a></dt>
+<dd>
+<div class="block">Returns the value of the <a href="./io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.Body.html#param-cacheAsMap"><code>cacheAsMap</code></a> record component.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/CacheController.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.cache">CacheController</a> - Class in <a href="io/micronaut/controlpanel/panels/cache/package-summary.html">io.micronaut.controlpanel.panels.cache</a></dt>
+<dd>
+<div class="block">REST controller for cache management operations in the Micronaut Control Panel.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/CacheController.html#%3Cinit%3E(io.micronaut.controlpanel.core.ControlPanelRepository)" class="member-name-link">CacheController(ControlPanelRepository)</a> - Constructor for class io.micronaut.controlpanel.panels.cache.<a href="io/micronaut/controlpanel/panels/cache/CacheController.html" title="class in io.micronaut.controlpanel.panels.cache">CacheController</a></dt>
+<dd>
+<div class="block">Constructor.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.Body.html#cacheInfo()" class="member-name-link">cacheInfo()</a> - Method in record class io.micronaut.controlpanel.panels.cache.<a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.Body.html" title="class in io.micronaut.controlpanel.panels.cache">AbstractCacheControlPanel.Body</a></dt>
+<dd>
+<div class="block">Returns the value of the <a href="./io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.Body.html#param-cacheInfo"><code>cacheInfo</code></a> record component.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/CaffeineCacheControlPanel.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.cache">CaffeineCacheControlPanel</a> - Class in <a href="io/micronaut/controlpanel/panels/cache/package-summary.html">io.micronaut.controlpanel.panels.cache</a></dt>
+<dd>
+<div class="block">Control panel for managing Caffeine caches.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/CaffeineCacheControlPanel.html#%3Cinit%3E(io.micronaut.cache.caffeine.DefaultSyncCache,io.micronaut.controlpanel.core.config.ControlPanelConfiguration)" class="member-name-link">CaffeineCacheControlPanel(DefaultSyncCache, ControlPanelConfiguration)</a> - Constructor for class io.micronaut.controlpanel.panels.cache.<a href="io/micronaut/controlpanel/panels/cache/CaffeineCacheControlPanel.html" title="class in io.micronaut.controlpanel.panels.cache">CaffeineCacheControlPanel</a></dt>
+<dd>
+<div class="block">Constructor.</div>
+</dd>
 <dt><a href="io/micronaut/controlpanel/ui/Model.html#canRefresh()" class="member-name-link">canRefresh()</a> - Method in record class io.micronaut.controlpanel.ui.<a href="io/micronaut/controlpanel/ui/Model.html" title="class in io.micronaut.controlpanel.ui">Model</a></dt>
 <dd>
 <div class="block">Returns the value of the <a href="./io/micronaut/controlpanel/ui/Model.html#param-canRefresh"><code>canRefresh</code></a> record component.</div>
@@ -200,6 +252,10 @@ loadScripts(document, 'script');</script>
 </dd>
 <dt><a href="io/micronaut/controlpanel/core/config/ControlPanelEnabledCondition.html#%3Cinit%3E()" class="member-name-link">ControlPanelEnabledCondition()</a> - Constructor for class io.micronaut.controlpanel.core.config.<a href="io/micronaut/controlpanel/core/config/ControlPanelEnabledCondition.html" title="class in io.micronaut.controlpanel.core.config">ControlPanelEnabledCondition</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/core/ControlPanelLoader.html" class="type-name-link" title="interface in io.micronaut.controlpanel.core">ControlPanelLoader</a> - Interface in <a href="io/micronaut/controlpanel/core/package-summary.html">io.micronaut.controlpanel.core</a></dt>
+<dd>
+<div class="block">Interface for loading control panels dynamically.</div>
+</dd>
 <dt><a href="io/micronaut/controlpanel/core/config/ControlPanelModuleConfiguration.html" class="type-name-link" title="interface in io.micronaut.controlpanel.core.config">ControlPanelModuleConfiguration</a> - Interface in <a href="io/micronaut/controlpanel/core/config/package-summary.html">io.micronaut.controlpanel.core.config</a></dt>
 <dd>
 <div class="block">Configuration properties for the control panel module.</div>
@@ -232,9 +288,9 @@ loadScripts(document, 'script');</script>
 <dt><a href="io/micronaut/controlpanel/core/DefaultControlPanelRepository.html" class="type-name-link" title="class in io.micronaut.controlpanel.core">DefaultControlPanelRepository</a> - Class in <a href="io/micronaut/controlpanel/core/package-summary.html">io.micronaut.controlpanel.core</a></dt>
 <dd>
 <div class="block">Default implementation of <a href="io/micronaut/controlpanel/core/ControlPanelRepository.html" title="interface in io.micronaut.controlpanel.core"><code>ControlPanelRepository</code></a> that gets the control panels injected
- as beans.</div>
+ as beans, as well as dynamically created control panels.</div>
 </dd>
-<dt><a href="io/micronaut/controlpanel/core/DefaultControlPanelRepository.html#%3Cinit%3E(java.util.List)" class="member-name-link">DefaultControlPanelRepository(List&lt;ControlPanel&gt;)</a> - Constructor for class io.micronaut.controlpanel.core.<a href="io/micronaut/controlpanel/core/DefaultControlPanelRepository.html" title="class in io.micronaut.controlpanel.core">DefaultControlPanelRepository</a></dt>
+<dt><a href="io/micronaut/controlpanel/core/DefaultControlPanelRepository.html#%3Cinit%3E(io.micronaut.context.BeanContext)" class="member-name-link">DefaultControlPanelRepository(BeanContext)</a> - Constructor for class io.micronaut.controlpanel.core.<a href="io/micronaut/controlpanel/core/DefaultControlPanelRepository.html" title="class in io.micronaut.controlpanel.core">DefaultControlPanelRepository</a></dt>
 <dd>
 <div class="block">Default constructor.</div>
 </dd>
@@ -246,13 +302,29 @@ loadScripts(document, 'script');</script>
 </dd>
 <dt><a href="io/micronaut/controlpanel/ui/ControlPanelController.html#detail(java.lang.String)" class="member-name-link">detail(String)</a> - Method in class io.micronaut.controlpanel.ui.<a href="io/micronaut/controlpanel/ui/ControlPanelController.html" title="class in io.micronaut.controlpanel.ui">ControlPanelController</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/hazelcast/HazelcastControlPanelRegistrar.html#distributedObjectCreated(com.hazelcast.core.DistributedObjectEvent)" class="member-name-link">distributedObjectCreated(DistributedObjectEvent)</a> - Method in class io.micronaut.controlpanel.panels.cache.hazelcast.<a href="io/micronaut/controlpanel/panels/cache/hazelcast/HazelcastControlPanelRegistrar.html" title="class in io.micronaut.controlpanel.panels.cache.hazelcast">HazelcastControlPanelRegistrar</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/hazelcast/HazelcastControlPanelRegistrar.html#distributedObjectDestroyed(com.hazelcast.core.DistributedObjectEvent)" class="member-name-link">distributedObjectDestroyed(DistributedObjectEvent)</a> - Method in class io.micronaut.controlpanel.panels.cache.hazelcast.<a href="io/micronaut/controlpanel/panels/cache/hazelcast/HazelcastControlPanelRegistrar.html" title="class in io.micronaut.controlpanel.panels.cache.hazelcast">HazelcastControlPanelRegistrar</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/panels/objectstorage/ObjectStorageController.html#download(java.lang.String,java.lang.String)" class="member-name-link">download(String, String)</a> - Method in class io.micronaut.controlpanel.panels.objectstorage.<a href="io/micronaut/controlpanel/panels/objectstorage/ObjectStorageController.html" title="class in io.micronaut.controlpanel.panels.objectstorage">ObjectStorageController</a></dt>
 <dd>&nbsp;</dd>
 </dl>
 <h2 class="title" id="I:E">E</h2>
 <dl class="index">
+<dt><a href="io/micronaut/controlpanel/panels/cache/EhcacheControlPanel.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.cache">EhcacheControlPanel</a> - Class in <a href="io/micronaut/controlpanel/panels/cache/package-summary.html">io.micronaut.controlpanel.panels.cache</a></dt>
+<dd>
+<div class="block">Control panel for managing Ehcache caches.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/EhcacheControlPanel.html#%3Cinit%3E(io.micronaut.cache.ehcache.EhcacheSyncCache,io.micronaut.controlpanel.core.config.ControlPanelConfiguration)" class="member-name-link">EhcacheControlPanel(EhcacheSyncCache, ControlPanelConfiguration)</a> - Constructor for class io.micronaut.controlpanel.panels.cache.<a href="io/micronaut/controlpanel/panels/cache/EhcacheControlPanel.html" title="class in io.micronaut.controlpanel.panels.cache">EhcacheControlPanel</a></dt>
+<dd>
+<div class="block">Constructor.</div>
+</dd>
 <dt><a href="io/micronaut/controlpanel/core/panels/RoutesControlPanel.html#ENABLED_PROPERTY" class="member-name-link">ENABLED_PROPERTY</a> - Static variable in class io.micronaut.controlpanel.core.panels.<a href="io/micronaut/controlpanel/core/panels/RoutesControlPanel.html" title="class in io.micronaut.controlpanel.core.panels">RoutesControlPanel</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.html#ENABLED_PROPERTY" class="member-name-link">ENABLED_PROPERTY</a> - Static variable in class io.micronaut.controlpanel.panels.cache.<a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.html" title="class in io.micronaut.controlpanel.panels.cache">AbstractCacheControlPanel</a></dt>
+<dd>
+<div class="block">The property name to enable/disable cache control panels.</div>
+</dd>
 <dt><a href="io/micronaut/controlpanel/panels/management/AllPlainEnvironmentEndpointFilter.html#ENABLED_PROPERTY" class="member-name-link">ENABLED_PROPERTY</a> - Static variable in class io.micronaut.controlpanel.panels.management.<a href="io/micronaut/controlpanel/panels/management/AllPlainEnvironmentEndpointFilter.html" title="class in io.micronaut.controlpanel.panels.management">AllPlainEnvironmentEndpointFilter</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/panels/management/BeansControlPanel.html#ENABLED_PROPERTY" class="member-name-link">ENABLED_PROPERTY</a> - Static variable in class io.micronaut.controlpanel.panels.management.<a href="io/micronaut/controlpanel/panels/management/BeansControlPanel.html" title="class in io.micronaut.controlpanel.panels.management">BeansControlPanel</a></dt>
@@ -284,6 +356,10 @@ loadScripts(document, 'script');</script>
 <div class="block">Indicates whether some other object is "equal to" this one.</div>
 </dd>
 <dt><a href="io/micronaut/controlpanel/core/ControlPanel.View.html#equals(java.lang.Object)" class="member-name-link">equals(Object)</a> - Method in record class io.micronaut.controlpanel.core.<a href="io/micronaut/controlpanel/core/ControlPanel.View.html" title="class in io.micronaut.controlpanel.core">ControlPanel.View</a></dt>
+<dd>
+<div class="block">Indicates whether some other object is "equal to" this one.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.Body.html#equals(java.lang.Object)" class="member-name-link">equals(Object)</a> - Method in record class io.micronaut.controlpanel.panels.cache.<a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.Body.html" title="class in io.micronaut.controlpanel.panels.cache">AbstractCacheControlPanel.Body</a></dt>
 <dd>
 <div class="block">Indicates whether some other object is "equal to" this one.</div>
 </dd>
@@ -347,6 +423,10 @@ loadScripts(document, 'script');</script>
 </dd>
 <dt><a href="io/micronaut/controlpanel/core/panels/RoutesControlPanel.html#getBadge()" class="member-name-link">getBadge()</a> - Method in class io.micronaut.controlpanel.core.panels.<a href="io/micronaut/controlpanel/core/panels/RoutesControlPanel.html" title="class in io.micronaut.controlpanel.core.panels">RoutesControlPanel</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.html#getBadge()" class="member-name-link">getBadge()</a> - Method in class io.micronaut.controlpanel.panels.cache.<a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.html" title="class in io.micronaut.controlpanel.panels.cache">AbstractCacheControlPanel</a></dt>
+<dd>
+<div class="block">Returns the badge displaying the cache size, or the default badge if size cannot be determined.</div>
+</dd>
 <dt><a href="io/micronaut/controlpanel/panels/management/BeansControlPanel.html#getBadge()" class="member-name-link">getBadge()</a> - Method in class io.micronaut.controlpanel.panels.management.<a href="io/micronaut/controlpanel/panels/management/BeansControlPanel.html" title="class in io.micronaut.controlpanel.panels.management">BeansControlPanel</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/panels/management/EnvironmentControlPanel.html#getBadge()" class="member-name-link">getBadge()</a> - Method in class io.micronaut.controlpanel.panels.management.<a href="io/micronaut/controlpanel/panels/management/EnvironmentControlPanel.html" title="class in io.micronaut.controlpanel.panels.management">EnvironmentControlPanel</a></dt>
@@ -355,11 +435,21 @@ loadScripts(document, 'script');</script>
 <dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/panels/objectstorage/ObjectStorageControlPanel.html#getBadge()" class="member-name-link">getBadge()</a> - Method in class io.micronaut.controlpanel.panels.objectstorage.<a href="io/micronaut/controlpanel/panels/objectstorage/ObjectStorageControlPanel.html" title="class in io.micronaut.controlpanel.panels.objectstorage">ObjectStorageControlPanel</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/core/AbstractEachBeanControlPanel.html#getBeanName()" class="member-name-link">getBeanName()</a> - Method in class io.micronaut.controlpanel.core.<a href="io/micronaut/controlpanel/core/AbstractEachBeanControlPanel.html" title="class in io.micronaut.controlpanel.core">AbstractEachBeanControlPanel</a></dt>
+<dd>
+<div class="block">Returns the name of the bean this control panel represents.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.html#getBeanName()" class="member-name-link">getBeanName()</a> - Method in class io.micronaut.controlpanel.panels.cache.<a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.html" title="class in io.micronaut.controlpanel.panels.cache">AbstractCacheControlPanel</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/panels/objectstorage/ObjectStorageControlPanel.html#getBeanName()" class="member-name-link">getBeanName()</a> - Method in class io.micronaut.controlpanel.panels.objectstorage.<a href="io/micronaut/controlpanel/panels/objectstorage/ObjectStorageControlPanel.html" title="class in io.micronaut.controlpanel.panels.objectstorage">ObjectStorageControlPanel</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/core/ControlPanel.html#getBody()" class="member-name-link">getBody()</a> - Method in interface io.micronaut.controlpanel.core.<a href="io/micronaut/controlpanel/core/ControlPanel.html" title="interface in io.micronaut.controlpanel.core">ControlPanel</a></dt>
 <dd>
 <div class="block">Used to render the body of the control panel.</div>
 </dd>
 <dt><a href="io/micronaut/controlpanel/core/panels/RoutesControlPanel.html#getBody()" class="member-name-link">getBody()</a> - Method in class io.micronaut.controlpanel.core.panels.<a href="io/micronaut/controlpanel/core/panels/RoutesControlPanel.html" title="class in io.micronaut.controlpanel.core.panels">RoutesControlPanel</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.html#getBody()" class="member-name-link">getBody()</a> - Method in class io.micronaut.controlpanel.panels.cache.<a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.html" title="class in io.micronaut.controlpanel.panels.cache">AbstractCacheControlPanel</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/panels/management/BeansControlPanel.html#getBody()" class="member-name-link">getBody()</a> - Method in class io.micronaut.controlpanel.panels.management.<a href="io/micronaut/controlpanel/panels/management/BeansControlPanel.html" title="class in io.micronaut.controlpanel.panels.management">BeansControlPanel</a></dt>
 <dd>&nbsp;</dd>
@@ -371,25 +461,59 @@ loadScripts(document, 'script');</script>
 <dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/panels/objectstorage/ObjectStorageControlPanel.html#getBody()" class="member-name-link">getBody()</a> - Method in class io.micronaut.controlpanel.panels.objectstorage.<a href="io/micronaut/controlpanel/panels/objectstorage/ObjectStorageControlPanel.html" title="class in io.micronaut.controlpanel.panels.objectstorage">ObjectStorageControlPanel</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/core/AbstractEachBeanControlPanel.html#getBodyView()" class="member-name-link">getBodyView()</a> - Method in class io.micronaut.controlpanel.core.<a href="io/micronaut/controlpanel/core/AbstractEachBeanControlPanel.html" title="class in io.micronaut.controlpanel.core">AbstractEachBeanControlPanel</a></dt>
+<dd>
+<div class="block">Returns the view for the control panel body.</div>
+</dd>
 <dt><a href="io/micronaut/controlpanel/core/ControlPanel.html#getBodyView()" class="member-name-link">getBodyView()</a> - Method in interface io.micronaut.controlpanel.core.<a href="io/micronaut/controlpanel/core/ControlPanel.html" title="interface in io.micronaut.controlpanel.core">ControlPanel</a></dt>
 <dd>
 <div class="block"><a href="io/micronaut/controlpanel/core/ControlPanel.View.html" title="class in io.micronaut.controlpanel.core"><code>ControlPanel.View</code></a> that will be used to render the body of the control panel.</div>
 </dd>
-<dt><a href="io/micronaut/controlpanel/panels/objectstorage/ObjectStorageControlPanel.html#getBodyView()" class="member-name-link">getBodyView()</a> - Method in class io.micronaut.controlpanel.panels.objectstorage.<a href="io/micronaut/controlpanel/panels/objectstorage/ObjectStorageControlPanel.html" title="class in io.micronaut.controlpanel.panels.objectstorage">ObjectStorageControlPanel</a></dt>
+<dt><a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.html#getCache()" class="member-name-link">getCache()</a> - Method in class io.micronaut.controlpanel.panels.cache.<a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.html" title="class in io.micronaut.controlpanel.panels.cache">AbstractCacheControlPanel</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/CaffeineCacheControlPanel.html#getCache()" class="member-name-link">getCache()</a> - Method in class io.micronaut.controlpanel.panels.cache.<a href="io/micronaut/controlpanel/panels/cache/CaffeineCacheControlPanel.html" title="class in io.micronaut.controlpanel.panels.cache">CaffeineCacheControlPanel</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/EhcacheControlPanel.html#getCache()" class="member-name-link">getCache()</a> - Method in class io.micronaut.controlpanel.panels.cache.<a href="io/micronaut/controlpanel/panels/cache/EhcacheControlPanel.html" title="class in io.micronaut.controlpanel.panels.cache">EhcacheControlPanel</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/hazelcast/HazelcastSyncCacheControlPanel.html#getCache()" class="member-name-link">getCache()</a> - Method in class io.micronaut.controlpanel.panels.cache.hazelcast.<a href="io/micronaut/controlpanel/panels/cache/hazelcast/HazelcastSyncCacheControlPanel.html" title="class in io.micronaut.controlpanel.panels.cache.hazelcast">HazelcastSyncCacheControlPanel</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/infinispan/InfinispanSyncCacheControlPanel.html#getCache()" class="member-name-link">getCache()</a> - Method in class io.micronaut.controlpanel.panels.cache.infinispan.<a href="io/micronaut/controlpanel/panels/cache/infinispan/InfinispanSyncCacheControlPanel.html" title="class in io.micronaut.controlpanel.panels.cache.infinispan">InfinispanSyncCacheControlPanel</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.html#getCacheAsMap()" class="member-name-link">getCacheAsMap()</a> - Method in class io.micronaut.controlpanel.panels.cache.<a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.html" title="class in io.micronaut.controlpanel.panels.cache">AbstractCacheControlPanel</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/CaffeineCacheControlPanel.html#getCacheAsMap()" class="member-name-link">getCacheAsMap()</a> - Method in class io.micronaut.controlpanel.panels.cache.<a href="io/micronaut/controlpanel/panels/cache/CaffeineCacheControlPanel.html" title="class in io.micronaut.controlpanel.panels.cache">CaffeineCacheControlPanel</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/EhcacheControlPanel.html#getCacheAsMap()" class="member-name-link">getCacheAsMap()</a> - Method in class io.micronaut.controlpanel.panels.cache.<a href="io/micronaut/controlpanel/panels/cache/EhcacheControlPanel.html" title="class in io.micronaut.controlpanel.panels.cache">EhcacheControlPanel</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/hazelcast/HazelcastSyncCacheControlPanel.html#getCacheAsMap()" class="member-name-link">getCacheAsMap()</a> - Method in class io.micronaut.controlpanel.panels.cache.hazelcast.<a href="io/micronaut/controlpanel/panels/cache/hazelcast/HazelcastSyncCacheControlPanel.html" title="class in io.micronaut.controlpanel.panels.cache.hazelcast">HazelcastSyncCacheControlPanel</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/infinispan/InfinispanSyncCacheControlPanel.html#getCacheAsMap()" class="member-name-link">getCacheAsMap()</a> - Method in class io.micronaut.controlpanel.panels.cache.infinispan.<a href="io/micronaut/controlpanel/panels/cache/infinispan/InfinispanSyncCacheControlPanel.html" title="class in io.micronaut.controlpanel.panels.cache.infinispan">InfinispanSyncCacheControlPanel</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.html#getCacheSize()" class="member-name-link">getCacheSize()</a> - Method in class io.micronaut.controlpanel.panels.cache.<a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.html" title="class in io.micronaut.controlpanel.panels.cache">AbstractCacheControlPanel</a></dt>
+<dd>
+<div class="block">Attempts to determine the size of the cache.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/CaffeineCacheControlPanel.html#getCacheSize()" class="member-name-link">getCacheSize()</a> - Method in class io.micronaut.controlpanel.panels.cache.<a href="io/micronaut/controlpanel/panels/cache/CaffeineCacheControlPanel.html" title="class in io.micronaut.controlpanel.panels.cache">CaffeineCacheControlPanel</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/core/ControlPanel.html#getCategory()" class="member-name-link">getCategory()</a> - Method in interface io.micronaut.controlpanel.core.<a href="io/micronaut/controlpanel/core/ControlPanel.html" title="interface in io.micronaut.controlpanel.core">ControlPanel</a></dt>
 <dd>
 <div class="block">The category of the control panel.</div>
 </dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.html#getCategory()" class="member-name-link">getCategory()</a> - Method in class io.micronaut.controlpanel.panels.cache.<a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.html" title="class in io.micronaut.controlpanel.panels.cache">AbstractCacheControlPanel</a></dt>
+<dd>
+<div class="block">Returns the category for cache control panels.</div>
+</dd>
 <dt><a href="io/micronaut/controlpanel/panels/objectstorage/ObjectStorageControlPanel.html#getCategory()" class="member-name-link">getCategory()</a> - Method in class io.micronaut.controlpanel.panels.objectstorage.<a href="io/micronaut/controlpanel/panels/objectstorage/ObjectStorageControlPanel.html" title="class in io.micronaut.controlpanel.panels.objectstorage">ObjectStorageControlPanel</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/core/AbstractEachBeanControlPanel.html#getDetailedView()" class="member-name-link">getDetailedView()</a> - Method in class io.micronaut.controlpanel.core.<a href="io/micronaut/controlpanel/core/AbstractEachBeanControlPanel.html" title="class in io.micronaut.controlpanel.core">AbstractEachBeanControlPanel</a></dt>
+<dd>
+<div class="block">Returns the view for the control panel detailed view.</div>
+</dd>
 <dt><a href="io/micronaut/controlpanel/core/ControlPanel.html#getDetailedView()" class="member-name-link">getDetailedView()</a> - Method in interface io.micronaut.controlpanel.core.<a href="io/micronaut/controlpanel/core/ControlPanel.html" title="interface in io.micronaut.controlpanel.core">ControlPanel</a></dt>
 <dd>
 <div class="block"><a href="io/micronaut/controlpanel/core/ControlPanel.View.html" title="class in io.micronaut.controlpanel.core"><code>ControlPanel.View</code></a> that will be used to render the body of the control panel when it has been
  selected.</div>
 </dd>
-<dt><a href="io/micronaut/controlpanel/panels/objectstorage/ObjectStorageControlPanel.html#getDetailedView()" class="member-name-link">getDetailedView()</a> - Method in class io.micronaut.controlpanel.panels.objectstorage.<a href="io/micronaut/controlpanel/panels/objectstorage/ObjectStorageControlPanel.html" title="class in io.micronaut.controlpanel.panels.objectstorage">ObjectStorageControlPanel</a></dt>
-<dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/core/AbstractControlPanel.html#getIcon()" class="member-name-link">getIcon()</a> - Method in class io.micronaut.controlpanel.core.<a href="io/micronaut/controlpanel/core/AbstractControlPanel.html" title="class in io.micronaut.controlpanel.core">AbstractControlPanel</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/core/config/ControlPanelConfiguration.html#getIcon()" class="member-name-link">getIcon()</a> - Method in class io.micronaut.controlpanel.core.config.<a href="io/micronaut/controlpanel/core/config/ControlPanelConfiguration.html" title="class in io.micronaut.controlpanel.core.config">ControlPanelConfiguration</a></dt>
@@ -400,28 +524,62 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Icon CSS class of the card UI element.</div>
 </dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.html#getIcon()" class="member-name-link">getIcon()</a> - Method in class io.micronaut.controlpanel.panels.cache.<a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.html" title="class in io.micronaut.controlpanel.panels.cache">AbstractCacheControlPanel</a></dt>
+<dd>
+<div class="block">Returns the icon for cache control panels.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/CaffeineCacheControlPanel.html#getIcon()" class="member-name-link">getIcon()</a> - Method in class io.micronaut.controlpanel.panels.cache.<a href="io/micronaut/controlpanel/panels/cache/CaffeineCacheControlPanel.html" title="class in io.micronaut.controlpanel.panels.cache">CaffeineCacheControlPanel</a></dt>
+<dd>
+<div class="block">Returns the icon for Caffeine cache control panels.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/EhcacheControlPanel.html#getIcon()" class="member-name-link">getIcon()</a> - Method in class io.micronaut.controlpanel.panels.cache.<a href="io/micronaut/controlpanel/panels/cache/EhcacheControlPanel.html" title="class in io.micronaut.controlpanel.panels.cache">EhcacheControlPanel</a></dt>
+<dd>
+<div class="block">Returns the icon for Ehcache control panels.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/hazelcast/HazelcastSyncCacheControlPanel.html#getIcon()" class="member-name-link">getIcon()</a> - Method in class io.micronaut.controlpanel.panels.cache.hazelcast.<a href="io/micronaut/controlpanel/panels/cache/hazelcast/HazelcastSyncCacheControlPanel.html" title="class in io.micronaut.controlpanel.panels.cache.hazelcast">HazelcastSyncCacheControlPanel</a></dt>
+<dd>
+<div class="block">Returns the icon for Hazelcast cache control panels.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/infinispan/InfinispanSyncCacheControlPanel.html#getIcon()" class="member-name-link">getIcon()</a> - Method in class io.micronaut.controlpanel.panels.cache.infinispan.<a href="io/micronaut/controlpanel/panels/cache/infinispan/InfinispanSyncCacheControlPanel.html" title="class in io.micronaut.controlpanel.panels.cache.infinispan">InfinispanSyncCacheControlPanel</a></dt>
+<dd>
+<div class="block">Returns the icon for Infinispan cache control panels.</div>
+</dd>
 <dt><a href="io/micronaut/controlpanel/panels/objectstorage/ObjectStorageControlPanel.html#getIcon()" class="member-name-link">getIcon()</a> - Method in class io.micronaut.controlpanel.panels.objectstorage.<a href="io/micronaut/controlpanel/panels/objectstorage/ObjectStorageControlPanel.html" title="class in io.micronaut.controlpanel.panels.objectstorage">ObjectStorageControlPanel</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/core/AbstractControlPanel.html#getName()" class="member-name-link">getName()</a> - Method in class io.micronaut.controlpanel.core.<a href="io/micronaut/controlpanel/core/AbstractControlPanel.html" title="class in io.micronaut.controlpanel.core">AbstractControlPanel</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/core/AbstractEachBeanControlPanel.html#getName()" class="member-name-link">getName()</a> - Method in class io.micronaut.controlpanel.core.<a href="io/micronaut/controlpanel/core/AbstractEachBeanControlPanel.html" title="class in io.micronaut.controlpanel.core">AbstractEachBeanControlPanel</a></dt>
+<dd>
+<div class="block">Returns the unique name for this control panel, combining the panel name and bean name.</div>
+</dd>
 <dt><a href="io/micronaut/controlpanel/core/config/ControlPanelConfiguration.html#getName()" class="member-name-link">getName()</a> - Method in class io.micronaut.controlpanel.core.config.<a href="io/micronaut/controlpanel/core/config/ControlPanelConfiguration.html" title="class in io.micronaut.controlpanel.core.config">ControlPanelConfiguration</a></dt>
 <dd>
 <div class="block">The unique name of the control panel.</div>
 </dd>
-<dt><a href="io/micronaut/controlpanel/panels/objectstorage/ObjectStorageControlPanel.html#getName()" class="member-name-link">getName()</a> - Method in class io.micronaut.controlpanel.panels.objectstorage.<a href="io/micronaut/controlpanel/panels/objectstorage/ObjectStorageControlPanel.html" title="class in io.micronaut.controlpanel.panels.objectstorage">ObjectStorageControlPanel</a></dt>
-<dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/core/AbstractControlPanel.html#getOrder()" class="member-name-link">getOrder()</a> - Method in class io.micronaut.controlpanel.core.<a href="io/micronaut/controlpanel/core/AbstractControlPanel.html" title="class in io.micronaut.controlpanel.core">AbstractControlPanel</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/core/config/ControlPanelConfiguration.html#getOrder()" class="member-name-link">getOrder()</a> - Method in class io.micronaut.controlpanel.core.config.<a href="io/micronaut/controlpanel/core/config/ControlPanelConfiguration.html" title="class in io.micronaut.controlpanel.core.config">ControlPanelConfiguration</a></dt>
 <dd>
 <div class="block">Sets the order of this control panel, since they will be displayed sorted by order.</div>
 </dd>
+<dt><a href="io/micronaut/controlpanel/core/AbstractEachBeanControlPanel.html#getPanelName()" class="member-name-link">getPanelName()</a> - Method in class io.micronaut.controlpanel.core.<a href="io/micronaut/controlpanel/core/AbstractEachBeanControlPanel.html" title="class in io.micronaut.controlpanel.core">AbstractEachBeanControlPanel</a></dt>
+<dd>
+<div class="block">Returns the name of the panel category.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.html#getPanelName()" class="member-name-link">getPanelName()</a> - Method in class io.micronaut.controlpanel.panels.cache.<a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.html" title="class in io.micronaut.controlpanel.panels.cache">AbstractCacheControlPanel</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/panels/objectstorage/ObjectStorageControlPanel.html#getPanelName()" class="member-name-link">getPanelName()</a> - Method in class io.micronaut.controlpanel.panels.objectstorage.<a href="io/micronaut/controlpanel/panels/objectstorage/ObjectStorageControlPanel.html" title="class in io.micronaut.controlpanel.panels.objectstorage">ObjectStorageControlPanel</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/core/config/ControlPanelModuleConfiguration.html#getPath()" class="member-name-link">getPath()</a> - Method in interface io.micronaut.controlpanel.core.config.<a href="io/micronaut/controlpanel/core/config/ControlPanelModuleConfiguration.html" title="interface in io.micronaut.controlpanel.core.config">ControlPanelModuleConfiguration</a></dt>
 <dd>
 <div class="block">Configures the path where the control panel can be accessed.</div>
 </dd>
 <dt><a href="io/micronaut/controlpanel/core/AbstractControlPanel.html#getTitle()" class="member-name-link">getTitle()</a> - Method in class io.micronaut.controlpanel.core.<a href="io/micronaut/controlpanel/core/AbstractControlPanel.html" title="class in io.micronaut.controlpanel.core">AbstractControlPanel</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/core/AbstractEachBeanControlPanel.html#getTitle()" class="member-name-link">getTitle()</a> - Method in class io.micronaut.controlpanel.core.<a href="io/micronaut/controlpanel/core/AbstractEachBeanControlPanel.html" title="class in io.micronaut.controlpanel.core">AbstractEachBeanControlPanel</a></dt>
+<dd>
+<div class="block">Returns the title for this control panel, which is the bean name.</div>
+</dd>
 <dt><a href="io/micronaut/controlpanel/core/config/ControlPanelConfiguration.html#getTitle()" class="member-name-link">getTitle()</a> - Method in class io.micronaut.controlpanel.core.config.<a href="io/micronaut/controlpanel/core/config/ControlPanelConfiguration.html" title="class in io.micronaut.controlpanel.core.config">ControlPanelConfiguration</a></dt>
 <dd>
 <div class="block">The title is displayed in the header of the card UI element.</div>
@@ -430,8 +588,6 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">The title is displayed in the header of the card UI element.</div>
 </dd>
-<dt><a href="io/micronaut/controlpanel/panels/objectstorage/ObjectStorageControlPanel.html#getTitle()" class="member-name-link">getTitle()</a> - Method in class io.micronaut.controlpanel.panels.objectstorage.<a href="io/micronaut/controlpanel/panels/objectstorage/ObjectStorageControlPanel.html" title="class in io.micronaut.controlpanel.panels.objectstorage">ObjectStorageControlPanel</a></dt>
-<dd>&nbsp;</dd>
 </dl>
 <h2 class="title" id="I:H">H</h2>
 <dl class="index">
@@ -440,6 +596,10 @@ loadScripts(document, 'script');</script>
 <div class="block">Returns a hash code value for this object.</div>
 </dd>
 <dt><a href="io/micronaut/controlpanel/core/ControlPanel.View.html#hashCode()" class="member-name-link">hashCode()</a> - Method in record class io.micronaut.controlpanel.core.<a href="io/micronaut/controlpanel/core/ControlPanel.View.html" title="class in io.micronaut.controlpanel.core">ControlPanel.View</a></dt>
+<dd>
+<div class="block">Returns a hash code value for this object.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.Body.html#hashCode()" class="member-name-link">hashCode()</a> - Method in record class io.micronaut.controlpanel.panels.cache.<a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.Body.html" title="class in io.micronaut.controlpanel.panels.cache">AbstractCacheControlPanel.Body</a></dt>
 <dd>
 <div class="block">Returns a hash code value for this object.</div>
 </dd>
@@ -458,6 +618,22 @@ loadScripts(document, 'script');</script>
 <dt><a href="io/micronaut/controlpanel/ui/Model.html#hashCode()" class="member-name-link">hashCode()</a> - Method in record class io.micronaut.controlpanel.ui.<a href="io/micronaut/controlpanel/ui/Model.html" title="class in io.micronaut.controlpanel.ui">Model</a></dt>
 <dd>
 <div class="block">Returns a hash code value for this object.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/hazelcast/HazelcastControlPanelRegistrar.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.cache.hazelcast">HazelcastControlPanelRegistrar</a> - Class in <a href="io/micronaut/controlpanel/panels/cache/hazelcast/package-summary.html">io.micronaut.controlpanel.panels.cache.hazelcast</a></dt>
+<dd>
+<div class="block">Registrar for Hazelcast cache control panels.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/hazelcast/HazelcastControlPanelRegistrar.html#%3Cinit%3E(io.micronaut.context.ApplicationContext,io.micronaut.controlpanel.core.config.ControlPanelConfiguration,io.micronaut.cache.hazelcast.HazelcastCacheManager,com.hazelcast.core.HazelcastInstance)" class="member-name-link">HazelcastControlPanelRegistrar(ApplicationContext, ControlPanelConfiguration, HazelcastCacheManager, HazelcastInstance)</a> - Constructor for class io.micronaut.controlpanel.panels.cache.hazelcast.<a href="io/micronaut/controlpanel/panels/cache/hazelcast/HazelcastControlPanelRegistrar.html" title="class in io.micronaut.controlpanel.panels.cache.hazelcast">HazelcastControlPanelRegistrar</a></dt>
+<dd>
+<div class="block">Constructor.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/hazelcast/HazelcastSyncCacheControlPanel.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.cache.hazelcast">HazelcastSyncCacheControlPanel</a> - Class in <a href="io/micronaut/controlpanel/panels/cache/hazelcast/package-summary.html">io.micronaut.controlpanel.panels.cache.hazelcast</a></dt>
+<dd>
+<div class="block">Control panel for managing Hazelcast caches.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/hazelcast/HazelcastSyncCacheControlPanel.html#%3Cinit%3E(io.micronaut.cache.hazelcast.HazelcastSyncCache,io.micronaut.controlpanel.core.config.ControlPanelConfiguration)" class="member-name-link">HazelcastSyncCacheControlPanel(HazelcastSyncCache, ControlPanelConfiguration)</a> - Constructor for class io.micronaut.controlpanel.panels.cache.hazelcast.<a href="io/micronaut/controlpanel/panels/cache/hazelcast/HazelcastSyncCacheControlPanel.html" title="class in io.micronaut.controlpanel.panels.cache.hazelcast">HazelcastSyncCacheControlPanel</a></dt>
+<dd>
+<div class="block">Constructor.</div>
 </dd>
 <dt><a href="io/micronaut/controlpanel/panels/management/HealthControlPanel.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.management">HealthControlPanel</a> - Class in <a href="io/micronaut/controlpanel/panels/management/package-summary.html">io.micronaut.controlpanel.panels.management</a></dt>
 <dd>
@@ -482,11 +658,43 @@ loadScripts(document, 'script');</script>
 </dd>
 <dt><a href="io/micronaut/controlpanel/ui/ControlPanelController.html#index()" class="member-name-link">index()</a> - Method in class io.micronaut.controlpanel.ui.<a href="io/micronaut/controlpanel/ui/ControlPanelController.html" title="class in io.micronaut.controlpanel.ui">ControlPanelController</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/infinispan/InfinispanControlPanelLoader.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.cache.infinispan">InfinispanControlPanelLoader</a> - Class in <a href="io/micronaut/controlpanel/panels/cache/infinispan/package-summary.html">io.micronaut.controlpanel.panels.cache.infinispan</a></dt>
+<dd>
+<div class="block">Loader for Infinispan cache control panels.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/infinispan/InfinispanControlPanelLoader.html#%3Cinit%3E(io.micronaut.controlpanel.core.config.ControlPanelConfiguration,io.micronaut.cache.infinispan.InfinispanCacheManager,org.infinispan.client.hotrod.RemoteCacheManager)" class="member-name-link">InfinispanControlPanelLoader(ControlPanelConfiguration, InfinispanCacheManager, RemoteCacheManager)</a> - Constructor for class io.micronaut.controlpanel.panels.cache.infinispan.<a href="io/micronaut/controlpanel/panels/cache/infinispan/InfinispanControlPanelLoader.html" title="class in io.micronaut.controlpanel.panels.cache.infinispan">InfinispanControlPanelLoader</a></dt>
+<dd>
+<div class="block">Constructor.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/infinispan/InfinispanSyncCacheControlPanel.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.cache.infinispan">InfinispanSyncCacheControlPanel</a> - Class in <a href="io/micronaut/controlpanel/panels/cache/infinispan/package-summary.html">io.micronaut.controlpanel.panels.cache.infinispan</a></dt>
+<dd>
+<div class="block">Control panel for managing Infinispan caches.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/infinispan/InfinispanSyncCacheControlPanel.html#%3Cinit%3E(io.micronaut.cache.infinispan.InfinispanSyncCache,io.micronaut.controlpanel.core.config.ControlPanelConfiguration)" class="member-name-link">InfinispanSyncCacheControlPanel(InfinispanSyncCache, ControlPanelConfiguration)</a> - Constructor for class io.micronaut.controlpanel.panels.cache.infinispan.<a href="io/micronaut/controlpanel/panels/cache/infinispan/InfinispanSyncCacheControlPanel.html" title="class in io.micronaut.controlpanel.panels.cache.infinispan">InfinispanSyncCacheControlPanel</a></dt>
+<dd>
+<div class="block">Constructor.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/CacheController.html#invalidate(java.lang.String,java.lang.String)" class="member-name-link">invalidate(String, String)</a> - Method in class io.micronaut.controlpanel.panels.cache.<a href="io/micronaut/controlpanel/panels/cache/CacheController.html" title="class in io.micronaut.controlpanel.panels.cache">CacheController</a></dt>
+<dd>
+<div class="block">Invalidates a specific entry in the specified cache.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/CacheController.html#invalidateAll(java.lang.String)" class="member-name-link">invalidateAll(String)</a> - Method in class io.micronaut.controlpanel.panels.cache.<a href="io/micronaut/controlpanel/panels/cache/CacheController.html" title="class in io.micronaut.controlpanel.panels.cache">CacheController</a></dt>
+<dd>
+<div class="block">Invalidates all entries in the specified cache.</div>
+</dd>
 <dt><a href="io/micronaut/controlpanel/core/package-summary.html">io.micronaut.controlpanel.core</a> - package io.micronaut.controlpanel.core</dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/core/config/package-summary.html">io.micronaut.controlpanel.core.config</a> - package io.micronaut.controlpanel.core.config</dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/core/panels/package-summary.html">io.micronaut.controlpanel.core.panels</a> - package io.micronaut.controlpanel.core.panels</dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/package-summary.html">io.micronaut.controlpanel.panels.cache</a> - package io.micronaut.controlpanel.panels.cache</dt>
+<dd>
+<div class="block">Cache Control Panel classes.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/hazelcast/package-summary.html">io.micronaut.controlpanel.panels.cache.hazelcast</a> - package io.micronaut.controlpanel.panels.cache.hazelcast</dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/infinispan/package-summary.html">io.micronaut.controlpanel.panels.cache.infinispan</a> - package io.micronaut.controlpanel.panels.cache.infinispan</dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/panels/management/package-summary.html">io.micronaut.controlpanel.panels.management</a> - package io.micronaut.controlpanel.panels.management</dt>
 <dd>&nbsp;</dd>
@@ -519,6 +727,12 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Returns the value of the <a href="./io/micronaut/controlpanel/panels/management/LoggersControlPanel.Body.html#param-levels"><code>levels</code></a> record component.</div>
 </dd>
+<dt><a href="io/micronaut/controlpanel/core/ControlPanelLoader.html#loadControlPanels()" class="member-name-link">loadControlPanels()</a> - Method in interface io.micronaut.controlpanel.core.<a href="io/micronaut/controlpanel/core/ControlPanelLoader.html" title="interface in io.micronaut.controlpanel.core">ControlPanelLoader</a></dt>
+<dd>
+<div class="block">Loads a list of control panels.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/infinispan/InfinispanControlPanelLoader.html#loadControlPanels()" class="member-name-link">loadControlPanels()</a> - Method in class io.micronaut.controlpanel.panels.cache.infinispan.<a href="io/micronaut/controlpanel/panels/cache/infinispan/InfinispanControlPanelLoader.html" title="class in io.micronaut.controlpanel.panels.cache.infinispan">InfinispanControlPanelLoader</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/panels/management/LoggersControlPanel.Body.html#loggers()" class="member-name-link">loggers()</a> - Method in record class io.micronaut.controlpanel.panels.management.<a href="io/micronaut/controlpanel/panels/management/LoggersControlPanel.Body.html" title="class in io.micronaut.controlpanel.panels.management">LoggersControlPanel.Body</a></dt>
 <dd>
 <div class="block">Returns the value of the <a href="./io/micronaut/controlpanel/panels/management/LoggersControlPanel.Body.html#param-loggers"><code>loggers</code></a> record component.</div>
@@ -565,6 +779,10 @@ loadScripts(document, 'script');</script>
 </dd>
 <dt><a href="io/micronaut/controlpanel/core/panels/RoutesControlPanel.html#NAME" class="member-name-link">NAME</a> - Static variable in class io.micronaut.controlpanel.core.panels.<a href="io/micronaut/controlpanel/core/panels/RoutesControlPanel.html" title="class in io.micronaut.controlpanel.core.panels">RoutesControlPanel</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.html#NAME" class="member-name-link">NAME</a> - Static variable in class io.micronaut.controlpanel.panels.cache.<a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.html" title="class in io.micronaut.controlpanel.panels.cache">AbstractCacheControlPanel</a></dt>
+<dd>
+<div class="block">The name of the cache control panel category.</div>
+</dd>
 <dt><a href="io/micronaut/controlpanel/panels/management/BeansControlPanel.html#NAME" class="member-name-link">NAME</a> - Static variable in class io.micronaut.controlpanel.panels.management.<a href="io/micronaut/controlpanel/panels/management/BeansControlPanel.html" title="class in io.micronaut.controlpanel.panels.management">BeansControlPanel</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/panels/management/EnvironmentControlPanel.html#NAME" class="member-name-link">NAME</a> - Static variable in class io.micronaut.controlpanel.panels.management.<a href="io/micronaut/controlpanel/panels/management/EnvironmentControlPanel.html" title="class in io.micronaut.controlpanel.panels.management">EnvironmentControlPanel</a></dt>
@@ -661,6 +879,10 @@ loadScripts(document, 'script');</script>
 <div class="block">Returns a string representation of this record class.</div>
 </dd>
 <dt><a href="io/micronaut/controlpanel/core/ControlPanel.View.html#toString()" class="member-name-link">toString()</a> - Method in record class io.micronaut.controlpanel.core.<a href="io/micronaut/controlpanel/core/ControlPanel.View.html" title="class in io.micronaut.controlpanel.core">ControlPanel.View</a></dt>
+<dd>
+<div class="block">Returns a string representation of this record class.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.Body.html#toString()" class="member-name-link">toString()</a> - Method in record class io.micronaut.controlpanel.panels.cache.<a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.Body.html" title="class in io.micronaut.controlpanel.panels.cache">AbstractCacheControlPanel.Body</a></dt>
 <dd>
 <div class="block">Returns a string representation of this record class.</div>
 </dd>

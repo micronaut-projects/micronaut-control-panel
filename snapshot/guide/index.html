@@ -97,9 +97,11 @@
         
         <div class="toc-item" style="margin-left:10px" id="toc-item-builtIn"><a href="#builtIn"><strong>4.1</strong><span>Built-in</span></a></div>
         
-        <div class="toc-item" style="margin-left:10px" id="toc-item-management"><a href="#management"><strong>4.2</strong><span>Management</span></a></div>
+        <div class="toc-item" style="margin-left:10px" id="toc-item-cache"><a href="#cache"><strong>4.2</strong><span>Cache</span></a></div>
         
-        <div class="toc-item" style="margin-left:10px" id="toc-item-objectStorage"><a href="#objectStorage"><strong>4.3</strong><span>Object Storage</span></a></div>
+        <div class="toc-item" style="margin-left:10px" id="toc-item-management"><a href="#management"><strong>4.3</strong><span>Management</span></a></div>
+        
+        <div class="toc-item" style="margin-left:10px" id="toc-item-objectStorage"><a href="#objectStorage"><strong>4.4</strong><span>Object Storage</span></a></div>
         
         <div class="toc-item" style="margin-left:0px" id="toc-item-custom"><a href="#custom"><strong>5</strong><span>Creating Custom Control Panels</span></a></div>
         
@@ -379,7 +381,270 @@ Micronaut Endpoints require having the <code>io.micronaut:micronaut-management</
 </ul>
 </div>
 
-<h2 id="management"><a class="anchor" href="#management"></a>4.2 Management</h2>
+<h2 id="cache"><a class="anchor" href="#cache"></a>4.2 Cache</h2>
+
+<div class='contribute-btn'>
+    <button type='button' class='btn btn-default' onclick='window.location.href="https://github.com/micronaut-projects/micronaut-control-panel/edit/2.0.x/src/main/docs/guide/controlPanels/cache.adoc"'>
+        <i class='fa fa-pencil-square-o'></i> Improve this doc
+    </button>
+</div>
+
+
+<div class="paragraph">
+<p>The Cache control panel provides a web-based interface for managing caches in Micronaut applications supported by the <a href="https://micronaut-projects.github.io/micronaut-cache/latest/guide/">Micronaut Cache</a> module.</p>
+</div>
+<div class="paragraph">
+<p>To add the Cache control panels, add the following dependency:</p>
+</div>
+<div class="paragraph">
+<p>        <div class="listingblock multi-language-sample">
+<div class="title"></div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="gradle">developmentOnly(<span class="hljs-string">"io.micronaut.controlpanel:micronaut-control-panel-cache")</span></code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="maven">&lt;dependency&gt;
+    &lt;groupId&gt;io.micronaut.controlpanel&lt;/groupId&gt;
+    &lt;artifactId&gt;micronaut-control-panel-cache&lt;/artifactId&gt;
+    &lt;scope&gt;provided&lt;/scope&gt;
+&lt;/dependency&gt;</code></pre>
+</div>
+</div>
+</p>
+</div>
+<div class="paragraph">
+<p>This module automatically creates panels for each configured cache in your application. Each panel provides:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>A count of cached objects (displayed as a badge)</p>
+</li>
+<li>
+<p>Detailed cache information and configuration metadata</p>
+</li>
+<li>
+<p>A table listing all cached key-value pairs</p>
+</li>
+<li>
+<p>Cache management operations (invalidate individual keys or clear entire cache)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The control panel supports all cache implementations provided by Micronaut Cache:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Caffeine</strong> - High-performance Java caching library</p>
+</li>
+<li>
+<p><strong>Ehcache</strong> - Enterprise-grade caching solution</p>
+</li>
+<li>
+<p><strong>Hazelcast</strong> - Distributed caching with clustering capabilities</p>
+</li>
+<li>
+<p><strong>Infinispan</strong> - Distributed in-memory data grid</p>
+</li>
+</ul>
+</div>
+<div class="sect1">
+<h2 id="_cache_management_operations">Cache Management Operations</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Each cache panel includes interactive buttons to manage cache contents:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Invalidate all keys</strong>: Clears the entire cache by removing all stored entries</p>
+</li>
+<li>
+<p><strong>Invalidate</strong>: Removes individual cache entries by key</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>These operations are performed via REST endpoints and provide immediate feedback on success or failure.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_configuration">Configuration</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The cache control panel is automatically enabled when you include the <code>control-panel-cache</code> module in your project. You can disable it by setting:</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">micronaut.control-panel.cache.enabled=false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">micronaut:
+  control-panel:
+    cache:
+      enabled: false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[micronaut]
+  [micronaut.control-panel]
+    [micronaut.control-panel.cache]
+      enabled=false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-groovy-config hljs" data-lang="groovy-config">micronaut {
+  controlPanel {
+    cache {
+      enabled = false
+    }
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-hocon hljs" data-lang="hocon">{
+  micronaut {
+    control-panel {
+      cache {
+        enabled = false
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json-config hljs" data-lang="json-config">{
+  "micronaut": {
+    "control-panel": {
+      "cache": {
+        "enabled": false
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>Individual cache panels can also be disabled by setting the cache-specific property:</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">micronaut.caches.my-cache.control-panel.enabled=false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">micronaut:
+  caches:
+    my-cache:
+      control-panel:
+        enabled: false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[micronaut]
+  [micronaut.caches]
+    [micronaut.caches.my-cache]
+      [micronaut.caches.my-cache.control-panel]
+        enabled=false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-groovy-config hljs" data-lang="groovy-config">micronaut {
+  caches {
+    myCache {
+      controlPanel {
+        enabled = false
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-hocon hljs" data-lang="hocon">{
+  micronaut {
+    caches {
+      my-cache {
+        control-panel {
+          enabled = false
+        }
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json-config hljs" data-lang="json-config">{
+  "micronaut": {
+    "caches": {
+      "my-cache": {
+        "control-panel": {
+          "enabled": false
+        }
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_cache_information_display">Cache Information Display</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The detailed view of each cache shows:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Implementation Class</strong>: The underlying cache implementation</p>
+</li>
+<li>
+<p><strong>Cache Size</strong>: Current number of entries in the cache</p>
+</li>
+<li>
+<p><strong>Configuration Details</strong>: Implementation-specific settings (for Caffeine, Ehcache, Infinispan)</p>
+</li>
+<li>
+<p><strong>Cache Contents</strong>: Table of all key-value pairs currently stored</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This provides complete visibility into your application&#8217;s caching layer for debugging and monitoring purposes.</p>
+</div>
+</div>
+</div>
+
+<h2 id="management"><a class="anchor" href="#management"></a>4.3 Management</h2>
 
 <div class='contribute-btn'>
     <button type='button' class='btn btn-default' onclick='window.location.href="https://github.com/micronaut-projects/micronaut-control-panel/edit/2.0.x/src/main/docs/guide/controlPanels/management.adoc"'>
@@ -838,7 +1103,7 @@ endpoints.loggers.write-sensitive=false</code></pre>
 </div>
 </div>
 
-<h2 id="objectStorage"><a class="anchor" href="#objectStorage"></a>4.3 Object Storage</h2>
+<h2 id="objectStorage"><a class="anchor" href="#objectStorage"></a>4.4 Object Storage</h2>
 
 <div class='contribute-btn'>
     <button type='button' class='btn btn-default' onclick='window.location.href="https://github.com/micronaut-projects/micronaut-control-panel/edit/2.0.x/src/main/docs/guide/controlPanels/objectStorage.adoc"'>
@@ -1043,7 +1308,7 @@ public class MyApplicationControlPanel extends AbstractControlPanel&lt;MyApplica
 
     @Override
     public Category getCategory() {
-        return new Category(NAME, "My Application", "fa-copy"); // <b class="conum">(4)</b>
+        return new Category(NAME, "My Application", "fa-copy", 1); // <b class="conum">(4)</b>
     }
 
     @ReflectiveAccess // <b class="conum">(5)</b>

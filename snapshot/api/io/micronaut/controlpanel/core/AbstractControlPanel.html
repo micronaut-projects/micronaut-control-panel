@@ -99,7 +99,7 @@ loadScripts(document, 'script');</script>
 </dl>
 <dl class="notes">
 <dt>Direct Known Subclasses:</dt>
-<dd><code><a href="../panels/management/BeansControlPanel.html" title="class in io.micronaut.controlpanel.panels.management">BeansControlPanel</a></code>, <code><a href="../panels/management/EnvironmentControlPanel.html" title="class in io.micronaut.controlpanel.panels.management">EnvironmentControlPanel</a></code>, <code><a href="../panels/management/HealthControlPanel.html" title="class in io.micronaut.controlpanel.panels.management">HealthControlPanel</a></code>, <code><a href="../panels/management/LoggersControlPanel.html" title="class in io.micronaut.controlpanel.panels.management">LoggersControlPanel</a></code>, <code><a href="../panels/objectstorage/ObjectStorageControlPanel.html" title="class in io.micronaut.controlpanel.panels.objectstorage">ObjectStorageControlPanel</a></code>, <code><a href="panels/RoutesControlPanel.html" title="class in io.micronaut.controlpanel.core.panels">RoutesControlPanel</a></code></dd>
+<dd><code><a href="AbstractEachBeanControlPanel.html" title="class in io.micronaut.controlpanel.core">AbstractEachBeanControlPanel</a></code>, <code><a href="../panels/management/BeansControlPanel.html" title="class in io.micronaut.controlpanel.panels.management">BeansControlPanel</a></code>, <code><a href="../panels/management/EnvironmentControlPanel.html" title="class in io.micronaut.controlpanel.panels.management">EnvironmentControlPanel</a></code>, <code><a href="../panels/management/HealthControlPanel.html" title="class in io.micronaut.controlpanel.panels.management">HealthControlPanel</a></code>, <code><a href="../panels/management/LoggersControlPanel.html" title="class in io.micronaut.controlpanel.panels.management">LoggersControlPanel</a></code>, <code><a href="panels/RoutesControlPanel.html" title="class in io.micronaut.controlpanel.core.panels">RoutesControlPanel</a></code></dd>
 </dl>
 <hr>
 <div class="type-signature"><span class="modifiers">public abstract class </span><span class="element-name type-name-label">AbstractControlPanel&lt;B&gt;</span>
@@ -214,15 +214,13 @@ implements <a href="ControlPanel.html" title="interface in io.micronaut.controlp
 <li>
 <section class="detail" id="controlPanelName">
 <h3>controlPanelName</h3>
-<div class="member-signature"><span class="annotations">@NonNull
-</span><span class="modifiers">protected final</span>&nbsp;<span class="return-type">@NonNull <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">controlPanelName</span></div>
+<div class="member-signature"><span class="modifiers">protected final</span>&nbsp;<span class="return-type">@NonNull <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">controlPanelName</span></div>
 </section>
 </li>
 <li>
 <section class="detail" id="configuration">
 <h3>configuration</h3>
-<div class="member-signature"><span class="annotations">@NonNull
-</span><span class="modifiers">protected final</span>&nbsp;<span class="return-type">@NonNull <a href="config/ControlPanelConfiguration.html" title="class in io.micronaut.controlpanel.core.config">ControlPanelConfiguration</a></span>&nbsp;<span class="element-name">configuration</span></div>
+<div class="member-signature"><span class="modifiers">protected final</span>&nbsp;<span class="return-type">@NonNull <a href="config/ControlPanelConfiguration.html" title="class in io.micronaut.controlpanel.core.config">ControlPanelConfiguration</a></span>&nbsp;<span class="element-name">configuration</span></div>
 </section>
 </li>
 </ul>
@@ -236,9 +234,7 @@ implements <a href="ControlPanel.html" title="interface in io.micronaut.controlp
 <li>
 <section class="detail" id="&lt;init&gt;(java.lang.String,io.micronaut.controlpanel.core.config.ControlPanelConfiguration)">
 <h3>AbstractControlPanel</h3>
-<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="element-name">AbstractControlPanel</span><wbr><span class="parameters">(@NonNull
- @NonNull <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;controlPanelName,
- @NonNull
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="element-name">AbstractControlPanel</span><wbr><span class="parameters">(@NonNull <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;controlPanelName,
  @NonNull <a href="config/ControlPanelConfiguration.html" title="class in io.micronaut.controlpanel.core.config">ControlPanelConfiguration</a>&nbsp;configuration)</span></div>
 </section>
 </li>
@@ -305,8 +301,7 @@ implements <a href="ControlPanel.html" title="interface in io.micronaut.controlp
 <li>
 <section class="detail" id="getName()">
 <h3>getName</h3>
-<div class="member-signature"><span class="annotations">@NonNull
-</span><span class="modifiers">public</span>&nbsp;<span class="return-type">@NonNull <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">getName</span>()</div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">@NonNull <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">getName</span>()</div>
 <dl class="notes">
 <dt>Specified by:</dt>
 <dd><code>getName</code>&nbsp;in interface&nbsp;<code>io.micronaut.core.naming.Named</code></dd>

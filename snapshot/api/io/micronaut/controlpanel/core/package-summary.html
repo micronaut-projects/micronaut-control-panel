@@ -95,21 +95,29 @@ loadScripts(document, 'script');</script>
 <div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">Base class for control panels that can delegate some of its values to a <a href="config/ControlPanelConfiguration.html" title="class in io.micronaut.controlpanel.core.config"><code>ControlPanelConfiguration</code></a>.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab1"><a href="ConfigurableControlPanel.html" title="interface in io.micronaut.controlpanel.core">ConfigurableControlPanel</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab1">
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="AbstractEachBeanControlPanel.html" title="class in io.micronaut.controlpanel.core">AbstractEachBeanControlPanel</a>&lt;B&gt;</div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="block">Base class for control panels that are created for each bean of a specific type.</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab1"><a href="ConfigurableControlPanel.html" title="interface in io.micronaut.controlpanel.core">ConfigurableControlPanel</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab1">
 <div class="block">Common configuration properties for control panels.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab1"><a href="ControlPanel.html" title="interface in io.micronaut.controlpanel.core">ControlPanel</a>&lt;B&gt;</div>
-<div class="col-last even-row-color class-summary class-summary-tab1">
+<div class="col-first odd-row-color class-summary class-summary-tab1"><a href="ControlPanel.html" title="interface in io.micronaut.controlpanel.core">ControlPanel</a>&lt;B&gt;</div>
+<div class="col-last odd-row-color class-summary class-summary-tab1">
 <div class="block">A control panel is a UI component that displays some information about the application.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab4"><a href="ControlPanel.Category.html" title="class in io.micronaut.controlpanel.core">ControlPanel.Category</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab4">
+<div class="col-first even-row-color class-summary class-summary-tab4"><a href="ControlPanel.Category.html" title="class in io.micronaut.controlpanel.core">ControlPanel.Category</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab4">
 <div class="block">Control panels are grouped by category.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab4"><a href="ControlPanel.View.html" title="class in io.micronaut.controlpanel.core">ControlPanel.View</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab4">
+<div class="col-first odd-row-color class-summary class-summary-tab4"><a href="ControlPanel.View.html" title="class in io.micronaut.controlpanel.core">ControlPanel.View</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab4">
 <div class="block">View to be rendered by the control panel.</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab1"><a href="ControlPanelLoader.html" title="interface in io.micronaut.controlpanel.core">ControlPanelLoader</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab1">
+<div class="block">Interface for loading control panels dynamically.</div>
 </div>
 <div class="col-first odd-row-color class-summary class-summary-tab1"><a href="ControlPanelRepository.html" title="interface in io.micronaut.controlpanel.core">ControlPanelRepository</a></div>
 <div class="col-last odd-row-color class-summary class-summary-tab1">
@@ -118,7 +126,7 @@ loadScripts(document, 'script');</script>
 <div class="col-first even-row-color class-summary class-summary-tab2"><a href="DefaultControlPanelRepository.html" title="class in io.micronaut.controlpanel.core">DefaultControlPanelRepository</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">Default implementation of <a href="ControlPanelRepository.html" title="interface in io.micronaut.controlpanel.core"><code>ControlPanelRepository</code></a> that gets the control panels injected
- as beans.</div>
+ as beans, as well as dynamically created control panels.</div>
 </div>
 </div>
 </div>
