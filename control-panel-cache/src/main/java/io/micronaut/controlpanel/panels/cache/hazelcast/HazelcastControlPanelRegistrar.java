@@ -1,3 +1,18 @@
+/*
+ * Copyright 2017-2025 original authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package io.micronaut.controlpanel.panels.cache.hazelcast;
 
 import com.hazelcast.core.DistributedObjectEvent;
@@ -18,6 +33,13 @@ import org.slf4j.LoggerFactory;
 
 import static io.micronaut.controlpanel.panels.cache.AbstractCacheControlPanel.NAME;
 
+/**
+ * Registrar for Hazelcast cache control panels.
+ * Dynamically creates and registers control panels for Hazelcast caches as they are created.
+ *
+ * @author Álvaro Sánchez-Mariscal
+ * @since 2.0.0
+ */
 @Context
 @Requires(beans = {HazelcastCacheManager.class, HazelcastInstance.class})
 public class HazelcastControlPanelRegistrar implements DistributedObjectListener {
@@ -28,6 +50,14 @@ public class HazelcastControlPanelRegistrar implements DistributedObjectListener
     private final ControlPanelConfiguration configuration;
     private final HazelcastCacheManager cacheManager;
 
+    /**
+     * Constructor.
+     *
+     * @param beanContext the application context
+     * @param configuration the control panel configuration
+     * @param cacheManager the Hazelcast cache manager
+     * @param instance the Hazelcast instance
+     */
     public HazelcastControlPanelRegistrar(ApplicationContext beanContext,
                                           @Named(NAME) ControlPanelConfiguration configuration,
                                           HazelcastCacheManager cacheManager,
