@@ -30,7 +30,7 @@ kotlin-gradle-plugin = "2.2.21"
 micronaut-shared-settings = "7.6.6"
 sonatype-scan = "3.1.4"
 playwright = "1.57.0"
-shadow-plugin = "9.2.2"
+shadow-plugin = "9.3.0"
 test-logger-plugin = "4.0.0"
 
 [libraries]
