@@ -17,11 +17,18 @@ dependencies {
     implementation(mnObjectStorage.micronaut.`object`.storage.gcp)
     implementation(mnObjectStorage.micronaut.`object`.storage.oracle.cloud)
 
+    implementation(projects.micronautControlPanelCache)
+    runtimeOnly(mnCache.micronaut.cache.management)
+    implementation(mnCache.micronaut.cache.caffeine)
+    implementation(mnCache.micronaut.cache.ehcache)
+    implementation(mnCache.micronaut.cache.hazelcast)
+    implementation(mnCache.micronaut.cache.infinispan)
+
     runtimeOnly(mnLogging.logback.classic)
     runtimeOnly(mn.snakeyaml)
 
     testImplementation(mn.micronaut.http.client)
     testImplementation(mnTest.micronaut.test.junit5)
     testImplementation(libs.playwright)
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testRuntimeOnly(mnTest.junit.platform.suite)
 }

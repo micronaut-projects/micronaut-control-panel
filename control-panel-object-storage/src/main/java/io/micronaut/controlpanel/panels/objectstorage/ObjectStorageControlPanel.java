@@ -17,7 +17,7 @@ package io.micronaut.controlpanel.panels.objectstorage;
 
 import io.micronaut.context.annotation.EachBean;
 import io.micronaut.context.annotation.Parameter;
-import io.micronaut.controlpanel.core.AbstractControlPanel;
+import io.micronaut.controlpanel.core.AbstractEachBeanControlPanel;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.core.annotation.ReflectiveAccess;
 import io.micronaut.core.annotation.TypeHint;
@@ -51,7 +51,7 @@ import java.util.Optional;
  * @since 1.10.0
  */
 @EachBean(AbstractObjectStorageConfiguration.class)
-public class ObjectStorageControlPanel extends AbstractControlPanel<ObjectStorageControlPanel.Body> {
+public class ObjectStorageControlPanel extends AbstractEachBeanControlPanel<ObjectStorageControlPanel.Body> {
 
     public static final String NAME = "object-storage";
     public static final String ENABLED_PROPERTY = ControlPanelConfiguration.PREFIX + "." + NAME + ".enabled";
@@ -70,6 +70,16 @@ public class ObjectStorageControlPanel extends AbstractControlPanel<ObjectStorag
     }
 
     @Override
+    protected String getBeanName() {
+        return objectStorageConfiguration.getName();
+    }
+
+    @Override
+    protected String getPanelName() {
+        return NAME;
+    }
+
+    @Override
     public Body getBody() {
         var entries = operations.listObjects()
             .stream()
@@ -80,26 +90,6 @@ public class ObjectStorageControlPanel extends AbstractControlPanel<ObjectStorag
         var metadata = computeMetadata();
 
         return new Body(entries, metadata);
-    }
-
-    @Override
-    public String getTitle() {
-        return objectStorageConfiguration.getName();
-    }
-
-    @Override
-    public String getName() {
-        return NAME + "-" + objectStorageConfiguration.getName();
-    }
-
-    @Override
-    public View getBodyView() {
-        return new View("/views/" + NAME + "/body");
-    }
-
-    @Override
-    public View getDetailedView() {
-        return new View("/views/" + NAME + "/detail");
     }
 
     @Override

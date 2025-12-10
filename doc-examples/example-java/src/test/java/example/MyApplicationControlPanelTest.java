@@ -5,13 +5,15 @@ import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.inject.qualifiers.Qualifiers;
 import org.junit.jupiter.api.Test;
 
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class MyApplicationControlPanelTest {
 
     @Test
     void itIsConfiguredCorrectly() {
-        try (ApplicationContext ctx = ApplicationContext.run()) {
+        try (ApplicationContext ctx = ApplicationContext.run(Map.of("infinispan.enabled",  "false"))) {
             // When: retrieve the panel and its configuration
             MyApplicationControlPanel panel = ctx.getBean(MyApplicationControlPanel.class);
             ControlPanelConfiguration cfg = ctx.getBean(ControlPanelConfiguration.class, Qualifiers.byName(panel.getName()));

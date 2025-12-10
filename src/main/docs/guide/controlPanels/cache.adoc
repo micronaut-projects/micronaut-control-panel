@@ -1,0 +1,62 @@
+The Cache control panel provides a web-based interface for managing caches in Micronaut applications supported by the https://micronaut-projects.github.io/micronaut-cache/latest/guide/[Micronaut Cache] module.
+
+To add the Cache control panels, add the following dependency:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-cache[scope=developmentOnly]
+
+This module automatically creates panels for each configured cache in your application. Each panel provides:
+
+* A count of cached objects (displayed as a badge)
+* Detailed cache information and configuration metadata
+* A table listing all cached key-value pairs
+* Cache management operations (invalidate individual keys or clear entire cache)
+
+The control panel supports all cache implementations provided by Micronaut Cache:
+
+* **Caffeine** - High-performance Java caching library
+* **Ehcache** - Enterprise-grade caching solution
+* **Hazelcast** - Distributed caching with clustering capabilities
+* **Infinispan** - Distributed in-memory data grid
+
+== Cache Management Operations
+
+Each cache panel includes interactive buttons to manage cache contents:
+
+* **Invalidate all keys**: Clears the entire cache by removing all stored entries
+* **Invalidate**: Removes individual cache entries by key
+
+These operations are performed via REST endpoints and provide immediate feedback on success or failure.
+
+== Configuration
+
+The cache control panel is automatically enabled when you include the `control-panel-cache` module in your project. You can disable it by setting:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    cache:
+      enabled: false
+----
+
+Individual cache panels can also be disabled by setting the cache-specific property:
+
+[configuration]
+----
+micronaut:
+  caches:
+    my-cache:
+      control-panel:
+        enabled: false
+----
+
+== Cache Information Display
+
+The detailed view of each cache shows:
+
+* **Implementation Class**: The underlying cache implementation
+* **Cache Size**: Current number of entries in the cache
+* **Configuration Details**: Implementation-specific settings (for Caffeine, Ehcache, Infinispan)
+* **Cache Contents**: Table of all key-value pairs currently stored
+
+This provides complete visibility into your application's caching layer for debugging and monitoring purposes.
