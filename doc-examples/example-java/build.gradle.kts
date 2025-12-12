@@ -1,3 +1,5 @@
+import io.micronaut.testresources.buildtools.KnownModules
+
 plugins {
     io.micronaut.build.internal.`control-panel-example`
 }
@@ -31,4 +33,10 @@ dependencies {
     testImplementation(mnTest.micronaut.test.junit5)
     testImplementation(libs.playwright)
     testRuntimeOnly(mnTest.junit.platform.suite)
+}
+
+micronaut {
+    testResources {
+        additionalModules.add(KnownModules.CONTROL_PANEL)
+    }
 }

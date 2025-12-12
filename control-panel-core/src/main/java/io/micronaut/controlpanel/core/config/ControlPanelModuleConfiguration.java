@@ -18,6 +18,7 @@ package io.micronaut.controlpanel.core.config;
 import io.micronaut.context.annotation.ConfigurationProperties;
 import io.micronaut.context.env.Environment;
 import io.micronaut.core.bind.annotation.Bindable;
+import io.micronaut.core.util.StringUtils;
 import io.micronaut.core.util.Toggleable;
 
 import java.util.Set;
@@ -33,8 +34,8 @@ public interface ControlPanelModuleConfiguration extends Toggleable {
 
     String DEFAULT_ENABLED = "true";
     String DEFAULT_ALLOWED_ENVIRONMENTS = Environment.DEVELOPMENT + "," + Environment.TEST;
-
     String DEFAULT_PATH = "/control-panel";
+    String DEFAULT_LOG_URL = StringUtils.TRUE;
 
     String PREFIX = "micronaut.control-panel";
     String PROPERTY_ENABLED = PREFIX + ".enabled";
@@ -64,5 +65,13 @@ public interface ControlPanelModuleConfiguration extends Toggleable {
      */
     @Bindable(defaultValue = DEFAULT_PATH)
     String getPath();
+
+    /**
+     * Whether to print the Control Panel URL in the logs on application startup. Default: {@value #DEFAULT_LOG_URL}
+     *
+     * @return whether to print Control Panel URL on application startup.
+     */
+    @Bindable(defaultValue = DEFAULT_LOG_URL)
+    boolean isLogUrl();
 
 }
