@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.micronaut.controlpanel.panels.management;
+package io.micronaut.controlpanel.panels.management.beans;
 
 import io.micronaut.context.BeanContext;
 import io.micronaut.context.annotation.Requires;
@@ -102,6 +102,11 @@ public class BeansControlPanel extends AbstractControlPanel<BeansControlPanel.Bo
             .filter(filter)
             .sorted(COMPARATOR_BY_NAME)
             .collect(Collectors.groupingBy(groupBy, LinkedHashMap::new, Collectors.mapping(beanDefinitionData::getData, Collectors.toList())));
+    }
+
+    @Override
+    public Category getCategory() {
+        return new Category(NAME, "Beans", "fa-plug");
     }
 
     /**
