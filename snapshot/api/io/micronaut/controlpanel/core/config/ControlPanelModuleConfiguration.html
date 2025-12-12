@@ -120,20 +120,23 @@ extends io.micronaut.core.util.Toggleable</span></div>
 <div class="col-second odd-row-color"><code><a href="#DEFAULT_ENABLED" class="member-name-link">DEFAULT_ENABLED</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
 <div class="col-first even-row-color"><code>static final <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
-<div class="col-second even-row-color"><code><a href="#DEFAULT_PATH" class="member-name-link">DEFAULT_PATH</a></code></div>
+<div class="col-second even-row-color"><code><a href="#DEFAULT_LOG_URL" class="member-name-link">DEFAULT_LOG_URL</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
 <div class="col-first odd-row-color"><code>static final <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
-<div class="col-second odd-row-color"><code><a href="#PREFIX" class="member-name-link">PREFIX</a></code></div>
+<div class="col-second odd-row-color"><code><a href="#DEFAULT_PATH" class="member-name-link">DEFAULT_PATH</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
 <div class="col-first even-row-color"><code>static final <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
-<div class="col-second even-row-color"><code><a href="#PROPERTY_ALLOWED_ENVIRONMENTS" class="member-name-link">PROPERTY_ALLOWED_ENVIRONMENTS</a></code></div>
+<div class="col-second even-row-color"><code><a href="#PREFIX" class="member-name-link">PREFIX</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
 <div class="col-first odd-row-color"><code>static final <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
-<div class="col-second odd-row-color"><code><a href="#PROPERTY_ENABLED" class="member-name-link">PROPERTY_ENABLED</a></code></div>
+<div class="col-second odd-row-color"><code><a href="#PROPERTY_ALLOWED_ENVIRONMENTS" class="member-name-link">PROPERTY_ALLOWED_ENVIRONMENTS</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
 <div class="col-first even-row-color"><code>static final <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
-<div class="col-second even-row-color"><code><a href="#PROPERTY_PATH" class="member-name-link">PROPERTY_PATH</a></code></div>
+<div class="col-second even-row-color"><code><a href="#PROPERTY_ENABLED" class="member-name-link">PROPERTY_ENABLED</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><code>static final <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second odd-row-color"><code><a href="#PROPERTY_PATH" class="member-name-link">PROPERTY_PATH</a></code></div>
+<div class="col-last odd-row-color">&nbsp;</div>
 </div>
 </section>
 </li>
@@ -162,6 +165,11 @@ extends io.micronaut.core.util.Toggleable</span></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#isEnabled()" class="member-name-link">isEnabled</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
 <div class="block">Enables/disables the control panel module.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>boolean</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#isLogUrl()" class="member-name-link">isLogUrl</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="block">Whether to print the Control Panel URL in the logs on application startup.</div>
 </div>
 </div>
 </div>
@@ -214,6 +222,20 @@ extends io.micronaut.core.util.Toggleable</span></div>
 <dd>
 <ul class="tag-list">
 <li><a href="../../../../../constant-values.html#io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration.DEFAULT_PATH">Constant Field Values</a></li>
+</ul>
+</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="DEFAULT_LOG_URL">
+<h3>DEFAULT_LOG_URL</h3>
+<div class="member-signature"><span class="modifiers">static final</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">DEFAULT_LOG_URL</span></div>
+<dl class="notes">
+<dt>See Also:</dt>
+<dd>
+<ul class="tag-list">
+<li><a href="../../../../../constant-values.html#io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration.DEFAULT_LOG_URL">Constant Field Values</a></li>
 </ul>
 </dd>
 </dl>
@@ -317,6 +339,18 @@ extends io.micronaut.core.util.Toggleable</span></div>
 <dl class="notes">
 <dt>Returns:</dt>
 <dd>the path where the control panel module is available.</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="isLogUrl()">
+<h3>isLogUrl</h3>
+<div class="member-signature"><span class="annotations">@Bindable(defaultValue="true")
+</span><span class="return-type">boolean</span>&nbsp;<span class="element-name">isLogUrl</span>()</div>
+<div class="block">Whether to print the Control Panel URL in the logs on application startup. Default: <a href="#DEFAULT_LOG_URL">"true"</a></div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>whether to print Control Panel URL on application startup.</dd>
 </dl>
 </section>
 </li>

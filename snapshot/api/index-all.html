@@ -266,6 +266,12 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">It provides the ability to retrieve <a href="io/micronaut/controlpanel/core/ControlPanel.html" title="interface in io.micronaut.controlpanel.core"><code>ControlPanel</code></a> instances.</div>
 </dd>
+<dt><a href="io/micronaut/controlpanel/core/ControlPanelUrlLogger.html" class="type-name-link" title="class in io.micronaut.controlpanel.core">ControlPanelUrlLogger</a> - Class in <a href="io/micronaut/controlpanel/core/package-summary.html">io.micronaut.controlpanel.core</a></dt>
+<dd>
+<div class="block">Logs the Control Panel URL when the application is ready.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/core/ControlPanelUrlLogger.html#%3Cinit%3E(io.micronaut.http.server.HttpServerConfiguration,io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration,io.micronaut.runtime.ApplicationConfiguration)" class="member-name-link">ControlPanelUrlLogger(HttpServerConfiguration, ControlPanelModuleConfiguration, ApplicationConfiguration)</a> - Constructor for class io.micronaut.controlpanel.core.<a href="io/micronaut/controlpanel/core/ControlPanelUrlLogger.html" title="class in io.micronaut.controlpanel.core">ControlPanelUrlLogger</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/util/ControlPanelUtils.html" class="type-name-link" title="class in io.micronaut.controlpanel.util">ControlPanelUtils</a> - Class in <a href="io/micronaut/controlpanel/util/package-summary.html">io.micronaut.controlpanel.util</a></dt>
 <dd>
 <div class="block">Utility class.</div>
@@ -282,6 +288,8 @@ loadScripts(document, 'script');</script>
 <dt><a href="io/micronaut/controlpanel/core/config/ControlPanelConfiguration.html#DEFAULT_ICON" class="member-name-link">DEFAULT_ICON</a> - Static variable in class io.micronaut.controlpanel.core.config.<a href="io/micronaut/controlpanel/core/config/ControlPanelConfiguration.html" title="class in io.micronaut.controlpanel.core.config">ControlPanelConfiguration</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/panels/objectstorage/ObjectStorageControlPanel.html#DEFAULT_ICON_CLASS" class="member-name-link">DEFAULT_ICON_CLASS</a> - Static variable in class io.micronaut.controlpanel.panels.objectstorage.<a href="io/micronaut/controlpanel/panels/objectstorage/ObjectStorageControlPanel.html" title="class in io.micronaut.controlpanel.panels.objectstorage">ObjectStorageControlPanel</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/core/config/ControlPanelModuleConfiguration.html#DEFAULT_LOG_URL" class="member-name-link">DEFAULT_LOG_URL</a> - Static variable in interface io.micronaut.controlpanel.core.config.<a href="io/micronaut/controlpanel/core/config/ControlPanelModuleConfiguration.html" title="interface in io.micronaut.controlpanel.core.config">ControlPanelModuleConfiguration</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/core/config/ControlPanelModuleConfiguration.html#DEFAULT_PATH" class="member-name-link">DEFAULT_PATH</a> - Static variable in interface io.micronaut.controlpanel.core.config.<a href="io/micronaut/controlpanel/core/config/ControlPanelModuleConfiguration.html" title="interface in io.micronaut.controlpanel.core.config">ControlPanelModuleConfiguration</a></dt>
 <dd>&nbsp;</dd>
@@ -720,6 +728,10 @@ loadScripts(document, 'script');</script>
 </dd>
 <dt><a href="io/micronaut/controlpanel/core/ConfigurableControlPanel.html#isEnabled()" class="member-name-link">isEnabled()</a> - Method in interface io.micronaut.controlpanel.core.<a href="io/micronaut/controlpanel/core/ConfigurableControlPanel.html" title="interface in io.micronaut.controlpanel.core">ConfigurableControlPanel</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/core/config/ControlPanelModuleConfiguration.html#isLogUrl()" class="member-name-link">isLogUrl()</a> - Method in interface io.micronaut.controlpanel.core.config.<a href="io/micronaut/controlpanel/core/config/ControlPanelModuleConfiguration.html" title="interface in io.micronaut.controlpanel.core.config">ControlPanelModuleConfiguration</a></dt>
+<dd>
+<div class="block">Whether to print the Control Panel URL in the logs on application startup.</div>
+</dd>
 </dl>
 <h2 class="title" id="I:L">L</h2>
 <dl class="index">
@@ -746,6 +758,10 @@ loadScripts(document, 'script');</script>
 <dt><a href="io/micronaut/controlpanel/panels/management/LoggersControlPanel.Body.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.management">LoggersControlPanel.Body</a> - Record Class in <a href="io/micronaut/controlpanel/panels/management/package-summary.html">io.micronaut.controlpanel.panels.management</a></dt>
 <dd>
 <div class="block">Represents the body of this control panel, which contains the list of loggers and their corresponding log levels.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/core/ControlPanelUrlLogger.html#logUrl(io.micronaut.discovery.event.ServiceReadyEvent)" class="member-name-link">logUrl(ServiceReadyEvent)</a> - Method in class io.micronaut.controlpanel.core.<a href="io/micronaut/controlpanel/core/ControlPanelUrlLogger.html" title="class in io.micronaut.controlpanel.core">ControlPanelUrlLogger</a></dt>
+<dd>
+<div class="block">Logs the Control Panel URL when the ServiceReadyEvent is triggered.</div>
 </dd>
 </dl>
 <h2 class="title" id="I:M">M</h2>
