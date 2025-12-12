@@ -68,6 +68,8 @@ public interface ControlPanelModuleConfiguration extends Toggleable {
 
     /**
      * Whether to print the Control Panel URL in the logs on application startup. Default: {@value #DEFAULT_LOG_URL}
+     *
+     * @return whether to print Control Panel URL on application startup.
      */
     @Bindable(defaultValue = DEFAULT_LOG_URL)
     boolean isLogUrl();
