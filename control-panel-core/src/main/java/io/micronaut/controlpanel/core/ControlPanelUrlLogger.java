@@ -21,7 +21,7 @@ import io.micronaut.controlpanel.util.ControlPanelUtils;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.discovery.event.ServiceReadyEvent;
 import io.micronaut.http.server.HttpServerConfiguration;
-import io.micronaut.http.server.util.HttpHostResolver;
+import io.micronaut.runtime.ApplicationConfiguration;
 import io.micronaut.runtime.event.annotation.EventListener;
 import jakarta.inject.Singleton;
 import org.slf4j.Logger;
@@ -38,16 +38,16 @@ public class ControlPanelUrlLogger {
 
     private static final Logger LOG = LoggerFactory.getLogger(ControlPanelUrlLogger.class);
 
-    private final String controlPanelUrl;
+    private final String applicationPath;
+    private final String controlPanelPath;
+    private final Optional<String> applicationName;
 
     public ControlPanelUrlLogger(HttpServerConfiguration serverConfiguration,
                                  ControlPanelModuleConfiguration controlPanelConfiguration,
-                                 HttpHostResolver hostResolver) {
-        var applicationPath = Optional.ofNullable(serverConfiguration.getContextPath()).orElse("");
-        var controlPanelPath = controlPanelConfiguration.getPath();
-        var baseUrl = hostResolver.resolve(null);
-        this.controlPanelUrl = baseUrl + ControlPanelUtils.computeControlPanelPath(applicationPath, controlPanelPath);
-
+                                 ApplicationConfiguration applicationConfiguration) {
+        this.applicationPath = Optional.ofNullable(serverConfiguration.getContextPath()).orElse("");
+        this.controlPanelPath = controlPanelConfiguration.getPath();
+        this.applicationName = applicationConfiguration.getName();
     }
 
     /**
@@ -57,7 +57,10 @@ public class ControlPanelUrlLogger {
      */
     @EventListener
     public void logUrl(ServiceReadyEvent event) {
-        LOG.info("Control Panel availabe at {}", controlPanelUrl);
+        var baseUrl = event.getSource().getURI().toString();
+        var controlPanelUrl = baseUrl + ControlPanelUtils.computeControlPanelPath(applicationPath, controlPanelPath);
+        var prefix = applicationName.map("[%s]"::formatted).orElse("");
+        LOG.info("{} Control Panel available at {}", prefix, controlPanelUrl);
     }
 
 }
