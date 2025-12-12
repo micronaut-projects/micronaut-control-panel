@@ -74,6 +74,17 @@ public interface ControlPanel<B> extends ConfigurableControlPanel {
     }
 
     /**
+     * Indicates whether this control panel has additional details that can be displayed.
+     * By default, it is assumed that a control panel has details.
+     *
+     * @since 2.0.0
+     * @return true if the control panel has details, false otherwise
+     */
+    default boolean hasDetails() {
+        return true;
+    }
+
+    /**
      * Control panels are grouped by category. Categories are used to render the menu items of the
      * control panel UI.
      *

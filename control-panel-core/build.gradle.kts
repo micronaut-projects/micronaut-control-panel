@@ -8,6 +8,8 @@ dependencies {
     implementation(mn.micronaut.http.server)
     implementation(mn.micronaut.json.core)
 
+    compileOnly(mnTestResources.micronaut.test.resources.client)
+
     testImplementation(mn.micronaut.http)
     testImplementation(mn.micronaut.management)
     testImplementation(projects.micronautControlPanelManagement)
