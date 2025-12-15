@@ -77,5 +77,5 @@ public class DisabledBeansControlPanel extends AbstractControlPanel<DisabledBean
      * @param disabledBeans the collection of disabled beans
      */
     @ReflectiveAccess
-    public record Body(Collection<DisabledBean<?>> disabledBeans) {}
+    public record Body(Collection<DisabledBean<?>> disabledBeans) { }
 }

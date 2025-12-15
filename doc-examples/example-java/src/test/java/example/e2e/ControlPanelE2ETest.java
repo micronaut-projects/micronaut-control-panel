@@ -1,5 +1,6 @@
 package example.e2e;
 
+import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Page.GetByRoleOptions;
 import com.microsoft.playwright.junit.Options;
@@ -16,7 +17,7 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 class ControlPanelE2ETest extends AbstractE2ETest {
 
     @Test
-    void testDashboard(Page page) {
+    void testDashboard(Page page) throws InterruptedException {
         page.navigate(baseUrl());
         var body = body(page);
 
@@ -25,11 +26,11 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         assertThat(body).containsText("Application Health");
         assertThat(body).containsText("Environment Properties");
         assertThat(body).containsText("HTTP Routes");
-        assertThat(body).containsText("Bean Definitions");
         assertThat(body).containsText("Loggers");
 
         //Category links
         assertThat(categoryLink(page, "Dashboard")).isVisible();
+        assertThat(categoryLink(page, "Beans")).isVisible();
         assertThat(categoryLink(page, "My Application")).isVisible();
 
         //Action buttons
@@ -74,10 +75,24 @@ class ControlPanelE2ETest extends AbstractE2ETest {
     @Test
     void testBeanDefinitions(Page page) {
         page.navigate(baseUrl());
+        categoryLink(page, "Beans").click();
         controlPanelDetails(page, "Bean Definitions").click();
 
         assertThat(body(page)).containsText("Other beans");
         assertThat(body(page)).containsText("Micronaut Framework beans");
+    }
+
+    @Test
+    void testDisabledBeans(Page page) {
+        page.navigate(baseUrl());
+        categoryLink(page, "Beans").click();
+        controlPanelDetails(page, "Disabled Beans").click();
+
+        var searchBox = page.getByRole(AriaRole.SEARCHBOX, new GetByRoleOptions().setName("Search:"));
+        searchBox.click();
+        searchBox.fill("jcache");
+
+        assertThat(page.locator("tbody")).containsText("io.micronaut.cache.jcache.JCacheManager");
     }
 
     @Test
