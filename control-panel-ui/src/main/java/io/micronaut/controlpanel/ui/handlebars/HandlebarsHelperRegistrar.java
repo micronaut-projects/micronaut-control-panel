@@ -82,8 +82,8 @@ class HandlebarsHelperRegistrar implements BeanCreatedEventListener<Handlebars> 
 
     private static Helper<String> formatReason() {
         return (context, options) -> context
-            .replaceAll("\\[", "<code>")
-            .replaceAll("]", "</code>");
+            .replace("[", "<code>")
+            .replace("]", "</code>");
     }
 
     private static Helper<Object> unwrapOptional() {
