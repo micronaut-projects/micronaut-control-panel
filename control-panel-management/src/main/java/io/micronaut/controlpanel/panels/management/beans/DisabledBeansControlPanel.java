@@ -21,6 +21,7 @@ import io.micronaut.context.annotation.Requires;
 import io.micronaut.controlpanel.core.AbstractControlPanel;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.core.annotation.ReflectiveAccess;
+import io.micronaut.core.annotation.TypeHint;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.inject.BeanDefinition;
 import io.micronaut.runtime.context.scope.Refreshable;
@@ -79,5 +80,6 @@ public class DisabledBeansControlPanel extends AbstractControlPanel<DisabledBean
      * @param disabledBeans the collection of disabled beans
      */
     @ReflectiveAccess
+    @TypeHint(value = { DisabledBean.class }, accessType = TypeHint.AccessType.ALL_PUBLIC)
     public record Body(Collection<DisabledBean<?>> disabledBeans) { }
 }
