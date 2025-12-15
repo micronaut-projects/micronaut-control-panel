@@ -17,7 +17,7 @@ class BeansControlPanelSpec extends Specification {
         then:
         panel.title == "Bean Definitions"
         panel.icon == "fa-plug"
-        panel.order == 30
+        panel.order == 0
         panel.body.micronautBeansByPackage()
         panel.body.otherBeansByPackage()
 

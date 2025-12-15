@@ -21,7 +21,7 @@ class DefaultControlPanelRepositorySpec extends Specification {
         def panels = repository.findAll()
 
         then:
-        panels.size() == 6
+        panels.size() == 7
     }
 
     void "it can find all by category"(String categoryId, int expectedPanels) {
@@ -36,7 +36,7 @@ class DefaultControlPanelRepositorySpec extends Specification {
 
         where:
         categoryId                      || expectedPanels
-        ControlPanel.Category.MAIN.id() || 5
+        ControlPanel.Category.MAIN.id() || 4
         "application"                   || 1
     }
 
@@ -69,7 +69,7 @@ class DefaultControlPanelRepositorySpec extends Specification {
         def categories = repository.findAllCategories()
 
         then:
-        categories.size() == 2
+        categories.size() == 3
     }
 
     void "it can find one category by id"(String categoryId, boolean expectedIsPresent) {
