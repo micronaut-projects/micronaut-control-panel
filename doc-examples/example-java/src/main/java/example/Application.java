@@ -7,7 +7,6 @@ import io.micronaut.cache.infinispan.InfinispanCacheManager;
 import io.micronaut.context.ApplicationContextBuilder;
 import io.micronaut.context.ApplicationContextConfigurer;
 import io.micronaut.context.annotation.ContextConfigurer;
-import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.event.StartupEvent;
 import io.micronaut.core.util.NativeImageUtils;
 import org.jspecify.annotations.NonNull;

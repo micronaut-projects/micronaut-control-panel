@@ -18,12 +18,12 @@ class ControlPanelControllerSpec extends Specification {
         def model = controller.index().body().model.get()
 
         then:
-        model.categories().size() == 2
+        model.categories().size() == 3
         model.applicationName() == "test-application"
         model.activeEnvironments() == ["test"] as Set
         model.contentView() == Model.ContentView.INDEX
         model.ext()["currentCategory"] == ControlPanel.Category.MAIN
-        model.ext()["controlPanels"].size() == 5
+        model.ext()["controlPanels"].size() == 4
     }
 
     void "test the by category view"(String categoryId, int expectedControlPanels) {
@@ -31,7 +31,7 @@ class ControlPanelControllerSpec extends Specification {
         def model = controller.byCategory(categoryId).body().model.get()
 
         then:
-        model.categories().size() == 2
+        model.categories().size() == 3
         model.applicationName() == "test-application"
         model.activeEnvironments() == ["test"] as Set
         model.contentView() == Model.ContentView.INDEX
@@ -40,7 +40,7 @@ class ControlPanelControllerSpec extends Specification {
 
         where:
         categoryId                          || expectedControlPanels
-        ControlPanel.Category.MAIN.id()     || 5
+        ControlPanel.Category.MAIN.id()     || 4
         "application"                       || 1
     }
 
@@ -49,7 +49,7 @@ class ControlPanelControllerSpec extends Specification {
         def model = controller.detail(controlPanelName).body().model.get()
 
         then:
-        model.categories().size() == 2
+        model.categories().size() == 3
         model.applicationName() == "test-application"
         model.activeEnvironments() == ["test"] as Set
         model.contentView() == Model.ContentView.DETAIL
@@ -59,7 +59,6 @@ class ControlPanelControllerSpec extends Specification {
         where:
         controlPanelName                     || expectedCurrentCategoryId
         "routes"                             || ControlPanel.Category.MAIN.id()
-        "beans"                              || ControlPanel.Category.MAIN.id()
         "env"                                || ControlPanel.Category.MAIN.id()
         "loggers"                            || ControlPanel.Category.MAIN.id()
         "health"                             || ControlPanel.Category.MAIN.id()

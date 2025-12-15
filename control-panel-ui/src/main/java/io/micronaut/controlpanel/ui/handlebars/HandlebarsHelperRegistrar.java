@@ -71,12 +71,19 @@ class HandlebarsHelperRegistrar implements BeanCreatedEventListener<Handlebars> 
         handlebars.registerHelper("isMap", isMapHelper());
         handlebars.registerHelper("partialExists", partialExistsHelper(handlebars));
         handlebars.registerHelper("unwrapOptional", unwrapOptional());
+        handlebars.registerHelper("formatReason", formatReason());
 
         // Enable a high concurrency template cache and precompile all templates/partials available on the classpath
         enableCache(handlebars);
         precompileAllTemplates(handlebars);
 
         return handlebars;
+    }
+
+    private static Helper<String> formatReason() {
+        return (context, options) -> context
+            .replace("[", "<code>")
+            .replace("]", "</code>");
     }
 
     private static Helper<Object> unwrapOptional() {

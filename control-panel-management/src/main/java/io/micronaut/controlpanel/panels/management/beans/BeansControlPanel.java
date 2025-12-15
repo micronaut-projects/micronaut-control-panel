@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.micronaut.controlpanel.panels.management;
+package io.micronaut.controlpanel.panels.management.beans;
 
 import io.micronaut.context.BeanContext;
 import io.micronaut.context.annotation.Requires;
@@ -49,6 +49,7 @@ import java.util.stream.Collectors;
 public class BeansControlPanel extends AbstractControlPanel<BeansControlPanel.Body> {
 
     public static final String NAME = "beans";
+    public static final Category BEANS_CATEGORY = new Category(NAME, "Beans", "fa-plug");
     public static final String ENABLED_PROPERTY = ControlPanelConfiguration.PREFIX + "." + NAME + ".enabled";
 
     private static final Function<BeanDefinition<?>, String> BY_PACKAGE =
@@ -102,6 +103,11 @@ public class BeansControlPanel extends AbstractControlPanel<BeansControlPanel.Bo
             .filter(filter)
             .sorted(COMPARATOR_BY_NAME)
             .collect(Collectors.groupingBy(groupBy, LinkedHashMap::new, Collectors.mapping(beanDefinitionData::getData, Collectors.toList())));
+    }
+
+    @Override
+    public Category getCategory() {
+        return BEANS_CATEGORY;
     }
 
     /**

@@ -111,5 +111,14 @@
         "parameterTypes": []
       }
     ]
+  },
+  {
+    "name": "java.lang.Class",
+    "methods": [
+      {
+        "name": "getName",
+        "parameterTypes": []
+      }
+    ]
   }
 ]
