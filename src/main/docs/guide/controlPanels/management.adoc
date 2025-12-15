@@ -81,6 +81,12 @@ endpoints:
     sensitive: false
 ----
 
+=== Disabled Beans
+
+This panel shows all disabled beans, i.e., beans that have not met any of their
+https://docs.micronaut.io/latest/guide/#conditionalBeans[requirement conditions]. For each disabled bean, you can see
+the reasons why the bean was not loaded.
+
 === Logging Configuration
 
 This panel allows you to view and re-configure the logging levels without restarting the application. It relies on the
