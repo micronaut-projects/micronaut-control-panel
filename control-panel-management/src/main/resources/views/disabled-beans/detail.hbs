@@ -1,0 +1,33 @@
+{{#with controlPanel.body }}
+    <table id="disabledBeans" class="table table-bordered table-striped">
+        <thead>
+        <tr>
+            <th>Type</th>
+            <th>Reason(s)</th>
+        </tr>
+        </thead>
+    <tbody>
+    {{#each disabledBeans as |db|}}
+        <tr>
+            <td>
+                <code>{{ db.beanType.name }}</code>
+                {{#if db.qualifier}}
+                    <span class="badge badge-info">{{ db.qualifier }}</span>
+                {{/if}}
+            </td>
+            <td>
+                <ul>
+                    {{#each db.reasons as |reason|}}
+                        <li>{{{ formatReason reason }}}</li>
+                    {{/each}}
+                </ul>
+            </td>
+        </tr>
+    {{/each}}
+    </tbody>
+    </table>
+{{/with}}
+
+<script>
+    new DataTable('#disabledBeans');
+</script>
