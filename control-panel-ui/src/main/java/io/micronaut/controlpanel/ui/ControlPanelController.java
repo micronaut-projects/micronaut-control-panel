@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static io.micronaut.controlpanel.util.ControlPanelUtils.computeControlPanelPath;
@@ -59,20 +60,6 @@ public class ControlPanelController implements ControlPanelApi {
     private final String appPath;
     private final String controlPanelPath;
 
-    @Deprecated
-    public ControlPanelController(ControlPanelRepository repository, BeanContext beanContext,
-                                  @Nullable RefreshEndpoint refreshEndpoint,
-                                  @Nullable ServerStopEndpoint stopEndpoint) {
-        ApplicationConfiguration applicationConfiguration = beanContext.getBean(ApplicationConfiguration.class);
-        Environment environment = beanContext.getBean(Environment.class);
-        this.repository = repository;
-        this.applicationName = applicationConfiguration.getName().orElse("(unnamed)");
-        this.activeEnvironments = environment.getActiveNames();
-        this.canRefresh = EndpointUtils.canRefresh(refreshEndpoint, beanContext);
-        this.canStop = stopEndpoint != null;
-        this.appPath = "/";
-        this.controlPanelPath = ControlPanelModuleConfiguration.DEFAULT_PATH;
-    }
 
     @Inject
     public ControlPanelController(ControlPanelRepository repository, BeanContext beanContext,
@@ -91,6 +78,24 @@ public class ControlPanelController implements ControlPanelApi {
         this.controlPanelPath = computeControlPanelPath(appPath, configuration.getPath());
     }
 
+    private record CommonData(List<ControlPanel.Category> categories, Map<String, Object> baseExtra) {}
+
+    private CommonData buildCommonData() {
+        var categories = repository.findAllCategories();
+        var categoryCount = categories
+            .stream()
+            .collect(Collectors.toMap(
+                ControlPanel.Category::id,
+                category -> repository.countByCategoryId(category.id())
+            ));
+        var baseExtra = Map.of(
+            "controlPanelPath", controlPanelPath,
+            "appPath", appPath,
+            "categoryCount", categoryCount
+        );
+        return new CommonData(categories, baseExtra);
+    }
+
     @Override
     public HttpResponse<ModelAndView<?>> index() {
         return byCategory(ControlPanel.Category.MAIN.id());
@@ -98,23 +103,15 @@ public class ControlPanelController implements ControlPanelApi {
 
     @Override
     public HttpResponse<ModelAndView<?>> byCategory(String categoryId) {
-        Map<String, Object> extraProperties = new HashMap<>();
-        var categories = repository.findAllCategories();
-        var categoryCount = categories
-            .stream()
-            .collect(Collectors.toMap(ControlPanel.Category::id, category -> repository.countByCategoryId(category.id())));
-
+        var common = buildCommonData();
         var controlPanels = repository.findAllByCategory(categoryId);
-        extraProperties.put("controlPanels", controlPanels);
-        extraProperties.put("controlPanelPath", controlPanelPath);
-        extraProperties.put("appPath", appPath);
-        extraProperties.put("categoryCount", categoryCount);
-
         var optionalCategory = repository.findCategoryById(categoryId);
 
         if (optionalCategory.isPresent()) {
+            var extraProperties = new HashMap<>(common.baseExtra());
+            extraProperties.put("controlPanels", controlPanels);
             extraProperties.put("currentCategory", optionalCategory.get());
-            var model = new Model(categories, applicationName, activeEnvironments, Model.ContentView.INDEX,
+            var model = new Model(common.categories(), applicationName, activeEnvironments, Model.ContentView.INDEX,
                 canRefresh, canStop, extraProperties);
             return HttpResponse.ok(new ModelAndView<>("layout", model));
         } else {
@@ -124,22 +121,14 @@ public class ControlPanelController implements ControlPanelApi {
 
     @Override
     public HttpResponse<ModelAndView<?>> detail(String controlPanelName) {
-        var categories = repository.findAllCategories();
-        var categoryCount = categories
-            .stream()
-            .collect(Collectors.toMap(ControlPanel.Category::id, category -> repository.countByCategoryId(category.id())));
-
-        Map<String, Object> extraProperties = new HashMap<>();
-        extraProperties.put("controlPanelPath", controlPanelPath);
-        extraProperties.put("appPath", appPath);
-        extraProperties.put("categoryCount", categoryCount);
-
+        var common = buildCommonData();
         var optionalControlPanel = repository.findByName(controlPanelName);
         if (optionalControlPanel.isPresent()) {
+            var extraProperties = new HashMap<>(common.baseExtra());
             extraProperties.put("controlPanel", optionalControlPanel.get());
             var optionalCategory = repository.findCategoryById(optionalControlPanel.get().getCategory().id());
             optionalCategory.ifPresent(category -> extraProperties.put("currentCategory", category));
-            var model = new Model(categories, applicationName, activeEnvironments, Model.ContentView.DETAIL,
+            var model = new Model(common.categories(), applicationName, activeEnvironments, Model.ContentView.DETAIL,
                 canRefresh, canStop, extraProperties);
             return HttpResponse.ok(new ModelAndView<>("layout", model));
         } else {
