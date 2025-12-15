@@ -30,6 +30,8 @@ import jakarta.inject.Singleton;
 import java.util.Collection;
 import java.util.Comparator;
 
+import static io.micronaut.controlpanel.panels.management.beans.BeansControlPanel.BEANS_CATEGORY;
+
 /**
  * A control panel that displays information about disabled beans in the application context.
  *
@@ -63,7 +65,7 @@ public class DisabledBeansControlPanel extends AbstractControlPanel<DisabledBean
 
     @Override
     public Category getCategory() {
-        return new Category(BeansControlPanel.NAME, "Beans", "fa-plug");
+        return BEANS_CATEGORY;
     }
 
     @Override

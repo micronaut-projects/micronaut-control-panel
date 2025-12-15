@@ -49,6 +49,7 @@ import java.util.stream.Collectors;
 public class BeansControlPanel extends AbstractControlPanel<BeansControlPanel.Body> {
 
     public static final String NAME = "beans";
+    public static final Category BEANS_CATEGORY = new Category(NAME, "Beans", "fa-plug");
     public static final String ENABLED_PROPERTY = ControlPanelConfiguration.PREFIX + "." + NAME + ".enabled";
 
     private static final Function<BeanDefinition<?>, String> BY_PACKAGE =
@@ -106,7 +107,7 @@ public class BeansControlPanel extends AbstractControlPanel<BeansControlPanel.Bo
 
     @Override
     public Category getCategory() {
-        return new Category(NAME, "Beans", "fa-plug");
+        return BEANS_CATEGORY;
     }
 
     /**
