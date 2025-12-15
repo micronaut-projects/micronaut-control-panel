@@ -166,7 +166,10 @@
                         <li class="nav-item">
                             <a href="{{ext.controlPanelPath}}/categories/{{ category.id }}" class="nav-link {{#eq currentCategory.id category.id}}active{{/eq}}">
                                 <i class="nav-icon fas {{ category.iconClass }}"></i>
-                                <p>{{ category.name }}</p>
+                                <p>
+                                    {{ category.name }}
+                                    <span class="badge badge-info right">{{ lookup ext.categoryCount category.id }}</span>
+                                </p>
                             </a>
                         </li>
                     {{/each}}

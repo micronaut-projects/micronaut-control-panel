@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static io.micronaut.controlpanel.util.ControlPanelUtils.computeControlPanelPath;
 
@@ -99,11 +100,15 @@ public class ControlPanelController implements ControlPanelApi {
     public HttpResponse<ModelAndView<?>> byCategory(String categoryId) {
         Map<String, Object> extraProperties = new HashMap<>();
         var categories = repository.findAllCategories();
+        var categoryCount = categories
+            .stream()
+            .collect(Collectors.toMap(ControlPanel.Category::id, category -> repository.countByCategoryId(category.id())));
 
         var controlPanels = repository.findAllByCategory(categoryId);
         extraProperties.put("controlPanels", controlPanels);
         extraProperties.put("controlPanelPath", controlPanelPath);
         extraProperties.put("appPath", appPath);
+        extraProperties.put("categoryCount", categoryCount);
 
         var optionalCategory = repository.findCategoryById(categoryId);
 
@@ -120,9 +125,14 @@ public class ControlPanelController implements ControlPanelApi {
     @Override
     public HttpResponse<ModelAndView<?>> detail(String controlPanelName) {
         var categories = repository.findAllCategories();
+        var categoryCount = categories
+            .stream()
+            .collect(Collectors.toMap(ControlPanel.Category::id, category -> repository.countByCategoryId(category.id())));
+
         Map<String, Object> extraProperties = new HashMap<>();
         extraProperties.put("controlPanelPath", controlPanelPath);
         extraProperties.put("appPath", appPath);
+        extraProperties.put("categoryCount", categoryCount);
 
         var optionalControlPanel = repository.findByName(controlPanelName);
         if (optionalControlPanel.isPresent()) {

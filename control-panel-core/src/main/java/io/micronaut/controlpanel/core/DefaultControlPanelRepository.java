@@ -81,6 +81,13 @@ public class DefaultControlPanelRepository implements ControlPanelRepository {
             .findFirst();
     }
 
+    @Override
+    public long countByCategoryId(String categoryId) {
+        return getControlPanels()
+            .filter(controlPanel -> controlPanel.getCategory().id().equals(categoryId))
+            .count();
+    }
+
     @SuppressWarnings("rawtypes")
     private Stream<ControlPanel> getControlPanels() {
         Comparator<ControlPanel> byOrder = Comparator.comparing(ControlPanel::getOrder);
