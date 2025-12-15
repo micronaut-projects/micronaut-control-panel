@@ -17,7 +17,7 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 class ControlPanelE2ETest extends AbstractE2ETest {
 
     @Test
-    void testDashboard(Page page) throws InterruptedException {
+    void testDashboard(Page page) {
         page.navigate(baseUrl());
         var body = body(page);
 
