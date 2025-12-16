@@ -29,6 +29,9 @@ import java.net.URL;
 import java.util.Properties;
 import java.util.function.Function;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * A {@link ApplicationContextConfigurer} that adds a {@link io.micronaut.context.annotation.PropertySource}
  * to the application context with all the control panel configuration properties.
@@ -52,7 +55,10 @@ public class ControlPanelContextConfigurer implements ApplicationContextConfigur
                 accumulator.putAll(properties);
                 return accumulator;
             }).orElse(new Properties());
-        var propertySource = new MapPropertySource(PROPERTY_SOURCE_NAME, result) {
+        Map<String, Object> map = new HashMap<>();
+        result.stringPropertyNames().forEach(key -> map.put(key, result.get(key)));
+
+        var propertySource = new MapPropertySource(PROPERTY_SOURCE_NAME, map) {
             @Override
             public int getOrder() {
                 return SystemPropertiesPropertySource.POSITION + 50;
