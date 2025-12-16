@@ -10,7 +10,7 @@ val sonatypePluginConfigured = ossIndexUsername != null && ossIndexPassword != n
 ossIndexAudit {
     excludeCoordinates.addAll(listOf(
         "com.google.guava:guava:18.0",
-        "io.netty:netty-codec-http:4.2.7.Final",            // Wait for upstream version bump
+        "io.netty:netty-codec-http:4.2.9.Final",            // Wait for upstream version bump
         "io.projectreactor.netty:reactor-netty-http:1.3.1" // https://ossindex.sonatype.org/vulnerability/CVE-2025-22227?component-type=maven&component-name=io.projectreactor.netty%2Freactor-netty-http&utm_source=ossindex-client&utm_medium=integration&utm_content=1.8.2
     ))
     if (sonatypePluginConfigured) {
