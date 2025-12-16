@@ -89,6 +89,23 @@ class DefaultControlPanelRepositorySpec extends Specification {
         "not-found"                     || false
     }
 
+    void "it can count by category id"(String categoryId, long expectedCount) {
+        given:
+        def repository = ctx.getBean(ControlPanelRepository)
+
+        when:
+        def count = repository.countByCategoryId(categoryId)
+
+        then:
+        count == expectedCount
+
+        where:
+        categoryId                      || expectedCount
+        ControlPanel.Category.MAIN.id() || 4L
+        "application"                   || 1L
+        "nonexistent"                   || 0L
+    }
+
     @Singleton
     static class DummyControlPanel implements ControlPanel<String> {
 

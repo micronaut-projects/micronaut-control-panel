@@ -16,6 +16,7 @@
 package io.micronaut.controlpanel.core;
 
 import io.micronaut.context.annotation.DefaultImplementation;
+import io.micronaut.controlpanel.core.ControlPanel.Category;
 
 import java.util.List;
 import java.util.Optional;
@@ -49,15 +50,22 @@ public interface ControlPanelRepository {
     Optional<ControlPanel> findByName(String name);
 
     /**
-     * @return all the available {@link ControlPanel.Category} instances.
+     * @return all the available {@link Category} instances.
      */
-    List<ControlPanel.Category> findAllCategories();
+    List<Category> findAllCategories();
 
     /**
      * @param categoryId the category id
      *
-     * @return the {@link ControlPanel.Category} instance with the given id.
+     * @return the {@link Category} instance with the given id.
      */
-    Optional<ControlPanel.Category> findCategoryById(String categoryId);
+    Optional<Category> findCategoryById(String categoryId);
+
+    /**
+     * @param categoryId the category id
+     * @return the number of {@link ControlPanel} instances associated with the given category.
+     * @since 2.0.0
+     */
+    long countByCategoryId(String categoryId);
 
 }
