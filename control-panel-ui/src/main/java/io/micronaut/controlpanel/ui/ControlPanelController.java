@@ -60,7 +60,6 @@ public class ControlPanelController implements ControlPanelApi {
     private final String appPath;
     private final String controlPanelPath;
 
-
     @Inject
     public ControlPanelController(ControlPanelRepository repository, BeanContext beanContext,
                                   @Nullable RefreshEndpoint refreshEndpoint,
@@ -76,24 +75,6 @@ public class ControlPanelController implements ControlPanelApi {
         this.canStop = stopEndpoint != null;
         this.appPath = Optional.ofNullable(serverConfiguration.getContextPath()).orElse("");
         this.controlPanelPath = computeControlPanelPath(appPath, configuration.getPath());
-    }
-
-    private record CommonData(List<ControlPanel.Category> categories, Map<String, Object> baseExtra) {}
-
-    private CommonData buildCommonData() {
-        var categories = repository.findAllCategories();
-        var categoryCount = categories
-            .stream()
-            .collect(Collectors.toMap(
-                ControlPanel.Category::id,
-                category -> repository.countByCategoryId(category.id())
-            ));
-        var baseExtra = Map.of(
-            "controlPanelPath", controlPanelPath,
-            "appPath", appPath,
-            "categoryCount", categoryCount
-        );
-        return new CommonData(categories, baseExtra);
     }
 
     @Override
@@ -135,4 +116,22 @@ public class ControlPanelController implements ControlPanelApi {
             return HttpResponse.notFound();
         }
     }
+
+    private CommonData buildCommonData() {
+        var categories = repository.findAllCategories();
+        var categoryCount = categories
+            .stream()
+            .collect(Collectors.toMap(
+                ControlPanel.Category::id,
+                category -> repository.countByCategoryId(category.id())
+            ));
+        var baseExtra = Map.of(
+            "controlPanelPath", controlPanelPath,
+            "appPath", appPath,
+            "categoryCount", categoryCount
+        );
+        return new CommonData(categories, baseExtra);
+    }
+
+    private record CommonData(List<ControlPanel.Category> categories, Map<String, Object> baseExtra) { }
 }
