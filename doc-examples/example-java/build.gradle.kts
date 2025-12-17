@@ -6,12 +6,14 @@ plugins {
 
 dependencies {
     annotationProcessor(mnSerde.micronaut.serde.processor)
+    annotationProcessor(mnData.micronaut.data.processor)
     implementation(mnSerde.micronaut.serde.jackson)
 
     runtimeOnly(projects.micronautControlPanelUi)
     implementation(projects.micronautControlPanelManagement)
     implementation(mn.micronaut.management)
 
+    // Object Storage
     implementation(projects.micronautControlPanelObjectStorage)
     implementation(mnObjectStorage.micronaut.`object`.storage.local)
     implementation(mnObjectStorage.micronaut.`object`.storage.aws)
@@ -19,12 +21,18 @@ dependencies {
     implementation(mnObjectStorage.micronaut.`object`.storage.gcp)
     implementation(mnObjectStorage.micronaut.`object`.storage.oracle.cloud)
 
+    // Cache
     implementation(projects.micronautControlPanelCache)
     runtimeOnly(mnCache.micronaut.cache.management)
     implementation(mnCache.micronaut.cache.caffeine)
     implementation(mnCache.micronaut.cache.ehcache)
     implementation(mnCache.micronaut.cache.hazelcast)
     implementation(mnCache.micronaut.cache.infinispan)
+
+    //Datasource
+    implementation(mnSql.micronaut.jdbc.hikari)
+    implementation(mnData.micronaut.data.jdbc)
+    runtimeOnly(mnSql.ojdbc11)
 
     runtimeOnly(mnLogging.logback.classic)
     runtimeOnly(mn.snakeyaml)
@@ -38,5 +46,6 @@ dependencies {
 micronaut {
     testResources {
         additionalModules.add(KnownModules.CONTROL_PANEL)
+        additionalModules.add(KnownModules.JDBC_ORACLE_FREE)
     }
 }
