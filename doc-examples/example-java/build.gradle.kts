@@ -30,6 +30,7 @@ dependencies {
     implementation(mnCache.micronaut.cache.infinispan)
 
     //Datasource
+    implementation(projects.micronautControlPanelDatasource)
     implementation(mnSql.micronaut.jdbc.hikari)
     implementation(mnData.micronaut.data.jdbc)
     runtimeOnly(mnSql.ojdbc11)

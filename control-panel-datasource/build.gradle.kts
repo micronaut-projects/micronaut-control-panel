@@ -15,6 +15,9 @@ micronaut {
 dependencies {
     api(projects.micronautControlPanelCore)
 
+    implementation(mnSql.micronaut.jdbc)
+    implementation(mnData.micronaut.data.connection.jdbc)
+
     testImplementation(mnTest.micronaut.test.junit5)
     testRuntimeOnly(mnTest.junit.jupiter.engine)
 

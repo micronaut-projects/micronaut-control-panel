@@ -48,7 +48,7 @@ public class SampleDataLoader {
             statement.execute(dataSql);
             LOG.info("Loaded sample data");
         } catch (SQLException | IOException e) {
-            //yummy yummy
+            LOG.error(e.getMessage(), e);
         }
     }
 

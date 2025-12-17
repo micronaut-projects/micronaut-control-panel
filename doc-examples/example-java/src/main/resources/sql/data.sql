@@ -1,10 +1,11 @@
-insert into team(name, stadium) values ('Real Madrid', 'Santiago Bernabéu');
-insert into team(name, stadium) values ('FC Barcelona', 'Camp Nou');
-insert into team(name, stadium) values ('Manchester United', 'Old Trafford');
-insert into team(name, stadium) values ('Chelsea', 'Stamford Bridge');
-insert into team(name, stadium) values ('Paris Saint-Germain', 'Parc des Princes');
-insert into team(name, stadium) values ('Olympique de Marseille', 'Stade Vélodrome');
-insert into team(name, stadium) values ('Bayern Munich', 'Allianz Arena');
-insert into team(name, stadium) values ('Borussia Dortmund', 'Signal Iduna Park');
-insert into team(name, stadium) values ('Juventus', 'Juventus Stadium');
-insert into team(name, stadium) values ('Inter Milan', 'Giuseppe Meazza');
+INSERT INTO team(name, stadium)
+VALUES ('Real Madrid', 'Santiago Bernabéu'),
+       ('FC Barcelona', 'Camp Nou'),
+       ('Manchester United', 'Old Trafford'),
+       ('Chelsea', 'Stamford Bridge'),
+       ('Paris Saint-Germain', 'Parc des Princes'),
+       ('Olympique de Marseille', 'Stade Vélodrome'),
+       ('Bayern Munich', 'Allianz Arena'),
+       ('Borussia Dortmund', 'Signal Iduna Park'),
+       ('Juventus', 'Juventus Stadium'),
+       ('Inter Milan', 'Giuseppe Meazza')
