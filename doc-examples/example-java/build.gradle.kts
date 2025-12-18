@@ -34,6 +34,8 @@ dependencies {
     implementation(mnSql.micronaut.jdbc.hikari)
     implementation(mnData.micronaut.data.jdbc)
     runtimeOnly(mnSql.ojdbc11)
+//    runtimeOnly(mnSql.h2)
+    runtimeOnly(mnSql.postgresql)
 
     runtimeOnly(mnLogging.logback.classic)
     runtimeOnly(mn.snakeyaml)
@@ -48,5 +50,6 @@ micronaut {
     testResources {
         additionalModules.add(KnownModules.CONTROL_PANEL)
         additionalModules.add(KnownModules.JDBC_ORACLE_FREE)
+        additionalModules.add(KnownModules.JDBC_POSTGRESQL)
     }
 }

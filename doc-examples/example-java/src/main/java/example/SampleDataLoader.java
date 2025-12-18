@@ -10,10 +10,13 @@ import io.micronaut.data.connection.annotation.Connectable;
 import io.micronaut.runtime.event.annotation.EventListener;
 import io.micronaut.scheduling.TaskExecutors;
 import io.micronaut.scheduling.annotation.Async;
+import io.micronaut.transaction.annotation.Transactional;
+import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.sql.DataSource;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -30,14 +33,14 @@ public class SampleDataLoader {
     private final Connection connection;
     private final ResourceResolver resourceResolver;
 
-    public SampleDataLoader(Connection connection, ResourceResolver resourceResolver) throws IOException {
+    public SampleDataLoader(@Named("my-oracle") Connection connection, ResourceResolver resourceResolver) throws SQLException {
         this.connection = connection;
         this.resourceResolver = resourceResolver;
     }
 
     @EventListener
     @Async(TaskExecutors.BLOCKING)
-    @Connectable
+    @Connectable("my-oracle")
     public void loadData(StartupEvent event) {
         try (var statement = connection.createStatement()) {
             var createSql = loadSql("create.sql");

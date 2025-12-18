@@ -1,30 +1,31 @@
 package io.micronaut.controlpanel.panels.datasource;
 
-import io.micronaut.data.connection.annotation.Connectable;
-import jakarta.inject.Singleton;
+import io.micronaut.context.annotation.EachBean;
+import io.micronaut.context.annotation.Parameter;
+import io.micronaut.data.connection.jdbc.advice.DelegatingDataSource;
 
-import java.sql.Connection;
+import javax.sql.DataSource;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-@Singleton
+@EachBean(DataSource.class)
 public class DataSourceExplorer {
 
-    private final Connection connection;
+    private final DataSource dataSource;
 
-    public DataSourceExplorer(final Connection connection) {
-        this.connection = connection;
+    public DataSourceExplorer(@Parameter DataSource dataSource) {
+        this.dataSource = DelegatingDataSource.unwrapDataSource(dataSource);
     }
 
-    @Connectable
     public List<String> findTables() {
         List<String> tables = new ArrayList<>();
         try {
+            var connection = dataSource.getConnection();
             DatabaseMetaData dbMetaData = connection.getMetaData();
-            try (ResultSet tablesRs = dbMetaData.getTables(null, null, "%", new String[] { "TABLE" })) {
+            try (ResultSet tablesRs = dbMetaData.getTables(connection.getCatalog(), connection.getSchema(), "%", new String[] { "TABLE" })) {
                 while (tablesRs.next()) {
                     tables.add(tablesRs.getString("TABLE_NAME"));
                 }
