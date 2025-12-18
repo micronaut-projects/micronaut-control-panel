@@ -29,8 +29,8 @@ public class Application {
         public void configure(@NonNull ApplicationContextBuilder builder) {
             builder.defaultEnvironments("dev");
             if (!NativeImageUtils.inImageCode()) {
-                builder.defaultEnvironments("hazelcast");
-                builder.defaultEnvironments("infinispan");
+//                builder.defaultEnvironments("hazelcast");
+//                builder.defaultEnvironments("infinispan");
             }
         }
     }
