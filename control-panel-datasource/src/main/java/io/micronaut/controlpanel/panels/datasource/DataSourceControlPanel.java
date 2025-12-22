@@ -17,6 +17,7 @@ package io.micronaut.controlpanel.panels.datasource;
 
 import io.micronaut.context.annotation.EachBean;
 import io.micronaut.context.annotation.Parameter;
+import io.micronaut.context.env.Environment;
 import io.micronaut.controlpanel.core.AbstractEachBeanControlPanel;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.core.annotation.ReflectiveAccess;
@@ -24,6 +25,7 @@ import jakarta.inject.Named;
 
 import javax.sql.DataSource;
 import java.util.List;
+import java.util.Map;
 
 @EachBean(DataSource.class)
 public class DataSourceControlPanel extends AbstractEachBeanControlPanel<DataSourceControlPanel.Body> {
@@ -31,16 +33,17 @@ public class DataSourceControlPanel extends AbstractEachBeanControlPanel<DataSou
     public static final String NAME = "datasource";
     public static final String ICON_CLASS = "fa-database";
 
-    private final DataSource dataSource;
+    private final DataSourceInfo dataSourceInfo;
     private final String beanName;
     private final List<String> tables;
 
-    public DataSourceControlPanel(@Parameter DataSource dataSource,
-                                  @Parameter String beanName,
+    public DataSourceControlPanel(@Parameter String beanName,
                                   @Parameter DataSourceExplorer dataSourceExplorer,
+                                  Environment environment,
                                   @Named(NAME) ControlPanelConfiguration configuration) {
         super(NAME, configuration);
-        this.dataSource = dataSource;
+        var jdbUrl = environment.getProperty("datasources.%s.url".formatted(beanName), String.class, "");
+        this.dataSourceInfo = new DataSourceInfo(beanName, jdbUrl);
         this.beanName = beanName;
         this.tables = dataSourceExplorer.findTables();
     }
@@ -57,7 +60,7 @@ public class DataSourceControlPanel extends AbstractEachBeanControlPanel<DataSou
 
     @Override
     public Body getBody() {
-        return new Body(dataSource, tables);
+        return new Body(dataSourceInfo, tables);
     }
 
     @Override
@@ -76,5 +79,27 @@ public class DataSourceControlPanel extends AbstractEachBeanControlPanel<DataSou
     }
 
     @ReflectiveAccess
-    public record Body(DataSource dataSource, List<String> tables) { }
+    public record Body(DataSourceInfo dataSourceInfo, List<String> tables) { }
+
+    @ReflectiveAccess
+    public record Column(String columnName, String columnType, int columnSize, String nullable, boolean binary) {
+    }
+
+    @ReflectiveAccess
+    public record ForeignKey(String columnName, String referencedTable, String referencedColumn) {
+    }
+
+    @ReflectiveAccess
+    public record Table(String tableSchema, String tableName, List<String> primaryKeys, List<Column> columns,
+                                List<ForeignKey> foreignKeys) {
+    }
+
+    @ReflectiveAccess
+    public record DataSourceInfo(String name, String jdbcUrl) {
+    }
+
+    @ReflectiveAccess
+    public record DataSet(List<String> cols, List<Map<String, String>> data, String error, String message,
+                          int totalNumberOfElements) {
+    }
 }

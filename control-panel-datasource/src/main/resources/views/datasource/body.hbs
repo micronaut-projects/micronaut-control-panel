@@ -1,3 +1,9 @@
-<p class="card-text">
-    <strong>{{badge}}</strong> tables in the datasource.
-</p>
+{{#with controlPanel.body }}
+    <p class="card-text">
+        <strong>{{badge}}</strong> tables in the datasource.
+    </p>
+    <p class="card-text">
+        <strong>URL:</strong>
+        <code>{{ dataSourceInfo.jdbcUrl }}</code>
+    </p>
+{{/with}}

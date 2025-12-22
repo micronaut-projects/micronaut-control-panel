@@ -1,0 +1,55 @@
+{{#with controlPanel.body }}
+
+    <div class="row">
+        <div class="col-md-2">
+            <div class="card card-light">
+                <div class="card-header">
+                    <h3 class="card-title">Tables</h3>
+                </div>
+                <div class="card-body" id="jstree">
+                    <ul>
+                        {{#each tables as |table|}}
+                            <li data-jstree='{"icon":"bi bi-table text-primary"}'>{{ table }}</li>
+                        {{/each}}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-10">
+            <div class="card card-light">
+                <div class="card-header">
+                    <h3 class="card-title">SQL query</h3>
+                    <div class="card-tools">
+                        <div class="input-group input-group-sm">
+                            <div class="input-group-append">
+                                <div class="btn btn-success">
+                                    <i class="fas fa-play"></i>
+                                    Run
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="sql-console">
+                    </div>
+                </div>
+            </div>
+            <div class="card card-light">
+                <div class="card-header">
+                    <h3 class="card-title">Query results</h3>
+                </div>
+                <div class="card-body">
+                    Query results here.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(function () {
+            $('#jstree').jstree();
+        });
+    </script>
+
+{{/with}}
