@@ -98,20 +98,11 @@ public class DataSourceControlPanel extends AbstractEachBeanControlPanel<DataSou
      * @param size The column size
      * @param nullable Whether the column is nullable
      * @param binary Whether the column is binary
+     * @param isPrimaryKey Whether the column is a primary key
+     * @param isForeignKey Whether the column is a foreign key
      */
     @ReflectiveAccess
-    public record Column(String name, ColumnType type, int size, String nullable, boolean binary) {
-    }
-
-    /**
-     * Foreign key metadata.
-     *
-     * @param columnName The local column name
-     * @param referencedTable The referenced table
-     * @param referencedColumn The referenced column
-     */
-    @ReflectiveAccess
-    public record ForeignKey(String columnName, String referencedTable, String referencedColumn) {
+    public record Column(String name, ColumnType type, int size, String nullable, boolean binary, boolean isPrimaryKey, boolean isForeignKey) {
     }
 
     /**
@@ -119,13 +110,10 @@ public class DataSourceControlPanel extends AbstractEachBeanControlPanel<DataSou
      *
      * @param schema The table schema
      * @param name The table name
-     * @param primaryKeys The primary keys
      * @param columns The columns
-     * @param foreignKeys The foreign keys
      */
     @ReflectiveAccess
-    public record Table(String schema, String name, List<String> primaryKeys, List<Column> columns,
-                        List<ForeignKey> foreignKeys) {
+    public record Table(String schema, String name, List<Column> columns) {
     }
 
     /**

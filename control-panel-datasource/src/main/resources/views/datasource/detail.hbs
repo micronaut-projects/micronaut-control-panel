@@ -5,6 +5,15 @@
             <div class="card card-light">
                 <div class="card-header">
                     <h3 class="card-title">Tables</h3>
+                    <div class="card-tools">
+                        <div class="input-group input-group-sm">
+                            <div class="input-group-append">
+                                <div class="btn btn-primary">
+                                    <i class="fas fa-diagram-project"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="card-body" id="jstree">
                     <ul>
@@ -12,7 +21,11 @@
                             <li data-jstree='{"type":"table"}' data-table-name="{{ table.name }}">{{ table.name }}
                                 <ul>
                                     {{#each table.columns as |col|}}
-                                        <li data-jstree='{"type":"{{col.type}}"}'>{{ col.name }}</li>
+                                        <li data-jstree='{"type":"{{col.type}}"}'>
+                                            {{ col.name }}
+                                            {{#if col.isPrimaryKey}}🔑{{/if}}
+                                            {{#if col.isForeignKey}}🔗{{/if}}
+                                        </li>
                                     {{/each}}
                                 </ul>
                             </li>
@@ -30,7 +43,6 @@
                             <div class="input-group-append">
                                 <div class="btn btn-success">
                                     <i class="fas fa-play"></i>
-                                    Run
                                 </div>
                             </div>
                         </div>
@@ -56,7 +68,6 @@
         $(function () {
             $('#jstree')
                     .on('select_node.jstree', function (event, data) {
-                        console.log(data);
                         if (data.node.data.tableName) {
                             select(data.node.data.tableName);
                         }

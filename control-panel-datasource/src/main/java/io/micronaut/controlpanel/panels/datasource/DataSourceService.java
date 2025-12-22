@@ -28,7 +28,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Service for a specific {@link DataSource}, providing metadata about tables, columns, keys, etc.
@@ -61,6 +63,27 @@ public class DataSourceService {
                     }
                     String tableName = tablesRs.getString("TABLE_NAME");
 
+                    // Get primary keys
+                    List<String> primaryKeysList = new ArrayList<>();
+                    try (ResultSet pkRs = dbMetaData.getPrimaryKeys(catalog, schema, tableName)) {
+                        while (pkRs.next()) {
+                            primaryKeysList.add(pkRs.getString("COLUMN_NAME"));
+                        }
+                    } catch (SQLException pkEx) {
+                        // Ignore
+                    }
+
+                    // Get foreign keys
+                    Set<String> foreignKeyColumns = new HashSet<>();
+                    try (ResultSet fkRs = dbMetaData.getImportedKeys(catalog, schema, tableName)) {
+                        while (fkRs.next()) {
+                            String fkcName = fkRs.getString("FKCOLUMN_NAME");
+                            foreignKeyColumns.add(fkcName);
+                        }
+                    } catch (SQLException fkEx) {
+                        // Ignore
+                    }
+
                     // Get columns
                     List<Column> columnsList = new ArrayList<>();
                     try (ResultSet colsRs = dbMetaData.getColumns(catalog, schema, tableName, "%")) {
@@ -75,36 +98,15 @@ public class DataSourceService {
                                     dataTypeInt == Types.LONGVARBINARY ||
                                     dataTypeInt == Types.BLOB;
                             ColumnType columnType = mapToColumnType(dataTypeInt, columnTypeStr);
-                            columnsList.add(new Column(columnName, columnType, columnSize, nullable, isBinary));
+                            boolean isPrimaryKey = primaryKeysList.contains(columnName);
+                            boolean isForeignKey = foreignKeyColumns.contains(columnName);
+                            columnsList.add(new Column(columnName, columnType, columnSize, nullable, isBinary, isPrimaryKey, isForeignKey));
                         }
                     } catch (SQLException colEx) {
                         // Ignore column errors
                     }
 
-                    // Get primary keys
-                    List<String> primaryKeysList = new ArrayList<>();
-                    try (ResultSet pkRs = dbMetaData.getPrimaryKeys(catalog, schema, tableName)) {
-                        while (pkRs.next()) {
-                            primaryKeysList.add(pkRs.getString("COLUMN_NAME"));
-                        }
-                    } catch (SQLException pkEx) {
-                        // Ignore
-                    }
-
-                    // Get foreign keys
-                    List<DataSourceControlPanel.ForeignKey> foreignKeysList = new ArrayList<>();
-                    try (ResultSet fkRs = dbMetaData.getImportedKeys(catalog, schema, tableName)) {
-                        while (fkRs.next()) {
-                            String fkcName = fkRs.getString("FKCOLUMN_NAME");
-                            String refTable = fkRs.getString("PKTABLE_NAME");
-                            String refColumn = fkRs.getString("PKCOLUMN_NAME");
-                            foreignKeysList.add(new DataSourceControlPanel.ForeignKey(fkcName, refTable, refColumn));
-                        }
-                    } catch (SQLException fkEx) {
-                        // Ignore
-                    }
-
-                    tables.add(new Table(schema, tableName, primaryKeysList, columnsList, foreignKeysList));
+                    tables.add(new Table(schema, tableName, columnsList));
                 }
             }
         } catch (SQLException e) {
