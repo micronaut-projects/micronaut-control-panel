@@ -36,21 +36,19 @@ public class DataSourceControlPanel extends AbstractEachBeanControlPanel<DataSou
     public static final String NAME = "datasource";
     public static final String ICON_CLASS = "fa-database";
 
-    private final DataSourceInfo dataSourceInfo;
     private final String beanName;
     private final List<Table> tables;
-    private final DataSourceService dataSourceService;
+    private final Body body;
 
     public DataSourceControlPanel(@Parameter String beanName,
                                   @Parameter DataSourceService dataSourceService,
                                   Environment environment,
                                   @Named(NAME) ControlPanelConfiguration configuration) {
         super(NAME, configuration);
-        var jdbUrl = environment.getProperty("datasources.%s.url".formatted(beanName), String.class, "");
-        this.dataSourceInfo = new DataSourceInfo(beanName, jdbUrl);
         this.beanName = beanName;
-        this.dataSourceService = dataSourceService;
         this.tables = dataSourceService.findTables();
+        var jdbUrl = environment.getProperty("datasources.%s.url".formatted(beanName), String.class, "");
+        this.body = new Body(new DataSourceInfo(beanName, jdbUrl), tables, dataSourceService.generateMermaidER(tables));
     }
 
     @Override
@@ -65,7 +63,7 @@ public class DataSourceControlPanel extends AbstractEachBeanControlPanel<DataSou
 
     @Override
     public Body getBody() {
-        return new Body(dataSourceInfo, tables, dataSourceService.generateMermaidER(tables));
+        return body;
     }
 
     @Override
@@ -87,32 +85,34 @@ public class DataSourceControlPanel extends AbstractEachBeanControlPanel<DataSou
      * Body of the control panel containing DataSource info and tables.
      *
      * @param dataSourceInfo The DataSource information
-     * @param tables The list of tables
-     * @param mermaidEr The Mermaid ER diagram code generated from the datasource
+     * @param tables         The list of tables
+     * @param mermaidEr      The Mermaid ER diagram code generated from the datasource
      */
     @ReflectiveAccess
-    public record Body(DataSourceInfo dataSourceInfo, List<Table> tables, String mermaidEr) { }
+    public record Body(DataSourceInfo dataSourceInfo, List<Table> tables, String mermaidEr) {
+    }
 
     /**
      * Database column metadata.
      *
-     * @param name The column name
-     * @param type The generic column type
-     * @param size The column size
-     * @param nullable Whether the column is nullable
-     * @param binary Whether the column is binary
+     * @param name         The column name
+     * @param type         The generic column type
+     * @param size         The column size
+     * @param nullable     Whether the column is nullable
+     * @param binary       Whether the column is binary
      * @param isPrimaryKey Whether the column is a primary key
      * @param isForeignKey Whether the column is a foreign key
      */
     @ReflectiveAccess
-    public record Column(String name, ColumnType type, int size, String nullable, boolean binary, boolean isPrimaryKey, boolean isForeignKey) {
+    public record Column(String name, ColumnType type, int size, String nullable, boolean binary,
+                         boolean isPrimaryKey, boolean isForeignKey) {
     }
 
     /**
      * Database table metadata.
      *
-     * @param schema The table schema
-     * @param name The table name
+     * @param schema  The table schema
+     * @param name    The table name
      * @param columns The columns
      */
     @ReflectiveAccess
@@ -122,7 +122,7 @@ public class DataSourceControlPanel extends AbstractEachBeanControlPanel<DataSou
     /**
      * DataSource information.
      *
-     * @param name The DataSource name
+     * @param name    The DataSource name
      * @param jdbcUrl The JDBC URL
      */
     @ReflectiveAccess
@@ -132,14 +132,15 @@ public class DataSourceControlPanel extends AbstractEachBeanControlPanel<DataSou
     /**
      * DataSet for query results.
      *
-     * @param cols The column names
-     * @param data The data rows
-     * @param error Any error
-     * @param message Any message
+     * @param cols                  The column names
+     * @param data                  The data rows
+     * @param error                 Any error
+     * @param message               Any message
      * @param totalNumberOfElements Total elements
      */
     @ReflectiveAccess
-    public record DataSet(List<String> cols, List<Map<String, String>> data, String error, String message,
+    public record DataSet(List<String> cols, List<Map<String, String>> data, String error,
+                          String message,
                           int totalNumberOfElements) {
     }
 
