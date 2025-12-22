@@ -9,10 +9,10 @@
                 <div class="card-body" id="jstree">
                     <ul>
                         {{#each tables as |table|}}
-                            <li data-jstree='{"icon":"bi bi-table text-primary"}' data-table-name="{{ table.name }}">{{ table.name }}
+                            <li data-jstree='{"type":"table"}' data-table-name="{{ table.name }}">{{ table.name }}
                                 <ul>
                                     {{#each table.columns as |col|}}
-                                        <li data-jstree='{"icon":"bi bi-layout-sidebar-inset"}'>{{ col.name }}</li>
+                                        <li data-jstree='{"type":"{{col.type}}"}'>{{ col.name }}</li>
                                     {{/each}}
                                 </ul>
                             </li>
@@ -61,7 +61,35 @@
                             select(data.node.data.tableName);
                         }
                     })
-                    .jstree();
+                    .jstree({
+                        "types" : {
+                            "default" : {
+                                "icon" : "bi bi-layout-sidebar-inset"
+                            },
+                            "table": {
+                                "icon" : "bi bi-table"
+                            },
+                            "TEXT" : {
+                                "icon" : "bi bi-type"
+                            },
+                            "NUMERIC" : {
+                                "icon" : "bi bi-123"
+                            },
+                            "DATE" : {
+                                "icon" : "bi bi-calendar-date"
+                            },
+                            "BLOB" : {
+                                "icon" : "bi bi-file-binary"
+                            },
+                            "BOOLEAN" : {
+                                "icon" : "bi bi-toggles"
+                            },
+                            "GENERIC" : {
+                                "icon" : "bi bi-layout-sidebar-inset"
+                            },
+                        },
+                        "plugins" : [ "types" ]
+                    });
         });
         function select(tableName) {
             const cm = window.codemirror;

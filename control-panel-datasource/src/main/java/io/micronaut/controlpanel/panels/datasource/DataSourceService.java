@@ -17,6 +17,8 @@ package io.micronaut.controlpanel.panels.datasource;
 
 import io.micronaut.context.annotation.EachBean;
 import io.micronaut.context.annotation.Parameter;
+import io.micronaut.controlpanel.panels.datasource.DataSourceControlPanel.Column;
+import io.micronaut.controlpanel.panels.datasource.DataSourceControlPanel.ColumnType;
 import io.micronaut.controlpanel.panels.datasource.DataSourceControlPanel.Table;
 import io.micronaut.data.connection.jdbc.advice.DelegatingDataSource;
 
@@ -29,7 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Explorer for a specific {@link DataSource}, providing metadata about tables, columns, keys, etc.
+ * Service for a specific {@link DataSource}, providing metadata about tables, columns, keys, etc.
  */
 @EachBean(DataSource.class)
 public class DataSourceService {
@@ -60,11 +62,11 @@ public class DataSourceService {
                     String tableName = tablesRs.getString("TABLE_NAME");
 
                     // Get columns
-                    List<DataSourceControlPanel.Column> columnsList = new ArrayList<>();
+                    List<Column> columnsList = new ArrayList<>();
                     try (ResultSet colsRs = dbMetaData.getColumns(catalog, schema, tableName, "%")) {
                         while (colsRs.next()) {
                             String columnName = colsRs.getString("COLUMN_NAME");
-                            String columnType = colsRs.getString("TYPE_NAME");
+                            String columnTypeStr = colsRs.getString("TYPE_NAME");
                             int columnSize = colsRs.getInt("COLUMN_SIZE");
                             String nullable = colsRs.getString("IS_NULLABLE");
                             int dataTypeInt = colsRs.getInt("DATA_TYPE");
@@ -72,7 +74,8 @@ public class DataSourceService {
                                     dataTypeInt == Types.VARBINARY ||
                                     dataTypeInt == Types.LONGVARBINARY ||
                                     dataTypeInt == Types.BLOB;
-                            columnsList.add(new DataSourceControlPanel.Column(columnName, columnType, columnSize, nullable, isBinary));
+                            ColumnType columnType = mapToColumnType(dataTypeInt, columnTypeStr);
+                            columnsList.add(new Column(columnName, columnType, columnSize, nullable, isBinary));
                         }
                     } catch (SQLException colEx) {
                         // Ignore column errors
@@ -109,5 +112,18 @@ public class DataSourceService {
         }
         System.out.println("tables = " + tables);
         return tables;
+    }
+
+    private ColumnType mapToColumnType(int dataType, String typeName) {
+        return switch (dataType) {
+            case Types.BIT, Types.BOOLEAN -> ColumnType.BOOLEAN;
+            case Types.TINYINT, Types.SMALLINT, Types.INTEGER, Types.BIGINT,
+                 Types.REAL, Types.FLOAT, Types.DOUBLE, Types.NUMERIC, Types.DECIMAL -> ColumnType.NUMERIC;
+            case Types.CHAR, Types.VARCHAR, Types.LONGVARCHAR, Types.NCHAR, Types.NVARCHAR, Types.LONGNVARCHAR,
+                 Types.CLOB, Types.NCLOB -> ColumnType.TEXT;
+            case Types.DATE, Types.TIME, Types.TIMESTAMP, Types.TIMESTAMP_WITH_TIMEZONE -> ColumnType.DATE;
+            case Types.BINARY, Types.VARBINARY, Types.LONGVARBINARY, Types.BLOB -> ColumnType.BLOB;
+            default -> ColumnType.GENERIC;
+        };
     }
 }

@@ -94,13 +94,13 @@ public class DataSourceControlPanel extends AbstractEachBeanControlPanel<DataSou
      * Database column metadata.
      *
      * @param name The column name
-     * @param type The column type
+     * @param type The generic column type
      * @param size The column size
      * @param nullable Whether the column is nullable
      * @param binary Whether the column is binary
      */
     @ReflectiveAccess
-    public record Column(String name, String type, int size, String nullable, boolean binary) {
+    public record Column(String name, ColumnType type, int size, String nullable, boolean binary) {
     }
 
     /**
@@ -150,5 +150,18 @@ public class DataSourceControlPanel extends AbstractEachBeanControlPanel<DataSou
     @ReflectiveAccess
     public record DataSet(List<String> cols, List<Map<String, String>> data, String error, String message,
                           int totalNumberOfElements) {
+    }
+
+    /**
+     * Generic column types.
+     */
+    @ReflectiveAccess
+    public enum ColumnType {
+        TEXT,
+        NUMERIC,
+        DATE,
+        BLOB,
+        BOOLEAN,
+        GENERIC
     }
 }
