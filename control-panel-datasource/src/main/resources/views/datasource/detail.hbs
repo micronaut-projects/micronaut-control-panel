@@ -41,9 +41,9 @@
                     <div class="card-tools">
                         <div class="input-group input-group-sm">
                             <div class="input-group-append">
-                                <div class="btn btn-success">
+                                <button type="button" class="btn btn-success" id="executeQuery" title="Execute query">
                                     <i class="fas fa-play"></i>
-                                </div>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -159,6 +159,88 @@
         }).on('hide.bs.modal', function () {
             // Clean up to reduce memory usage on repeated openings
             document.getElementById('erDiagramContainer').innerHTML = '';
+        });
+
+        // Execute SQL using backend and render results with DataTables (server-side processing)
+        function initQueryTable(sql) {
+            const appPath = '{{ ext.appPath }}';
+            const ds = '{{ controlPanel.title }}';
+            const url = appPath + '/datasource-control-panel-controller/' + ds + '/query';
+
+            // Initial request to obtain columns and bootstrap the table header
+            $.ajax({
+                url: url,
+                type: 'POST',
+                dataType: 'json',
+                contentType: 'application/json; charset=utf-8',
+                data: JSON.stringify({ sql: sql, start: 0, length: 10, draw: 1 })
+            }).done(function(resp) {
+                const cols = resp && resp.cols ? resp.cols : [];
+
+                // Build header and body placeholders
+                const thead = '<thead><tr>' + cols.map(c => '<th>' + c + '</th>').join('') + '</tr></thead>';
+                const tbody = '<tbody></tbody>';
+                $('#queryResults').html(thead + tbody);
+
+                // Destroy previous instance if any
+                if ($.fn.DataTable.isDataTable('#queryResults')) {
+                    $('#queryResults').DataTable().destroy();
+                }
+
+                const dtCols = cols.map(function(_, idx) { return { data: idx }; });
+
+                // Initialize DataTable with server-side pagination; no client ordering/searching
+                $('#queryResults').DataTable({
+                    serverSide: true,
+                    processing: true,
+                    ordering: false,
+                    searching: false,
+                    ajax: function(d, callback) {
+                        $.ajax({
+                            url: url,
+                            type: 'POST',
+                            dataType: 'json',
+                            contentType: 'application/json; charset=utf-8',
+                            data: JSON.stringify({
+                                sql: sql,
+                                start: d.start,
+                                length: d.length,
+                                draw: d.draw
+                            })
+                        }).done(function(json) {
+                            // DataTables expects: draw, recordsTotal, recordsFiltered, data
+                            callback(json);
+                        }).fail(function(xhr) {
+                            const err = (xhr.responseJSON && xhr.responseJSON.error) ? xhr.responseJSON.error : 'Query failed';
+                            globalAlertMessageDisplay('Error', err, 'alert-danger', 'fa-circle-exclamation');
+                            callback({ draw: d.draw, recordsTotal: 0, recordsFiltered: 0, data: [] });
+                        });
+                    },
+                    // If cols empty, DataTables will still render blank table; otherwise map indexes
+                    columns: dtCols.length ? dtCols : undefined
+                });
+            }).fail(function(xhr) {
+                const err = (xhr.responseJSON && xhr.responseJSON.error) ? xhr.responseJSON.error : 'Query failed';
+                globalAlertMessageDisplay('Error', err, 'alert-danger', 'fa-circle-exclamation');
+            });
+        }
+
+        // Hook Play button
+        $('#executeQuery').on('click', function() {
+            try {
+                // Prefer the path indicated; fallback to current CM6 API
+                const doc = (window.codemirror && window.codemirror.view && window.codemirror.view.viewState && window.codemirror.view.viewState.state && window.codemirror.view.viewState.state.doc)
+                    || (window.codemirror && window.codemirror.view && window.codemirror.view.state && window.codemirror.view.state.doc)
+                    || null;
+                const sql = doc ? String(doc.toString()).trim() : '';
+                if (!sql) {
+                    globalAlertMessageDisplay('Error', 'SQL must not be empty', 'alert-danger', 'fa-circle-exclamation');
+                    return;
+                }
+                initQueryTable(sql);
+            } catch (e) {
+                globalAlertMessageDisplay('Error', 'Cannot read SQL from editor', 'alert-danger', 'fa-circle-exclamation');
+            }
         });
     </script>
 

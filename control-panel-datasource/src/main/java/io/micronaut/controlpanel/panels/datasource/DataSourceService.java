@@ -337,4 +337,106 @@ public class DataSourceService {
     private static String valueOrDefault(String v, String def) {
         return v == null ? def : v;
     }
+
+    /**
+     * Sanitize, execute and paginate a SQL SELECT/WITH query.
+     *
+     * @param sql    The SQL to execute
+     * @param start  Offset of the first row
+     * @param length Maximum number of rows to return
+     * @return QueryResult with column labels, rows and total row count
+     */
+    public QueryResult executeQuery(String sql, int start, int length) {
+        String safeSql = sanitizeQuery(sql);
+        if (start < 0) {
+            start = 0;
+        }
+        if (length < 0) {
+            length = 0;
+        }
+
+        try (var connection = dataSource.getConnection()) {
+            // total count
+            int total = 0;
+            String countSql = "SELECT COUNT(*) FROM (" + safeSql + ") t";
+            try (var ps = connection.prepareStatement(countSql);
+                 var rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    total = rs.getInt(1);
+                }
+            }
+
+            List<String> cols = new ArrayList<>();
+            List<List<Object>> rows = new ArrayList<>();
+
+            try (var ps = connection.prepareStatement(safeSql);
+                 var rs = ps.executeQuery()) {
+                var md = rs.getMetaData();
+                int colCount = md.getColumnCount();
+                for (int i = 1; i <= colCount; i++) {
+                    String label = md.getColumnLabel(i);
+                    cols.add(label != null ? label : ("col" + i));
+                }
+
+                // skip to offset
+                int skipped = 0;
+                while (skipped < start && rs.next()) {
+                    skipped++;
+                }
+                // collect page
+                int collected = 0;
+                while ((length == 0 || collected < length) && rs.next()) {
+                    List<Object> row = new ArrayList<>(colCount);
+                    for (int i = 1; i <= colCount; i++) {
+                        Object v = rs.getObject(i);
+                        row.add(v);
+                    }
+                    rows.add(row);
+                    collected++;
+                }
+            }
+
+            return new QueryResult(cols, rows, total);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static String sanitizeWordBoundary(String s) {
+        return s.replaceAll("\\s+", " ").toLowerCase();
+    }
+
+    private String sanitizeQuery(String sql) {
+        if (sql == null) {
+            throw new IllegalArgumentException("SQL must not be null");
+        }
+        String s = sql.trim();
+        if (s.endsWith(";")) {
+            s = s.substring(0, s.length() - 1);
+        }
+        // Disallow stacked statements
+        if (s.indexOf(';') >= 0) {
+            throw new IllegalArgumentException("Multiple statements are not allowed");
+        }
+        String lower = s.stripLeading().toLowerCase();
+        if (!(lower.startsWith("select") || lower.startsWith("with"))) {
+            throw new IllegalArgumentException("Only SELECT/WITH queries are allowed");
+        }
+        // Basic keyword blacklist to reduce risk
+        String normalized = sanitizeWordBoundary(s);
+        if (normalized.matches(".*\\b(insert|update|delete|merge|drop|alter|create|truncate)\\b.*")) {
+            throw new IllegalArgumentException("Only read-only queries are allowed");
+        }
+        return s;
+    }
+
+    /**
+     * Result of executing a SQL query.
+     *
+     * @param cols  The column labels in display order
+     * @param rows  The page of rows; each row is a list of column values
+     * @param total The total number of rows for the full result set
+     */
+    public record QueryResult(List<String> cols, List<List<Object>> rows, int total) { }
+
 }

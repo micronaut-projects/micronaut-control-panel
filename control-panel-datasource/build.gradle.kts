@@ -14,9 +14,11 @@ micronaut {
 
 dependencies {
     api(projects.micronautControlPanelCore)
+    annotationProcessor(mnSerde.micronaut.serde.processor)
 
     implementation(mnSql.micronaut.jdbc)
     implementation(mnData.micronaut.data.connection.jdbc)
+    implementation(mnSerde.micronaut.serde.api)
 
     testImplementation(mnTest.micronaut.test.junit5)
     testRuntimeOnly(mnTest.junit.jupiter.engine)
