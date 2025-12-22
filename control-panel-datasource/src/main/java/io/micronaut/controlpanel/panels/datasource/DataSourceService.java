@@ -20,6 +20,7 @@ import io.micronaut.context.annotation.Parameter;
 import io.micronaut.controlpanel.panels.datasource.DataSourceControlPanel.Column;
 import io.micronaut.controlpanel.panels.datasource.DataSourceControlPanel.ColumnType;
 import io.micronaut.controlpanel.panels.datasource.DataSourceControlPanel.Table;
+import io.micronaut.controlpanel.panels.datasource.DataSourceControlPanel.ForeignKey;
 import io.micronaut.data.connection.jdbc.advice.DelegatingDataSource;
 
 import javax.sql.DataSource;
@@ -52,7 +53,7 @@ public class DataSourceService {
      *
      * @return List of {@link Table} metadata objects
      */
-    public final List<Table> findTables() {
+    public final List<Table> getTables() {
         List<Table> tables = new ArrayList<>();
         try (var connection = dataSource.getConnection()) {
             String catalog = connection.getCatalog();
@@ -66,28 +67,46 @@ public class DataSourceService {
                     }
                     String tableName = tablesRs.getString("TABLE_NAME");
 
-                    // Get primary keys
+                    // Primary keys
                     List<String> primaryKeysList = new ArrayList<>();
                     try (ResultSet pkRs = dbMetaData.getPrimaryKeys(catalog, schema, tableName)) {
                         while (pkRs.next()) {
                             primaryKeysList.add(pkRs.getString("COLUMN_NAME"));
                         }
-                    } catch (SQLException pkEx) {
-                        // Ignore
+                    } catch (SQLException ignore) {
                     }
 
-                    // Get foreign keys
+                    // Foreign keys (full info)
                     Set<String> foreignKeyColumns = new HashSet<>();
+                    List<ForeignKey> foreignKeys = new ArrayList<>();
                     try (ResultSet fkRs = dbMetaData.getImportedKeys(catalog, schema, tableName)) {
                         while (fkRs.next()) {
-                            String fkcName = fkRs.getString("FKCOLUMN_NAME");
-                            foreignKeyColumns.add(fkcName);
+                            String fkName = fkRs.getString("FK_NAME");
+                            String fkColumn = fkRs.getString("FKCOLUMN_NAME");
+                            String pkSchema = valueOrDefault(fkRs.getString("PKTABLE_SCHEM"), defaultSchema);
+                            String pkTable = fkRs.getString("PKTABLE_NAME");
+                            String pkColumn = fkRs.getString("PKCOLUMN_NAME");
+                            foreignKeyColumns.add(fkColumn);
+                            foreignKeys.add(new ForeignKey(fkName, fkColumn, pkSchema, pkTable, pkColumn));
                         }
-                    } catch (SQLException fkEx) {
-                        // Ignore
+                    } catch (SQLException ignore) {
                     }
 
-                    // Get columns
+                    // Unique columns (unique indexes/constraints)
+                    Set<String> uniqueCols = new LinkedHashSet<>();
+                    try (ResultSet idx = dbMetaData.getIndexInfo(catalog, schema, tableName, true, false)) {
+                        while (idx.next()) {
+                            boolean nonUnique = idx.getBoolean("NON_UNIQUE");
+                            String col = idx.getString("COLUMN_NAME");
+                            // Some drivers return null rows for table-level index metadata
+                            if (!nonUnique && col != null) {
+                                uniqueCols.add(col);
+                            }
+                        }
+                    } catch (SQLException ignore) {
+                    }
+
+                    // Columns
                     List<Column> columnsList = new ArrayList<>();
                     try (ResultSet colsRs = dbMetaData.getColumns(catalog, schema, tableName, "%")) {
                         while (colsRs.next()) {
@@ -97,25 +116,23 @@ public class DataSourceService {
                             String nullable = colsRs.getString("IS_NULLABLE");
                             int dataTypeInt = colsRs.getInt("DATA_TYPE");
                             boolean isBinary = dataTypeInt == Types.BINARY ||
-                                    dataTypeInt == Types.VARBINARY ||
-                                    dataTypeInt == Types.LONGVARBINARY ||
-                                    dataTypeInt == Types.BLOB;
+                                dataTypeInt == Types.VARBINARY ||
+                                dataTypeInt == Types.LONGVARBINARY ||
+                                dataTypeInt == Types.BLOB;
                             ColumnType columnType = mapToColumnType(dataTypeInt, columnTypeStr);
                             boolean isPrimaryKey = primaryKeysList.contains(columnName);
                             boolean isForeignKey = foreignKeyColumns.contains(columnName);
                             columnsList.add(new Column(columnName, columnType, columnSize, nullable, isBinary, isPrimaryKey, isForeignKey));
                         }
-                    } catch (SQLException colEx) {
-                        // Ignore column errors
+                    } catch (SQLException ignore) {
                     }
 
-                    tables.add(new Table(schema, tableName, columnsList));
+                    tables.add(new Table(schema, tableName, columnsList, uniqueCols, foreignKeys));
                 }
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        System.out.println("tables = " + tables);
         return tables;
     }
 
@@ -136,7 +153,7 @@ public class DataSourceService {
      * Generate a Mermaid ER diagram for the current datasource based on the provided tables metadata.
      * It includes entities with attributes (type, size, NOT NULL) and relationships based on foreign keys.
      *
-     * @param tables Tables discovered by {@link #findTables()}
+     * @param tables Tables discovered by {@link #getTables()}
      * @return Mermaid ER diagram code
      */
     public String generateMermaidER(List<Table> tables) {
@@ -151,82 +168,44 @@ public class DataSourceService {
             tableByDisplay.put(display, t);
         }
 
-        // Collect unique columns (UK) and relationships from metadata
+        // Collect unique columns (UK) and relationships from already discovered metadata (no DB calls)
         Map<String, Set<String>> uniqueColsByDisplay = new HashMap<>(); // display -> col names
         Set<String> relationshipLines = new LinkedHashSet<>();
 
-        try (var connection = dataSource.getConnection()) {
-            String catalog = connection.getCatalog();
-            String defaultSchema = connection.getSchema();
-            DatabaseMetaData dbMetaData = connection.getMetaData();
+        // Unique columns per table
+        for (Table t : tables) {
+            String display = displayName(t.schema(), t.name());
+            uniqueColsByDisplay.put(display, t.uniqueColumns() == null ? Set.of() : new HashSet<>(t.uniqueColumns()));
+        }
 
-            // Unique columns
-            for (Table t : tables) {
-                String schema = t.schema() != null ? t.schema() : defaultSchema;
-                String tableName = t.name();
-                String display = displayName(schema, tableName);
-                Set<String> ucols = new HashSet<>();
-                try (ResultSet idx = dbMetaData.getIndexInfo(catalog, schema, tableName, true, false)) {
-                    while (idx.next()) {
-                        boolean nonUnique = idx.getBoolean("NON_UNIQUE");
-                        String col = idx.getString("COLUMN_NAME");
-                        // Some drivers return null rows for table-level index metadata
-                        if (!nonUnique && col != null) {
-                            ucols.add(col);
+        // Relationships from foreign keys
+        for (Table t : tables) {
+            String fkDisplay = displayName(t.schema(), t.name());
+            for (ForeignKey fk : t.foreignKeys() == null ? List.<ForeignKey>of() : t.foreignKeys()) {
+                String pkDisplay = displayName(fk.pkSchema(), fk.pkTable());
+
+                String pkId = tableIdByDisplay.get(pkDisplay);
+                String fkId = tableIdByDisplay.get(fkDisplay);
+                if (pkId == null || fkId == null) {
+                    continue;
+                }
+
+                boolean fkNullable = true;
+                Table fkTableObj = tableByDisplay.get(fkDisplay);
+                if (fkTableObj != null) {
+                    for (Column c : fkTableObj.columns()) {
+                        if (c.name().equalsIgnoreCase(fk.fkColumn())) {
+                            fkNullable = !"NO".equalsIgnoreCase(c.nullable());
+                            break;
                         }
                     }
-                } catch (SQLException ignore) {
                 }
-                uniqueColsByDisplay.put(display, ucols);
+
+                String rawLabel = fk.name() != null ? fk.name() : ("FK " + fk.fkColumn());
+                String label = sanitizeRelationLabel(rawLabel);
+                String line = "    " + pkId + " ||..o{ " + fkId + " : " + label + "\n";
+                relationshipLines.add(line);
             }
-
-            // Relationships
-            for (Table t : tables) {
-                String schema = t.schema() != null ? t.schema() : defaultSchema;
-                String tableName = t.name();
-                try (ResultSet fkRs = dbMetaData.getImportedKeys(catalog, schema, tableName)) {
-                    while (fkRs.next()) {
-                        String pkSchema = valueOrDefault(fkRs.getString("PKTABLE_SCHEM"), defaultSchema);
-                        String pkTable = fkRs.getString("PKTABLE_NAME");
-                        String fkSchema = valueOrDefault(fkRs.getString("FKTABLE_SCHEM"), schema);
-                        String fkTable = fkRs.getString("FKTABLE_NAME");
-                        String fkName = fkRs.getString("FK_NAME");
-                        String fkColumn = fkRs.getString("FKCOLUMN_NAME");
-
-                        String pkDisplay = displayName(pkSchema, pkTable);
-                        String fkDisplay = displayName(fkSchema, fkTable);
-
-                        String pkId = tableIdByDisplay.get(pkDisplay);
-                        String fkId = tableIdByDisplay.get(fkDisplay);
-                        if (pkId == null || fkId == null) {
-                            continue;
-                        }
-
-                        boolean fkNullable = true;
-                        Table fkTableObj = tableByDisplay.get(fkDisplay);
-                        if (fkTableObj != null) {
-                            for (Column c : fkTableObj.columns()) {
-                                if (c.name().equalsIgnoreCase(fkColumn)) {
-                                    fkNullable = !"NO".equalsIgnoreCase(c.nullable());
-                                    break;
-                                }
-                            }
-                        }
-
-                        String leftCard = fkNullable ? "|o" : "||";
-                        // Parent may have zero or more children by default
-                        String rightCard = "o{";
-                        // Non-identifying by default (dashed)
-                        String rawLabel = fkName != null ? fkName : ("FK " + fkColumn);
-                        String label = sanitizeRelationLabel(rawLabel);
-                        String line = "    " + pkId + " ||..o{ " + fkId + " : " + label + "\n";
-                        relationshipLines.add(line);
-                    }
-                } catch (SQLException ignore) {
-                }
-            }
-        } catch (SQLException e) {
-            // ignore metadata enhancements
         }
 
         // Build ER
@@ -279,7 +258,7 @@ public class DataSourceService {
                 if (!attrName.equals(c.name())) {
                     comment = (comment == null ? "" : comment + "; ") + "original: " + c.name();
                 }
-                if (comment != null && !comment.isEmpty()) {
+                if (comment != null) {
                     sb.append(" ").append("\"").append(comment).append("\"");
                 }
 

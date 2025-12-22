@@ -26,6 +26,7 @@ import jakarta.inject.Named;
 import javax.sql.DataSource;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Control panel for DataSource metadata, displaying tables, columns, keys, etc.
@@ -46,7 +47,7 @@ public class DataSourceControlPanel extends AbstractEachBeanControlPanel<DataSou
                                   @Named(NAME) ControlPanelConfiguration configuration) {
         super(NAME, configuration);
         this.beanName = beanName;
-        this.tables = dataSourceService.findTables();
+        this.tables = dataSourceService.getTables();
         var jdbUrl = environment.getProperty("datasources.%s.url".formatted(beanName), String.class, "");
         this.body = new Body(new DataSourceInfo(beanName, jdbUrl), tables, dataSourceService.generateMermaidER(tables));
     }
@@ -109,14 +110,29 @@ public class DataSourceControlPanel extends AbstractEachBeanControlPanel<DataSou
     }
 
     /**
-     * Database table metadata.
+     * Foreign key relationship metadata.
      *
-     * @param schema  The table schema
-     * @param name    The table name
-     * @param columns The columns
+     * @param name      The foreign key name
+     * @param fkColumn  The foreign key column name on the current table
+     * @param pkSchema  The primary key table schema
+     * @param pkTable   The primary key table name
+     * @param pkColumn  The primary key column name
      */
     @ReflectiveAccess
-    public record Table(String schema, String name, List<Column> columns) {
+    public record ForeignKey(String name, String fkColumn, String pkSchema, String pkTable, String pkColumn) {
+    }
+
+    /**
+     * Database table metadata.
+     *
+     * @param schema        The table schema
+     * @param name          The table name
+     * @param columns       The columns
+     * @param uniqueColumns Columns that are part of unique indexes/constraints
+     * @param foreignKeys   Foreign key relationships imported by this table
+     */
+    @ReflectiveAccess
+    public record Table(String schema, String name, List<Column> columns, Set<String> uniqueColumns, List<ForeignKey> foreignKeys) {
     }
 
     /**
