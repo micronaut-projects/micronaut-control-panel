@@ -9,7 +9,7 @@
                 <div class="card-body" id="jstree">
                     <ul>
                         {{#each tables as |table|}}
-                            <li data-jstree='{"icon":"bi bi-table text-primary"}'>{{ table }}</li>
+                            <li data-jstree='{"icon":"bi bi-table text-primary"}' onclick="select('{{table}}')">{{ table }}</li>
                         {{/each}}
                     </ul>
                 </div>
@@ -50,6 +50,11 @@
         $(function () {
             $('#jstree').jstree();
         });
+        function select(table) {
+            const cm = window.codemirror;
+            const state = cm.EditorState.create({doc: "SELECT * FROM " + table + "\n\n", extensions: cm.extensions});
+            cm.view.setState(state);
+        }
     </script>
 
 {{/with}}

@@ -27499,16 +27499,30 @@
   */
   const StandardSQL = /*@__PURE__*/SQLDialect.define({});
 
-  new EditorView({
+  const extensions = [
+      basicSetup,
+      sql({
+          dialect: StandardSQL,
+          upperCaseKeywords: true,
+      })
+  ];
+
+  const state = EditorState.create({
       doc: "/* Type an SQL query here, or select a table from the tree */\n\n",
-      extensions: [
-          basicSetup,
-          sql({
-              dialect: StandardSQL,
-              upperCaseKeywords: true,
-          }),
-      ],
+      extensions: extensions
+  });
+
+  const view = new EditorView({
+      state,
       parent: document.querySelector("#sql-console")
   });
+
+  window.codemirror = {
+      EditorState,
+      EditorView,
+      state,
+      view,
+      extensions
+  };
 
 })();
