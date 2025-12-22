@@ -27,6 +27,9 @@ import javax.sql.DataSource;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Control panel for DataSource metadata, displaying tables, columns, keys, etc.
+ */
 @EachBean(DataSource.class)
 public class DataSourceControlPanel extends AbstractEachBeanControlPanel<DataSourceControlPanel.Body> {
 
@@ -35,17 +38,17 @@ public class DataSourceControlPanel extends AbstractEachBeanControlPanel<DataSou
 
     private final DataSourceInfo dataSourceInfo;
     private final String beanName;
-    private final List<String> tables;
+    private final List<Table> tables;
 
     public DataSourceControlPanel(@Parameter String beanName,
-                                  @Parameter DataSourceExplorer dataSourceExplorer,
+                                  @Parameter DataSourceService dataSourceService,
                                   Environment environment,
                                   @Named(NAME) ControlPanelConfiguration configuration) {
         super(NAME, configuration);
         var jdbUrl = environment.getProperty("datasources.%s.url".formatted(beanName), String.class, "");
         this.dataSourceInfo = new DataSourceInfo(beanName, jdbUrl);
         this.beanName = beanName;
-        this.tables = dataSourceExplorer.findTables();
+        this.tables = dataSourceService.findTables();
     }
 
     @Override
@@ -78,26 +81,72 @@ public class DataSourceControlPanel extends AbstractEachBeanControlPanel<DataSou
         return new Category(NAME, "Data Sources", ICON_CLASS);
     }
 
+    /**
+     * Body of the control panel containing DataSource info and tables.
+     *
+     * @param dataSourceInfo The DataSource information
+     * @param tables The list of tables
+     */
     @ReflectiveAccess
-    public record Body(DataSourceInfo dataSourceInfo, List<String> tables) { }
+    public record Body(DataSourceInfo dataSourceInfo, List<Table> tables) { }
 
+    /**
+     * Database column metadata.
+     *
+     * @param name The column name
+     * @param type The column type
+     * @param size The column size
+     * @param nullable Whether the column is nullable
+     * @param binary Whether the column is binary
+     */
     @ReflectiveAccess
-    public record Column(String columnName, String columnType, int columnSize, String nullable, boolean binary) {
+    public record Column(String name, String type, int size, String nullable, boolean binary) {
     }
 
+    /**
+     * Foreign key metadata.
+     *
+     * @param columnName The local column name
+     * @param referencedTable The referenced table
+     * @param referencedColumn The referenced column
+     */
     @ReflectiveAccess
     public record ForeignKey(String columnName, String referencedTable, String referencedColumn) {
     }
 
+    /**
+     * Database table metadata.
+     *
+     * @param schema The table schema
+     * @param name The table name
+     * @param primaryKeys The primary keys
+     * @param columns The columns
+     * @param foreignKeys The foreign keys
+     */
     @ReflectiveAccess
-    public record Table(String tableSchema, String tableName, List<String> primaryKeys, List<Column> columns,
-                                List<ForeignKey> foreignKeys) {
+    public record Table(String schema, String name, List<String> primaryKeys, List<Column> columns,
+                        List<ForeignKey> foreignKeys) {
     }
 
+    /**
+     * DataSource information.
+     *
+     * @param name The DataSource name
+     * @param jdbcUrl The JDBC URL
+     */
     @ReflectiveAccess
     public record DataSourceInfo(String name, String jdbcUrl) {
     }
 
+    /**
+     * DataSet for query results.
+     *
+     * @param cols The column names
+     * @param data The data rows
+     * @param error Any error
+     * @param message Any message
+     * @param totalNumberOfElements Total elements
+     */
     @ReflectiveAccess
     public record DataSet(List<String> cols, List<Map<String, String>> data, String error, String message,
                           int totalNumberOfElements) {
