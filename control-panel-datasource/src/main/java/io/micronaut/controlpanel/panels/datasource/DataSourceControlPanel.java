@@ -39,6 +39,7 @@ public class DataSourceControlPanel extends AbstractEachBeanControlPanel<DataSou
     private final DataSourceInfo dataSourceInfo;
     private final String beanName;
     private final List<Table> tables;
+    private final DataSourceService dataSourceService;
 
     public DataSourceControlPanel(@Parameter String beanName,
                                   @Parameter DataSourceService dataSourceService,
@@ -48,6 +49,7 @@ public class DataSourceControlPanel extends AbstractEachBeanControlPanel<DataSou
         var jdbUrl = environment.getProperty("datasources.%s.url".formatted(beanName), String.class, "");
         this.dataSourceInfo = new DataSourceInfo(beanName, jdbUrl);
         this.beanName = beanName;
+        this.dataSourceService = dataSourceService;
         this.tables = dataSourceService.findTables();
     }
 
@@ -63,7 +65,7 @@ public class DataSourceControlPanel extends AbstractEachBeanControlPanel<DataSou
 
     @Override
     public Body getBody() {
-        return new Body(dataSourceInfo, tables);
+        return new Body(dataSourceInfo, tables, dataSourceService.generateMermaidER(tables));
     }
 
     @Override
@@ -86,9 +88,10 @@ public class DataSourceControlPanel extends AbstractEachBeanControlPanel<DataSou
      *
      * @param dataSourceInfo The DataSource information
      * @param tables The list of tables
+     * @param mermaidEr The Mermaid ER diagram code generated from the datasource
      */
     @ReflectiveAccess
-    public record Body(DataSourceInfo dataSourceInfo, List<Table> tables) { }
+    public record Body(DataSourceInfo dataSourceInfo, List<Table> tables, String mermaidEr) { }
 
     /**
      * Database column metadata.

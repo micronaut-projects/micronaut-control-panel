@@ -8,9 +8,9 @@
                     <div class="card-tools">
                         <div class="input-group input-group-sm">
                             <div class="input-group-append">
-                                <div class="btn btn-primary">
+                                <button type="button" class="btn btn-primary" id="openErModal" title="Show ER diagram" data-toggle="modal" data-target="#erDiagramModal">
                                     <i class="fas fa-diagram-project"></i>
-                                </div>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -64,6 +64,31 @@
         </div>
     </div>
 
+    <!-- Hidden Mermaid ER code source -->
+    <pre id="mermaidErCode" style="display:none;">{{{ mermaidEr }}}</pre>
+
+    <!-- ER Diagram Modal -->
+    <div class="modal fade" id="erDiagramModal" tabindex="-1" role="dialog" aria-labelledby="erDiagramModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="erDiagramModalLabel">
+                        <i class="fas fa-diagram-project"></i> Entity Relationship Diagram
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" title="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="erDiagramContainer" class="mermaid"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         $(function () {
             $('#jstree')
@@ -107,6 +132,33 @@
             const state = cm.EditorState.create({doc: "SELECT * FROM " + tableName + "\n\n", extensions: cm.extensions});
             cm.view.setState(state);
         }
+
+        // Render Mermaid ER diagram when the modal is shown
+        $('#erDiagramModal').on('shown.bs.modal', function () {
+            let code = $('#mermaidErCode').text();
+            // Normalize line endings and trim, Mermaid parser is sensitive to stray characters
+            code = code.replace(/\r\n/g, '\n').trimStart();
+
+            const container = document.getElementById('erDiagramContainer');
+            container.innerHTML = '';
+            // Unique id each time to avoid collisions if reopened
+            const renderId = 'erDiagramSvg_' + Date.now();
+            if (window.mermaid && typeof window.mermaid.render === 'function') {
+                window.mermaid.render(renderId, code, (svgCode) => {
+                    container.innerHTML = svgCode;
+                }, container);
+            } else if (window.mermaid) {
+                // Fallback: let Mermaid init process the container if render API not present
+                const pre = document.createElement('div');
+                pre.className = 'mermaid';
+                pre.textContent = code;
+                container.appendChild(pre);
+                try { window.mermaid.init(undefined, container); } catch (e) { /* ignore */ }
+            }
+        }).on('hide.bs.modal', function () {
+            // Clean up to reduce memory usage on repeated openings
+            document.getElementById('erDiagramContainer').innerHTML = '';
+        });
     </script>
 
 {{/with}}

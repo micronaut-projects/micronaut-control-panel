@@ -5,3 +5,7 @@ i.bi {
 #sql-console {
     border: 1px solid lightgray;
 }
+
+div.mermaid {
+    text-align: center;
+}
