@@ -281,7 +281,17 @@
         $('#globalAlert i').addClass(iconClass)
 
         $('#globalAlert').show()
+    }
 
+    function globalAlertMessageClear() {
+        sessionStorage.clear()
+
+        $('#globalAlertTitle').text("")
+        $('#globalAlertMessage').text("")
+
+        $('#globalAlert').removeClass()
+        $('#globalAlert i').removeClass()
+        $('#globalAlert').hide()
     }
 </script>
 </body>

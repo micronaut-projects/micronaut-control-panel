@@ -58,8 +58,9 @@
                     <h3 class="card-title">Query results</h3>
                 </div>
                 <div class="card-body">
-                    <table id="queryResults" class="table table-bordered table-striped">
-                    </table>
+                    <div id="queryResultsContainer">
+                        <table id="queryResults" class="table table-bordered table-striped"></table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -162,6 +163,7 @@
         });
 
         // Execute SQL using backend and render results with DataTables (server-side processing)
+        window.queryResultsDT = null;
         function initQueryTable(sql) {
             const appPath = '{{ ext.appPath }}';
             const ds = '{{ controlPanel.title }}';
@@ -177,20 +179,37 @@
             }).done(function(resp) {
                 const cols = resp && resp.cols ? resp.cols : [];
 
-                // Build header and body placeholders
-                const thead = '<thead><tr>' + cols.map(c => '<th>' + c + '</th>').join('') + '</tr></thead>';
-                const tbody = '<tbody></tbody>';
-                $('#queryResults').html(thead + tbody);
-
-                // Destroy previous instance if any
-                if ($.fn.DataTable.isDataTable('#queryResults')) {
-                    $('#queryResults').DataTable().destroy();
+                // Destroy previous instance if any and rebuild inside a stable container
+                const $container = $('#queryResultsContainer');
+                if (window.queryResultsDT) {
+                    try { window.queryResultsDT.clear(); window.queryResultsDT.destroy(); } catch (e) {}
+                    window.queryResultsDT = null;
+                } else {
+                    const $maybeTable = $('#queryResults');
+                    if ($.fn.DataTable.isDataTable($maybeTable)) {
+                        try { $maybeTable.DataTable().clear().destroy(); } catch (e) {}
+                    }
                 }
+                // Rebuild container with a fresh table and headers
+                const thead = '<thead><tr>' + cols.map(c => '<th>' + c + '</th>').join('') + '</tr></thead>';
+                const tableHtml = '<table id="queryResults" class="table table-bordered table-striped">' + thead + '<tbody></tbody></table>';
+                $container.html(tableHtml);
+                const $table = $('#queryResults');
+                DataTable.ext.errMode = 'none';
+
+                $table.on('dt-error.dt', function (e, settings, techNote, message) {
+                    console.log("dt-error")
+                    globalAlertMessageDisplay('Error', message, 'alert-danger', 'fa-circle-exclamation');
+                }).on('preXhr.dt', function (e, settings, data) {
+                    console.log("preXhr")
+                    globalAlertMessageClear();
+                });
 
                 const dtCols = cols.map(function(_, idx) { return { data: idx }; });
 
                 // Initialize DataTable with server-side pagination; no client ordering/searching
-                $('#queryResults').DataTable({
+                window.queryResultsDT = $table.DataTable({
+                    destroy: true,
                     serverSide: true,
                     processing: true,
                     ordering: false,
