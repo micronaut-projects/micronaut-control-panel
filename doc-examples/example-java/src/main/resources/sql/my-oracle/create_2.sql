@@ -5,7 +5,9 @@ create table EMP
             primary key,
     ENAME    VARCHAR2(10),
     JOB      VARCHAR2(9),
-    MGR      NUMBER(4),
+    MGR      NUMBER(4)
+        constraint FK_EMPNO
+            references EMP,
     HIREDATE DATE,
     SAL      NUMBER(7, 2),
     COMM     NUMBER(7, 2),

@@ -22,6 +22,8 @@ import io.micronaut.controlpanel.panels.datasource.DataSourceControlPanel.Column
 import io.micronaut.controlpanel.panels.datasource.DataSourceControlPanel.Table;
 import io.micronaut.controlpanel.panels.datasource.DataSourceControlPanel.ForeignKey;
 import io.micronaut.data.connection.jdbc.advice.DelegatingDataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.sql.DatabaseMetaData;
@@ -41,6 +43,8 @@ import java.util.Set;
  */
 @EachBean(DataSource.class)
 public class DataSourceService {
+
+    private static final Logger LOG = LoggerFactory.getLogger(DataSourceService.class);
 
     private final DataSource dataSource;
 
@@ -73,7 +77,8 @@ public class DataSourceService {
                         while (pkRs.next()) {
                             primaryKeysList.add(pkRs.getString("COLUMN_NAME"));
                         }
-                    } catch (SQLException ignore) {
+                    } catch (SQLException e) {
+                        LOG.warn("Exception while getting the primary keys of the table {}: {}", tableName, e.getMessage());
                     }
 
                     // Foreign keys (full info)
@@ -89,7 +94,8 @@ public class DataSourceService {
                             foreignKeyColumns.add(fkColumn);
                             foreignKeys.add(new ForeignKey(fkName, fkColumn, pkSchema, pkTable, pkColumn));
                         }
-                    } catch (SQLException ignore) {
+                    } catch (SQLException e) {
+                        LOG.warn("Exception while getting the foreign keys of the table {}: {}", tableName, e.getMessage());
                     }
 
                     // Unique columns (unique indexes/constraints)
@@ -103,7 +109,8 @@ public class DataSourceService {
                                 uniqueCols.add(col);
                             }
                         }
-                    } catch (SQLException ignore) {
+                    } catch (SQLException e) {
+                        LOG.warn("Exception while getting the index info of the table {}: {}", tableName, e.getMessage());
                     }
 
                     // Columns
@@ -119,24 +126,26 @@ public class DataSourceService {
                                 dataTypeInt == Types.VARBINARY ||
                                 dataTypeInt == Types.LONGVARBINARY ||
                                 dataTypeInt == Types.BLOB;
-                            ColumnType columnType = mapToColumnType(dataTypeInt, columnTypeStr);
+                            ColumnType columnType = mapToColumnType(dataTypeInt);
                             boolean isPrimaryKey = primaryKeysList.contains(columnName);
                             boolean isForeignKey = foreignKeyColumns.contains(columnName);
                             columnsList.add(new Column(columnName, columnType, columnSize, nullable, isBinary, isPrimaryKey, isForeignKey));
                         }
-                    } catch (SQLException ignore) {
+                    } catch (SQLException e) {
+                        LOG.warn("Exception while getting the columns of the table {}: {}", tableName, e.getMessage());
                     }
 
                     tables.add(new Table(schema, tableName, columnsList, uniqueCols, foreignKeys));
                 }
             }
         } catch (SQLException e) {
+            LOG.error("SQL exception: {}", e.getMessage());
             throw new RuntimeException(e);
         }
         return tables;
     }
 
-    private ColumnType mapToColumnType(int dataType, String typeName) {
+    private ColumnType mapToColumnType(int dataType) {
         return switch (dataType) {
             case Types.BIT, Types.BOOLEAN -> ColumnType.BOOLEAN;
             case Types.TINYINT, Types.SMALLINT, Types.INTEGER, Types.BIGINT,
@@ -188,17 +197,6 @@ public class DataSourceService {
                 String fkId = tableIdByDisplay.get(fkDisplay);
                 if (pkId == null || fkId == null) {
                     continue;
-                }
-
-                boolean fkNullable = true;
-                Table fkTableObj = tableByDisplay.get(fkDisplay);
-                if (fkTableObj != null) {
-                    for (Column c : fkTableObj.columns()) {
-                        if (c.name().equalsIgnoreCase(fk.fkColumn())) {
-                            fkNullable = !"NO".equalsIgnoreCase(c.nullable());
-                            break;
-                        }
-                    }
                 }
 
                 String rawLabel = fk.name() != null ? fk.name() : ("FK " + fk.fkColumn());
@@ -295,12 +293,11 @@ public class DataSourceService {
 
     private static String mermaidType(ColumnType ct) {
         return switch (ct) {
-            case TEXT -> "string";
+            case TEXT, GENERIC -> "string";
             case NUMERIC -> "numeric";
             case DATE -> "date";
             case BLOB -> "blob";
             case BOOLEAN -> "boolean";
-            case GENERIC -> "string";
         };
     }
 
@@ -320,7 +317,7 @@ public class DataSourceService {
             return "col";
         }
         // Ensure no '*' remains in attribute names (older rendering used '*' for PK)
-        String sanitized = s.replace("*", "").replaceAll("[^A-Za-z0-9_\\-\\[\\]\\(\\)]", "_");
+        String sanitized = s.replace("*", "").replaceAll("[^A-Za-z0-9_\\-\\[\\]()]", "_");
         if (!sanitized.isEmpty() && !Character.isLetter(sanitized.charAt(0))) {
             sanitized = "c_" + sanitized;
         }
@@ -367,7 +364,7 @@ public class DataSourceService {
             }
 
             List<String> cols = new ArrayList<>();
-            List<List<Object>> rows = new ArrayList<>();
+            List<List<String>> rows = new ArrayList<>();
 
             try (var ps = connection.prepareStatement(safeSql);
                  var rs = ps.executeQuery()) {
@@ -386,9 +383,9 @@ public class DataSourceService {
                 // collect page
                 int collected = 0;
                 while ((length == 0 || collected < length) && rs.next()) {
-                    List<Object> row = new ArrayList<>(colCount);
+                    List<String> row = new ArrayList<>(colCount);
                     for (int i = 1; i <= colCount; i++) {
-                        Object v = rs.getObject(i);
+                        String v = rs.getString(i);
                         row.add(v);
                     }
                     rows.add(row);
@@ -437,6 +434,6 @@ public class DataSourceService {
      * @param rows  The page of rows; each row is a list of column values
      * @param total The total number of rows for the full result set
      */
-    public record QueryResult(List<String> cols, List<List<Object>> rows, int total) { }
+    public record QueryResult(List<String> cols, List<List<String>> rows, int total) { }
 
 }
