@@ -143,10 +143,7 @@
             const type = "{{dataSourceInfo.type}}";
             const cm = window.codemirror;
             const extensions = cm.getSQLExtensions(type);
-            console.log(type);
-            console.log(extensions);
             const sqlExt = extensions.find(ext => ext && ext.spec && ext.spec.dialect);
-            console.log('Active Dialect:', sqlExt ? sqlExt.spec.dialect.name || 'StandardSQL' : 'Not Loaded');
             const state = cm.EditorState.create({
                 doc: "/* Type an SQL query here, or select a table from the tree */\n\n",
                 extensions: extensions
@@ -221,10 +218,8 @@
                 DataTable.ext.errMode = 'none';
 
                 $table.on('dt-error.dt', function (e, settings, techNote, message) {
-                    console.log("dt-error")
                     globalAlertMessageDisplay('Error', message, 'alert-danger', 'fa-circle-exclamation');
                 }).on('preXhr.dt', function (e, settings, data) {
-                    console.log("preXhr")
                     globalAlertMessageClear();
                 });
 
