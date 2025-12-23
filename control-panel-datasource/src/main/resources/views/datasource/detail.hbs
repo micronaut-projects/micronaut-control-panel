@@ -131,9 +131,32 @@
         });
         function select(tableName) {
             const cm = window.codemirror;
-            const state = cm.EditorState.create({doc: "SELECT * FROM " + tableName + "\n\n", extensions: cm.extensions});
-            cm.view.setState(state);
+            const view = cm.view;
+            const newDoc = "SELECT * FROM " + tableName + "\n\n";
+            view.dispatch({
+                changes: { from: 0, to: view.state.doc.length, insert: newDoc }
+            });
         }
+
+        // Initialize CodeMirror editor dynamically
+        $(function() {
+            const type = "{{dataSourceInfo.type}}";
+            const cm = window.codemirror;
+            const extensions = cm.getSQLExtensions(type);
+            console.log(type);
+            console.log(extensions);
+            const sqlExt = extensions.find(ext => ext && ext.spec && ext.spec.dialect);
+            console.log('Active Dialect:', sqlExt ? sqlExt.spec.dialect.name || 'StandardSQL' : 'Not Loaded');
+            const state = cm.EditorState.create({
+                doc: "/* Type an SQL query here, or select a table from the tree */\n\n",
+                extensions: extensions
+            });
+            const view = new cm.EditorView({
+                state,
+                parent: document.querySelector("#sql-console")
+            });
+            cm.view = view;
+        });
 
         // Render Mermaid ER diagram when the modal is shown
         $('#erDiagramModal').on('shown.bs.modal', function () {
