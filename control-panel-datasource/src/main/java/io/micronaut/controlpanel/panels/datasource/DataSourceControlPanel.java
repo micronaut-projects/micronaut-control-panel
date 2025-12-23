@@ -86,8 +86,13 @@ public class DataSourceControlPanel extends AbstractEachBeanControlPanel<Body> {
 
     @Override
     public String getIcon() {
-        //TODO add custom icons
-        return DEFAULT_ICON_CLASS;
+        return switch (dataSourceInfo.type()) {
+            case SQL_SERVER -> "fa-brands fa-microsoft";
+            case POSTGRES -> "si si-postgresql";
+            case MYSQL -> "si si-mysql";
+            case MARIADB -> "si si-mariadb";
+            default -> DEFAULT_ICON_CLASS;
+        };
     }
 
     @Override
