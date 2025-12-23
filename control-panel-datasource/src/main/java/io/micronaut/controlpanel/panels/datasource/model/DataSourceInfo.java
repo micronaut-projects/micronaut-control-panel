@@ -24,5 +24,5 @@ import io.micronaut.core.annotation.ReflectiveAccess;
  * @param jdbcUrl The JDBC URL
  */
 @ReflectiveAccess
-public record DataSourceInfo(String name, String jdbcUrl, String user, String password, DatabaseType type) {
+public record DataSourceInfo(String name, String jdbcUrl, String username, String password, DatabaseType type) {
 }

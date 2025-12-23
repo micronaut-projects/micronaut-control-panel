@@ -3,7 +3,13 @@
         <strong>{{badge}}</strong> tables in the datasource.
     </p>
     <p class="card-text">
-        <strong>URL:</strong>
-        <code>{{ dataSourceInfo.jdbcUrl }}</code>
+        <dl>
+            <dt>URL</dt>
+            <dd><code>{{ dataSourceInfo.jdbcUrl }}</code></dd>
+            <dt>Username</dt>
+            <dd><code>{{ dataSourceInfo.username }}</code></dd>
+            <dt>Password</dt>
+            <dd><code>{{ dataSourceInfo.password }}</code></dd>
+        </dl>
     </p>
 {{/with}}
