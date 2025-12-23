@@ -15,10 +15,10 @@
  */
 package io.micronaut.controlpanel.panels.datasource;
 
-import io.micronaut.controlpanel.panels.datasource.DataSourceControlPanel.Column;
-import io.micronaut.controlpanel.panels.datasource.DataSourceControlPanel.ColumnType;
-import io.micronaut.controlpanel.panels.datasource.DataSourceControlPanel.ForeignKey;
-import io.micronaut.controlpanel.panels.datasource.DataSourceControlPanel.Table;
+import io.micronaut.controlpanel.panels.datasource.model.Column;
+import io.micronaut.controlpanel.panels.datasource.model.ColumnType;
+import io.micronaut.controlpanel.panels.datasource.model.ForeignKey;
+import io.micronaut.controlpanel.panels.datasource.model.Table;
 import io.micronaut.core.annotation.Internal;
 
 import java.util.ArrayList;

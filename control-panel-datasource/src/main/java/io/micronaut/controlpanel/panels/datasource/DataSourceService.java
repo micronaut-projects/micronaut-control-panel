@@ -17,11 +17,12 @@ package io.micronaut.controlpanel.panels.datasource;
 
 import io.micronaut.context.annotation.EachBean;
 import io.micronaut.context.annotation.Parameter;
-import io.micronaut.controlpanel.panels.datasource.DataSourceControlPanel.Column;
-import io.micronaut.controlpanel.panels.datasource.DataSourceControlPanel.ColumnType;
-import io.micronaut.controlpanel.panels.datasource.DataSourceControlPanel.Table;
-import io.micronaut.controlpanel.panels.datasource.DataSourceControlPanel.ForeignKey;
+import io.micronaut.controlpanel.panels.datasource.model.Column;
+import io.micronaut.controlpanel.panels.datasource.model.ColumnType;
+import io.micronaut.controlpanel.panels.datasource.model.Table;
+import io.micronaut.controlpanel.panels.datasource.model.ForeignKey;
 import io.micronaut.data.connection.jdbc.advice.DelegatingDataSource;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +35,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -70,77 +72,108 @@ public class DataSourceService {
                     String tableName = tablesRs.getString("TABLE_NAME");
 
                     // Primary keys
-                    List<String> primaryKeysList = new ArrayList<>();
-                    try (ResultSet pkRs = dbMetaData.getPrimaryKeys(catalog, schema, tableName)) {
-                        while (pkRs.next()) {
-                            primaryKeysList.add(pkRs.getString("COLUMN_NAME"));
-                        }
-                    } catch (SQLException e) {
-                        LOG.warn("Exception while getting the primary keys of the table {}: {}", tableName, e.getMessage());
-                    }
+                    List<String> primaryKeysList = findPrimaryKeys(dbMetaData, catalog, schema, tableName);
 
                     // Foreign keys (full info)
                     Set<String> foreignKeyColumns = new HashSet<>();
-                    List<ForeignKey> foreignKeys = new ArrayList<>();
-                    try (ResultSet fkRs = dbMetaData.getImportedKeys(catalog, schema, tableName)) {
-                        while (fkRs.next()) {
-                            String fkName = fkRs.getString("FK_NAME");
-                            String fkColumn = fkRs.getString("FKCOLUMN_NAME");
-                            String pkSchema = valueOrDefault(fkRs.getString("PKTABLE_SCHEM"), defaultSchema);
-                            String pkTable = fkRs.getString("PKTABLE_NAME");
-                            String pkColumn = fkRs.getString("PKCOLUMN_NAME");
-                            foreignKeyColumns.add(fkColumn);
-                            foreignKeys.add(new ForeignKey(fkName, fkColumn, pkSchema, pkTable, pkColumn));
-                        }
-                    } catch (SQLException e) {
-                        LOG.warn("Exception while getting the foreign keys of the table {}: {}", tableName, e.getMessage());
-                    }
+                    List<ForeignKey> foreignKeys = findForeignKeys(dbMetaData, catalog, schema, tableName, defaultSchema, foreignKeyColumns);
 
                     // Unique columns (unique indexes/constraints)
-                    Set<String> uniqueCols = new LinkedHashSet<>();
-                    try (ResultSet idx = dbMetaData.getIndexInfo(catalog, schema, tableName, true, false)) {
-                        while (idx.next()) {
-                            boolean nonUnique = idx.getBoolean("NON_UNIQUE");
-                            String col = idx.getString("COLUMN_NAME");
-                            // Some drivers return null rows for table-level index metadata
-                            if (!nonUnique && col != null) {
-                                uniqueCols.add(col);
-                            }
-                        }
-                    } catch (SQLException e) {
-                        LOG.warn("Exception while getting the index info of the table {}: {}", tableName, e.getMessage());
-                    }
+                    Set<String> uniqueCols = findUniqueColumns(dbMetaData, catalog, schema, tableName);
 
                     // Columns
-                    List<Column> columnsList = new ArrayList<>();
-                    try (ResultSet colsRs = dbMetaData.getColumns(catalog, schema, tableName, "%")) {
-                        while (colsRs.next()) {
-                            String columnName = colsRs.getString("COLUMN_NAME");
-                            String columnTypeStr = colsRs.getString("TYPE_NAME");
-                            int columnSize = colsRs.getInt("COLUMN_SIZE");
-                            String nullable = colsRs.getString("IS_NULLABLE");
-                            int dataTypeInt = colsRs.getInt("DATA_TYPE");
-                            boolean isBinary = dataTypeInt == Types.BINARY ||
-                                dataTypeInt == Types.VARBINARY ||
-                                dataTypeInt == Types.LONGVARBINARY ||
-                                dataTypeInt == Types.BLOB;
-                            ColumnType columnType = mapToColumnType(dataTypeInt);
-                            boolean isPrimaryKey = primaryKeysList.contains(columnName);
-                            boolean isForeignKey = foreignKeyColumns.contains(columnName);
-                            columnsList.add(new Column(columnName, columnType, columnSize, nullable, isBinary, isPrimaryKey, isForeignKey));
-                        }
-                    } catch (SQLException e) {
-                        LOG.warn("Exception while getting the columns of the table {}: {}", tableName, e.getMessage());
-                    }
+                    List<Column> columnsList = findAllColumns(dbMetaData, catalog, schema, tableName, primaryKeysList, foreignKeyColumns);
 
                     tables.add(new Table(schema, tableName, columnsList, uniqueCols, foreignKeys));
                 }
             }
         } catch (SQLException e) {
-            LOG.error("SQL exception: {}", e.getMessage());
+            LOG.error("SQL exception: {}", e.getMessage(), e);
             throw new RuntimeException(e);
         }
         return tables;
+    }
+
+    private @NonNull List<Column> findAllColumns(final DatabaseMetaData dbMetaData,
+                                                 final String catalog, final String schema,
+                                                 final String tableName, final List<String> primaryKeysList,
+                                                 final Set<String> foreignKeyColumns) {
+        List<Column> columnsList = new ArrayList<>();
+        try (ResultSet colsRs = dbMetaData.getColumns(catalog, schema, tableName, "%")) {
+            while (colsRs.next()) {
+                String columnName = colsRs.getString("COLUMN_NAME");
+                String columnTypeStr = colsRs.getString("TYPE_NAME");
+                int columnSize = colsRs.getInt("COLUMN_SIZE");
+                String nullable = colsRs.getString("IS_NULLABLE");
+                int dataTypeInt = colsRs.getInt("DATA_TYPE");
+                boolean isBinary = dataTypeInt == Types.BINARY ||
+                    dataTypeInt == Types.VARBINARY ||
+                    dataTypeInt == Types.LONGVARBINARY ||
+                    dataTypeInt == Types.BLOB;
+                ColumnType columnType = mapToColumnType(dataTypeInt);
+                boolean isPrimaryKey = primaryKeysList.contains(columnName);
+                boolean isForeignKey = foreignKeyColumns.contains(columnName);
+                columnsList.add(new Column(columnName, columnType, columnSize, nullable, isBinary, isPrimaryKey, isForeignKey));
+            }
+        } catch (SQLException e) {
+            LOG.warn("Exception while getting the columns of the table {}: {}", tableName, e.getMessage());
+        }
+        return columnsList;
+    }
+
+    private static @NonNull Set<String> findUniqueColumns(final DatabaseMetaData dbMetaData,
+                                                          final String catalog, final String schema,
+                                                          final String tableName) {
+        Set<String> uniqueCols = new LinkedHashSet<>();
+        try (ResultSet idx = dbMetaData.getIndexInfo(catalog, schema, tableName, true, false)) {
+            while (idx.next()) {
+                boolean nonUnique = idx.getBoolean("NON_UNIQUE");
+                String col = idx.getString("COLUMN_NAME");
+                // Some drivers return null rows for table-level index metadata
+                if (!nonUnique && col != null) {
+                    uniqueCols.add(col);
+                }
+            }
+        } catch (SQLException e) {
+            LOG.warn("Exception while getting the unique columns of the table {}: {}", tableName, e.getMessage());
+        }
+        return uniqueCols;
+    }
+
+    private static @NonNull List<ForeignKey> findForeignKeys(final DatabaseMetaData dbMetaData,
+                                                             final String catalog, final String schema,
+                                                             final String tableName,
+                                                             final String defaultSchema,
+                                                             final Set<String> foreignKeyColumns) {
+        List<ForeignKey> foreignKeys = new ArrayList<>();
+        try (ResultSet fkRs = dbMetaData.getImportedKeys(catalog, schema, tableName)) {
+            while (fkRs.next()) {
+                String fkName = fkRs.getString("FK_NAME");
+                String fkColumn = fkRs.getString("FKCOLUMN_NAME");
+                String pkSchema = Optional.ofNullable(fkRs.getString("PKTABLE_SCHEM")).orElse(defaultSchema);
+                String pkTable = fkRs.getString("PKTABLE_NAME");
+                String pkColumn = fkRs.getString("PKCOLUMN_NAME");
+                foreignKeyColumns.add(fkColumn);
+                foreignKeys.add(new ForeignKey(fkName, fkColumn, pkSchema, pkTable, pkColumn));
+            }
+        } catch (SQLException e) {
+            LOG.warn("Exception while getting the foreign keys of the table {}: {}", tableName, e.getMessage());
+        }
+        return foreignKeys;
+    }
+
+    private static @NonNull List<String> findPrimaryKeys(final DatabaseMetaData dbMetaData,
+                                                         final String catalog, final String schema,
+                                                         final String tableName) {
+        List<String> primaryKeysList = new ArrayList<>();
+        try (ResultSet pkRs = dbMetaData.getPrimaryKeys(catalog, schema, tableName)) {
+            while (pkRs.next()) {
+                primaryKeysList.add(pkRs.getString("COLUMN_NAME"));
+            }
+        } catch (SQLException e) {
+            LOG.warn("Exception while getting the primary keys of the table {}: {}", tableName, e.getMessage());
+        }
+        return primaryKeysList;
     }
 
     private ColumnType mapToColumnType(int dataType) {
@@ -165,10 +198,6 @@ public class DataSourceService {
      */
     public String generateMermaidER(List<Table> tables) {
         return MermaidUtils.generateMermaidER(tables);
-    }
-
-    private static String valueOrDefault(String v, String def) {
-        return v == null ? def : v;
     }
 
     /**
@@ -231,6 +260,7 @@ public class DataSourceService {
 
             return new QueryResult(cols, rows, total);
         } catch (SQLException e) {
+            LOG.error("Error while executing SQL query: {}", e.getMessage(), e);
             throw new RuntimeException(e);
         }
     }
@@ -243,24 +273,24 @@ public class DataSourceService {
         if (sql == null) {
             throw new IllegalArgumentException("SQL must not be null");
         }
-        String s = sql.trim();
-        if (s.endsWith(";")) {
-            s = s.substring(0, s.length() - 1);
+        String trimmed = sql.trim();
+        if (trimmed.endsWith(";")) {
+            trimmed = trimmed.substring(0, trimmed.length() - 1);
         }
         // Disallow stacked statements
-        if (s.indexOf(';') >= 0) {
+        if (trimmed.indexOf(';') >= 0) {
             throw new IllegalArgumentException("Multiple statements are not allowed");
         }
-        String lower = s.stripLeading().toLowerCase();
-        if (!(lower.startsWith("select") || lower.startsWith("with"))) {
+        String lowered = trimmed.stripLeading().toLowerCase();
+        if (!(lowered.startsWith("select") || lowered.startsWith("with"))) {
             throw new IllegalArgumentException("Only SELECT/WITH queries are allowed");
         }
         // Basic keyword blacklist to reduce risk
-        String normalized = sanitizeWordBoundary(s);
+        String normalized = sanitizeWordBoundary(trimmed);
         if (normalized.matches(".*\\b(insert|update|delete|merge|drop|alter|create|truncate)\\b.*")) {
             throw new IllegalArgumentException("Only read-only queries are allowed");
         }
-        return s;
+        return trimmed;
     }
 
     /**

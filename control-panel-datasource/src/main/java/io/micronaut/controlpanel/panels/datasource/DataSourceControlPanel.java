@@ -20,26 +20,28 @@ import io.micronaut.context.annotation.Parameter;
 import io.micronaut.context.env.Environment;
 import io.micronaut.controlpanel.core.AbstractEachBeanControlPanel;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
-import io.micronaut.core.annotation.ReflectiveAccess;
+import io.micronaut.controlpanel.panels.datasource.model.Body;
+import io.micronaut.controlpanel.panels.datasource.model.DataSourceInfo;
+import io.micronaut.controlpanel.panels.datasource.model.DatabaseType;
+import io.micronaut.controlpanel.panels.datasource.model.Table;
 import jakarta.inject.Named;
 
 import javax.sql.DataSource;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Control panel for DataSource metadata, displaying tables, columns, keys, etc.
  */
 @EachBean(DataSource.class)
-public class DataSourceControlPanel extends AbstractEachBeanControlPanel<DataSourceControlPanel.Body> {
+public class DataSourceControlPanel extends AbstractEachBeanControlPanel<Body> {
 
     public static final String NAME = "datasource";
-    public static final String ICON_CLASS = "fa-database";
+    public static final String DEFAULT_ICON_CLASS = "fa-database";
 
     private final String beanName;
     private final List<Table> tables;
     private final Body body;
+    private final DataSourceInfo dataSourceInfo;
 
     public DataSourceControlPanel(@Parameter String beanName,
                                   @Parameter DataSourceService dataSourceService,
@@ -48,8 +50,18 @@ public class DataSourceControlPanel extends AbstractEachBeanControlPanel<DataSou
         super(NAME, configuration);
         this.beanName = beanName;
         this.tables = dataSourceService.getTables();
-        var jdbUrl = environment.getProperty("datasources.%s.url".formatted(beanName), String.class, "");
-        this.body = new Body(new DataSourceInfo(beanName, jdbUrl), tables, dataSourceService.generateMermaidER(tables));
+        this.dataSourceInfo = createDataSourceInfo(environment, beanName);
+        this.body = new Body(dataSourceInfo, tables, dataSourceService.generateMermaidER(tables));
+    }
+
+    private DataSourceInfo createDataSourceInfo(Environment env, String beanName) {
+        var jdbUrl = env.getProperty("datasources.%s.url".formatted(beanName), String.class, "");
+        var username = env.getProperty("datasources.%s.username".formatted(beanName), String.class, "");
+        var password = env.getProperty("datasources.%s.password".formatted(beanName), String.class, "");
+        var dialect = env.getProperty("datasources.%s.dialect".formatted(beanName), String.class, "");
+        var dbType = env.getProperty("datasources.%s.db-type".formatted(beanName), String.class, "");
+
+        return new DataSourceInfo(beanName, jdbUrl, username, password, DatabaseType.of(dialect, dbType));
     }
 
     @Override
@@ -74,102 +86,12 @@ public class DataSourceControlPanel extends AbstractEachBeanControlPanel<DataSou
 
     @Override
     public String getIcon() {
-        return ICON_CLASS;
+        //TODO add custom icons
+        return DEFAULT_ICON_CLASS;
     }
 
     @Override
     public Category getCategory() {
-        return new Category(NAME, "Data Sources", ICON_CLASS);
-    }
-
-    /**
-     * Body of the control panel containing DataSource info and tables.
-     *
-     * @param dataSourceInfo The DataSource information
-     * @param tables         The list of tables
-     * @param mermaidEr      The Mermaid ER diagram code generated from the datasource
-     */
-    @ReflectiveAccess
-    public record Body(DataSourceInfo dataSourceInfo, List<Table> tables, String mermaidEr) {
-    }
-
-    /**
-     * Database column metadata.
-     *
-     * @param name         The column name
-     * @param type         The generic column type
-     * @param size         The column size
-     * @param nullable     Whether the column is nullable
-     * @param binary       Whether the column is binary
-     * @param isPrimaryKey Whether the column is a primary key
-     * @param isForeignKey Whether the column is a foreign key
-     */
-    @ReflectiveAccess
-    public record Column(String name, ColumnType type, int size, String nullable, boolean binary,
-                         boolean isPrimaryKey, boolean isForeignKey) {
-    }
-
-    /**
-     * Foreign key relationship metadata.
-     *
-     * @param name      The foreign key name
-     * @param fkColumn  The foreign key column name on the current table
-     * @param pkSchema  The primary key table schema
-     * @param pkTable   The primary key table name
-     * @param pkColumn  The primary key column name
-     */
-    @ReflectiveAccess
-    public record ForeignKey(String name, String fkColumn, String pkSchema, String pkTable, String pkColumn) {
-    }
-
-    /**
-     * Database table metadata.
-     *
-     * @param schema        The table schema
-     * @param name          The table name
-     * @param columns       The columns
-     * @param uniqueColumns Columns that are part of unique indexes/constraints
-     * @param foreignKeys   Foreign key relationships imported by this table
-     */
-    @ReflectiveAccess
-    public record Table(String schema, String name, List<Column> columns, Set<String> uniqueColumns, List<ForeignKey> foreignKeys) {
-    }
-
-    /**
-     * DataSource information.
-     *
-     * @param name    The DataSource name
-     * @param jdbcUrl The JDBC URL
-     */
-    @ReflectiveAccess
-    public record DataSourceInfo(String name, String jdbcUrl) {
-    }
-
-    /**
-     * DataSet for query results.
-     *
-     * @param cols                  The column names
-     * @param data                  The data rows
-     * @param error                 Any error
-     * @param message               Any message
-     * @param totalNumberOfElements Total elements
-     */
-    @ReflectiveAccess
-    public record DataSet(List<String> cols, List<Map<String, String>> data, String error,
-                          String message,
-                          int totalNumberOfElements) {
-    }
-
-    /**
-     * Generic column types.
-     */
-    @ReflectiveAccess
-    public enum ColumnType {
-        TEXT,
-        NUMERIC,
-        DATE,
-        BLOB,
-        BOOLEAN,
-        GENERIC
+        return new Category(NAME, "Data Sources", DEFAULT_ICON_CLASS);
     }
 }
