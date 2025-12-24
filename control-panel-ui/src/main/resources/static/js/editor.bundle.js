@@ -27620,8 +27620,20 @@
       specialVar: "@",
       identifierQuotes: "\"["
   });
+  /**
+  [PL/SQL](https://en.wikipedia.org/wiki/PL/SQL) dialect.
+  */
+  const PLSQL = /*@__PURE__*/SQLDialect.define({
+      keywords: SQLKeywords + "abort accept access add all alter and any arraylen as asc assert assign at attributes audit authorization avg base_table begin between binary_integer body by case cast char_base check close cluster clusters colauth column comment commit compress connected constant constraint crash create current currval cursor data_base database dba deallocate debugoff debugon declare default definition delay delete desc digits dispose distinct do drop else elseif elsif enable end entry exception exception_init exchange exclusive exists external fast fetch file for force form from function generic goto grant group having identified if immediate in increment index indexes indicator initial initrans insert interface intersect into is key level library like limited local lock log logging loop master maxextents maxtrans member minextents minus mislabel mode modify multiset new next no noaudit nocompress nologging noparallel not nowait number_base of off offline on online only option or order out package parallel partition pctfree pctincrease pctused pls_integer positive positiven pragma primary prior private privileges procedure public raise range raw rebuild record ref references refresh rename replace resource restrict return returning returns reverse revoke rollback row rowid rowlabel rownum rows run savepoint schema segment select separate set share snapshot some space split sql start statement storage subtype successful synonym tabauth table tables tablespace task terminate then to trigger truncate type union unique unlimited unrecoverable unusable update use using validate value values variable view views when whenever where while with work",
+      builtin: "appinfo arraysize autocommit autoprint autorecovery autotrace blockterminator break btitle cmdsep colsep compatibility compute concat copycommit copytypecheck define echo editfile embedded feedback flagger flush heading headsep instance linesize lno loboffset logsource longchunksize markup native newpage numformat numwidth pagesize pause pno recsep recsepchar repfooter repheader serveroutput shiftinout show showmode spool sqlblanklines sqlcase sqlcode sqlcontinue sqlnumber sqlpluscompatibility sqlprefix sqlprompt sqlterminator suffix tab term termout timing trimout trimspool ttitle underline verify version wrap",
+      types: SQLTypes + "ascii bfile bfilename bigserial bit blob dec long number nvarchar nvarchar2 serial smallint string text uid varchar2 xml",
+      operatorChars: "*/+-%<>!=~",
+      doubleQuotedStrings: true,
+      charSetCasts: true,
+      plsqlQuotingMechanism: true
+  });
 
-  function getSQLExtensions(databaseType) {
+  function getSQLExtensions(databaseType, schemaConfig) {
       let dbDialect;
       switch (databaseType.toUpperCase()) {
           case 'MYSQL':
@@ -27637,6 +27649,8 @@
               dbDialect = MSSQL;
               break;
           case 'ORACLE':
+              dbDialect = PLSQL;
+              break;
           case 'GENERIC':
           default:
               dbDialect = StandardSQL;
@@ -27647,6 +27661,8 @@
           sql({
               dialect: dbDialect,
               upperCaseKeywords: true,
+              schema: (schemaConfig && schemaConfig.schema) ? schemaConfig.schema : undefined,
+              defaultSchema: (schemaConfig && schemaConfig.defaultSchema) ? schemaConfig.defaultSchema : undefined,
           })
       ];
   }

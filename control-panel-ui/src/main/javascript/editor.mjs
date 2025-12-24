@@ -1,9 +1,9 @@
 import {EditorView} from "@codemirror/view";
 import {EditorState} from "@codemirror/state";
 import {basicSetup} from "codemirror";
-import {sql, StandardSQL, PostgreSQL, MySQL, MariaSQL, MSSQL} from "@codemirror/lang-sql"
+import {sql, StandardSQL, PostgreSQL, MySQL, MariaSQL, MSSQL, PLSQL} from "@codemirror/lang-sql"
 
-function getSQLExtensions(databaseType) {
+function getSQLExtensions(databaseType, schemaConfig) {
     let dbDialect;
     switch (databaseType.toUpperCase()) {
         case 'MYSQL':
@@ -19,6 +19,8 @@ function getSQLExtensions(databaseType) {
             dbDialect = MSSQL;
             break;
         case 'ORACLE':
+            dbDialect = PLSQL;
+            break;
         case 'GENERIC':
         default:
             dbDialect = StandardSQL;
@@ -29,6 +31,8 @@ function getSQLExtensions(databaseType) {
         sql({
             dialect: dbDialect,
             upperCaseKeywords: true,
+            schema: (schemaConfig && schemaConfig.schema) ? schemaConfig.schema : undefined,
+            defaultSchema: (schemaConfig && schemaConfig.defaultSchema) ? schemaConfig.defaultSchema : undefined,
         })
     ];
 }

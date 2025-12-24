@@ -138,21 +138,57 @@
             });
         }
 
-        // Initialize CodeMirror editor dynamically
+        // Initialize CodeMirror editor dynamically after schema loads
         $(function() {
             const type = "{{dataSourceInfo.type}}";
+            const ds = "{{ controlPanel.title }}";
+            const schemaUrl = "/datasource-control-panel-controller/" + ds + "/schema.js";
             const cm = window.codemirror;
-            const extensions = cm.getSQLExtensions(type);
-            const sqlExt = extensions.find(ext => ext && ext.spec && ext.spec.dialect);
-            const state = cm.EditorState.create({
-                doc: "/* Type an SQL query here, or select a table from the tree */\n\n",
-                extensions: extensions
-            });
-            const view = new cm.EditorView({
-                state,
-                parent: document.querySelector("#sql-console")
-            });
-            cm.view = view;
+
+            function initEditor() {
+                if (cm.schema !== undefined && cm.defaultSchema !== undefined) {
+                    const schemaConfig = { schema: cm.schema, defaultSchema: cm.defaultSchema };
+                    const extensions = cm.getSQLExtensions(type, schemaConfig);
+                    const state = cm.EditorState.create({
+                        doc: "/* Type an SQL query here, or select a table from the tree */\n\n",
+                        extensions: extensions
+                    });
+                    const view = new cm.EditorView({
+                        state,
+                        parent: document.querySelector("#sql-console")
+                    });
+                    cm.view = view;
+                }
+            }
+
+            // Dynamically load schema script with onload
+            const script = document.createElement('script');
+            script.src = schemaUrl;
+            script.onload = function() {
+                initEditor();
+            };
+            script.onerror = function() {
+                // Fallback init without schema
+                const schemaConfig = {};
+                const extensions = cm.getSQLExtensions(type, schemaConfig);
+                const state = cm.EditorState.create({
+                    doc: "/* Type an SQL query here, or select a table from the tree */\n\n",
+                    extensions: extensions
+                });
+                const view = new cm.EditorView({
+                    state,
+                    parent: document.querySelector("#sql-console")
+                });
+                cm.view = view;
+            };
+            document.head.appendChild(script);
+
+            // Fallback timeout if onload doesn't trigger (e.g., script executes but properties not set)
+            setTimeout(() => {
+                if (cm.schema === undefined) {
+                    initEditor(); // Try to init if now available
+                }
+            }, 2000);
         });
 
         // Render Mermaid ER diagram when the modal is shown

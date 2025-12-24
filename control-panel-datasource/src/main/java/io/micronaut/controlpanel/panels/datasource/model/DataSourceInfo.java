@@ -20,8 +20,11 @@ import io.micronaut.core.annotation.ReflectiveAccess;
 /**
  * DataSource information.
  *
- * @param name    The DataSource name
- * @param jdbcUrl The JDBC URL
+ * @param name     The DataSource name
+ * @param jdbcUrl  The JDBC URL
+ * @param username The database username
+ * @param password The database password
+ * @param type     The database type/dialect
  */
 @ReflectiveAccess
 public record DataSourceInfo(String name, String jdbcUrl, String username, String password, DatabaseType type) {
