@@ -36,7 +36,6 @@ import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.Locale;
 
 /**
  * REST controller to execute SQL queries against a specific DataSource for the Control Panel.
@@ -71,6 +70,9 @@ public final class DataSourceController {
      * <pre>
      * { "schema": { "table": { self: {label:"EMP", type:"table"}, children: [{label:"EMPNO", type:"column"}, ...] } } }
      * </pre>
+     *
+     * @param dataSource The name of the datasource
+     * @return HttpResponse containing the generated schema.js JavaScript
      */
     @Get(value = "/{dataSource}/schema.js", produces = "application/javascript")
     public HttpResponse<String> schemaJs(String dataSource) {
@@ -85,7 +87,7 @@ public final class DataSourceController {
 
         computeSchema(tables, counts, schema);
 
-        // Choose defaultSchema (normalized, lowercased)
+        // Choose defaultSchema (original case, most common)
         String defaultSchema = null;
         int max = -1;
         for (var e : counts.entrySet()) {
@@ -146,34 +148,24 @@ public final class DataSourceController {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private static void computeSchema(final List<Table> tables, final LinkedHashMap<String, Integer> counts, final LinkedHashMap<String, Object> schema) {
         for (var t : tables) {
-            var schemaLabel = t.schema() == null ? "" : t.schema();
-            var schemaKey = schemaLabel.toLowerCase(Locale.ROOT);
+            var schemaKey = (t.schema() == null) ? "" : t.schema();
             counts.put(schemaKey, counts.getOrDefault(schemaKey, 0) + 1);
 
-            @SuppressWarnings("unchecked")
             var tablesInSchema = (LinkedHashMap<String, Object>) schema.get(schemaKey);
             if (tablesInSchema == null) {
                 tablesInSchema = new LinkedHashMap<>();
                 schema.put(schemaKey, tablesInSchema);
             }
-            // Expose also original-cased schema key for case-sensitive matching
-            if (!schemaKey.equals(schemaLabel) && !schemaLabel.isEmpty()) {
-                schema.put(schemaLabel, tablesInSchema);
-            }
 
             var tableLabel = t.name();
-            var tableKey = tableLabel.toLowerCase(Locale.ROOT);
 
             // children: columns (emit as plain strings to match SQLNamespace array shape)
             var tableNode = getTableNode(t, tableLabel);
 
-            tablesInSchema.put(tableKey, tableNode);
-            // Expose also original-cased table key for case-sensitive matching
-            if (!tableKey.equals(tableLabel) && !tableLabel.isEmpty()) {
-                tablesInSchema.put(tableLabel, tableNode);
-            }
+            tablesInSchema.put(tableLabel, tableNode);
         }
     }
 
