@@ -37,6 +37,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * Service for a specific {@link DataSource}, providing metadata about tables, columns, keys, etc.
@@ -209,7 +210,8 @@ public class DataSourceService {
      * @return QueryResult with column labels, rows and total row count
      */
     public QueryResult executeQuery(String sql, int start, int length) {
-        String safeSql = sanitizeQuery(sql);
+        String strippedSql = stripComments(sql);
+        String safeSql = sanitizeQuery(strippedSql);
         if (start < 0) {
             start = 0;
         }
@@ -268,7 +270,6 @@ public class DataSourceService {
     private static String sanitizeWordBoundary(String s) {
         return s.replaceAll("\\s+", " ").toLowerCase();
     }
-
     private String sanitizeQuery(String sql) {
         if (sql == null) {
             throw new IllegalArgumentException("SQL must not be null");
@@ -291,6 +292,17 @@ public class DataSourceService {
             throw new IllegalArgumentException("Only read-only queries are allowed");
         }
         return trimmed;
+    }
+
+    private String stripComments(String sql) {
+        if (sql == null) {
+            return null;
+        }
+        // Remove multi-line comments /* ... */
+        sql = Pattern.compile("/\\*.*?\\*/", Pattern.DOTALL).matcher(sql).replaceAll("");
+        // Remove single-line comments -- ...
+        sql = Pattern.compile("--.*", Pattern.MULTILINE).matcher(sql).replaceAll("");
+        return sql;
     }
 
     /**
