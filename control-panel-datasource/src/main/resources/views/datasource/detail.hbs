@@ -140,7 +140,7 @@
 
         function createInstructionPanel(view) {
             let dom = document.createElement("div");
-            dom.textContent = "Type an SQL query here, or select a table from the tree. Press Cmd+R / Ctrl+R to execute the query.<br/>Autocomplete with Ctrl+Space, Enter to confirm selection";
+            dom.textContent = "Type an SQL query here, or select a table from the tree. Press Cmd+Enter / Ctrl+Enter to execute the query. Autocomplete with Ctrl+Space, Enter to confirm selection";
             dom.className = "cm-instruction-panel";
             dom.style.padding = "5px 10px";
             dom.style.backgroundColor = "#f8f9fa";
@@ -202,9 +202,9 @@
                 }
             }, 2000);
 
-            // Keyboard shortcut for executing query: Cmd+R (Mac) or Ctrl+R (Windows/Linux)
+            // Keyboard shortcut for executing query: Cmd+Enter (Mac) or Ctrl+Enter (Windows/Linux)
             $(document).on('keydown', function(e) {
-                if ((e.metaKey || e.ctrlKey) && e.key === 'r' && !e.shiftKey && !e.altKey) {
+                if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && !e.shiftKey && !e.altKey) {
                     e.preventDefault();
                     $('#executeQuery').click();
                 }
