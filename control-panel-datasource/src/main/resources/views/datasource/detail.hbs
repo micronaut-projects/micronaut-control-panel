@@ -140,7 +140,7 @@
 
         function createInstructionPanel(view) {
             let dom = document.createElement("div");
-            dom.textContent = "Type an SQL query here, or select a table from the tree";
+            dom.textContent = "Type an SQL query here, or select a table from the tree. Press Cmd+R (Ctrl+R on Windows/Linux) to execute the query.";
             dom.className = "cm-instruction-panel";
             dom.style.padding = "5px 10px";
             dom.style.backgroundColor = "#f8f9fa";
@@ -201,6 +201,14 @@
                     initEditor(); // Try to init if now available
                 }
             }, 2000);
+
+            // Keyboard shortcut for executing query: Cmd+R (Mac) or Ctrl+R (Windows/Linux)
+            $(document).on('keydown', function(e) {
+                if ((e.metaKey || e.ctrlKey) && e.key === 'r' && !e.shiftKey && !e.altKey) {
+                    e.preventDefault();
+                    $('#executeQuery').click();
+                }
+            });
         });
 
         // Render Mermaid ER diagram when the modal is shown
