@@ -66,7 +66,7 @@ public final class DataSourceController {
     }
 
     /**
-     * <p>Build CodeMirror SQLNamespace with normalized lowercase keys for matching:</p>
+     * <p>Build CodeMirror SQLNamespace with normalized lowercase keys for matching.</p>
      *
      * <pre>
      * { "schema": { "table": { self: {label:"EMP", type:"table"}, children: [{label:"EMPNO", type:"column"}, ...] } } }
@@ -109,6 +109,13 @@ public final class DataSourceController {
         }
     }
 
+    /**
+     * Execute a SQL query against the specified datasource.
+     *
+     * @param dataSource The name of the datasource (path parameter)
+     * @param body The query request containing SQL and pagination parameters
+     * @return The query results as a {@link HttpResponse} containing {@link QueryResponse}, or an error response if the query fails
+     */
     @Post(value = "/{dataSource}/query", produces = MediaType.APPLICATION_JSON)
     public HttpResponse<?> query(String dataSource, @Body QueryRequest body) {
         var service = services.get(dataSource);

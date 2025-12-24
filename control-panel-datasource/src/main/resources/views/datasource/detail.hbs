@@ -225,77 +225,106 @@
             const ds = '{{ controlPanel.title }}';
             const url = appPath + '/datasource-control-panel-controller/' + ds + '/query';
 
-            // Initial request to obtain columns and bootstrap the table header
-            $.ajax({
-                url: url,
-                type: 'POST',
-                dataType: 'json',
-                contentType: 'application/json; charset=utf-8',
-                data: JSON.stringify({ sql: sql, start: 0, length: 10, draw: 1 })
-            }).done(function(resp) {
-                const cols = resp && resp.cols ? resp.cols : [];
+                // Initial request to obtain columns and bootstrap the table header
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    dataType: 'json',
+                    contentType: 'application/json; charset=utf-8',
+                    data: JSON.stringify({ sql: sql, start: 0, length: 10, draw: 1 })
+                }).done(function(resp) {
+                    const cols = resp && resp.cols ? resp.cols : [];
+                    let initialData = resp && resp.data ? resp.data : [];
+                    const initialTotal = resp && resp.recordsTotal ? resp.recordsTotal : 0;
+                    const initialDraw = resp && resp.draw ? resp.draw : 1;
+                    const isUpdateQuery = cols.length === 1 && cols[0] === "Affected Rows";
 
-                // Destroy previous instance if any and rebuild inside a stable container
-                const $container = $('#queryResultsContainer');
-                if (window.queryResultsDT) {
-                    try { window.queryResultsDT.clear(); window.queryResultsDT.destroy(); } catch (e) {}
-                    window.queryResultsDT = null;
-                } else {
-                    const $maybeTable = $('#queryResults');
-                    if ($.fn.DataTable.isDataTable($maybeTable)) {
-                        try { $maybeTable.DataTable().clear().destroy(); } catch (e) {}
+                    // Destroy previous instance if any and rebuild inside a stable container
+                    const $container = $('#queryResultsContainer');
+                    if (window.queryResultsDT) {
+                        try { window.queryResultsDT.clear(); window.queryResultsDT.destroy(); } catch (e) {}
+                        window.queryResultsDT = null;
+                    } else {
+                        const $maybeTable = $('#queryResults');
+                        if ($.fn.DataTable.isDataTable($maybeTable)) {
+                            try { $maybeTable.DataTable().clear().destroy(); } catch (e) {}
+                        }
                     }
-                }
-                // Rebuild container with a fresh table and headers
-                const thead = '<thead><tr>' + cols.map(c => '<th>' + c + '</th>').join('') + '</tr></thead>';
-                const tableHtml = '<table id="queryResults" class="table table-bordered table-striped">' + thead + '<tbody></tbody></table>';
-                $container.html(tableHtml);
-                const $table = $('#queryResults');
-                DataTable.ext.errMode = 'none';
+                    // Rebuild container with a fresh table and headers
+                    const thead = '<thead><tr>' + cols.map(c => '<th>' + c + '</th>').join('') + '</tr></thead>';
+                    const tbody = '<tbody>' + initialData.map(row => '<tr>' + row.map(cell => '<td>' + (cell || '') + '</td>').join('') + '</tr>').join('') + '</tbody>';
+                    const tableHtml = '<table id="queryResults" class="table table-bordered table-striped">' + thead + tbody + '</table>';
+                    $container.html(tableHtml);
+                    const $table = $('#queryResults');
+                    DataTable.ext.errMode = 'none';
 
-                $table.on('dt-error.dt', function (e, settings, techNote, message) {
-                    globalAlertMessageDisplay('Error', message, 'alert-danger', 'fa-circle-exclamation');
-                }).on('preXhr.dt', function (e, settings, data) {
-                    globalAlertMessageClear();
-                });
+                    $table.on('dt-error.dt', function (e, settings, techNote, message) {
+                        globalAlertMessageDisplay('Error', message, 'alert-danger', 'fa-circle-exclamation');
+                    }).on('preXhr.dt', function (e, settings, data) {
+                        globalAlertMessageClear();
+                    });
 
-                const dtCols = cols.map(function(_, idx) { return { data: idx }; });
+                    const dtCols = cols.map(function(_, idx) { return { data: idx }; });
 
-                // Initialize DataTable with server-side pagination; no client ordering/searching
-                window.queryResultsDT = $table.DataTable({
-                    destroy: true,
-                    serverSide: true,
-                    processing: true,
-                    ordering: false,
-                    searching: false,
-                    ajax: function(d, callback) {
-                        $.ajax({
-                            url: url,
-                            type: 'POST',
-                            dataType: 'json',
-                            contentType: 'application/json; charset=utf-8',
-                            data: JSON.stringify({
-                                sql: sql,
-                                start: d.start,
-                                length: d.length,
-                                draw: d.draw
-                            })
-                        }).done(function(json) {
-                            // DataTables expects: draw, recordsTotal, recordsFiltered, data
-                            callback(json);
-                        }).fail(function(xhr) {
-                            const err = (xhr.responseJSON && xhr.responseJSON.error) ? xhr.responseJSON.error : 'Query failed';
-                            globalAlertMessageDisplay('Error', err, 'alert-danger', 'fa-circle-exclamation');
-                            callback({ draw: d.draw, recordsTotal: 0, recordsFiltered: 0, data: [] });
+                    if (isUpdateQuery) {
+                        // For update queries, show static single row without server-side pagination
+                        window.queryResultsDT = $table.DataTable({
+                            destroy: true,
+                            serverSide: false,
+                            processing: false,
+                            ordering: false,
+                            searching: false,
+                            paging: false,
+                            info: false,
+                            columns: dtCols.length ? dtCols : undefined
                         });
-                    },
-                    // If cols empty, DataTables will still render blank table; otherwise map indexes
-                    columns: dtCols.length ? dtCols : undefined
+                    } else {
+                        // For SELECT queries, use server-side pagination, but use pre-fetched data for initial load
+                        window.queryResultsDT = $table.DataTable({
+                            destroy: true,
+                            serverSide: true,
+                            processing: true,
+                            ordering: false,
+                            searching: false,
+                            ajax: function(d, callback) {
+                                // Intercept the initial ajax call (first page) and use pre-fetched data
+                                if (d.start === 0 && d.length === 10 && d.draw === 1) {
+                                    callback({
+                                        draw: d.draw,
+                                        recordsTotal: initialTotal,
+                                        recordsFiltered: initialTotal,
+                                        data: initialData
+                                    });
+                                    return;
+                                }
+                                // For subsequent pages or other interactions, perform the ajax call
+                                $.ajax({
+                                    url: url,
+                                    type: 'POST',
+                                    dataType: 'json',
+                                    contentType: 'application/json; charset=utf-8',
+                                    data: JSON.stringify({
+                                        sql: sql,
+                                        start: d.start,
+                                        length: d.length,
+                                        draw: d.draw
+                                    })
+                                }).done(function(json) {
+                                    // DataTables expects: draw, recordsTotal, recordsFiltered, data
+                                    callback(json);
+                                }).fail(function(xhr) {
+                                    const err = (xhr.responseJSON && xhr.responseJSON.error) ? xhr.responseJSON.error : 'Query failed';
+                                    globalAlertMessageDisplay('Error', err, 'alert-danger', 'fa-circle-exclamation');
+                                    callback({ draw: d.draw, recordsTotal: 0, recordsFiltered: 0, data: [] });
+                                });
+                            },
+                            columns: dtCols.length ? dtCols : undefined
+                        });
+                    }
+                }).fail(function(xhr) {
+                    const err = (xhr.responseJSON && xhr.responseJSON.error) ? xhr.responseJSON.error : 'Query failed';
+                    globalAlertMessageDisplay('Error', err, 'alert-danger', 'fa-circle-exclamation');
                 });
-            }).fail(function(xhr) {
-                const err = (xhr.responseJSON && xhr.responseJSON.error) ? xhr.responseJSON.error : 'Query failed';
-                globalAlertMessageDisplay('Error', err, 'alert-danger', 'fa-circle-exclamation');
-            });
         }
 
         // Hook Play button

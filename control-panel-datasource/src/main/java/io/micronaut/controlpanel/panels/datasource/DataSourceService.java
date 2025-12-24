@@ -202,7 +202,7 @@ public class DataSourceService {
     }
 
     /**
-     * Sanitize, execute and paginate a SQL SELECT/WITH query.
+     * Sanitize, execute and paginate a SQL query.
      *
      * @param sql    The SQL to execute
      * @param start  Offset of the first row
@@ -219,45 +219,58 @@ public class DataSourceService {
             length = 0;
         }
 
-        try (var connection = dataSource.getConnection()) {
-            // total count
-            int total = 0;
-            String countSql = "SELECT COUNT(*) FROM (" + safeSql + ") t";
-            try (var ps = connection.prepareStatement(countSql);
-                 var rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    total = rs.getInt(1);
-                }
-            }
+        String lowered = safeSql.trim().toLowerCase();
+        boolean isSelect = lowered.startsWith("select ") || lowered.startsWith("with ");
 
+        try (var connection = dataSource.getConnection()) {
+            int total = 0;
             List<String> cols = new ArrayList<>();
             List<List<String>> rows = new ArrayList<>();
 
-            try (var ps = connection.prepareStatement(safeSql);
-                 var rs = ps.executeQuery()) {
-                var md = rs.getMetaData();
-                int colCount = md.getColumnCount();
-                for (int i = 1; i <= colCount; i++) {
-                    String label = md.getColumnLabel(i);
-                    cols.add(label != null ? label : ("col" + i));
+            if (isSelect) {
+                // total count for SELECT
+                String countSql = "SELECT COUNT(*) FROM (" + safeSql + ") t";
+                try (var ps = connection.prepareStatement(countSql);
+                     var rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        total = rs.getInt(1);
+                    }
                 }
 
-                // skip to offset
-                int skipped = 0;
-                while (skipped < start && rs.next()) {
-                    skipped++;
-                }
-                // collect page
-                int collected = 0;
-                while ((length == 0 || collected < length) && rs.next()) {
-                    List<String> row = new ArrayList<>(colCount);
+                // execute query with pagination
+                try (var ps = connection.prepareStatement(safeSql);
+                     var rs = ps.executeQuery()) {
+                    var md = rs.getMetaData();
+                    int colCount = md.getColumnCount();
                     for (int i = 1; i <= colCount; i++) {
-                        String v = rs.getString(i);
-                        row.add(v);
+                        String label = md.getColumnLabel(i);
+                        cols.add(label != null ? label : ("col" + i));
                     }
-                    rows.add(row);
-                    collected++;
+
+                    // skip to offset
+                    int skipped = 0;
+                    while (skipped < start && rs.next()) {
+                        skipped++;
+                    }
+                    // collect page
+                    int collected = 0;
+                    while ((length == 0 || collected < length) && rs.next()) {
+                        List<String> row = new ArrayList<>(colCount);
+                        for (int i = 1; i <= colCount; i++) {
+                            String v = rs.getString(i);
+                            row.add(v);
+                        }
+                        rows.add(row);
+                        collected++;
+                    }
                 }
+            } else {
+                // for non-SELECT (INSERT, UPDATE, DELETE, etc.), execute and get update count
+                try (var ps = connection.prepareStatement(safeSql)) {
+                    total = ps.executeUpdate();
+                }
+                cols.add("Affected Rows");
+                rows.add(List.of(total + " rows affected"));
             }
 
             return new QueryResult(cols, rows, total);
@@ -281,15 +294,6 @@ public class DataSourceService {
         // Disallow stacked statements
         if (trimmed.indexOf(';') >= 0) {
             throw new IllegalArgumentException("Multiple statements are not allowed");
-        }
-        String lowered = trimmed.stripLeading().toLowerCase();
-        if (!(lowered.startsWith("select") || lowered.startsWith("with"))) {
-            throw new IllegalArgumentException("Only SELECT/WITH queries are allowed");
-        }
-        // Basic keyword blacklist to reduce risk
-        String normalized = sanitizeWordBoundary(trimmed);
-        if (normalized.matches(".*\\b(insert|update|delete|merge|drop|alter|create|truncate)\\b.*")) {
-            throw new IllegalArgumentException("Only read-only queries are allowed");
         }
         return trimmed;
     }
