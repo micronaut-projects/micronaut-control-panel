@@ -138,6 +138,18 @@
             });
         }
 
+        function createInstructionPanel(view) {
+            let dom = document.createElement("div");
+            dom.textContent = "Type an SQL query here, or select a table from the tree";
+            dom.className = "cm-instruction-panel";
+            dom.style.padding = "5px 10px";
+            dom.style.backgroundColor = "#f8f9fa";
+            dom.style.borderBottom = "1px solid #dee2e6";
+            dom.style.fontFamily = "monospace";
+            dom.style.fontSize = "14px";
+            return {top: true, dom: dom};
+        }
+
         // Initialize CodeMirror editor dynamically after schema loads
         $(function() {
             const type = "{{dataSourceInfo.type}}";
@@ -150,8 +162,8 @@
                     const schemaConfig = { schema: cm.schema, defaultSchema: cm.defaultSchema };
                     const extensions = cm.getSQLExtensions(type, schemaConfig);
                     const state = cm.EditorState.create({
-                        doc: "/* Type an SQL query here, or select a table from the tree */\n\n",
-                        extensions: extensions
+                        doc: "\n\n",
+                        extensions: [...extensions, cm.showPanel.of(createInstructionPanel)]
                     });
                     const view = new cm.EditorView({
                         state,
@@ -172,8 +184,8 @@
                 const schemaConfig = {};
                 const extensions = cm.getSQLExtensions(type, schemaConfig);
                 const state = cm.EditorState.create({
-                    doc: "/* Type an SQL query here, or select a table from the tree */\n\n",
-                    extensions: extensions
+                    doc: "\n\n",
+                    extensions: [...extensions, cm.showPanel.of(createInstructionPanel)]
                 });
                 const view = new cm.EditorView({
                     state,

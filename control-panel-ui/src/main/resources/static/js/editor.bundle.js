@@ -27670,6 +27670,7 @@
   window.codemirror = {
       EditorState,
       EditorView,
+      showPanel,
       getSQLExtensions
   };
 

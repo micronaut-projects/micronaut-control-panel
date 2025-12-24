@@ -1,4 +1,4 @@
-import {EditorView} from "@codemirror/view";
+import {EditorView, showPanel} from "@codemirror/view";
 import {EditorState} from "@codemirror/state";
 import {basicSetup} from "codemirror";
 import {sql, StandardSQL, PostgreSQL, MySQL, MariaSQL, MSSQL, PLSQL} from "@codemirror/lang-sql"
@@ -40,5 +40,6 @@ function getSQLExtensions(databaseType, schemaConfig) {
 window.codemirror = {
     EditorState,
     EditorView,
+    showPanel,
     getSQLExtensions
 };
