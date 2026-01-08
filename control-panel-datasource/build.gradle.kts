@@ -27,6 +27,8 @@ dependencies {
     testImplementation(mn.micronaut.http.server.netty)
     testImplementation(mn.micronaut.http.client)
     testImplementation(mnSerde.micronaut.serde.jackson)
+    testImplementation(mnTest.mockito.core)
+    testImplementation(mnTest.mockito.junit.jupiter)
 }
 
 micronautBuild {
