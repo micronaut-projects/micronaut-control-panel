@@ -39,14 +39,20 @@ class DataSourceControllerTest {
 
     @Test
     void schemaJs_returnsNotFound_whenPanelNotFound() {
+        // Given
         doReturn(Map.of()).when(beanLocator).mapOfType(any(Argument.class));
+
+        // When
         DataSourceController controller = new DataSourceController(beanLocator, jsonMapper);
         HttpResponse<String> response = controller.schemaJs("unknown");
+
+        // Then
         assertEquals(404, response.getStatus().getCode());
     }
 
     @Test
     void schemaJs_returnsJavaScript_whenPanelExists() throws Exception {
+        // Given
         var column = new Column("EMPNO", ColumnType.NUMERIC, 10, "YES", false, false, false);
         var uniqueCols = new HashSet<String>();
         var foreignKeys = new ArrayList<ForeignKey>();
@@ -59,8 +65,11 @@ class DataSourceControllerTest {
         doReturn("{\"schema1\":{\"EMP\":{\"self\":{\"label\":\"EMP\",\"type\":\"table\"},\"children\":[\"EMPNO\"]}}").when(jsonMapper).writeValueAsString(any());
         doReturn("\"schema1\"").when(jsonMapper).writeValueAsString(eq("schema1"));
 
+        // When
         DataSourceController controller = new DataSourceController(beanLocator, jsonMapper);
         HttpResponse<String> response = controller.schemaJs("testDataSource");
+
+        // Then
         assertEquals(200, response.getStatus().getCode());
         assertEquals("application/javascript", response.getHeaders().getContentType().get());
         String js = response.body();
@@ -70,20 +79,30 @@ class DataSourceControllerTest {
 
     @Test
     void query_returnsNotFound_whenServiceNotFound() {
+        // Given
         doReturn(Map.of()).when(beanLocator).mapOfType(any(Argument.class));
+
+        // When
         DataSourceController controller = new DataSourceController(beanLocator, jsonMapper);
         var request = new DataSourceController.QueryRequest("SELECT 1", 0, 10, 1);
         HttpResponse<?> response = controller.query("unknown", request);
+
+        // Then
         assertEquals(404, response.getStatus().getCode());
     }
 
     @Test
     void query_returnsBadRequest_whenSqlEmpty() {
+        // Given
         var service = mock(DataSourceService.class);
         doReturn(Map.of("testDataSource", service)).when(beanLocator).mapOfType(any(Argument.class));
+
+        // When
         DataSourceController controller = new DataSourceController(beanLocator, jsonMapper);
         var request = new DataSourceController.QueryRequest("", 0, 10, 1);
         HttpResponse<?> response = controller.query("testDataSource", request);
+
+        // Then
         assertEquals(400, response.getStatus().getCode());
         var body = (DataSourceController.QueryResponse) response.body();
         assertEquals("SQL must not be empty", body.error());
@@ -91,13 +110,18 @@ class DataSourceControllerTest {
 
     @Test
     void query_returnsOk_whenQuerySuccessful() throws Exception {
+        // Given
         var service = mock(DataSourceService.class);
         doReturn(Map.of("testDataSource", service)).when(beanLocator).mapOfType(any(Argument.class));
         var queryResult = new DataSourceService.QueryResult(List.of("col1"), List.of(List.of("value")), 1);
         when(service.executeQuery(eq("SELECT 1"), eq(0), eq(10))).thenReturn(queryResult);
+
+        // When
         DataSourceController controller = new DataSourceController(beanLocator, jsonMapper);
         var request = new DataSourceController.QueryRequest("SELECT 1", 0, 10, 1);
         HttpResponse<?> response = controller.query("testDataSource", request);
+
+        // Then
         assertEquals(200, response.getStatus().getCode());
         var body = (DataSourceController.QueryResponse) response.body();
         assertEquals(1, body.recordsTotal());
@@ -108,12 +132,17 @@ class DataSourceControllerTest {
 
     @Test
     void query_returnsBadRequest_whenIllegalArgument() {
+        // Given
         var service = mock(DataSourceService.class);
         doReturn(Map.of("testDataSource", service)).when(beanLocator).mapOfType(any(Argument.class));
         when(service.executeQuery(any(), anyInt(), anyInt())).thenThrow(new IllegalArgumentException("Invalid SQL"));
+
+        // When
         DataSourceController controller = new DataSourceController(beanLocator, jsonMapper);
         var request = new DataSourceController.QueryRequest("INVALID", 0, 10, 1);
         HttpResponse<?> response = controller.query("testDataSource", request);
+
+        // Then
         assertEquals(400, response.getStatus().getCode());
         var body = (DataSourceController.QueryResponse) response.body();
         assertEquals("Invalid SQL", body.error());
@@ -121,12 +150,17 @@ class DataSourceControllerTest {
 
     @Test
     void query_returnsServerError_whenException() {
+        // Given
         var service = mock(DataSourceService.class);
         doReturn(Map.of("testDataSource", service)).when(beanLocator).mapOfType(any(Argument.class));
         when(service.executeQuery(any(), anyInt(), anyInt())).thenThrow(new RuntimeException("Database error"));
+
+        // When
         DataSourceController controller = new DataSourceController(beanLocator, jsonMapper);
         var request = new DataSourceController.QueryRequest("SELECT 1", 0, 10, 1);
         HttpResponse<?> response = controller.query("testDataSource", request);
+
+        // Then
         assertEquals(500, response.getStatus().getCode());
         var body = (DataSourceController.QueryResponse) response.body();
         assertEquals("Database error", body.error());
