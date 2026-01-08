@@ -17,8 +17,8 @@
 # a managed version (a version which alias starts with "managed-"
 
 [versions]
-micronaut-platform = "4.10.4"
-micronaut = "4.10.10"
+micronaut-platform = "4.10.6"
+micronaut = "4.10.12"
 micronaut-views = '5.9.0'
 micronaut-reactor = '3.9.1'
 micronaut-serde = "2.16.2"
@@ -32,7 +32,7 @@ kotlin-gradle-plugin = "2.3.0"
 micronaut-shared-settings = "7.6.6"
 sonatype-scan = "3.1.4"
 playwright = "1.57.0"
-shadow-plugin = "9.3.0"
+shadow-plugin = "9.3.1"
 test-logger-plugin = "4.0.0"
 
 [libraries]
