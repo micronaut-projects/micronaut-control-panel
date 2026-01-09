@@ -34,7 +34,6 @@ dependencies {
     implementation(mnSql.micronaut.jdbc.hikari)
     implementation(mnData.micronaut.data.jdbc)
     runtimeOnly(mnSql.ojdbc11)
-//    runtimeOnly(mnSql.h2)
     runtimeOnly(mnSql.postgresql)
 
     runtimeOnly(mnLogging.logback.classic)

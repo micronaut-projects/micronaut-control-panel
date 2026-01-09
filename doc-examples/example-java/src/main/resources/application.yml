@@ -31,12 +31,6 @@ datasources:
   my-postgres:
     db-type: postgres
     driver-class-name: org.postgresql.Driver
-#  my-h2:
-#    url: jdbc:h2:mem:devDb;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
-#    username: sa
-#    password:
-#    dialect: h2
-#    driver-class-name: org.h2.Driver
 
 # Test properties to verify environment endpoint filtering
 test:
