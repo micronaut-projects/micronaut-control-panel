@@ -1,0 +1,33 @@
+The Datasource Control Panel provides a view into your application databases:
+
+image::datasource.png[]
+
+Features include:
+
+* Database schema discovery, inspecting tables, columns, primary/foreign keys and indexes.
+* Visualize relationships in an E/R diagram.
+* SQL console with schema autocompletion and client-side SQL linting.
+
+To get started, add the following module as a development-time dependency:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-datasource[scope=developmentOnly]
+
+It is assumed that you already have datasources configured with either micronaut-sql or micronaut-data. If not, you can
+check the following documentation:
+
+* https://micronaut-projects.github.io/micronaut-sql/latest/guide/#jdbc[Configuring datasources with micronaut-sql].
+* https://guides.micronaut.io/latest/micronaut-data-jdbc-repository.html[Access a database with Micronaut Data JDBC repositories].
+* https://guides.micronaut.io/latest/micronaut-jpa-hibernate.html[Access a database with JPA and Hibernate using the Micronaut Data]
+
+=== Configuration
+
+The datasource control panel is automatically enabled when you include the `micronaut-control-panel-datasource` module in your project.
+You can disable it by setting:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    datasource:
+      enabled: false
+----
