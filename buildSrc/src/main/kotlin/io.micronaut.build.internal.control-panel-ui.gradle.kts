@@ -39,3 +39,7 @@ plugins.withId("java") {
         dependsOn(buildUiBundle)
     }
 }
+
+tasks.named("spotlessJavaMisc") {
+    enabled = false
+}
