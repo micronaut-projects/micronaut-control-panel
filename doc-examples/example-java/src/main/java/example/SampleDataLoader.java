@@ -1,7 +1,5 @@
 package example;
 
-import io.micronaut.context.annotation.Requires;
-import io.micronaut.context.env.Environment;
 import io.micronaut.context.event.StartupEvent;
 import io.micronaut.core.io.IOUtils;
 import io.micronaut.core.io.ResourceResolver;
@@ -23,7 +21,6 @@ import java.sql.SQLException;
 import java.util.Optional;
 
 @Singleton
-@Requires(notEnv = Environment.TEST)
 public class SampleDataLoader {
 
     private static final Logger LOG = LoggerFactory.getLogger(SampleDataLoader.class);
