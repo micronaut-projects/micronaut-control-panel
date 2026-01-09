@@ -29,6 +29,7 @@ dependencies {
     testImplementation(mnSerde.micronaut.serde.jackson)
     testImplementation(mnTest.mockito.core)
     testImplementation(mnTest.mockito.junit.jupiter)
+    testRuntimeOnly(mnTest.bytebuddy.agent)
 }
 
 micronautBuild {
