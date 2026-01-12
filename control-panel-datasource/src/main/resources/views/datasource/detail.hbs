@@ -262,12 +262,12 @@
                     // Destroy previous instance if any and rebuild inside a stable container
                     const $container = $('#queryResultsContainer');
                     if (window.queryResultsDT) {
-                        try { window.queryResultsDT.clear(); window.queryResultsDT.destroy(); } catch (e) {}
+                        try { window.queryResultsDT.clear(); window.queryResultsDT.destroy(); } catch (e) { console.error('Failed to clear/destroy existing queryResultsDT DataTable instance', e); }
                         window.queryResultsDT = null;
                     } else {
                         const $maybeTable = $('#queryResults');
                         if ($.fn.DataTable.isDataTable($maybeTable)) {
-                            try { $maybeTable.DataTable().clear().destroy(); } catch (e) {}
+                            try { $maybeTable.DataTable().clear().destroy(); } catch (e) { console.error('Failed to clear/destroy existing #queryResults DataTable instance', e); }
                         }
                     }
                     // Rebuild container with a fresh table and headers
