@@ -46,6 +46,11 @@ import java.util.regex.Pattern;
 public class DataSourceService {
 
     private static final Logger LOG = LoggerFactory.getLogger(DataSourceService.class);
+    private static final String COLUMN_NAME = "COLUMN_NAME";
+    private static final String COLUMN_SIZE = "COLUMN_SIZE";
+    private static final String IS_NULLABLE = "IS_NULLABLE";
+    private static final String DATA_TYPE = "DATA_TYPE";
+    private static final String NON_UNIQUE = "NON_UNIQUE";
 
     private final DataSource dataSource;
 
@@ -118,11 +123,10 @@ public class DataSourceService {
         List<Column> columnsList = new ArrayList<>();
         try (ResultSet colsRs = dbMetaData.getColumns(catalog, schema, tableName, "%")) {
             while (colsRs.next()) {
-                String columnName = colsRs.getString("COLUMN_NAME");
-                String columnTypeStr = colsRs.getString("TYPE_NAME");
-                int columnSize = colsRs.getInt("COLUMN_SIZE");
-                String nullable = colsRs.getString("IS_NULLABLE");
-                int dataTypeInt = colsRs.getInt("DATA_TYPE");
+                String columnName = colsRs.getString(COLUMN_NAME);
+                int columnSize = colsRs.getInt(COLUMN_SIZE);
+                String nullable = colsRs.getString(IS_NULLABLE);
+                int dataTypeInt = colsRs.getInt(DATA_TYPE);
                 boolean isBinary = dataTypeInt == Types.BINARY ||
                     dataTypeInt == Types.VARBINARY ||
                     dataTypeInt == Types.LONGVARBINARY ||
@@ -147,8 +151,8 @@ public class DataSourceService {
         Set<String> uniqueCols = new LinkedHashSet<>();
         try (ResultSet idx = dbMetaData.getIndexInfo(catalog, schema, tableName, true, false)) {
             while (idx.next()) {
-                boolean nonUnique = idx.getBoolean("NON_UNIQUE");
-                String col = idx.getString("COLUMN_NAME");
+                boolean nonUnique = idx.getBoolean(NON_UNIQUE);
+                String col = idx.getString(COLUMN_NAME);
                 // Some drivers return null rows for table-level index metadata
                 if (!nonUnique && col != null) {
                     uniqueCols.add(col);
@@ -194,7 +198,7 @@ public class DataSourceService {
         List<String> primaryKeysList = new ArrayList<>();
         try (ResultSet pkRs = dbMetaData.getPrimaryKeys(catalog, schema, tableName)) {
             while (pkRs.next()) {
-                primaryKeysList.add(pkRs.getString("COLUMN_NAME"));
+                primaryKeysList.add(pkRs.getString(COLUMN_NAME));
             }
         } catch (SQLException e) {
             LOG.warn("Exception while getting the primary keys of the table {}: {}", tableName, e.getMessage());

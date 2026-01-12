@@ -20,6 +20,7 @@ import io.micronaut.controlpanel.panels.datasource.model.Table;
 import io.micronaut.core.annotation.Internal;
 import io.micronaut.core.annotation.Introspected;
 import io.micronaut.core.type.Argument;
+import io.micronaut.core.util.StringUtils;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Body;
@@ -102,7 +103,7 @@ public final class DataSourceController {
         computeSchema(tables, counts, schema);
 
         // Choose defaultSchema (original case, most common)
-        String defaultSchema = null;
+        String defaultSchema = StringUtils.EMPTY_STRING;
         int max = -1;
         for (var e : counts.entrySet()) {
             if (e.getValue() > max) {
@@ -139,7 +140,7 @@ public final class DataSourceController {
      * @return The query results as a {@link HttpResponse} containing {@link QueryResponse}, or an error response if the query fails
      */
     @Post(value = "/{dataSource}/query", produces = MediaType.APPLICATION_JSON)
-    public HttpResponse<?> query(String dataSource, @Body QueryRequest body) {
+    public HttpResponse<QueryResponse> query(String dataSource, @Body QueryRequest body) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("query requested for dataSource='{}' (start={}, length={}, draw={}) sql='{}'", dataSource, body.start, body.length, body.draw, body.sql);
         }
