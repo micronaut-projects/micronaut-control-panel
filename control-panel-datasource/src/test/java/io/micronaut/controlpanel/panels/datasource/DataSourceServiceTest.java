@@ -140,17 +140,18 @@ class DataSourceServiceTest {
     void testExecuteQueryUpdate() throws SQLException {
         // Given
         String sql = "UPDATE users SET name = 'Jane' WHERE id = 1";
-        PreparedStatement ps = mock(PreparedStatement.class);
-        when(ps.executeUpdate()).thenReturn(1);
-        when(connection.prepareStatement(sql)).thenReturn(ps);
+        try (PreparedStatement ps = mock(PreparedStatement.class)) {
+            when(ps.executeUpdate()).thenReturn(1);
+            when(connection.prepareStatement(sql)).thenReturn(ps);
 
-        // When
-        DataSourceService.QueryResult result = dataSourceService.executeQuery(sql, 0, 10);
+            // When
+            DataSourceService.QueryResult result = dataSourceService.executeQuery(sql, 0, 10);
 
-        // Then
-        assertEquals(1, result.total());
-        assertEquals(List.of("Affected Rows"), result.cols());
-        assertEquals(List.of("1 rows affected"), result.rows().get(0));
+            // Then
+            assertEquals(1, result.total());
+            assertEquals(List.of("Affected Rows"), result.cols());
+            assertEquals(List.of("1 rows affected"), result.rows().get(0));
+        }
     }
 
     @Test
@@ -184,14 +185,14 @@ class DataSourceServiceTest {
     void testExecuteQueryNegativePagination() throws SQLException {
         // Given
         String sql = "SELECT * FROM users";
-        mockSelectQuery(sql, List.of("id"), List.of(List.of("dummy"))); // total=1, but length=0 so 0 rows
+        mockSelectQuery(sql, List.of("id"), List.of(List.of("dummy"))); // mock returns a single row (total=1)
 
         // When
         DataSourceService.QueryResult result = dataSourceService.executeQuery(sql, -5, -10);
 
         // Then
-        assertEquals(1, result.total()); // count still executed
-        assertEquals(1, result.rows().size()); // length=
+        assertEquals(1, result.total()); // count still executed even with negative pagination values
+        assertEquals(1, result.rows().size()); // negative pagination is normalized to defaults, so the row is returned
     }
 
     @Test
