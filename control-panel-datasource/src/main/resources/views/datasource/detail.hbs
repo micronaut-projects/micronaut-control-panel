@@ -231,7 +231,11 @@
                 pre.className = 'mermaid';
                 pre.textContent = code;
                 container.appendChild(pre);
-                try { window.mermaid.init(undefined, container); } catch (e) { /* ignore */ }
+                try {
+                    window.mermaid.init(undefined, container);
+                } catch (e) {
+                    console.error('Mermaid initialization failed', e);
+                }
             }
         }).on('hide.bs.modal', function () {
             // Clean up to reduce memory usage on repeated openings
@@ -256,7 +260,6 @@
                     const cols = resp && resp.cols ? resp.cols : [];
                     let initialData = resp && resp.data ? resp.data : [];
                     const initialTotal = resp && resp.recordsTotal ? resp.recordsTotal : 0;
-                    const initialDraw = resp && resp.draw ? resp.draw : 1;
                     const isUpdateQuery = cols.length === 1 && cols[0] === "Affected Rows";
 
                     // Destroy previous instance if any and rebuild inside a stable container

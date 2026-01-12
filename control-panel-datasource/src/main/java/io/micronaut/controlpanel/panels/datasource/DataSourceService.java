@@ -280,9 +280,6 @@ public class DataSourceService {
         }
     }
 
-    private static String sanitizeWordBoundary(String s) {
-        return s.replaceAll("\\s+", " ").toLowerCase();
-    }
     private String sanitizeQuery(String sql) {
         if (sql == null) {
             throw new IllegalArgumentException("SQL must not be null");

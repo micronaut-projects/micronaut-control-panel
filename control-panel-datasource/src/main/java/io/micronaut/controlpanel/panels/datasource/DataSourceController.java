@@ -31,6 +31,7 @@ import io.micronaut.scheduling.TaskExecutors;
 import io.micronaut.scheduling.annotation.ExecuteOn;
 import io.micronaut.serde.annotation.Serdeable;
 
+import java.io.IOException;
 import java.util.Map;
 
 import java.util.List;
@@ -106,7 +107,7 @@ public final class DataSourceController {
             return HttpResponse.ok(js)
                 .contentType(MediaType.of("application/javascript"))
                 .header("Cache-Control", "no-store");
-        } catch (Exception e) {
+        } catch (IOException e) {
             return HttpResponse.serverError();
         }
     }

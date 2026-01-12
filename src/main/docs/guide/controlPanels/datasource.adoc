@@ -17,7 +17,7 @@ check the following documentation:
 
 * https://micronaut-projects.github.io/micronaut-sql/latest/guide/#jdbc[Configuring datasources with micronaut-sql].
 * https://guides.micronaut.io/latest/micronaut-data-jdbc-repository.html[Access a database with Micronaut Data JDBC repositories].
-* https://guides.micronaut.io/latest/micronaut-jpa-hibernate.html[Access a database with JPA and Hibernate using the Micronaut Data]
+* https://guides.micronaut.io/latest/micronaut-jpa-hibernate.html[Access a database with JPA and Hibernate using Micronaut Data]
 
 === Configuration
 
