@@ -37,10 +37,9 @@ import java.util.List;
 @EachBean(DataSource.class)
 public class DataSourceControlPanel extends AbstractEachBeanControlPanel<Body> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(DataSourceControlPanel.class);
-
     public static final String NAME = "datasource";
     public static final String DEFAULT_ICON_CLASS = "fa-database";
+    private static final Logger LOG = LoggerFactory.getLogger(DataSourceControlPanel.class);
 
     private final String beanName;
     private final List<Table> tables;

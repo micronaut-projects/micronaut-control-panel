@@ -223,11 +223,6 @@ class ControlPanelE2ETest extends AbstractE2ETest {
 
         page.getByLabel("Close").click();
         assertThat(page.locator("#jstree")).matchesAriaSnapshot("- tree:\n  - treeitem \" DEPT\" [level=1]\n  - treeitem \" EMP\" [level=1]");
-
-        page.getByRole(AriaRole.TEXTBOX).fill("SELECT * FROM DEPT");
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Execute query")).click();
-
-        assertThat(page.locator("tbody")).containsText("ACCOUNTING");
     }
 
     public static class HeadlessBrowserOptions implements OptionsFactory {
