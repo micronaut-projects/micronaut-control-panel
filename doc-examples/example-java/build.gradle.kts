@@ -52,3 +52,10 @@ micronaut {
         additionalModules.add(KnownModules.JDBC_POSTGRESQL)
     }
 }
+
+testlogger {
+    showStandardStreams = true
+    showPassedStandardStreams = false
+    showSkippedStandardStreams = false
+    showFailedStandardStreams = true
+}
