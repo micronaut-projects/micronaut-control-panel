@@ -1,12 +1,11 @@
 package example;
 
+import io.micronaut.context.event.ShutdownEvent;
 import io.micronaut.context.event.StartupEvent;
 import io.micronaut.core.io.IOUtils;
 import io.micronaut.core.io.ResourceResolver;
 import io.micronaut.data.connection.jdbc.advice.DelegatingDataSource;
 import io.micronaut.runtime.event.annotation.EventListener;
-import io.micronaut.scheduling.TaskExecutors;
-import io.micronaut.scheduling.annotation.Async;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import org.slf4j.Logger;
@@ -37,10 +36,25 @@ public class SampleDataLoader {
     }
 
     @EventListener
-    @Async(TaskExecutors.BLOCKING)
     public void loadData(StartupEvent event) {
         loadPostgresData();
         loadOracleData();
+    }
+
+    @EventListener
+    public void cleanupData(ShutdownEvent event) {
+        try (var connection = postgresDs.getConnection(); var statement = connection.createStatement()) {
+            statement.executeUpdate("DROP TABLE team");
+        } catch (SQLException e) {
+            LOG.error(e.getMessage(), e);
+        }
+        try (var connection = oracleDs.getConnection(); var statement = connection.createStatement()) {
+            statement.addBatch("DROP TABLE EMP");
+            statement.addBatch("DROP TABLE DEPT");
+            statement.executeBatch();
+        } catch (SQLException e) {
+            LOG.error(e.getMessage(), e);
+        }
     }
 
     private void loadPostgresData() {
