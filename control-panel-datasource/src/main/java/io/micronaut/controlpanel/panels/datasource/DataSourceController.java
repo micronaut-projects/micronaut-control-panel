@@ -30,6 +30,8 @@ import io.micronaut.json.JsonMapper;
 import io.micronaut.scheduling.TaskExecutors;
 import io.micronaut.scheduling.annotation.ExecuteOn;
 import io.micronaut.serde.annotation.Serdeable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Map;
@@ -50,6 +52,8 @@ import java.util.LinkedHashMap;
 @Internal
 public final class DataSourceController {
 
+    private static final Logger LOG = LoggerFactory.getLogger(DataSourceController.class);
+
     private static final Argument<DataSourceService> SERVICE_ARGUMENT = Argument.of(DataSourceService.class);
     private static final Argument<DataSourceControlPanel> PANEL_ARGUMENT = Argument.of(DataSourceControlPanel.class);
 
@@ -63,6 +67,9 @@ public final class DataSourceController {
         this.services = locator.mapOfType(SERVICE_ARGUMENT);
         this.panels = locator.mapOfType(PANEL_ARGUMENT);
         this.jsonMapper = jsonMapper;
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Initialized DataSourceController with services={}, panels={}", services.keySet(), panels.keySet());
+        }
     }
 
     /**
@@ -77,8 +84,14 @@ public final class DataSourceController {
      */
     @Get(value = "/{dataSource}/schema.js", produces = "application/javascript")
     public HttpResponse<String> schemaJs(String dataSource) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("schemaJs requested for dataSource='{}'", dataSource);
+        }
         var panel = panels.get(dataSource);
         if (panel == null) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("No control panel found for dataSource='{}'", dataSource);
+            }
             return HttpResponse.notFound();
         }
 
@@ -104,10 +117,16 @@ public final class DataSourceController {
             var js = "window.codemirror=window.codemirror||{};" +
                      "window.codemirror.schema=" + schemaJson + ';' +
                      "window.codemirror.defaultSchema=" + defaultSchemaJson + ';';
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("schemaJs built for dataSource='{}' with defaultSchema='{}' and {} tables", dataSource, defaultSchema, ((Map<?, ?>) schema.getOrDefault(defaultSchema == null ? "" : defaultSchema, Map.of())).size());
+            }
             return HttpResponse.ok(js)
                 .contentType(MediaType.of("application/javascript"))
                 .header("Cache-Control", "no-store");
         } catch (IOException e) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Failed to serialize schema for dataSource='{}': {}", dataSource, e.getMessage());
+            }
             return HttpResponse.serverError();
         }
     }
@@ -121,12 +140,21 @@ public final class DataSourceController {
      */
     @Post(value = "/{dataSource}/query", produces = MediaType.APPLICATION_JSON)
     public HttpResponse<?> query(String dataSource, @Body QueryRequest body) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("query requested for dataSource='{}' (start={}, length={}, draw={}) sql='{}'", dataSource, body.start, body.length, body.draw, body.sql);
+        }
         var service = services.get(dataSource);
         if (service == null) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("No service found for dataSource='{}'", dataSource);
+            }
             return HttpResponse.notFound();
         }
 
         if (body.sql == null || body.sql.isBlank()) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Empty SQL received for dataSource='{}'", dataSource);
+            }
             return HttpResponse.badRequest(QueryResponse.of(body.draw, "SQL must not be empty"));
         }
 
@@ -141,16 +169,28 @@ public final class DataSourceController {
                 result.cols(),
                 null
             );
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("query completed for dataSource='{}' -> total={}, rowsPage={}, cols={}", dataSource, result.total(), result.rows().size(), result.cols().size());
+            }
             return HttpResponse.ok(resp);
         } catch (IllegalArgumentException e) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Bad request for dataSource='{}': {}", dataSource, e.getMessage());
+            }
             return HttpResponse.badRequest(QueryResponse.of(body.draw, e.getMessage()));
         } catch (Exception e) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Query failed for dataSource='{}': {}", dataSource, e.getMessage());
+            }
             return HttpResponse.serverError(QueryResponse.of(body.draw, e.getMessage()));
         }
     }
 
     @SuppressWarnings("unchecked")
     private static void computeSchema(final List<Table> tables, final LinkedHashMap<String, Integer> counts, final LinkedHashMap<String, Object> schema) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Computing schema for {} tables", tables.size());
+        }
         for (var t : tables) {
             var schemaKey = (t.schema() == null) ? "" : t.schema();
             counts.put(schemaKey, counts.getOrDefault(schemaKey, 0) + 1);
@@ -167,6 +207,9 @@ public final class DataSourceController {
             var tableNode = getTableNode(t, tableLabel);
 
             tablesInSchema.put(tableLabel, tableNode);
+        }
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Schema computed with {} schemas", schema.size());
         }
     }
 

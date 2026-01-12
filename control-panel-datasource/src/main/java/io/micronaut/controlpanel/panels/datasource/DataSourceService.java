@@ -59,11 +59,17 @@ public class DataSourceService {
      * @return List of {@link Table} metadata objects
      */
     public final List<Table> getTables() {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Fetching database tables and metadata");
+        }
         List<Table> tables = new ArrayList<>();
         try (var connection = dataSource.getConnection()) {
             String catalog = connection.getCatalog();
             String defaultSchema = connection.getSchema();
             DatabaseMetaData dbMetaData = connection.getMetaData();
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Connected. catalog='{}', schema='{}', driver='{} {}'", catalog, defaultSchema, dbMetaData.getDriverName(), dbMetaData.getDriverVersion());
+            }
             try (ResultSet tablesRs = dbMetaData.getTables(catalog, defaultSchema, "%", new String[]{"TABLE"})) {
                 while (tablesRs.next()) {
                     String schema = tablesRs.getString("TABLE_SCHEM");
@@ -71,6 +77,9 @@ public class DataSourceService {
                         schema = defaultSchema;
                     }
                     String tableName = tablesRs.getString("TABLE_NAME");
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Discovered table '{}.{}'", schema, tableName);
+                    }
 
                     // Primary keys
                     List<String> primaryKeysList = findPrimaryKeys(dbMetaData, catalog, schema, tableName);
@@ -85,12 +94,19 @@ public class DataSourceService {
                     // Columns
                     List<Column> columnsList = findAllColumns(dbMetaData, catalog, schema, tableName, primaryKeysList, foreignKeyColumns);
 
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Table '{}.{}' -> columns: {}, PKs: {}, FKs: {}, unique: {}", schema, tableName, columnsList.size(), primaryKeysList.size(), foreignKeys.size(), uniqueCols.size());
+                    }
+
                     tables.add(new Table(schema, tableName, columnsList, uniqueCols, foreignKeys));
                 }
             }
         } catch (SQLException e) {
             LOG.error("SQL exception: {}", e.getMessage(), e);
             throw new RuntimeException(e);
+        }
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Found {} tables in metadata", tables.size());
         }
         return tables;
     }
@@ -119,6 +135,9 @@ public class DataSourceService {
         } catch (SQLException e) {
             LOG.warn("Exception while getting the columns of the table {}: {}", tableName, e.getMessage());
         }
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Found {} columns for table '{}.{}'", columnsList.size(), schema, tableName);
+        }
         return columnsList;
     }
 
@@ -137,6 +156,9 @@ public class DataSourceService {
             }
         } catch (SQLException e) {
             LOG.warn("Exception while getting the unique columns of the table {}: {}", tableName, e.getMessage());
+        }
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Found {} unique columns for table '{}.{}'", uniqueCols.size(), schema, tableName);
         }
         return uniqueCols;
     }
@@ -160,6 +182,9 @@ public class DataSourceService {
         } catch (SQLException e) {
             LOG.warn("Exception while getting the foreign keys of the table {}: {}", tableName, e.getMessage());
         }
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Found {} foreign keys for table '{}.{}'", foreignKeys.size(), schema, tableName);
+        }
         return foreignKeys;
     }
 
@@ -173,6 +198,9 @@ public class DataSourceService {
             }
         } catch (SQLException e) {
             LOG.warn("Exception while getting the primary keys of the table {}: {}", tableName, e.getMessage());
+        }
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Found {} primary key columns for table '{}.{}'", primaryKeysList.size(), schema, tableName);
         }
         return primaryKeysList;
     }
@@ -198,6 +226,9 @@ public class DataSourceService {
      * @return Mermaid ER diagram code
      */
     public String generateMermaidER(List<Table> tables) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Generating Mermaid ER for {} tables", tables.size());
+        }
         return MermaidUtils.generateMermaidER(tables);
     }
 
@@ -210,6 +241,9 @@ public class DataSourceService {
      * @return QueryResult with column labels, rows and total row count
      */
     public QueryResult executeQuery(String sql, int start, int length) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("executeQuery called: start={}, length={}, sql='{}'", start, length, sql);
+        }
         String strippedSql = stripComments(sql);
         String safeSql = sanitizeQuery(strippedSql);
         if (start < 0) {
@@ -221,6 +255,9 @@ public class DataSourceService {
 
         String lowered = safeSql.trim().toLowerCase();
         boolean isSelect = lowered.startsWith("select ") || lowered.startsWith("with ");
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Sanitized SQL='{}' (select={})", safeSql, isSelect);
+        }
 
         try (var connection = dataSource.getConnection()) {
             int total = 0;
@@ -273,6 +310,9 @@ public class DataSourceService {
                 rows.add(List.of(total + " rows affected"));
             }
 
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Query executed: columns={}, rowsReturned={}, total={}", cols.size(), rows.size(), total);
+            }
             return new QueryResult(cols, rows, total);
         } catch (SQLException e) {
             LOG.error("Error while executing SQL query: {}", e.getMessage(), e);

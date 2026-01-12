@@ -55,7 +55,4 @@ micronaut {
 
 testlogger {
     showStandardStreams = true
-    showPassedStandardStreams = false
-    showSkippedStandardStreams = false
-    showFailedStandardStreams = true
 }

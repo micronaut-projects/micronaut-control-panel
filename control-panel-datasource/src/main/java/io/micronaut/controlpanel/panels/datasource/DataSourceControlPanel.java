@@ -25,6 +25,8 @@ import io.micronaut.controlpanel.panels.datasource.model.DataSourceInfo;
 import io.micronaut.controlpanel.panels.datasource.model.DatabaseType;
 import io.micronaut.controlpanel.panels.datasource.model.Table;
 import jakarta.inject.Named;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.util.List;
@@ -34,6 +36,8 @@ import java.util.List;
  */
 @EachBean(DataSource.class)
 public class DataSourceControlPanel extends AbstractEachBeanControlPanel<Body> {
+
+    private static final Logger LOG = LoggerFactory.getLogger(DataSourceControlPanel.class);
 
     public static final String NAME = "datasource";
     public static final String DEFAULT_ICON_CLASS = "fa-database";
@@ -49,9 +53,15 @@ public class DataSourceControlPanel extends AbstractEachBeanControlPanel<Body> {
                                   @Named(NAME) ControlPanelConfiguration configuration) {
         super(NAME, configuration);
         this.beanName = beanName;
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Initializing DataSourceControlPanel for bean='{}'", beanName);
+        }
         this.tables = dataSourceService.getTables();
         this.dataSourceInfo = createDataSourceInfo(environment, beanName);
         this.body = new Body(dataSourceInfo, tables, dataSourceService.generateMermaidER(tables));
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("DataSourceControlPanel initialized: bean='{}', tables={}, dbType={} URL='{}' user='{}'", beanName, tables.size(), dataSourceInfo.type(), safeUrl(dataSourceInfo.jdbcUrl()), safeUser(dataSourceInfo.username()));
+        }
     }
 
     private DataSourceInfo createDataSourceInfo(Environment env, String beanName) {
@@ -61,6 +71,9 @@ public class DataSourceControlPanel extends AbstractEachBeanControlPanel<Body> {
         var dialect = env.getProperty("datasources.%s.dialect".formatted(beanName), String.class, "");
         var dbType = env.getProperty("datasources.%s.db-type".formatted(beanName), String.class, "");
 
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Resolved datasource props for bean='{}': url='{}', user='{}', dialect='{}', dbType='{}'", beanName, safeUrl(jdbUrl), safeUser(username), dialect, dbType);
+        }
         return new DataSourceInfo(beanName, jdbUrl, username, password, DatabaseType.of(dialect, dbType));
     }
 
@@ -76,12 +89,32 @@ public class DataSourceControlPanel extends AbstractEachBeanControlPanel<Body> {
 
     @Override
     public Body getBody() {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("getBody called for bean='{}' -> tables={}", beanName, tables.size());
+        }
         return body;
     }
 
     @Override
     public String getBadge() {
         return String.valueOf(tables.size());
+    }
+
+    private static String safeUrl(String url) {
+        if (url == null || url.isBlank()) {
+            return "";
+        }
+        // Avoid logging credentials in URL
+        int at = url.indexOf('@');
+        int colonSlash = url.indexOf("://");
+        if (at > -1 && colonSlash > -1 && at > colonSlash) {
+            return url.substring(0, colonSlash + 3) + "***@" + url.substring(at + 1);
+        }
+        return url;
+    }
+
+    private static String safeUser(String user) {
+        return user == null ? "" : user;
     }
 
     @Override
