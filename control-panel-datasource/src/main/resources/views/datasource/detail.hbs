@@ -1,0 +1,372 @@
+{{#with controlPanel.body }}
+
+    <div class="row">
+        <div class="col-md-2">
+            <div class="card card-light">
+                <div class="card-header">
+                    <h3 class="card-title">Tables</h3>
+                    <div class="card-tools">
+                        <div class="input-group input-group-sm">
+                            <div class="input-group-append">
+                                <button type="button" class="btn btn-primary" id="openErModal" title="Show ER diagram" data-toggle="modal" data-target="#erDiagramModal">
+                                    <i class="fas fa-diagram-project"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body" id="jstree">
+                    <ul>
+                        {{#each tables as |table|}}
+                            <li data-jstree='{"type":"table"}' data-table-name="{{ table.name }}">{{ table.name }}
+                                <ul>
+                                    {{#each table.columns as |col|}}
+                                        <li data-jstree='{"type":"{{col.type}}"}'>
+                                            {{ col.name }}
+                                            {{#if col.isPrimaryKey}}🔑{{/if}}
+                                            {{#if col.isForeignKey}}🔗{{/if}}
+                                        </li>
+                                    {{/each}}
+                                </ul>
+                            </li>
+                        {{/each}}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-10">
+            <div class="card card-light">
+                <div class="card-header">
+                    <h3 class="card-title">SQL query</h3>
+                    <div class="card-tools">
+                        <div class="input-group input-group-sm">
+                            <div class="input-group-append">
+                                <button type="button" class="btn btn-success" id="executeQuery" title="Execute query">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="sql-console">
+                    </div>
+                </div>
+            </div>
+            <div class="card card-light">
+                <div class="card-header">
+                    <h3 class="card-title">Query results</h3>
+                </div>
+                <div class="card-body">
+                    <div id="queryResultsContainer">
+                        <table id="queryResults" class="table table-bordered table-striped"></table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Mermaid ER code source -->
+    <pre id="mermaidErCode" style="display:none;">{{{ mermaidEr }}}</pre>
+
+    <!-- ER Diagram Modal -->
+    <div class="modal fade" id="erDiagramModal" tabindex="-1" role="dialog" aria-labelledby="erDiagramModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="erDiagramModalLabel">
+                        <i class="fas fa-diagram-project"></i> Entity Relationship Diagram
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" title="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="erDiagramContainer" class="mermaid"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(function () {
+            $('#jstree')
+                    .on('select_node.jstree', function (event, data) {
+                        if (data.node.data.tableName) {
+                            select(data.node.data.tableName);
+                        }
+                    })
+                    .jstree({
+                        "types" : {
+                            "default" : {
+                                "icon" : "bi bi-layout-sidebar-inset"
+                            },
+                            "table": {
+                                "icon" : "bi bi-table"
+                            },
+                            "TEXT" : {
+                                "icon" : "bi bi-type"
+                            },
+                            "NUMERIC" : {
+                                "icon" : "bi bi-123"
+                            },
+                            "DATE" : {
+                                "icon" : "bi bi-calendar-date"
+                            },
+                            "BLOB" : {
+                                "icon" : "bi bi-file-binary"
+                            },
+                            "BOOLEAN" : {
+                                "icon" : "bi bi-toggles"
+                            },
+                            "GENERIC" : {
+                                "icon" : "bi bi-layout-sidebar-inset"
+                            },
+                        },
+                        "plugins" : [ "types" ]
+                    });
+        });
+        function select(tableName) {
+            const cm = window.codemirror;
+            const view = cm.view;
+            const newDoc = "SELECT * FROM " + tableName + "\n\n";
+            view.dispatch({
+                changes: { from: 0, to: view.state.doc.length, insert: newDoc }
+            });
+        }
+
+        function createInstructionPanel(view) {
+            let dom = document.createElement("div");
+            dom.textContent = "Type an SQL query here, or select a table from the tree. Press Cmd+Enter / Ctrl+Enter to execute the query. Autocomplete with Ctrl+Space, Enter to confirm selection";
+            dom.className = "cm-instruction-panel";
+            dom.style.padding = "5px 10px";
+            dom.style.backgroundColor = "#f8f9fa";
+            dom.style.borderBottom = "1px solid #dee2e6";
+            dom.style.fontFamily = "monospace";
+            dom.style.fontSize = "14px";
+            return {top: true, dom: dom};
+        }
+
+        // Initialize CodeMirror editor dynamically after schema loads
+        $(function() {
+            const type = "{{dataSourceInfo.type}}";
+            const ds = "{{ controlPanel.title }}";
+            const schemaUrl = "/datasource-control-panel-controller/" + ds + "/schema.js";
+            const cm = window.codemirror;
+
+            function initEditor() {
+                if (cm.schema !== undefined && cm.defaultSchema !== undefined) {
+                    const schemaConfig = { schema: cm.schema, defaultSchema: cm.defaultSchema };
+                    const extensions = cm.getSQLExtensions(type, schemaConfig);
+                    const state = cm.EditorState.create({
+                        doc: "\n\n",
+                        extensions: [...extensions, cm.showPanel.of(createInstructionPanel)]
+                    });
+                    const view = new cm.EditorView({
+                        state,
+                        parent: document.querySelector("#sql-console")
+                    });
+                    cm.view = view;
+                }
+            }
+
+            // Dynamically load schema script with onload
+            const script = document.createElement('script');
+            script.src = schemaUrl;
+            script.onload = function() {
+                initEditor();
+            };
+            script.onerror = function() {
+                // Fallback init without schema
+                const schemaConfig = {};
+                const extensions = cm.getSQLExtensions(type, schemaConfig);
+                const state = cm.EditorState.create({
+                    doc: "\n\n",
+                    extensions: [...extensions, cm.showPanel.of(createInstructionPanel)]
+                });
+                const view = new cm.EditorView({
+                    state,
+                    parent: document.querySelector("#sql-console")
+                });
+                cm.view = view;
+            };
+            document.head.appendChild(script);
+
+            // Fallback timeout if onload doesn't trigger (e.g., script executes but properties not set)
+            setTimeout(() => {
+                if (cm.schema === undefined) {
+                    initEditor(); // Try to init if now available
+                }
+            }, 2000);
+
+            // Keyboard shortcut for executing query: Cmd+Enter (Mac) or Ctrl+Enter (Windows/Linux)
+            $(document).on('keydown', function(e) {
+                if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && !e.shiftKey && !e.altKey) {
+                    e.preventDefault();
+                    $('#executeQuery').click();
+                }
+            });
+        });
+
+        // Render Mermaid ER diagram when the modal is shown
+        $('#erDiagramModal').on('shown.bs.modal', function () {
+            let code = $('#mermaidErCode').text();
+            // Normalize line endings and trim, Mermaid parser is sensitive to stray characters
+            code = code.replace(/\r\n/g, '\n').trimStart();
+
+            const container = document.getElementById('erDiagramContainer');
+            container.innerHTML = '';
+            // Unique id each time to avoid collisions if reopened
+            const renderId = 'erDiagramSvg_' + Date.now();
+            if (window.mermaid && typeof window.mermaid.render === 'function') {
+                window.mermaid.render(renderId, code, (svgCode) => {
+                    container.innerHTML = svgCode;
+                }, container);
+            } else if (window.mermaid) {
+                // Fallback: let Mermaid init process the container if render API not present
+                const pre = document.createElement('div');
+                pre.className = 'mermaid';
+                pre.textContent = code;
+                container.appendChild(pre);
+                try {
+                    window.mermaid.init(undefined, container);
+                } catch (e) {
+                    console.error('Mermaid initialization failed', e);
+                }
+            }
+        }).on('hide.bs.modal', function () {
+            // Clean up to reduce memory usage on repeated openings
+            document.getElementById('erDiagramContainer').innerHTML = '';
+        });
+
+        // Execute SQL using backend and render results with DataTables (server-side processing)
+        window.queryResultsDT = null;
+        function initQueryTable(sql) {
+            const appPath = '{{ ext.appPath }}';
+            const ds = '{{ controlPanel.title }}';
+            const url = appPath + '/datasource-control-panel-controller/' + ds + '/query';
+
+                // Initial request to obtain columns and bootstrap the table header
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    dataType: 'json',
+                    contentType: 'application/json; charset=utf-8',
+                    data: JSON.stringify({ sql: sql, start: 0, length: 10, draw: 1 })
+                }).done(function(resp) {
+                    const cols = resp && resp.cols ? resp.cols : [];
+                    let initialData = resp && resp.data ? resp.data : [];
+                    const initialTotal = resp && resp.recordsTotal ? resp.recordsTotal : 0;
+                    const isUpdateQuery = cols.length === 1 && cols[0] === "Affected Rows";
+
+                    // Destroy previous instance if any and rebuild inside a stable container
+                    const $container = $('#queryResultsContainer');
+                    if (window.queryResultsDT) {
+                        try { window.queryResultsDT.clear(); window.queryResultsDT.destroy(); } catch (e) { console.error('Failed to clear/destroy existing queryResultsDT DataTable instance', e); }
+                        window.queryResultsDT = null;
+                    } else {
+                        const $maybeTable = $('#queryResults');
+                        if ($.fn.DataTable.isDataTable($maybeTable)) {
+                            try { $maybeTable.DataTable().clear().destroy(); } catch (e) { console.error('Failed to clear/destroy existing #queryResults DataTable instance', e); }
+                        }
+                    }
+                    // Rebuild container with a fresh table and headers
+                    const thead = '<thead><tr>' + cols.map(c => '<th>' + c + '</th>').join('') + '</tr></thead>';
+                    const tbody = '<tbody>' + initialData.map(row => '<tr>' + row.map(cell => '<td>' + (cell || '') + '</td>').join('') + '</tr>').join('') + '</tbody>';
+                    const tableHtml = '<table id="queryResults" class="table table-bordered table-striped">' + thead + tbody + '</table>';
+                    $container.html(tableHtml);
+                    const $table = $('#queryResults');
+                    DataTable.ext.errMode = 'none';
+
+                    $table.on('dt-error.dt', function (e, settings, techNote, message) {
+                        globalAlertMessageDisplay('Error', message, 'alert-danger', 'fa-circle-exclamation');
+                    }).on('preXhr.dt', function (e, settings, data) {
+                        globalAlertMessageClear();
+                    });
+
+                    const dtCols = cols.map(function(_, idx) { return { data: idx }; });
+
+                    if (isUpdateQuery) {
+                        // For update queries, show static single row without server-side pagination
+                        window.queryResultsDT = $table.DataTable({
+                            destroy: true,
+                            serverSide: false,
+                            processing: false,
+                            ordering: false,
+                            searching: false,
+                            paging: false,
+                            info: false,
+                            columns: dtCols.length ? dtCols : undefined
+                        });
+                    } else {
+                        // For SELECT queries, use server-side pagination, but use pre-fetched data for initial load
+                        window.queryResultsDT = $table.DataTable({
+                            destroy: true,
+                            serverSide: true,
+                            processing: true,
+                            ordering: false,
+                            searching: false,
+                            ajax: function(d, callback) {
+                                // Intercept the initial ajax call (first page) and use pre-fetched data
+                                if (d.start === 0 && d.length === 10 && d.draw === 1) {
+                                    callback({
+                                        draw: d.draw,
+                                        recordsTotal: initialTotal,
+                                        recordsFiltered: initialTotal,
+                                        data: initialData
+                                    });
+                                    return;
+                                }
+                                // For subsequent pages or other interactions, perform the ajax call
+                                $.ajax({
+                                    url: url,
+                                    type: 'POST',
+                                    dataType: 'json',
+                                    contentType: 'application/json; charset=utf-8',
+                                    data: JSON.stringify({
+                                        sql: sql,
+                                        start: d.start,
+                                        length: d.length,
+                                        draw: d.draw
+                                    })
+                                }).done(function(json) {
+                                    // DataTables expects: draw, recordsTotal, recordsFiltered, data
+                                    callback(json);
+                                }).fail(function(xhr) {
+                                    const err = (xhr.responseJSON && xhr.responseJSON.error) ? xhr.responseJSON.error : 'Query failed';
+                                    globalAlertMessageDisplay('Error', err, 'alert-danger', 'fa-circle-exclamation');
+                                    callback({ draw: d.draw, recordsTotal: 0, recordsFiltered: 0, data: [] });
+                                });
+                            },
+                            columns: dtCols.length ? dtCols : undefined
+                        });
+                    }
+                }).fail(function(xhr) {
+                    const err = (xhr.responseJSON && xhr.responseJSON.error) ? xhr.responseJSON.error : 'Query failed';
+                    globalAlertMessageDisplay('Error', err, 'alert-danger', 'fa-circle-exclamation');
+                });
+        }
+
+        // Hook Play button
+        $('#executeQuery').on('click', function() {
+            try {
+                // Prefer the path indicated; fallback to current CM6 API
+                const doc = (window.codemirror && window.codemirror.view && window.codemirror.view.viewState && window.codemirror.view.viewState.state && window.codemirror.view.viewState.state.doc)
+                    || (window.codemirror && window.codemirror.view && window.codemirror.view.state && window.codemirror.view.state.doc)
+                    || null;
+                const sql = doc ? String(doc.toString()).trim() : '';
+                if (!sql) {
+                    globalAlertMessageDisplay('Error', 'SQL must not be empty', 'alert-danger', 'fa-circle-exclamation');
+                    return;
+                }
+                initQueryTable(sql);
+            } catch (e) {
+                globalAlertMessageDisplay('Error', 'Cannot read SQL from editor', 'alert-danger', 'fa-circle-exclamation');
+            }
+        });
+    </script>
+
+{{/with}}

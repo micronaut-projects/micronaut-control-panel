@@ -7,6 +7,7 @@ controlPanels:
   cache: Cache
   management: Management
   objectStorage: Object Storage
+  datasource: Datasource
 
 custom: Creating Custom Control Panels
 repository: Repository
