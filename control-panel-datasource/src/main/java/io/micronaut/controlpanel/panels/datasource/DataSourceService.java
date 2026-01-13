@@ -51,6 +51,8 @@ public class DataSourceService {
     private static final String IS_NULLABLE = "IS_NULLABLE";
     private static final String DATA_TYPE = "DATA_TYPE";
     private static final String NON_UNIQUE = "NON_UNIQUE";
+    private static final Pattern MULTI_LINE_COMMENT = Pattern.compile("/\\*.*?\\*/", Pattern.DOTALL);
+    private static final Pattern SINGLE_LINE_COMMENT = Pattern.compile("--.*", Pattern.MULTILINE);
 
     private final DataSource dataSource;
 
@@ -344,9 +346,9 @@ public class DataSourceService {
             return null;
         }
         // Remove multi-line comments /* ... */
-        sql = Pattern.compile("/\\*.*?\\*/", Pattern.DOTALL).matcher(sql).replaceAll("");
+        sql = MULTI_LINE_COMMENT.matcher(sql).replaceAll("");
         // Remove single-line comments -- ...
-        sql = Pattern.compile("--.*", Pattern.MULTILINE).matcher(sql).replaceAll("");
+        sql = SINGLE_LINE_COMMENT.matcher(sql).replaceAll("");
         return sql;
     }
 
