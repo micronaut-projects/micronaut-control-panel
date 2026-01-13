@@ -24,6 +24,7 @@ import io.micronaut.core.annotation.Internal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -47,8 +48,8 @@ public final class MermaidUtils {
      */
     public static String generateMermaidER(List<Table> tables) {
         // Build table id and display names
-        Map<String, String> tableIdByDisplay = new HashMap<>(); // display -> id
-        Map<String, Table> tableByDisplay = new HashMap<>();
+        Map<String, String> tableIdByDisplay = new LinkedHashMap<>(); // display -> id
+        Map<String, Table> tableByDisplay = new LinkedHashMap<>();
 
         for (Table t : tables) {
             String display = displayName(t.schema(), t.name());
