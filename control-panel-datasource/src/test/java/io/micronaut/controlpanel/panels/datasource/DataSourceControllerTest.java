@@ -10,27 +10,23 @@ import io.micronaut.controlpanel.panels.datasource.model.ForeignKey;
 import io.micronaut.controlpanel.panels.datasource.model.Table;
 import io.micronaut.core.type.Argument;
 import io.micronaut.http.HttpResponse;
-import io.micronaut.http.MediaType;
 import io.micronaut.json.JsonMapper;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static io.micronaut.controlpanel.panels.datasource.DataSourceController.PANEL_ARGUMENT;
 import static io.micronaut.controlpanel.panels.datasource.DataSourceController.SERVICE_ARGUMENT;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -59,7 +55,7 @@ class DataSourceControllerTest {
         var service = mock(DataSourceService.class);
         doReturn(Map.of(DATA_SOURCE, service)).when(beanLocator).mapOfType(SERVICE_ARGUMENT);
         doReturn("{\"schema1\":{\"EMP\":{\"self\":{\"label\":\"EMP\",\"type\":\"table\"},\"children\":[\"EMPNO\"]}}").when(jsonMapper).writeValueAsString(any());
-        doReturn("\"schema1\"").when(jsonMapper).writeValueAsString(eq("schema1"));
+        doReturn("\"schema1\"").when(jsonMapper).writeValueAsString("schema1");
         mockPanel();
 
         // When
@@ -107,12 +103,12 @@ class DataSourceControllerTest {
     }
 
     @Test
-    void query_returnsOk_whenQuerySuccessful() throws Exception {
+    void query_returnsOk_whenQuerySuccessful() {
         // Given
         var service = mock(DataSourceService.class);
         doReturn(Map.of(DATA_SOURCE, service)).when(beanLocator).mapOfType(any(Argument.class));
         var queryResult = new DataSourceService.QueryResult(List.of("col1"), List.of(List.of("value")), 1);
-        when(service.executeQuery(eq("SELECT 1"), eq(0), eq(10))).thenReturn(queryResult);
+        when(service.executeQuery("SELECT 1", 0, 10)).thenReturn(queryResult);
         mockPanel();
 
         // When
@@ -126,7 +122,7 @@ class DataSourceControllerTest {
         assertEquals(1, body.recordsTotal());
         assertEquals(1, body.data().size());
         assertEquals(1, body.cols().size());
-        verify(service).executeQuery(eq("SELECT 1"), eq(0), eq(10));
+        verify(service).executeQuery("SELECT 1", 0, 10);
     }
 
     @Test

@@ -179,7 +179,7 @@ public final class DataSourceController {
     }
 
     private Map<String, Schema> computeSchemas() {
-        var result = new HashMap<String, Schema>(panels.size());
+        Map<String, Schema> result = HashMap.newHashMap(panels.size());
         for (var panel : panels.values()) {
             var tables = panel.getBody().tables();
             var schema = new LinkedHashMap<String, Object>();
@@ -200,7 +200,6 @@ public final class DataSourceController {
         }
         return result;
     }
-
 
     @SuppressWarnings("unchecked")
     private static void computeSchema(final List<Table> tables, final Map<String, Integer> counts, final Map<String, Object> schema) {

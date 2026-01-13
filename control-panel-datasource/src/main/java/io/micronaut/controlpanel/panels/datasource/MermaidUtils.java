@@ -184,7 +184,7 @@ public final class MermaidUtils {
 
     private static String sanitizeId(String s) {
         // Mermaid identifiers: use letters, digits and underscore. Ensure starts with a letter.
-        String base = (s == null ? "" : s).replaceAll("[^A-Za-z0-9_]", "_");
+        String base = (s == null ? "" : s).replaceAll("\\W", "_");
         // Collapse multiple underscores
         base = base.replaceAll("_+", "_");
         if (base.isEmpty() || !Character.isLetter(base.charAt(0))) {

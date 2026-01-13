@@ -17,19 +17,21 @@ package io.micronaut.controlpanel.panels.datasource;
 
 import io.micronaut.controlpanel.panels.datasource.model.Column;
 import io.micronaut.controlpanel.panels.datasource.model.ColumnType;
-import io.micronaut.controlpanel.panels.datasource.model.ForeignKey;
 import io.micronaut.controlpanel.panels.datasource.model.Table;
-import io.micronaut.controlpanel.panels.datasource.MermaidUtils;
-import io.micronaut.data.connection.jdbc.advice.DelegatingDataSource;
-import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import javax.sql.DataSource;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Types;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -37,8 +39,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
-
-import org.junit.jupiter.api.DisplayName;
 
 class DataSourceServiceTest {
 
@@ -78,11 +78,11 @@ class DataSourceServiceTest {
 
         // Then
         assertEquals(1, tables.size());
-        Table table = tables.get(0);
+        Table table = tables.getFirst();
         assertEquals("test_schema", table.schema());
         assertEquals("users", table.name());
         assertEquals(3, table.columns().size());
-        Column idColumn = table.columns().get(0);
+        Column idColumn = table.columns().getFirst();
         assertTrue(idColumn.isPrimaryKey());
         assertFalse(idColumn.isForeignKey());
         assertEquals(ColumnType.NUMERIC, idColumn.type());
@@ -132,7 +132,7 @@ class DataSourceServiceTest {
         assertEquals(1, result.total());
         assertEquals(List.of("id", "name"), result.cols());
         assertEquals(1, result.rows().size());
-        assertEquals(List.of("1", "John"), result.rows().get(0));
+        assertEquals(List.of("1", "John"), result.rows().getFirst());
     }
 
     @Test
@@ -150,7 +150,7 @@ class DataSourceServiceTest {
             // Then
             assertEquals(1, result.total());
             assertEquals(List.of("Affected Rows"), result.cols());
-            assertEquals(List.of("1 rows affected"), result.rows().get(0));
+            assertEquals(List.of("1 rows affected"), result.rows().getFirst());
         }
     }
 
@@ -174,10 +174,10 @@ class DataSourceServiceTest {
 
         // Then
         // Verify main query was executed without comments
-        verify(connection).prepareStatement(eq(cleanSql));
+        verify(connection).prepareStatement(cleanSql);
         assertEquals(1, result.total());
         assertEquals(1, result.rows().size());
-        assertEquals(List.of("1"), result.rows().get(0));
+        assertEquals(List.of("1"), result.rows().getFirst());
     }
 
     @Test
@@ -239,7 +239,7 @@ class DataSourceServiceTest {
         ResultSet pkRs = mock(ResultSet.class);
         when(pkRs.next()).thenReturn(true, false);
         when(pkRs.getString("COLUMN_NAME")).thenReturn(pks[0]);
-        when(databaseMetaData.getPrimaryKeys(eq("test_catalog"), eq("test_schema"), eq("users"))).thenReturn(pkRs);
+        when(databaseMetaData.getPrimaryKeys("test_catalog", "test_schema", "users")).thenReturn(pkRs);
     }
 
     private void mockForeignKeysResultSet() throws SQLException {
@@ -250,7 +250,7 @@ class DataSourceServiceTest {
         when(fkRs.getString("PKTABLE_SCHEM")).thenReturn("test_schema");
         when(fkRs.getString("PKTABLE_NAME")).thenReturn("profiles");
         when(fkRs.getString("PKCOLUMN_NAME")).thenReturn("email");
-        when(databaseMetaData.getImportedKeys(eq("test_catalog"), eq("test_schema"), eq("users"))).thenReturn(fkRs);
+        when(databaseMetaData.getImportedKeys("test_catalog","test_schema", "users")).thenReturn(fkRs);
     }
 
     private void mockUniqueColumnsResultSet(String... uniques) throws SQLException {
@@ -258,7 +258,7 @@ class DataSourceServiceTest {
         when(idxRs.next()).thenReturn(true).thenReturn(false);
         when(idxRs.getBoolean("NON_UNIQUE")).thenReturn(false);
         when(idxRs.getString("COLUMN_NAME")).thenReturn(uniques[0]);
-        when(databaseMetaData.getIndexInfo(eq("test_catalog"), eq("test_schema"), eq("users"), eq(true), eq(false))).thenReturn(idxRs);
+        when(databaseMetaData.getIndexInfo("test_catalog", "test_schema", "users", true, false)).thenReturn(idxRs);
     }
 
     private void mockColumnsResultSet(List<String> columnNames) throws SQLException {
@@ -279,11 +279,11 @@ class DataSourceServiceTest {
                 return columnNames.get(current);
             }
             return null;
-        }).when(colsRs).getString(eq("COLUMN_NAME"));
+        }).when(colsRs).getString("COLUMN_NAME");
 
-        when(colsRs.getString(eq("TYPE_NAME"))).thenReturn("INT");
-        when(colsRs.getInt(eq("COLUMN_SIZE"))).thenReturn(10);
-        when(colsRs.getInt(eq("DATA_TYPE"))).thenReturn(Types.INTEGER);
+        when(colsRs.getString("TYPE_NAME")).thenReturn("INT");
+        when(colsRs.getInt("COLUMN_SIZE")).thenReturn(10);
+        when(colsRs.getInt("DATA_TYPE")).thenReturn(Types.INTEGER);
 
         doAnswer(invocation -> {
             int current = colIndex.get() - 1;
@@ -291,9 +291,9 @@ class DataSourceServiceTest {
                 return current == 0 ? "NO" : "YES";
             }
             return "YES";
-        }).when(colsRs).getString(eq("IS_NULLABLE"));
+        }).when(colsRs).getString("IS_NULLABLE");
 
-        when(databaseMetaData.getColumns(eq("test_catalog"), eq("test_schema"), eq("users"), eq("%"))).thenReturn(colsRs);
+        when(databaseMetaData.getColumns("test_catalog", "test_schema", "users", "%")).thenReturn(colsRs);
     }
 
     private void mockSelectQuery(String sql, List<String> cols, List<List<String>> rowsData) throws SQLException {
@@ -337,6 +337,6 @@ class DataSourceServiceTest {
         }).when(rs).getString(anyInt());
 
         when(ps.executeQuery()).thenReturn(rs);
-        when(connection.prepareStatement(eq(sql))).thenReturn(ps);
+        when(connection.prepareStatement(sql)).thenReturn(ps);
     }
 }
