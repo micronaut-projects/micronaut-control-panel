@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static io.micronaut.controlpanel.panels.datasource.DataSourceController.PANEL_ARGUMENT;
+import static io.micronaut.controlpanel.panels.datasource.DataSourceController.SERVICE_ARGUMENT;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -34,6 +36,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class DataSourceControllerTest {
 
+    private static final String DATA_SOURCE = "testDataSource";
     @Mock BeanLocator beanLocator;
     @Mock JsonMapper jsonMapper;
 
@@ -53,21 +56,15 @@ class DataSourceControllerTest {
     @Test
     void schemaJs_returnsJavaScript_whenPanelExists() throws Exception {
         // Given
-        var column = new Column("EMPNO", ColumnType.NUMERIC, 10, "YES", false, false, false);
-        var uniqueCols = new HashSet<String>();
-        var foreignKeys = new ArrayList<ForeignKey>();
-        var table = new Table("schema1", "EMP", List.of(column), uniqueCols, foreignKeys);
-        var dataSourceInfo = new DataSourceInfo("test", "", "", "", DatabaseType.POSTGRES);
-        var body = new Body(dataSourceInfo, List.of(table), "");
-        var panel = mock(DataSourceControlPanel.class);
-        when(panel.getBody()).thenReturn(body);
-        doReturn(Map.of("testDataSource", panel)).when(beanLocator).mapOfType(any(Argument.class));
+        var service = mock(DataSourceService.class);
+        doReturn(Map.of(DATA_SOURCE, service)).when(beanLocator).mapOfType(SERVICE_ARGUMENT);
         doReturn("{\"schema1\":{\"EMP\":{\"self\":{\"label\":\"EMP\",\"type\":\"table\"},\"children\":[\"EMPNO\"]}}").when(jsonMapper).writeValueAsString(any());
         doReturn("\"schema1\"").when(jsonMapper).writeValueAsString(eq("schema1"));
+        mockPanel();
 
         // When
         DataSourceController controller = new DataSourceController(beanLocator, jsonMapper);
-        HttpResponse<String> response = controller.schemaJs("testDataSource");
+        HttpResponse<String> response = controller.schemaJs(DATA_SOURCE);
 
         // Then
         assertEquals(200, response.getStatus().getCode());
@@ -95,31 +92,33 @@ class DataSourceControllerTest {
     void query_returnsBadRequest_whenSqlEmpty() {
         // Given
         var service = mock(DataSourceService.class);
-        doReturn(Map.of("testDataSource", service)).when(beanLocator).mapOfType(any(Argument.class));
+        doReturn(Map.of(DATA_SOURCE, service)).when(beanLocator).mapOfType(SERVICE_ARGUMENT);
+        mockPanel();
 
         // When
         DataSourceController controller = new DataSourceController(beanLocator, jsonMapper);
         var request = new DataSourceController.QueryRequest("", 0, 10, 1);
-        HttpResponse<?> response = controller.query("testDataSource", request);
+        HttpResponse<?> response = controller.query(DATA_SOURCE, request);
 
         // Then
         assertEquals(400, response.getStatus().getCode());
-        var body = (DataSourceController.QueryResponse) response.body();
-        assertEquals("SQL must not be empty", body.error());
+        var responseBody = (DataSourceController.QueryResponse) response.body();
+        assertEquals("SQL must not be empty", responseBody.error());
     }
 
     @Test
     void query_returnsOk_whenQuerySuccessful() throws Exception {
         // Given
         var service = mock(DataSourceService.class);
-        doReturn(Map.of("testDataSource", service)).when(beanLocator).mapOfType(any(Argument.class));
+        doReturn(Map.of(DATA_SOURCE, service)).when(beanLocator).mapOfType(any(Argument.class));
         var queryResult = new DataSourceService.QueryResult(List.of("col1"), List.of(List.of("value")), 1);
         when(service.executeQuery(eq("SELECT 1"), eq(0), eq(10))).thenReturn(queryResult);
+        mockPanel();
 
         // When
         DataSourceController controller = new DataSourceController(beanLocator, jsonMapper);
         var request = new DataSourceController.QueryRequest("SELECT 1", 0, 10, 1);
-        HttpResponse<?> response = controller.query("testDataSource", request);
+        HttpResponse<?> response = controller.query(DATA_SOURCE, request);
 
         // Then
         assertEquals(200, response.getStatus().getCode());
@@ -134,13 +133,14 @@ class DataSourceControllerTest {
     void query_returnsBadRequest_whenIllegalArgument() {
         // Given
         var service = mock(DataSourceService.class);
-        doReturn(Map.of("testDataSource", service)).when(beanLocator).mapOfType(any(Argument.class));
+        doReturn(Map.of(DATA_SOURCE, service)).when(beanLocator).mapOfType(any(Argument.class));
         when(service.executeQuery(any(), anyInt(), anyInt())).thenThrow(new IllegalArgumentException("Invalid SQL"));
+        mockPanel();
 
         // When
         DataSourceController controller = new DataSourceController(beanLocator, jsonMapper);
         var request = new DataSourceController.QueryRequest("INVALID", 0, 10, 1);
-        HttpResponse<?> response = controller.query("testDataSource", request);
+        HttpResponse<?> response = controller.query(DATA_SOURCE, request);
 
         // Then
         assertEquals(400, response.getStatus().getCode());
@@ -152,17 +152,31 @@ class DataSourceControllerTest {
     void query_returnsServerError_whenException() {
         // Given
         var service = mock(DataSourceService.class);
-        doReturn(Map.of("testDataSource", service)).when(beanLocator).mapOfType(any(Argument.class));
+        doReturn(Map.of(DATA_SOURCE, service)).when(beanLocator).mapOfType(any(Argument.class));
         when(service.executeQuery(any(), anyInt(), anyInt())).thenThrow(new RuntimeException("Database error"));
+        mockPanel();
 
         // When
         DataSourceController controller = new DataSourceController(beanLocator, jsonMapper);
         var request = new DataSourceController.QueryRequest("SELECT 1", 0, 10, 1);
-        HttpResponse<?> response = controller.query("testDataSource", request);
+        HttpResponse<?> response = controller.query(DATA_SOURCE, request);
 
         // Then
         assertEquals(500, response.getStatus().getCode());
         var body = (DataSourceController.QueryResponse) response.body();
         assertEquals("Database error", body.error());
+    }
+
+    private void mockPanel() {
+        var column = new Column("EMPNO", ColumnType.NUMERIC, 10, "YES", false, false, false);
+        var uniqueCols = new HashSet<String>();
+        var foreignKeys = new ArrayList<ForeignKey>();
+        var table = new Table("schema1", "EMP", List.of(column), uniqueCols, foreignKeys);
+        var dataSourceInfo = new DataSourceInfo("test", "", "", "", DatabaseType.POSTGRES);
+        var body = new Body(dataSourceInfo, List.of(table), "");
+        var panel = mock(DataSourceControlPanel.class);
+        when(panel.getBody()).thenReturn(body);
+        when(panel.getBeanName()).thenReturn(DATA_SOURCE);
+        doReturn(Map.of(DATA_SOURCE, panel)).when(beanLocator).mapOfType(PANEL_ARGUMENT);
     }
 }

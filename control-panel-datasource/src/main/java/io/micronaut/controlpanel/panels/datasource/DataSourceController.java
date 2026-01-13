@@ -55,10 +55,10 @@ import java.util.LinkedHashMap;
 @Internal
 public final class DataSourceController {
 
-    private static final Logger LOG = LoggerFactory.getLogger(DataSourceController.class);
+    static final Argument<DataSourceService> SERVICE_ARGUMENT = Argument.of(DataSourceService.class);
+    static final Argument<DataSourceControlPanel> PANEL_ARGUMENT = Argument.of(DataSourceControlPanel.class);
 
-    private static final Argument<DataSourceService> SERVICE_ARGUMENT = Argument.of(DataSourceService.class);
-    private static final Argument<DataSourceControlPanel> PANEL_ARGUMENT = Argument.of(DataSourceControlPanel.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DataSourceController.class);
 
     private final Map<String, DataSourceService> services;
     private final Map<String, DataSourceControlPanel> panels;
