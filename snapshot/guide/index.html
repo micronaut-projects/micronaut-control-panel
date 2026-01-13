@@ -103,6 +103,8 @@
         
         <div class="toc-item" style="margin-left:10px" id="toc-item-objectStorage"><a href="#objectStorage"><strong>4.4</strong><span>Object Storage</span></a></div>
         
+        <div class="toc-item" style="margin-left:10px" id="toc-item-datasource"><a href="#datasource"><strong>4.5</strong><span>Datasource</span></a></div>
+        
         <div class="toc-item" style="margin-left:0px" id="toc-item-custom"><a href="#custom"><strong>5</strong><span>Creating Custom Control Panels</span></a></div>
         
         <div class="toc-item" style="margin-left:0px" id="toc-item-repository"><a href="#repository"><strong>6</strong><span>Repository</span></a></div>
@@ -458,9 +460,8 @@ Micronaut Endpoints require having the <code>io.micronaut:micronaut-management</
 </li>
 </ul>
 </div>
-<div class="sect1">
-<h2 id="_cache_management_operations">Cache Management Operations</h2>
-<div class="sectionbody">
+<div class="sect2">
+<h3 id="_cache_management_operations">Cache Management Operations</h3>
 <div class="paragraph">
 <p>Each cache panel includes interactive buttons to manage cache contents:</p>
 </div>
@@ -478,12 +479,10 @@ Micronaut Endpoints require having the <code>io.micronaut:micronaut-management</
 <p>These operations are performed via REST endpoints and provide immediate feedback on success or failure.</p>
 </div>
 </div>
-</div>
-<div class="sect1">
-<h2 id="_configuration">Configuration</h2>
-<div class="sectionbody">
+<div class="sect2">
+<h3 id="_configuration">Configuration</h3>
 <div class="paragraph">
-<p>The cache control panel is automatically enabled when you include the <code>control-panel-cache</code> module in your project. You can disable it by setting:</p>
+<p>The cache control panel is automatically enabled when you include the <code>micronaut-control-panel-cache</code> module in your project. You can disable it by setting:</p>
 </div>
 <div class="openblock">
 <div class="content">
@@ -621,10 +620,8 @@ Micronaut Endpoints require having the <code>io.micronaut:micronaut-management</
 </div>
 </div>
 </div>
-</div>
-<div class="sect1">
-<h2 id="_cache_information_display">Cache Information Display</h2>
-<div class="sectionbody">
+<div class="sect2">
+<h3 id="_cache_information_display">Cache Information Display</h3>
 <div class="paragraph">
 <p>The detailed view of each cache shows:</p>
 </div>
@@ -646,7 +643,6 @@ Micronaut Endpoints require having the <code>io.micronaut:micronaut-management</
 </div>
 <div class="paragraph">
 <p>This provides complete visibility into your application&#8217;s caching layer for debugging and monitoring purposes.</p>
-</div>
 </div>
 </div>
 
@@ -1260,6 +1256,147 @@ endpoints.loggers.write-sensitive=false</code></pre>
     }
   }
 }</code></pre>
+</div>
+</div>
+</div>
+</div>
+
+<h2 id="datasource"><a class="anchor" href="#datasource"></a>4.5 Datasource</h2>
+
+<div class='contribute-btn'>
+    <button type='button' class='btn btn-default' onclick='window.location.href="https://github.com/micronaut-projects/micronaut-control-panel/edit/2.0.x/src/main/docs/guide/controlPanels/datasource.adoc"'>
+        <i class='fa fa-pencil-square-o'></i> Improve this doc
+    </button>
+</div>
+
+
+<div class="paragraph">
+<p>The Datasource Control Panel provides a view into your application databases:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../img/datasource.png" alt="datasource">
+</div>
+</div>
+<div class="paragraph">
+<p>Features include:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Database schema discovery, inspecting tables, columns, primary/foreign keys and indexes.</p>
+</li>
+<li>
+<p>Visualize relationships in an E/R diagram.</p>
+</li>
+<li>
+<p>SQL console with schema autocompletion and client-side SQL linting.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>To get started, add the following module as a development-time dependency:</p>
+</div>
+<div class="paragraph">
+<p>        <div class="listingblock multi-language-sample">
+<div class="title"></div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="gradle">developmentOnly(<span class="hljs-string">"io.micronaut.controlpanel:micronaut-control-panel-datasource")</span></code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="maven">&lt;dependency&gt;
+    &lt;groupId&gt;io.micronaut.controlpanel&lt;/groupId&gt;
+    &lt;artifactId&gt;micronaut-control-panel-datasource&lt;/artifactId&gt;
+    &lt;scope&gt;provided&lt;/scope&gt;
+&lt;/dependency&gt;</code></pre>
+</div>
+</div>
+</p>
+</div>
+<div class="paragraph">
+<p>It is assumed that you already have datasources configured with either micronaut-sql or micronaut-data. If not, you can
+check the following documentation:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://micronaut-projects.github.io/micronaut-sql/latest/guide/#jdbc">Configuring datasources with micronaut-sql</a>.</p>
+</li>
+<li>
+<p><a href="https://guides.micronaut.io/latest/micronaut-data-jdbc-repository.html">Access a database with Micronaut Data JDBC repositories</a>.</p>
+</li>
+<li>
+<p><a href="https://guides.micronaut.io/latest/micronaut-jpa-hibernate.html">Access a database with JPA and Hibernate using Micronaut Data</a></p>
+</li>
+</ul>
+</div>
+<div class="sect2">
+<h3 id="_configuration">Configuration</h3>
+<div class="paragraph">
+<p>The datasource control panel is automatically enabled when you include the <code>micronaut-control-panel-datasource</code> module in your project.
+You can disable it by setting:</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">micronaut.control-panel.datasource.enabled=false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">micronaut:
+  control-panel:
+    datasource:
+      enabled: false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[micronaut]
+  [micronaut.control-panel]
+    [micronaut.control-panel.datasource]
+      enabled=false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-groovy-config hljs" data-lang="groovy-config">micronaut {
+  controlPanel {
+    datasource {
+      enabled = false
+    }
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-hocon hljs" data-lang="hocon">{
+  micronaut {
+    control-panel {
+      datasource {
+        enabled = false
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json-config hljs" data-lang="json-config">{
+  "micronaut": {
+    "control-panel": {
+      "datasource": {
+        "enabled": false
+      }
+    }
+  }
+}</code></pre>
+</div>
 </div>
 </div>
 </div>

@@ -57,6 +57,8 @@ loadScripts(document, 'script');</script>
 <li><a href="io/micronaut/controlpanel/panels/cache/package-tree.html">io.micronaut.controlpanel.panels.cache</a>, </li>
 <li><a href="io/micronaut/controlpanel/panels/cache/hazelcast/package-tree.html">io.micronaut.controlpanel.panels.cache.hazelcast</a>, </li>
 <li><a href="io/micronaut/controlpanel/panels/cache/infinispan/package-tree.html">io.micronaut.controlpanel.panels.cache.infinispan</a>, </li>
+<li><a href="io/micronaut/controlpanel/panels/datasource/package-tree.html">io.micronaut.controlpanel.panels.datasource</a>, </li>
+<li><a href="io/micronaut/controlpanel/panels/datasource/model/package-tree.html">io.micronaut.controlpanel.panels.datasource.model</a>, </li>
 <li><a href="io/micronaut/controlpanel/panels/management/package-tree.html">io.micronaut.controlpanel.panels.management</a>, </li>
 <li><a href="io/micronaut/controlpanel/panels/management/beans/package-tree.html">io.micronaut.controlpanel.panels.management.beans</a>, </li>
 <li><a href="io/micronaut/controlpanel/panels/objectstorage/package-tree.html">io.micronaut.controlpanel.panels.objectstorage</a>, </li>
@@ -81,6 +83,7 @@ loadScripts(document, 'script');</script>
 <li class="circle">io.micronaut.controlpanel.panels.cache.infinispan.<a href="io/micronaut/controlpanel/panels/cache/infinispan/InfinispanSyncCacheControlPanel.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.cache.infinispan">InfinispanSyncCacheControlPanel</a></li>
 </ul>
 </li>
+<li class="circle">io.micronaut.controlpanel.panels.datasource.<a href="io/micronaut/controlpanel/panels/datasource/DataSourceControlPanel.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.datasource">DataSourceControlPanel</a></li>
 <li class="circle">io.micronaut.controlpanel.panels.objectstorage.<a href="io/micronaut/controlpanel/panels/objectstorage/ObjectStorageControlPanel.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.objectstorage">ObjectStorageControlPanel</a></li>
 </ul>
 </li>
@@ -101,10 +104,13 @@ loadScripts(document, 'script');</script>
 <li class="circle">io.micronaut.controlpanel.core.config.<a href="io/micronaut/controlpanel/core/config/ControlPanelEnabledCondition.html" class="type-name-link" title="class in io.micronaut.controlpanel.core.config">ControlPanelEnabledCondition</a> (implements io.micronaut.context.condition.Condition)</li>
 <li class="circle">io.micronaut.controlpanel.core.<a href="io/micronaut/controlpanel/core/ControlPanelUrlLogger.html" class="type-name-link" title="class in io.micronaut.controlpanel.core">ControlPanelUrlLogger</a></li>
 <li class="circle">io.micronaut.controlpanel.util.<a href="io/micronaut/controlpanel/util/ControlPanelUtils.html" class="type-name-link" title="class in io.micronaut.controlpanel.util">ControlPanelUtils</a></li>
+<li class="circle">io.micronaut.controlpanel.panels.datasource.<a href="io/micronaut/controlpanel/panels/datasource/DataSourceController.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.datasource">DataSourceController</a></li>
+<li class="circle">io.micronaut.controlpanel.panels.datasource.<a href="io/micronaut/controlpanel/panels/datasource/DataSourceService.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.datasource">DataSourceService</a></li>
 <li class="circle">io.micronaut.controlpanel.core.<a href="io/micronaut/controlpanel/core/DefaultControlPanelRepository.html" class="type-name-link" title="class in io.micronaut.controlpanel.core">DefaultControlPanelRepository</a> (implements io.micronaut.controlpanel.core.<a href="io/micronaut/controlpanel/core/ControlPanelRepository.html" title="interface in io.micronaut.controlpanel.core">ControlPanelRepository</a>)</li>
 <li class="circle">io.micronaut.controlpanel.ui.util.<a href="io/micronaut/controlpanel/ui/util/EndpointUtils.html" class="type-name-link" title="class in io.micronaut.controlpanel.ui.util">EndpointUtils</a></li>
 <li class="circle">io.micronaut.controlpanel.panels.cache.hazelcast.<a href="io/micronaut/controlpanel/panels/cache/hazelcast/HazelcastControlPanelRegistrar.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.cache.hazelcast">HazelcastControlPanelRegistrar</a> (implements com.hazelcast.core.DistributedObjectListener)</li>
 <li class="circle">io.micronaut.controlpanel.panels.cache.infinispan.<a href="io/micronaut/controlpanel/panels/cache/infinispan/InfinispanControlPanelLoader.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.cache.infinispan">InfinispanControlPanelLoader</a> (implements io.micronaut.controlpanel.core.<a href="io/micronaut/controlpanel/core/ControlPanelLoader.html" title="interface in io.micronaut.controlpanel.core">ControlPanelLoader</a>)</li>
+<li class="circle">io.micronaut.controlpanel.panels.datasource.<a href="io/micronaut/controlpanel/panels/datasource/MermaidUtils.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.datasource">MermaidUtils</a></li>
 <li class="circle">io.micronaut.controlpanel.panels.objectstorage.<a href="io/micronaut/controlpanel/panels/objectstorage/ObjectStorageController.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.objectstorage">ObjectStorageController</a></li>
 </ul>
 </li>
@@ -147,6 +153,21 @@ loadScripts(document, 'script');</script>
 </ul>
 </section>
 <section class="hierarchy">
+<h2 title="Enum Class Hierarchy">Enum Class Hierarchy</h2>
+<ul>
+<li class="circle">java.lang.<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html" class="type-name-link external-link" title="class or interface in java.lang">Object</a>
+<ul>
+<li class="circle">java.lang.<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Enum.html" class="type-name-link external-link" title="class or interface in java.lang">Enum</a>&lt;E&gt; (implements java.lang.<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Comparable.html" title="class or interface in java.lang" class="external-link">Comparable</a>&lt;T&gt;, java.lang.constant.<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/constant/Constable.html" title="class or interface in java.lang.constant" class="external-link">Constable</a>, java.io.<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/Serializable.html" title="class or interface in java.io" class="external-link">Serializable</a>)
+<ul>
+<li class="circle">io.micronaut.controlpanel.panels.datasource.model.<a href="io/micronaut/controlpanel/panels/datasource/model/ColumnType.html" class="type-name-link" title="enum class in io.micronaut.controlpanel.panels.datasource.model">ColumnType</a></li>
+<li class="circle">io.micronaut.controlpanel.panels.datasource.model.<a href="io/micronaut/controlpanel/panels/datasource/model/DatabaseType.html" class="type-name-link" title="enum class in io.micronaut.controlpanel.panels.datasource.model">DatabaseType</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</section>
+<section class="hierarchy">
 <h2 title="Record Class Hierarchy">Record Class Hierarchy</h2>
 <ul>
 <li class="circle">java.lang.<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html" class="type-name-link external-link" title="class or interface in java.lang">Object</a>
@@ -155,12 +176,20 @@ loadScripts(document, 'script');</script>
 <ul>
 <li class="circle">io.micronaut.controlpanel.panels.cache.<a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.Body.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.cache">AbstractCacheControlPanel.Body</a></li>
 <li class="circle">io.micronaut.controlpanel.panels.management.beans.<a href="io/micronaut/controlpanel/panels/management/beans/BeansControlPanel.Body.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.management.beans">BeansControlPanel.Body</a></li>
+<li class="circle">io.micronaut.controlpanel.panels.datasource.model.<a href="io/micronaut/controlpanel/panels/datasource/model/Body.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.datasource.model">Body</a></li>
+<li class="circle">io.micronaut.controlpanel.panels.datasource.model.<a href="io/micronaut/controlpanel/panels/datasource/model/Column.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.datasource.model">Column</a></li>
 <li class="circle">io.micronaut.controlpanel.core.<a href="io/micronaut/controlpanel/core/ControlPanel.Category.html" class="type-name-link" title="class in io.micronaut.controlpanel.core">ControlPanel.Category</a></li>
 <li class="circle">io.micronaut.controlpanel.core.<a href="io/micronaut/controlpanel/core/ControlPanel.View.html" class="type-name-link" title="class in io.micronaut.controlpanel.core">ControlPanel.View</a></li>
+<li class="circle">io.micronaut.controlpanel.panels.datasource.<a href="io/micronaut/controlpanel/panels/datasource/DataSourceController.QueryRequest.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.datasource">DataSourceController.QueryRequest</a></li>
+<li class="circle">io.micronaut.controlpanel.panels.datasource.<a href="io/micronaut/controlpanel/panels/datasource/DataSourceController.QueryResponse.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.datasource">DataSourceController.QueryResponse</a></li>
+<li class="circle">io.micronaut.controlpanel.panels.datasource.model.<a href="io/micronaut/controlpanel/panels/datasource/model/DataSourceInfo.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.datasource.model">DataSourceInfo</a></li>
+<li class="circle">io.micronaut.controlpanel.panels.datasource.<a href="io/micronaut/controlpanel/panels/datasource/DataSourceService.QueryResult.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.datasource">DataSourceService.QueryResult</a></li>
 <li class="circle">io.micronaut.controlpanel.panels.management.beans.<a href="io/micronaut/controlpanel/panels/management/beans/DisabledBeansControlPanel.Body.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.management.beans">DisabledBeansControlPanel.Body</a></li>
+<li class="circle">io.micronaut.controlpanel.panels.datasource.model.<a href="io/micronaut/controlpanel/panels/datasource/model/ForeignKey.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.datasource.model">ForeignKey</a></li>
 <li class="circle">io.micronaut.controlpanel.panels.management.<a href="io/micronaut/controlpanel/panels/management/LoggersControlPanel.Body.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.management">LoggersControlPanel.Body</a></li>
 <li class="circle">io.micronaut.controlpanel.ui.<a href="io/micronaut/controlpanel/ui/Model.html" class="type-name-link" title="class in io.micronaut.controlpanel.ui">Model</a></li>
 <li class="circle">io.micronaut.controlpanel.panels.objectstorage.<a href="io/micronaut/controlpanel/panels/objectstorage/ObjectStorageControlPanel.Body.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.objectstorage">ObjectStorageControlPanel.Body</a></li>
+<li class="circle">io.micronaut.controlpanel.panels.datasource.model.<a href="io/micronaut/controlpanel/panels/datasource/model/Table.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.datasource.model">Table</a></li>
 </ul>
 </li>
 </ul>

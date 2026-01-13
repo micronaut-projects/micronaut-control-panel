@@ -4,6 +4,8 @@ io.micronaut.controlpanel.core.panels
 io.micronaut.controlpanel.panels.cache
 io.micronaut.controlpanel.panels.cache.hazelcast
 io.micronaut.controlpanel.panels.cache.infinispan
+io.micronaut.controlpanel.panels.datasource
+io.micronaut.controlpanel.panels.datasource.model
 io.micronaut.controlpanel.panels.management
 io.micronaut.controlpanel.panels.management.beans
 io.micronaut.controlpanel.panels.objectstorage
