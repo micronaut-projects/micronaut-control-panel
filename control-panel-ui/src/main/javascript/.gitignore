@@ -1,0 +1,6 @@
+# Ignore local JS build artifacts for the UI module
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+.rollup.cache/

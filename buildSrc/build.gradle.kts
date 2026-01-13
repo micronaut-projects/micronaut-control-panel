@@ -14,4 +14,7 @@ dependencies {
     implementation(libs.micronaut.shared.settings)
     implementation(libs.shadow.plugin)
     implementation(libs.test.logger.plugin)
+
+    // Provide Node Gradle plugin to precompiled convention plugins (via version catalog)
+    implementation(libs.node.gradle.plugin)
 }

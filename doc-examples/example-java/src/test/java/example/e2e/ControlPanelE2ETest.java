@@ -1,6 +1,5 @@
 package example.e2e;
 
-import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Page.GetByRoleOptions;
 import com.microsoft.playwright.junit.Options;
@@ -9,6 +8,7 @@ import com.microsoft.playwright.junit.UsePlaywright;
 import com.microsoft.playwright.options.AriaRole;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledInNativeImage;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
@@ -206,6 +206,28 @@ class ControlPanelE2ETest extends AbstractE2ETest {
             assertThat(body(page)).not().containsText("foo");
             assertThat(body(page)).not().containsText("counter");
         }
+    }
+
+    @Test
+    @DisabledInNativeImage
+    void testDatasource(Page page) {
+        page.navigate(baseUrl());
+        categoryLink(page, "Data Sources").click();
+
+        assertThat(body(page)).containsText("my-oracle");
+        assertThat(body(page)).containsText("my-postgres");
+
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Details")).first().click();
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Show ER diagram")).click();
+        assertThat(page.locator("#erDiagramContainer")).matchesAriaSnapshot("- document: /TEST_DEPT numeric\\(2\\) DEPTNO PK NOT NULL string\\(\\d+\\) DNAME string\\(\\d+\\) LOC TEST_EMP numeric\\(4\\) EMPNO PK NOT NULL string\\(\\d+\\) ENAME string\\(9\\) JOB numeric\\(4\\) MGR FK date HIREDATE numeric\\(7\\) SAL numeric\\(7\\) COMM numeric\\(2\\) DEPTNO FK FK_DEPTNO FK_EMPNO/");
+
+        page.getByLabel("Close").click();
+        assertThat(page.locator("#jstree")).matchesAriaSnapshot("- tree:\n  - treeitem \" DEPT\" [level=1]\n  - treeitem \" EMP\" [level=1]");
+
+        page.getByRole(AriaRole.TEXTBOX).fill("SELECT * FROM DEPT");
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Execute query")).click();
+
+        assertThat(page.locator("tbody")).containsText("ACCOUNTING");
     }
 
     public static class HeadlessBrowserOptions implements OptionsFactory {

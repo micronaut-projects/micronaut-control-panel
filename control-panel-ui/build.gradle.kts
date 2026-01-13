@@ -1,5 +1,6 @@
 plugins {
     io.micronaut.build.internal.`control-panel-module`
+    io.micronaut.build.internal.`control-panel-ui`
 }
 
 dependencies {
