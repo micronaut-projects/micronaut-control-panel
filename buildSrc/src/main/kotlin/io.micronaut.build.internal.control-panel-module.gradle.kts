@@ -29,3 +29,7 @@ dependencies {
     annotationProcessor(mn.findLibrary("micronaut.graal").get())
     implementation(mn.findLibrary("jspecify").get())
 }
+
+tasks.named("internalStartTestResourcesService") {
+    setProperty("useClassDataSharing", false)
+}
