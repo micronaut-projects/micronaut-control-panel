@@ -17,6 +17,11 @@ sourceSets {
     }
 }
 
+tasks.named("npm_run_build") {
+    inputs.dir(jsDir)
+    outputs.dir(generatedResourcesDir)
+}
+
 tasks.named("spotlessJavaMisc") {
     enabled = false
 }
