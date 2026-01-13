@@ -27,6 +27,7 @@ import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.http.annotation.Get;
+import io.micronaut.http.cachecontrol.CacheControl;
 import io.micronaut.json.JsonMapper;
 import io.micronaut.scheduling.TaskExecutors;
 import io.micronaut.scheduling.annotation.ExecuteOn;
@@ -35,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 import java.util.List;
@@ -60,6 +62,7 @@ public final class DataSourceController {
 
     private final Map<String, DataSourceService> services;
     private final Map<String, DataSourceControlPanel> panels;
+    private final Map<String, Schema> schemas;
 
     private final JsonMapper jsonMapper;
 
@@ -67,6 +70,7 @@ public final class DataSourceController {
         // Map keyed by bean name (datasource name)
         this.services = locator.mapOfType(SERVICE_ARGUMENT);
         this.panels = locator.mapOfType(PANEL_ARGUMENT);
+        this.schemas = computeSchemas();
         this.jsonMapper = jsonMapper;
         if (LOG.isDebugEnabled()) {
             LOG.debug("Initialized DataSourceController with services={}, panels={}", services.keySet(), panels.keySet());
@@ -88,29 +92,16 @@ public final class DataSourceController {
         if (LOG.isDebugEnabled()) {
             LOG.debug("schemaJs requested for dataSource='{}'", dataSource);
         }
-        var panel = panels.get(dataSource);
-        if (panel == null) {
+        var cachedSchema = schemas.get(dataSource);
+        if (cachedSchema == null) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("No control panel found for dataSource='{}'", dataSource);
             }
             return HttpResponse.notFound();
         }
 
-        var tables = panel.getBody().tables();
-        var schema = new LinkedHashMap<String, Object>();
-        var counts = new LinkedHashMap<String, Integer>();
-
-        computeSchema(tables, counts, schema);
-
-        // Choose defaultSchema (original case, most common)
-        String defaultSchema = StringUtils.EMPTY_STRING;
-        int max = -1;
-        for (var e : counts.entrySet()) {
-            if (e.getValue() > max) {
-                max = e.getValue();
-                defaultSchema = e.getKey();
-            }
-        }
+        var schema = cachedSchema.schema;
+        var defaultSchema = cachedSchema.defaultSchema;
 
         try {
             var schemaJson = jsonMapper.writeValueAsString(schema);
@@ -123,7 +114,7 @@ public final class DataSourceController {
             }
             return HttpResponse.ok(js)
                 .contentType(MediaType.of("application/javascript"))
-                .header("Cache-Control", "no-store");
+                .cacheControl(CacheControl.builder().noCache().build());
         } catch (IOException e) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Failed to serialize schema for dataSource='{}': {}", dataSource, e.getMessage());
@@ -187,8 +178,32 @@ public final class DataSourceController {
         }
     }
 
+    private Map<String, Schema> computeSchemas() {
+        var result = new HashMap<String, Schema>(panels.size());
+        for (var panel : panels.values()) {
+            var tables = panel.getBody().tables();
+            var schema = new LinkedHashMap<String, Object>();
+            var counts = new LinkedHashMap<String, Integer>();
+
+            computeSchema(tables, counts, schema);
+
+            // Choose defaultSchema (original case, most common)
+            String defaultSchema = StringUtils.EMPTY_STRING;
+            int max = -1;
+            for (var e : counts.entrySet()) {
+                if (e.getValue() > max) {
+                    max = e.getValue();
+                    defaultSchema = e.getKey();
+                }
+            }
+            result.put(panel.getBeanName(), new Schema(schema, defaultSchema));
+        }
+        return result;
+    }
+
+
     @SuppressWarnings("unchecked")
-    private static void computeSchema(final List<Table> tables, final LinkedHashMap<String, Integer> counts, final LinkedHashMap<String, Object> schema) {
+    private static void computeSchema(final List<Table> tables, final Map<String, Integer> counts, final Map<String, Object> schema) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Computing schema for {} tables", tables.size());
         }
@@ -268,5 +283,8 @@ public final class DataSourceController {
                 message == null ? "Error" : message
             );
         }
+    }
+
+    record Schema(Map<String, Object> schema, String defaultSchema) {
     }
 }
