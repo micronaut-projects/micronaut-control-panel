@@ -40,6 +40,17 @@ public class DefaultControlPanelRepository implements ControlPanelRepository {
 
     private final Collection<ControlPanelLoader> controlPanelLoaders;
 
+    /**
+     * @deprecated As of version <strong>2.0.0</strong> this constructor is no longer supported and will be
+     * removed in a future release.  It is retained only for binary‑compatibility reasons and deliberately
+     * throws an {@link IllegalArgumentException} to make sure it is never used.
+     *
+     * @param controlPanels a list of {@link ControlPanel} instances that would have been managed by this
+     *                     repository (now ignored)
+     *
+     * @throws IllegalArgumentException always thrown to signal that this constructor is deprecated and
+     *                                  must not be used.
+     */
     @Deprecated(since = "2.0.0", forRemoval = true)
     public DefaultControlPanelRepository(List<ControlPanel> controlPanels) {
         throw new IllegalArgumentException("Constructor io.micronaut.controlpanel.core.DefaultControlPanelRepository(java.util.List) is deprecated");

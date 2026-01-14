@@ -20,6 +20,8 @@ import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import jakarta.inject.Singleton;
 
@@ -62,40 +64,11 @@ class DefaultControlPanelRepositoryTest {
         assertEquals(1, panels.size());
     }
 
-    @Test
-    void itCanFindOneByNameRoutes() {
+    @ParameterizedTest
+    @ValueSource(strings = {"routes", "beans", "env", "loggers", "health", "test"})
+    void itCanFindOneByNamePresent(String controlPanelName) {
         ControlPanelRepository repository = ctx.getBean(ControlPanelRepository.class);
-        assertTrue(repository.findByName("routes").isPresent());
-    }
-
-    @Test
-    void itCanFindOneByNameBeans() {
-        ControlPanelRepository repository = ctx.getBean(ControlPanelRepository.class);
-        assertTrue(repository.findByName("beans").isPresent());
-    }
-
-    @Test
-    void itCanFindOneByNameEnv() {
-        ControlPanelRepository repository = ctx.getBean(ControlPanelRepository.class);
-        assertTrue(repository.findByName("env").isPresent());
-    }
-
-    @Test
-    void itCanFindOneByNameLoggers() {
-        ControlPanelRepository repository = ctx.getBean(ControlPanelRepository.class);
-        assertTrue(repository.findByName("loggers").isPresent());
-    }
-
-    @Test
-    void itCanFindOneByNameHealth() {
-        ControlPanelRepository repository = ctx.getBean(ControlPanelRepository.class);
-        assertTrue(repository.findByName("health").isPresent());
-    }
-
-    @Test
-    void itCanFindOneByNameTest() {
-        ControlPanelRepository repository = ctx.getBean(ControlPanelRepository.class);
-        assertTrue(repository.findByName("test").isPresent());
+        assertTrue(repository.findByName(controlPanelName).isPresent());
     }
 
     @Test

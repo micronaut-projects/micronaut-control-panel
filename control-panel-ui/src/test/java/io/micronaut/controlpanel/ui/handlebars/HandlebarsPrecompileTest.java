@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class RecordingHandlebars extends Handlebars {
     final java.util.List<String> compiled = new java.util.ArrayList<>();
-    RecordingHandlebars() { super(); }
+
     RecordingHandlebars(TemplateLoader loader) { super(loader); }
     @Override public Template compile(String location) throws java.io.IOException {
         compiled.add(location);
@@ -39,7 +39,7 @@ class RecordingHandlebars extends Handlebars {
 class HandlebarsPrecompileTest {
 
     @Test
-    void precompilesTemplatesUnderViewsPrefix() throws Exception {
+    void precompilesTemplatesUnderViewsPrefix() {
         ViewsConfigurationProperties config = new ViewsConfigurationProperties();
         config.setFolder("/views");
         HandlebarsHelperRegistrar registrar = new HandlebarsHelperRegistrar(config);

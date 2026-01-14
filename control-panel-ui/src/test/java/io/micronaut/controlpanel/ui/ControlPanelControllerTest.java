@@ -15,7 +15,6 @@
  */
 package io.micronaut.controlpanel.ui;
 
-import io.micronaut.controlpanel.core.ConfigurableControlPanel;
 import io.micronaut.controlpanel.core.ControlPanel;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import jakarta.inject.Inject;

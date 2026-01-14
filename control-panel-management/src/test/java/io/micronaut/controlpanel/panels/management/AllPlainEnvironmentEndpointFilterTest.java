@@ -70,7 +70,7 @@ class AllPlainEnvironmentEndpointFilterTest {
                     }
                 }
             }
-            java.util.function.Function<Object,Object> extractValue = (obj) -> {
+            java.util.function.Function<Object,Object> extractValue = obj -> {
                 if (obj == null) return null;
                 if (obj instanceof java.util.Map<?,?> m) return m.get("value");
                 try { return obj.getClass().getField("value").get(obj); } catch (Exception ignored) {}
