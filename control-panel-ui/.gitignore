@@ -1,0 +1,2 @@
+# Ignore previously committed built artifact; bundle is now generated into build/generated-resources
+src/main/resources/static/js/editor.bundle.js

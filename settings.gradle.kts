@@ -18,6 +18,7 @@ include("control-panel-core")
 include("control-panel-management")
 include("control-panel-object-storage")
 include("control-panel-cache")
+include("control-panel-datasource")
 include("control-panel-ui")
 
 include("doc-examples:example-java")
@@ -33,5 +34,7 @@ configure<MicronautBuildSettingsExtension> {
     importMicronautCatalog("micronaut-serde")
     importMicronautCatalog("micronaut-object-storage")
     importMicronautCatalog("micronaut-cache")
+    importMicronautCatalog("micronaut-sql")
+    importMicronautCatalog("micronaut-data")
     importMicronautCatalog("micronaut-testresources")
 }

@@ -18,7 +18,7 @@ The control panel supports all cache implementations provided by Micronaut Cache
 * **Hazelcast** - Distributed caching with clustering capabilities
 * **Infinispan** - Distributed in-memory data grid
 
-== Cache Management Operations
+=== Cache Management Operations
 
 Each cache panel includes interactive buttons to manage cache contents:
 
@@ -27,9 +27,9 @@ Each cache panel includes interactive buttons to manage cache contents:
 
 These operations are performed via REST endpoints and provide immediate feedback on success or failure.
 
-== Configuration
+=== Configuration
 
-The cache control panel is automatically enabled when you include the `control-panel-cache` module in your project. You can disable it by setting:
+The cache control panel is automatically enabled when you include the `micronaut-control-panel-cache` module in your project. You can disable it by setting:
 
 [configuration]
 ----
@@ -50,7 +50,7 @@ micronaut:
         enabled: false
 ----
 
-== Cache Information Display
+=== Cache Information Display
 
 The detailed view of each cache shows:
 

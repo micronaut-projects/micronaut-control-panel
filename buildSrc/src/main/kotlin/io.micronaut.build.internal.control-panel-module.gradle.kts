@@ -28,3 +28,7 @@ dependencies {
     annotationProcessor(mn.findLibrary("micronaut.graal").get())
     implementation(mn.findLibrary("jspecify").get())
 }
+
+tasks.withType<Test> {
+    jvmArgs("-XX:+EnableDynamicAgentLoading")
+}
