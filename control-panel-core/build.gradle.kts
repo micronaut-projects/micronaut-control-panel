@@ -13,4 +13,8 @@ dependencies {
     testImplementation(mn.micronaut.http)
     testImplementation(mn.micronaut.management)
     testImplementation(projects.micronautControlPanelManagement)
+
+    testImplementation(mnTest.micronaut.test.junit5)
+    testRuntimeOnly(mnTest.junit.jupiter.engine)
+    testAnnotationProcessor(mn.micronaut.inject.java)
 }
