@@ -68,3 +68,7 @@ graalvmNative {
         quickBuild.set(true)
     }
 }
+
+tasks.named("internalStartTestResourcesService") {
+    setProperty("useClassDataSharing", false)
+}
