@@ -16,6 +16,7 @@
 package io.micronaut.controlpanel.core;
 
 import io.micronaut.context.BeanContext;
+import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
 import java.util.ArrayList;
@@ -39,11 +40,17 @@ public class DefaultControlPanelRepository implements ControlPanelRepository {
 
     private final Collection<ControlPanelLoader> controlPanelLoaders;
 
+    @Deprecated(since = "2.0.0", forRemoval = true)
+    public DefaultControlPanelRepository(List<ControlPanel> controlPanels) {
+        throw new IllegalArgumentException("Constructor io.micronaut.controlpanel.core.DefaultControlPanelRepository(java.util.List) is deprecated");
+    }
+
     /**
      * Default constructor.
      *
      * @param beanContext the bean context.
      */
+    @Inject
     public DefaultControlPanelRepository(BeanContext beanContext) {
         this.beanContext = beanContext;
         this.controlPanelLoaders = beanContext.getBeansOfType(ControlPanelLoader.class);
