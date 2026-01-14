@@ -339,6 +339,7 @@
   "condition":{"typeReachable":"com.microsoft.playwright.impl.PageImpl"},
   "name":"com.microsoft.playwright.options.ViewportSize",
   "allDeclaredFields":true,
+  "unsafeAllocated": true,
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
