@@ -81,7 +81,14 @@ public class OpenAPIControlPanelLoader implements ControlPanelLoader {
     @Override
     public List<OpenAPIViewerControlPanel> loadControlPanels() {
         var enabledViewers = getEnabledViewers();
+        if (enabledViewers.isEmpty()) {
+            return List.of();
+        }
+        
         var staticMappings = getStaticResourceMappings();
+        if (staticMappings.isEmpty()) {
+            return List.of();
+        }
 
         var controlPanels = new ArrayList<OpenAPIViewerControlPanel>();
         for (String viewer : enabledViewers) {
@@ -169,22 +176,25 @@ public class OpenAPIControlPanelLoader implements ControlPanelLoader {
         var mappings = new HashMap<String, String>();
         var environment = applicationContext.getEnvironment();
 
-        // Get all properties starting with micronaut.router.static-resources
-        for (String key : environment.getPropertyEntries(STATIC_RESOURCES_PREFIX)) {
-            if (key.endsWith(MAPPING_SUFFIX)) {
-                var value = environment.getProperty(STATIC_RESOURCES_PREFIX + key, String.class).orElse(null);
-                if (value != null) {
-                    // Extract the resource name from the key
-                    // e.g., "swagger.mapping" -> "swagger"
-                    var endIdx = key.lastIndexOf(MAPPING_SUFFIX);
-                    if (endIdx > 0) {
-                        var resourceName = key.substring(0, endIdx);
-                        var mapping = value;
-                        // Remove /** suffix if present
-                        if (mapping.endsWith("/**")) {
-                            mapping = mapping.substring(0, mapping.length() - 3);
+        // Iterate through all property sources to find static resource mappings
+        for (var propertySource : environment.getPropertySources()) {
+            for (String key : propertySource) {
+                if (key.startsWith(STATIC_RESOURCES_PREFIX) && key.endsWith(MAPPING_SUFFIX)) {
+                    var value = environment.getProperty(key, String.class).orElse(null);
+                    if (value != null) {
+                        // Extract the resource name from the key
+                        // e.g., "micronaut.router.static-resources.swagger-ui.mapping" -> "swagger-ui"
+                        var nameStart = STATIC_RESOURCES_PREFIX.length();
+                        var nameEnd = key.lastIndexOf(MAPPING_SUFFIX);
+                        if (nameEnd > nameStart) {
+                            var resourceName = key.substring(nameStart, nameEnd);
+                            var mapping = value;
+                            // Remove /** suffix if present
+                            if (mapping.endsWith("/**")) {
+                                mapping = mapping.substring(0, mapping.length() - 3);
+                            }
+                            mappings.put(resourceName, mapping);
                         }
-                        mappings.put(resourceName, mapping);
                     }
                 }
             }
