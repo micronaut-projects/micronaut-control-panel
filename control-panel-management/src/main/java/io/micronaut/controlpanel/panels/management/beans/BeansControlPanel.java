@@ -102,7 +102,7 @@ public class BeansControlPanel extends AbstractControlPanel<BeansControlPanel.Bo
             .stream()
             .filter(filter)
             .sorted(COMPARATOR_BY_NAME)
-            .collect(Collectors.groupingBy(groupBy, LinkedHashMap::new, Collectors.mapping(beanDefinitionData::getData, Collectors.toList())));
+            .collect(Collectors.groupingBy(groupBy, LinkedHashMap::new, Collectors.mapping(beanDefinitionData::getData, Collectors.toUnmodifiableList())));
     }
 
     @Override

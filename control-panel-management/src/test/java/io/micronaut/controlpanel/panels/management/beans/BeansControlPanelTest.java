@@ -54,6 +54,14 @@ class BeansControlPanelTest {
             assertNotNull(panel.getBody().micronautBeansByPackage());
             assertNotNull(panel.getBody().otherBeansByPackage());
             assertTrue(panel.getBody().otherBeansByPackage().containsKey("primitive"));
+
+            // new: verify lists are unmodifiable for one package
+            var map = panel.getBody().otherBeansByPackage();
+            var key = map.keySet().stream().findFirst().orElse(null);
+            if (key != null) {
+                var list = map.get(key);
+                assertThrows(UnsupportedOperationException.class, () -> list.add(null));
+            }
         }
     }
 }

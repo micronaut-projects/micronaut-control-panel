@@ -87,7 +87,7 @@ public class RoutesControlPanel extends AbstractControlPanel<RoutesControlPanel.
             .filter(filter)
             .distinct()
             .sorted(COMPARATOR_BY_URI.thenComparing(UriRouteInfo::getHttpMethodName))
-            .collect(Collectors.groupingBy(KEY_MAPPER, LinkedHashMap::new, Collectors.toList()));
+            .collect(Collectors.groupingBy(KEY_MAPPER, LinkedHashMap::new, Collectors.toUnmodifiableList()));
     }
 
     @ReflectiveAccess

@@ -39,6 +39,7 @@ import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.jar.JarEntry;
@@ -140,10 +141,10 @@ class HandlebarsHelperRegistrar implements BeanCreatedEventListener<Handlebars> 
 
     private static Helper<Object> isMapHelper() {
         return (ctx, opts) -> {
-            if (ctx instanceof java.util.Map) {
-                return opts.fn(); // It's a Map, render the block
+            if (ctx instanceof Map<?, ?>) {
+                return opts.fn();
             } else {
-                return opts.inverse(); // It's not a Map, render the inverse block
+                return opts.inverse();
             }
         };
     }

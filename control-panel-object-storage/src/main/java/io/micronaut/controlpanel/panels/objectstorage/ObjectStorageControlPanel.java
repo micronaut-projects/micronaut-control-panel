@@ -99,16 +99,13 @@ public class ObjectStorageControlPanel extends AbstractEachBeanControlPanel<Obje
 
     @Override
     public String getIcon() {
-        if (objectStorageConfiguration instanceof LocalStorageConfiguration) {
-            return "fa-hard-drive";
-        } else if (objectStorageConfiguration instanceof AwsS3Configuration) {
-            return "fa-brands fa-aws";
-        } else if (objectStorageConfiguration instanceof AzureBlobStorageConfiguration) {
-            return "fa-brands fa-microsoft";
-        } else if (objectStorageConfiguration instanceof GoogleCloudStorageConfiguration) {
-            return "fa-brands fa-google";
-        }
-        return DEFAULT_ICON_CLASS;
+        return switch (objectStorageConfiguration) {
+            case LocalStorageConfiguration ignored -> "fa-hard-drive";
+            case AwsS3Configuration ignored -> "fa-brands fa-aws";
+            case AzureBlobStorageConfiguration ignored -> "fa-brands fa-microsoft";
+            case GoogleCloudStorageConfiguration ignored -> "fa-brands fa-google";
+            default -> DEFAULT_ICON_CLASS;
+        };
     }
 
     /**
@@ -118,18 +115,19 @@ public class ObjectStorageControlPanel extends AbstractEachBeanControlPanel<Obje
      */
     Map<String, Object> computeMetadata() {
         var metadata = new HashMap<String, Object>();
-        if (objectStorageConfiguration instanceof LocalStorageConfiguration localConfiguration) {
-            metadata.put("path", localConfiguration.getPath());
-        } else if (objectStorageConfiguration instanceof AwsS3Configuration awsS3Configuration) {
-            metadata.put(BUCKET, awsS3Configuration.getBucket());
-        } else if (objectStorageConfiguration instanceof AzureBlobStorageConfiguration azureBlobConfiguration) {
-            metadata.put("container", azureBlobConfiguration.getContainer());
-            metadata.put("endpoint", azureBlobConfiguration.getEndpoint());
-        } else if (objectStorageConfiguration instanceof GoogleCloudStorageConfiguration googleCloudConfiguration) {
-            metadata.put(BUCKET, googleCloudConfiguration.getBucket());
-        } else if (objectStorageConfiguration instanceof OracleCloudStorageConfiguration oracleCloudConfiguration) {
-            metadata.put(BUCKET, oracleCloudConfiguration.getBucket());
-            metadata.put("namespace", oracleCloudConfiguration.getNamespace());
+        switch (objectStorageConfiguration) {
+            case LocalStorageConfiguration localConfiguration -> metadata.put("path", localConfiguration.getPath());
+            case AwsS3Configuration awsS3Configuration -> metadata.put(BUCKET, awsS3Configuration.getBucket());
+            case AzureBlobStorageConfiguration azureBlobConfiguration -> {
+                metadata.put("container", azureBlobConfiguration.getContainer());
+                metadata.put("endpoint", azureBlobConfiguration.getEndpoint());
+            }
+            case GoogleCloudStorageConfiguration googleCloudConfiguration -> metadata.put(BUCKET, googleCloudConfiguration.getBucket());
+            case OracleCloudStorageConfiguration oracleCloudConfiguration -> {
+                metadata.put(BUCKET, oracleCloudConfiguration.getBucket());
+                metadata.put("namespace", oracleCloudConfiguration.getNamespace());
+            }
+            default -> { /* no-op */ }
         }
         return metadata;
     }
