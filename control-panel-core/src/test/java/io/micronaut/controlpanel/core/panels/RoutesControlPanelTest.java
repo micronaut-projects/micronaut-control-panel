@@ -80,6 +80,14 @@ class RoutesControlPanelTest {
 
         assertEquals(routeSignatures.size(), new java.util.HashSet<>(routeSignatures).size());
         assertTrue(allRoutes.size() > 0);
+
+        // new: verify lists are unmodifiable
+        var grouped = body.micronautRoutes();
+        var firstKey = grouped.keySet().stream().findFirst().orElse(null);
+        if (firstKey != null) {
+            var list = grouped.get(firstKey);
+            assertThrows(UnsupportedOperationException.class, () -> list.add(null));
+        }
     }
 
     @Controller
