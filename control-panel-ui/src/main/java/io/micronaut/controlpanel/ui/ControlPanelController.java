@@ -34,6 +34,7 @@ import io.micronaut.views.ModelAndView;
 import jakarta.inject.Inject;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -125,9 +126,9 @@ public class ControlPanelController implements ControlPanelApi {
                 ControlPanel.Category::id,
                 category -> repository.countByCategoryId(category.id()),
                 (a, b) -> a,
-                java.util.LinkedHashMap::new
+                LinkedHashMap::new
             ));
-        Map<String, Object> baseExtra = new java.util.LinkedHashMap<>();
+        Map<String, Object> baseExtra = new LinkedHashMap<>();
         baseExtra.put("controlPanelPath", controlPanelPath);
         baseExtra.put("appPath", appPath);
         baseExtra.put("categoryCount", categoryCount);

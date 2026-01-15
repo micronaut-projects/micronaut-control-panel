@@ -27,7 +27,7 @@ import org.mockito.Mockito;
 import static org.junit.jupiter.api.Assertions.*;
 
 class RecordingHandlebars extends Handlebars {
-    final java.util.List<String> compiled = new java.util.ArrayList<>();
+    final java.util.List<String> compiled = new java.util.ArrayList<>(); // retain FQNs in test to avoid extra imports
 
     RecordingHandlebars(TemplateLoader loader) { super(loader); }
     @Override public Template compile(String location) throws java.io.IOException {
