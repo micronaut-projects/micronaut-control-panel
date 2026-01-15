@@ -16,6 +16,7 @@ dependencies {
 
     // OpenAPI
     implementation(projects.micronautControlPanelOpenapi)
+    runtimeOnly("io.micronaut.openapi:micronaut-openapi:6.14.1")
     implementation("io.micronaut.openapi:micronaut-openapi-annotations:6.14.1")
 
     // Object Storage
