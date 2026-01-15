@@ -1,0 +1,8 @@
+micronaut:
+  control-panel:
+    panels:
+      openapi:
+        title: OpenAPI
+        icon: fa-file-code
+        enabled: true
+        order: 100

@@ -19,6 +19,7 @@ include("control-panel-management")
 include("control-panel-object-storage")
 include("control-panel-cache")
 include("control-panel-datasource")
+include("control-panel-openapi")
 include("control-panel-ui")
 
 include("doc-examples:example-java")
