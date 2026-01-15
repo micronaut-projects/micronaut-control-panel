@@ -24,15 +24,12 @@ import io.micronaut.core.io.ResourceLoader;
 import jakarta.inject.Named;
 import org.jspecify.annotations.NonNull;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 import static io.micronaut.controlpanel.panels.openapi.OpenAPIViewerControlPanel.NAME;
 
@@ -129,7 +126,13 @@ public class OpenAPIControlPanelLoader implements ControlPanelLoader {
             }
         }
 
-        return enabledViewers.stream().distinct().collect(Collectors.toList());
+        var uniqueViewers = new ArrayList<String>();
+        for (String viewer : enabledViewers) {
+            if (!uniqueViewers.contains(viewer)) {
+                uniqueViewers.add(viewer);
+            }
+        }
+        return uniqueViewers;
     }
 
     /**
