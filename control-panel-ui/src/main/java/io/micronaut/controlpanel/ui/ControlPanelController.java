@@ -123,13 +123,14 @@ public class ControlPanelController implements ControlPanelApi {
             .stream()
             .collect(Collectors.toMap(
                 ControlPanel.Category::id,
-                category -> repository.countByCategoryId(category.id())
+                category -> repository.countByCategoryId(category.id()),
+                (a, b) -> a,
+                java.util.LinkedHashMap::new
             ));
-        var baseExtra = Map.of(
-            "controlPanelPath", controlPanelPath,
-            "appPath", appPath,
-            "categoryCount", categoryCount
-        );
+        Map<String, Object> baseExtra = new java.util.LinkedHashMap<>();
+        baseExtra.put("controlPanelPath", controlPanelPath);
+        baseExtra.put("appPath", appPath);
+        baseExtra.put("categoryCount", categoryCount);
         return new CommonData(categories, baseExtra);
     }
 

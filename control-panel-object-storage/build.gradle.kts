@@ -18,6 +18,11 @@ dependencies {
     testImplementation(mnObjectStorage.micronaut.`object`.storage.azure)
     testImplementation(mnObjectStorage.micronaut.`object`.storage.gcp)
     testImplementation(mnObjectStorage.micronaut.`object`.storage.oracle.cloud)
+
+    testImplementation(mnTest.micronaut.test.junit5)
+    testImplementation(mnTest.mockito.junit.jupiter)
+    testRuntimeOnly(mnTest.junit.jupiter.engine)
+    testAnnotationProcessor(mn.micronaut.inject.java)
 }
 
 micronautBuild {
