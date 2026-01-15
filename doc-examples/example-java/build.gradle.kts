@@ -7,11 +7,16 @@ plugins {
 dependencies {
     annotationProcessor(mnSerde.micronaut.serde.processor)
     annotationProcessor(mnData.micronaut.data.processor)
+    annotationProcessor("io.micronaut.openapi:micronaut-openapi:6.14.1")
     implementation(mnSerde.micronaut.serde.jackson)
 
     runtimeOnly(projects.micronautControlPanelUi)
     implementation(projects.micronautControlPanelManagement)
     implementation(mn.micronaut.management)
+
+    // OpenAPI
+    implementation(projects.micronautControlPanelOpenapi)
+    implementation("io.micronaut.openapi:micronaut-openapi-annotations:6.14.1")
 
     // Object Storage
     implementation(projects.micronautControlPanelObjectStorage)

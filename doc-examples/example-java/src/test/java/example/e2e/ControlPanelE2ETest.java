@@ -230,6 +230,50 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         assertThat(page.locator("tbody")).containsText("ACCOUNTING");
     }
 
+    @Test
+    void testOpenAPIViewers(Page page) {
+        page.navigate(baseUrl());
+        
+        // Wait for page to load
+        page.waitForLoadState();
+        
+        // Check if OpenAPI category exists
+        var hasOpenAPI = page.locator("text=OpenAPI").count() > 0;
+        if (!hasOpenAPI) {
+            // Debug: print available categories
+            System.out.println("Available categories:");
+            page.locator(".nav-link").all().forEach(link -> {
+                System.out.println("  - " + link.textContent());
+            });
+        }
+        
+        // Click OpenAPI category
+        categoryLink(page, "OpenAPI").click();
+
+        // Check that all OpenAPI viewer panels are rendered
+        assertThat(body(page)).containsText("Swagger UI");
+        assertThat(body(page)).containsText("Redoc");
+        assertThat(body(page)).containsText("RapiDoc");
+        assertThat(body(page)).containsText("Scalar");
+        assertThat(body(page)).containsText("OpenAPI Explorer");
+
+        // Check that links are present and don't 404
+        var swaggerLink = page.locator("a[href*='/swagger-ui/']").first();
+        assertThat(swaggerLink).isVisible();
+        
+        var redocLink = page.locator("a[href*='/redoc/']").first();
+        assertThat(redocLink).isVisible();
+        
+        var rapidocLink = page.locator("a[href*='/rapidoc/']").first();
+        assertThat(rapidocLink).isVisible();
+        
+        var scalarLink = page.locator("a[href*='/scalar/']").first();
+        assertThat(scalarLink).isVisible();
+        
+        var explorerLink = page.locator("a[href*='/openapi-explorer/']").first();
+        assertThat(explorerLink).isVisible();
+    }
+
     public static class HeadlessBrowserOptions implements OptionsFactory {
         @Override
         public Options getOptions() {

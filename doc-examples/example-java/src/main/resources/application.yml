@@ -6,6 +6,11 @@ micronaut:
         title: My Application Control Panel # <1>
         icon: fa-plug # <2>
         order: 10 # <3>
+      openapi:
+        title: OpenAPI
+        icon: fa-file-code
+        enabled: true
+        order: 100
 #end::control-panel[]
     env:
       show-values: true
@@ -18,6 +23,26 @@ micronaut:
       initial-capacity: 2
   application:
     name: myApplication
+  router:
+    static-resources:
+      swagger:
+        paths: classpath:META-INF/swagger
+        mapping: /swagger/**
+      swagger-ui:
+        paths: classpath:META-INF/swagger/views/swagger-ui
+        mapping: /swagger-ui/**
+      redoc:
+        paths: classpath:META-INF/swagger/views/redoc
+        mapping: /redoc/**
+      rapidoc:
+        paths: classpath:META-INF/swagger/views/rapidoc
+        mapping: /rapidoc/**
+      scalar:
+        paths: classpath:META-INF/swagger/views/scalar
+        mapping: /scalar/**
+      openapi-explorer:
+        paths: classpath:META-INF/swagger/views/openapi-explorer
+        mapping: /openapi-explorer/**
 
 ehcache:
   caches:
