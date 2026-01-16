@@ -388,6 +388,31 @@ Micronaut Endpoints require having the <code>io.micronaut:micronaut-management</
 </li>
 </ul>
 </div>
+<div class="paragraph">
+<p>If an OpenAPI viewer is configured, the routes control panel displays a link to it. The panel checks for <code>micronaut.router.static-resources.*</code> mappings with the following keys:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>swagger-ui</code></p>
+</li>
+<li>
+<p><code>redoc</code></p>
+</li>
+<li>
+<p><code>openapi-explorer</code></p>
+</li>
+<li>
+<p><code>scalar</code></p>
+</li>
+<li>
+<p><code>rapidoc</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>When one of those static resources is present, the panel extracts its URI (e.g. <code>/swagger-ui/</code> or <code>/swagger-ui/index.html</code>) from the corresponding <code>mapping</code> and renders a button linking to the viewer.</p>
+</div>
 
 <h2 id="cache"><a class="anchor" href="#cache"></a>4.2 Cache</h2>
 
