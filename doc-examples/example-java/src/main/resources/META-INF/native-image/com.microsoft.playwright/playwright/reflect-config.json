@@ -98,6 +98,12 @@
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.PageImpl"},
+  "name":"com.microsoft.playwright.Frame$GetAttributeOptions",
+  "allDeclaredFields":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
   "condition":{"typeReachable":"com.microsoft.playwright.impl.FrameImpl"},
   "name":"com.microsoft.playwright.Frame$NavigateOptions",
   "allDeclaredFields":true,

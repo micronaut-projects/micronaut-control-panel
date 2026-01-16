@@ -53,6 +53,7 @@ class RoutesControlPanelTest {
 
         assertTrue(panel.getBody().micronautRoutes().size() > 0);
         assertTrue(Integer.parseInt(panel.getBadge()) > 0);
+        assertNull(panel.getBody().openApiViewerUri());
     }
 
     @Test
@@ -87,6 +88,16 @@ class RoutesControlPanelTest {
         if (firstKey != null) {
             var list = grouped.get(firstKey);
             assertThrows(UnsupportedOperationException.class, () -> list.add(null));
+        }
+    }
+
+    @Test
+    void resolvesOpenApiViewerUriFromStaticResources() {
+        try (ApplicationContext local = ApplicationContext.run(java.util.Map.of(
+                "micronaut.router.static-resources.swagger-ui.mapping", "/swagger-ui/**"
+        ))) {
+            RoutesControlPanel panel = local.getBean(RoutesControlPanel.class);
+            assertEquals("/swagger-ui", panel.getBody().openApiViewerUri());
         }
     }
 

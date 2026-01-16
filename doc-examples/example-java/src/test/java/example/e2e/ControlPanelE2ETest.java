@@ -6,11 +6,17 @@ import com.microsoft.playwright.junit.Options;
 import com.microsoft.playwright.junit.OptionsFactory;
 import com.microsoft.playwright.junit.UsePlaywright;
 import com.microsoft.playwright.options.AriaRole;
+import io.micronaut.http.HttpStatus;
+import io.micronaut.http.client.HttpClient;
+import io.micronaut.http.client.annotation.Client;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledInNativeImage;
 
+import java.util.regex.Pattern;
+
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @UsePlaywright(ControlPanelE2ETest.HeadlessBrowserOptions.class)
 @MicronautTest
@@ -61,15 +67,21 @@ class ControlPanelE2ETest extends AbstractE2ETest {
     }
 
     @Test
-    void testHttpRoutes(Page page) {
+    void testHttpRoutes(Page page, @Client("/") HttpClient httpClient) {
         page.navigate(baseUrl());
         controlPanelDetails(page, "HTTP Routes").click();
 
         assertThat(body(page)).containsText("Application routes");
         assertThat(page.getByRole(AriaRole.CELL, new Page.GetByRoleOptions().setName("/demo/test1"))).hasCount(2);
         assertThat(page.getByRole(AriaRole.CELL, new Page.GetByRoleOptions().setName("/demo/test2"))).hasCount(2);
-
         assertThat(body(page)).containsText("Micronaut Framework routes");
+
+        var viewerLink = page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName(nameRegex("Swagger UI")));
+        assertThat(viewerLink).isVisible();
+
+        String href = viewerLink.getAttribute("href");
+        var resp = httpClient.toBlocking().exchange(io.micronaut.http.HttpRequest.GET(href));
+        assertEquals(HttpStatus.OK, resp.getStatus());
     }
 
     @Test

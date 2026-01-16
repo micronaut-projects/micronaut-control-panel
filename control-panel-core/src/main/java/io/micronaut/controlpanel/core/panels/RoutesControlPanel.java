@@ -16,6 +16,7 @@
 package io.micronaut.controlpanel.core.panels;
 
 import io.micronaut.context.annotation.Requires;
+import io.micronaut.context.env.Environment;
 import io.micronaut.controlpanel.core.AbstractControlPanel;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.core.annotation.ReflectiveAccess;
@@ -30,6 +31,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -61,15 +63,46 @@ public class RoutesControlPanel extends AbstractControlPanel<RoutesControlPanel.
 
     private final String badge;
 
-    public RoutesControlPanel(Router router, @Named(NAME) ControlPanelConfiguration configuration) {
+    public RoutesControlPanel(Router router,
+                              @Named(NAME) ControlPanelConfiguration configuration,
+                              Environment environment) {
         super(NAME, configuration);
         var appRoutes = computeRoutes(router, IS_MICRONAUT_ROUTE.negate());
         var micronautRoutes = computeRoutes(router, IS_MICRONAUT_ROUTE);
         int totalAppRoutes = appRoutes.values().stream().mapToInt(List::size).sum();
         int totalMicronautRoutes = micronautRoutes.values().stream().mapToInt(List::size).sum();
 
-        this.body = new Body(appRoutes, micronautRoutes);
+        var viewer = resolveOpenApiViewer(environment);
+
+        this.body = new Body(appRoutes, micronautRoutes,
+            viewer == null ? null : viewer.uri(),
+            viewer == null ? null : viewer.label());
         this.badge = String.valueOf(totalAppRoutes + totalMicronautRoutes);
+    }
+
+    private static Viewer resolveOpenApiViewer(Environment env) {
+        final String base = "micronaut.router.static-resources.";
+        final String suffix = ".mapping";
+        final String[][] viewers = new String[][] {
+            { "swagger-ui", "Swagger UI" },
+            { "redoc", "ReDoc" },
+            { "openapi-explorer", "OpenAPI Explorer" },
+            { "scalar", "Scalar" },
+            { "rapidoc", "RapiDoc" }
+        };
+        for (String[] v : viewers) {
+            String key = v[0];
+            String label = v[1];
+            Optional<String> mappingOpt = env.getProperty(base + key + suffix, String.class);
+            if (mappingOpt.isPresent()) {
+                String mapping = mappingOpt.get();
+                if (mapping != null && !mapping.isBlank()) {
+                    String basePath = mapping.endsWith("/**") ? mapping.substring(0, mapping.length() - 3) : mapping;
+                    return new Viewer(label, basePath);
+                }
+            }
+        }
+        return null;
     }
 
     @Override
@@ -90,6 +123,12 @@ public class RoutesControlPanel extends AbstractControlPanel<RoutesControlPanel.
             .collect(Collectors.groupingBy(KEY_MAPPER, LinkedHashMap::new, Collectors.toUnmodifiableList()));
     }
 
+    private record Viewer(String label, String uri) { }
+
     @ReflectiveAccess
-    record Body(Map<String, List<UriRouteInfo<?, ?>>> appRoutes, Map<String, List<UriRouteInfo<?, ?>>> micronautRoutes) { }
+    record Body(Map<String, List<UriRouteInfo<?, ?>>> appRoutes,
+                Map<String, List<UriRouteInfo<?, ?>>> micronautRoutes,
+                String openApiViewerUri,
+                String openApiViewerLabel) { }
 }
+
