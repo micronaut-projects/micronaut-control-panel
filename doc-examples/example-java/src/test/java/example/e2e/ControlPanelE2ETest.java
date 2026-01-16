@@ -75,12 +75,8 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         var swaggerButton = page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName(nameRegex("Swagger UI")));
         assertThat(swaggerButton).isVisible();
         
-        // Verify the button link is accessible (returns 200)
-        String swaggerUrl = swaggerButton.getAttribute("href");
-        assertThat(swaggerUrl).isNotNull();
-        
         // Navigate to swagger UI to verify it's accessible
-        page.navigate(server.getURL() + swaggerUrl);
+        swaggerButton.click();
         assertThat(page).hasURL(nameRegex("/swagger-ui"));
     }
 
