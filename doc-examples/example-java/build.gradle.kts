@@ -7,6 +7,8 @@ plugins {
 dependencies {
     annotationProcessor(mnSerde.micronaut.serde.processor)
     annotationProcessor(mnData.micronaut.data.processor)
+    annotationProcessor("io.micronaut.openapi:micronaut-openapi:6.1.1")
+    compileOnly("io.swagger.core.v3:swagger-annotations:2.2.22")
     implementation(mnSerde.micronaut.serde.jackson)
 
     runtimeOnly(projects.micronautControlPanelUi)

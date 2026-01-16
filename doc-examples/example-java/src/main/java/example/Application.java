@@ -9,6 +9,8 @@ import io.micronaut.context.ApplicationContextConfigurer;
 import io.micronaut.context.annotation.ContextConfigurer;
 import io.micronaut.context.event.StartupEvent;
 import io.micronaut.core.util.NativeImageUtils;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.info.Info;
 import org.jspecify.annotations.NonNull;
 import io.micronaut.runtime.Micronaut;
 import io.micronaut.runtime.event.annotation.EventListener;
@@ -19,6 +21,13 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
+@OpenAPIDefinition(
+    info = @Info(
+        title = "Example Application",
+        version = "1.0",
+        description = "Example application to demonstrate Control Panel OpenAPI integration"
+    )
+)
 public class Application {
 
     private static final Logger LOG = LoggerFactory.getLogger(Application.class);
