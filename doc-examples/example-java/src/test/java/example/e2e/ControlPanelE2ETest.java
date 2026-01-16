@@ -65,6 +65,13 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         page.navigate(baseUrl());
         controlPanelDetails(page, "HTTP Routes").click();
 
+        // Verify OpenAPI viewer button is present
+        var swaggerButton = page.getByRole(AriaRole.LINK,
+            new Page.GetByRoleOptions().setName(nameRegex("Swagger UI")));
+        assertThat(swaggerButton).isVisible();
+        assertThat(swaggerButton).hasAttribute("href", "/swagger-ui");
+        assertThat(swaggerButton).hasAttribute("target", "_blank");
+
         assertThat(body(page)).containsText("Application routes");
         assertThat(page.getByRole(AriaRole.CELL, new Page.GetByRoleOptions().setName("/demo/test1"))).hasCount(2);
         assertThat(page.getByRole(AriaRole.CELL, new Page.GetByRoleOptions().setName("/demo/test2"))).hasCount(2);

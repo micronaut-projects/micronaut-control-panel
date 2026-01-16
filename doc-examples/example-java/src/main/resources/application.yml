@@ -1,5 +1,10 @@
 #tag::control-panel[]
 micronaut:
+  router:
+    static-resources:
+      swagger-ui:
+        paths: classpath:META-INF/swagger/views/swagger-ui
+        mapping: /swagger-ui/**
   control-panel:
     panels:
       my-application:

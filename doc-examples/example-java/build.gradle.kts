@@ -7,6 +7,8 @@ plugins {
 dependencies {
     annotationProcessor(mnSerde.micronaut.serde.processor)
     annotationProcessor(mnData.micronaut.data.processor)
+    annotationProcessor(mnOpenapi.micronaut.openapi)
+    compileOnly(mnOpenapi.micronaut.openapi.annotations)
     implementation(mnSerde.micronaut.serde.jackson)
 
     runtimeOnly(projects.micronautControlPanelUi)

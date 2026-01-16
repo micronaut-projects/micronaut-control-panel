@@ -16,6 +16,7 @@
 package io.micronaut.controlpanel.core.panels;
 
 import io.micronaut.context.annotation.Requires;
+import io.micronaut.context.env.Environment;
 import io.micronaut.controlpanel.core.AbstractControlPanel;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.core.annotation.ReflectiveAccess;
@@ -26,6 +27,7 @@ import io.micronaut.web.router.UriRouteInfo;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -48,6 +50,16 @@ public class RoutesControlPanel extends AbstractControlPanel<RoutesControlPanel.
     public static final String NAME = "routes";
     public static final String ENABLED_PROPERTY = ControlPanelConfiguration.PREFIX + "." + NAME + ".enabled";
 
+    private static final String STATIC_RESOURCES_PREFIX = "micronaut.router.static-resources.";
+
+    private static final Map<String, ViewerConfig> KNOWN_VIEWERS = Map.of(
+        "swagger-ui", new ViewerConfig("Swagger UI", "si-swagger"),
+        "redoc", new ViewerConfig("ReDoc", "si-readthedocs"),
+        "openapi-explorer", new ViewerConfig("OpenAPI Explorer", "si-openapiinitiative"),
+        "scalar", new ViewerConfig("Scalar", "si-openapiinitiative"),
+        "rapidoc", new ViewerConfig("RapiDoc", "si-openapiinitiative")
+    );
+
     private static final Function<UriRouteInfo<?, ?>, String> KEY_MAPPER =
         r -> r.getTargetMethod().getDeclaringType().getName();
 
@@ -61,14 +73,15 @@ public class RoutesControlPanel extends AbstractControlPanel<RoutesControlPanel.
 
     private final String badge;
 
-    public RoutesControlPanel(Router router, @Named(NAME) ControlPanelConfiguration configuration) {
+    public RoutesControlPanel(Router router, Environment environment, @Named(NAME) ControlPanelConfiguration configuration) {
         super(NAME, configuration);
         var appRoutes = computeRoutes(router, IS_MICRONAUT_ROUTE.negate());
         var micronautRoutes = computeRoutes(router, IS_MICRONAUT_ROUTE);
         int totalAppRoutes = appRoutes.values().stream().mapToInt(List::size).sum();
         int totalMicronautRoutes = micronautRoutes.values().stream().mapToInt(List::size).sum();
+        var openApiViewers = detectOpenApiViewers(environment);
 
-        this.body = new Body(appRoutes, micronautRoutes);
+        this.body = new Body(appRoutes, micronautRoutes, openApiViewers);
         this.badge = String.valueOf(totalAppRoutes + totalMicronautRoutes);
     }
 
@@ -90,6 +103,29 @@ public class RoutesControlPanel extends AbstractControlPanel<RoutesControlPanel.
             .collect(Collectors.groupingBy(KEY_MAPPER, LinkedHashMap::new, Collectors.toUnmodifiableList()));
     }
 
+    private static List<OpenApiViewerLink> detectOpenApiViewers(Environment environment) {
+        List<OpenApiViewerLink> viewers = new ArrayList<>();
+        for (var entry : KNOWN_VIEWERS.entrySet()) {
+            String viewerKey = entry.getKey();
+            String mappingProperty = STATIC_RESOURCES_PREFIX + viewerKey + ".mapping";
+            environment.getProperty(mappingProperty, String.class).ifPresent(mapping -> {
+                String uri = cleanUri(mapping);
+                ViewerConfig config = entry.getValue();
+                viewers.add(new OpenApiViewerLink(viewerKey, config.label(), config.icon(), uri));
+            });
+        }
+        return List.copyOf(viewers);
+    }
+
+    private static String cleanUri(String mapping) {
+        return mapping.replaceAll("/\\*+$", "");
+    }
+
     @ReflectiveAccess
-    record Body(Map<String, List<UriRouteInfo<?, ?>>> appRoutes, Map<String, List<UriRouteInfo<?, ?>>> micronautRoutes) { }
+    record Body(Map<String, List<UriRouteInfo<?, ?>>> appRoutes, Map<String, List<UriRouteInfo<?, ?>>> micronautRoutes, List<OpenApiViewerLink> openApiViewers) { }
+
+    @ReflectiveAccess
+    record OpenApiViewerLink(String name, String label, String icon, String uri) { }
+
+    private record ViewerConfig(String label, String icon) { }
 }

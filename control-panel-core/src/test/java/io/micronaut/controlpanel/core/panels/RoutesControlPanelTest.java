@@ -53,6 +53,7 @@ class RoutesControlPanelTest {
 
         assertTrue(panel.getBody().micronautRoutes().size() > 0);
         assertTrue(Integer.parseInt(panel.getBadge()) > 0);
+        assertTrue(panel.getBody().openApiViewers().isEmpty());
     }
 
     @Test
@@ -87,6 +88,74 @@ class RoutesControlPanelTest {
         if (firstKey != null) {
             var list = grouped.get(firstKey);
             assertThrows(UnsupportedOperationException.class, () -> list.add(null));
+        }
+    }
+
+    @Test
+    void itDetectsSwaggerUiViewer() {
+        try (ApplicationContext local = ApplicationContext.run(java.util.Map.of(
+                "micronaut.router.static-resources.swagger-ui.paths", "classpath:META-INF/swagger/views/swagger-ui",
+                "micronaut.router.static-resources.swagger-ui.mapping", "/swagger-ui/**"
+        ))) {
+            RoutesControlPanel panel = local.getBean(RoutesControlPanel.class);
+            var viewers = panel.getBody().openApiViewers();
+            assertEquals(1, viewers.size());
+            assertEquals("swagger-ui", viewers.getFirst().name());
+            assertEquals("Swagger UI", viewers.getFirst().label());
+            assertEquals("si-swagger", viewers.getFirst().icon());
+            assertEquals("/swagger-ui", viewers.getFirst().uri());
+        }
+    }
+
+    @Test
+    void itDetectsMultipleViewers() {
+        try (ApplicationContext local = ApplicationContext.run(java.util.Map.of(
+                "micronaut.router.static-resources.swagger-ui.paths", "classpath:META-INF/swagger/views/swagger-ui",
+                "micronaut.router.static-resources.swagger-ui.mapping", "/swagger-ui/**",
+                "micronaut.router.static-resources.redoc.paths", "classpath:META-INF/swagger/views/redoc",
+                "micronaut.router.static-resources.redoc.mapping", "/redoc/**"
+        ))) {
+            RoutesControlPanel panel = local.getBean(RoutesControlPanel.class);
+            var viewers = panel.getBody().openApiViewers();
+            assertEquals(2, viewers.size());
+
+            var names = viewers.stream().map(RoutesControlPanel.OpenApiViewerLink::name).toList();
+            assertTrue(names.contains("swagger-ui"));
+            assertTrue(names.contains("redoc"));
+        }
+    }
+
+    @Test
+    void itIgnoresNonOpenApiStaticResources() {
+        try (ApplicationContext local = ApplicationContext.run(java.util.Map.of(
+                "micronaut.router.static-resources.css.paths", "classpath:static/css",
+                "micronaut.router.static-resources.css.mapping", "/css/**",
+                "micronaut.router.static-resources.js.paths", "classpath:static/js",
+                "micronaut.router.static-resources.js.mapping", "/js/**"
+        ))) {
+            RoutesControlPanel panel = local.getBean(RoutesControlPanel.class);
+            var viewers = panel.getBody().openApiViewers();
+            assertTrue(viewers.isEmpty());
+        }
+    }
+
+    @Test
+    void itCleansUriMappingCorrectly() {
+        try (ApplicationContext local = ApplicationContext.run(java.util.Map.of(
+                "micronaut.router.static-resources.swagger-ui.paths", "classpath:META-INF/swagger/views/swagger-ui",
+                "micronaut.router.static-resources.swagger-ui.mapping", "/api/docs/swagger-ui/**",
+                "micronaut.router.static-resources.rapidoc.paths", "classpath:META-INF/swagger/views/rapidoc",
+                "micronaut.router.static-resources.rapidoc.mapping", "/rapidoc/*"
+        ))) {
+            RoutesControlPanel panel = local.getBean(RoutesControlPanel.class);
+            var viewers = panel.getBody().openApiViewers();
+            assertEquals(2, viewers.size());
+
+            var swaggerUi = viewers.stream().filter(v -> v.name().equals("swagger-ui")).findFirst().orElseThrow();
+            assertEquals("/api/docs/swagger-ui", swaggerUi.uri());
+
+            var rapidoc = viewers.stream().filter(v -> v.name().equals("rapidoc")).findFirst().orElseThrow();
+            assertEquals("/rapidoc", rapidoc.uri());
         }
     }
 

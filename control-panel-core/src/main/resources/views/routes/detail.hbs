@@ -5,6 +5,17 @@
 </style>
 
 {{#with controlPanel.body }}
+    {{#if openApiViewers}}
+    <div class="row mb-3">
+        <div class="col">
+            {{#each openApiViewers}}
+            <a href="{{uri}}" target="_blank" class="btn btn-outline-primary me-2">
+                <i class="{{icon}}"></i> {{label}}
+            </a>
+            {{/each}}
+        </div>
+    </div>
+    {{/if}}
     <div class="row">
         <div class="card card-light">
             <div class="card-header">
