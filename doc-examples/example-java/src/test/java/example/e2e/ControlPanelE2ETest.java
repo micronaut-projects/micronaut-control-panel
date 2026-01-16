@@ -70,6 +70,18 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         assertThat(page.getByRole(AriaRole.CELL, new Page.GetByRoleOptions().setName("/demo/test2"))).hasCount(2);
 
         assertThat(body(page)).containsText("Micronaut Framework routes");
+        
+        // Check for Swagger UI button
+        var swaggerButton = page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName(nameRegex("Swagger UI")));
+        assertThat(swaggerButton).isVisible();
+        
+        // Verify the button link is accessible (returns 200)
+        String swaggerUrl = swaggerButton.getAttribute("href");
+        assertThat(swaggerUrl).isNotNull();
+        
+        // Navigate to swagger UI to verify it's accessible
+        page.navigate(server.getURL() + swaggerUrl);
+        assertThat(page).hasURL(nameRegex("/swagger-ui"));
     }
 
     @Test

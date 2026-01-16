@@ -1,3 +1,27 @@
 The following control panels are available by default with the UI module:
 
-* `routes`: displays information about the available HTTP routes.
+* `routes`: displays information about the available HTTP routes. If the application has configured an OpenAPI viewer (Swagger UI, ReDoc, OpenAPI Explorer, Scalar, or RapiDoc), the control panel will display a link to access it.
+
+== OpenAPI Viewer Integration
+
+The routes control panel can detect and display a link to an OpenAPI viewer if one is configured as a static resource. To enable this feature, configure the static resource mapping with one of the following conventional keys:
+
+* `micronaut.router.static-resources.swagger-ui.mapping` for https://github.com/swagger-api/swagger-ui[Swagger UI]
+* `micronaut.router.static-resources.redoc.mapping` for https://github.com/Redocly/redoc[ReDoc]
+* `micronaut.router.static-resources.openapi-explorer.mapping` for https://github.com/Authress-Engineering/openapi-explorer[OpenAPI Explorer]
+* `micronaut.router.static-resources.scalar.mapping` for https://github.com/scalar/scalar[Scalar]
+* `micronaut.router.static-resources.rapidoc.mapping` for https://github.com/rapi-doc/RapiDoc[RapiDoc]
+
+For example, to configure Swagger UI:
+
+[source,yaml]
+----
+micronaut:
+  router:
+    static-resources:
+      swagger-ui:
+        paths: classpath:META-INF/swagger/views/swagger-ui
+        mapping: /swagger-ui/**
+----
+
+When configured, the routes control panel will automatically detect the viewer and display a button linking to it.
