@@ -27,12 +27,13 @@ micronaut-cache = "5.3.0"
 micronaut-sql = "7.0.0-M4"
 micronaut-data = "4.14.2"
 micronaut-testresources = "2.10.1"
-micronaut-openapi = "6.1.1"
+micronaut-openapi = "6.19.3"
 micronaut-gradle-plugin = "4.6.1"
 kotlin-gradle-plugin = "2.3.0"
 micronaut-shared-settings = "7.6.6"
 sonatype-scan = "3.1.4"
 playwright = "1.57.0"
+swagger-annotations = "2.2.22"
 shadow-plugin = "9.3.1"
 test-logger-plugin = "4.0.0"
 gradle-node-plugin = "7.1.0"
@@ -51,6 +52,7 @@ micronaut-testresources = { module = 'io.micronaut.testresources:micronaut-test-
 micronaut-openapi = { module = "io.micronaut.openapi:micronaut-openapi-bom", version.ref = "micronaut-openapi" }
 
 playwright = { module = "com.microsoft.playwright:playwright", version.ref = "playwright"}
+swagger-annotations = { module = "io.swagger.core.v3:swagger-annotations", version.ref = "swagger-annotations"}
 
 handlebars-humanize = { module = 'com.github.jknack:handlebars-humanize' }
 

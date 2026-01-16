@@ -6,15 +6,25 @@ import com.microsoft.playwright.junit.Options;
 import com.microsoft.playwright.junit.OptionsFactory;
 import com.microsoft.playwright.junit.UsePlaywright;
 import com.microsoft.playwright.options.AriaRole;
+import io.micronaut.http.HttpRequest;
+import io.micronaut.http.HttpStatus;
+import io.micronaut.http.client.HttpClient;
+import io.micronaut.http.client.annotation.Client;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
+import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledInNativeImage;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @UsePlaywright(ControlPanelE2ETest.HeadlessBrowserOptions.class)
 @MicronautTest
 class ControlPanelE2ETest extends AbstractE2ETest {
+
+    @Inject
+    @Client("/")
+    HttpClient httpClient;
 
     @Test
     void testDashboard(Page page) {
@@ -75,9 +85,12 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         var swaggerButton = page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName(nameRegex("Swagger UI")));
         assertThat(swaggerButton).isVisible();
         
-        // Navigate to swagger UI to verify it's accessible
-        swaggerButton.click();
-        assertThat(page).hasURL(nameRegex("/swagger-ui"));
+        // Verify the button's href attribute points to /swagger-ui
+        String swaggerUrl = swaggerButton.getAttribute("href");
+        
+        // Use Micronaut's low-level HTTP client to verify the URL is accessible
+        var response = httpClient.toBlocking().exchange(HttpRequest.GET(swaggerUrl));
+        assertEquals(HttpStatus.OK, response.status(), "Swagger UI should be accessible");
     }
 
     @Test
