@@ -6,11 +6,15 @@ import com.microsoft.playwright.junit.Options;
 import com.microsoft.playwright.junit.OptionsFactory;
 import com.microsoft.playwright.junit.UsePlaywright;
 import com.microsoft.playwright.options.AriaRole;
+import io.micronaut.http.HttpResponse;
+import io.micronaut.http.HttpStatus;
+import io.micronaut.http.client.HttpClient;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledInNativeImage;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @UsePlaywright(ControlPanelE2ETest.HeadlessBrowserOptions.class)
 @MicronautTest
@@ -70,6 +74,17 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         assertThat(page.getByRole(AriaRole.CELL, new Page.GetByRoleOptions().setName("/demo/test2"))).hasCount(2);
 
         assertThat(body(page)).containsText("Micronaut Framework routes");
+
+        // OpenAPI viewer button/link (if configured)
+        var link = page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName(nameRegex("OpenAPI viewer")));
+        // The link should be present when Swagger UI is configured via static resources
+        assertThat(link).isVisible();
+
+        // Resolve href and verify it responds with HTTP 200 using low-level HttpClient
+        String href = link.getAttribute("href");
+        HttpClient client = HttpClient.create(server.getURL());
+        HttpResponse<?> resp = client.toBlocking().exchange(href);
+        assertEquals(HttpStatus.OK, resp.getStatus());
     }
 
     @Test

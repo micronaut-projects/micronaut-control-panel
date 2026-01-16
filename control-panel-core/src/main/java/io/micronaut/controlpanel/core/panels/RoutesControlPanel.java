@@ -16,6 +16,7 @@
 package io.micronaut.controlpanel.core.panels;
 
 import io.micronaut.context.annotation.Requires;
+import io.micronaut.context.env.Environment;
 import io.micronaut.controlpanel.core.AbstractControlPanel;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.core.annotation.ReflectiveAccess;
@@ -61,14 +62,51 @@ public class RoutesControlPanel extends AbstractControlPanel<RoutesControlPanel.
 
     private final String badge;
 
-    public RoutesControlPanel(Router router, @Named(NAME) ControlPanelConfiguration configuration) {
+    public RoutesControlPanel(Router router, @Named(NAME) ControlPanelConfiguration configuration, Environment environment) {
         super(NAME, configuration);
         var appRoutes = computeRoutes(router, IS_MICRONAUT_ROUTE.negate());
         var micronautRoutes = computeRoutes(router, IS_MICRONAUT_ROUTE);
         int totalAppRoutes = appRoutes.values().stream().mapToInt(List::size).sum();
         int totalMicronautRoutes = micronautRoutes.values().stream().mapToInt(List::size).sum();
 
-        this.body = new Body(appRoutes, micronautRoutes);
+        // Detect if an OpenAPI viewer is configured via static resources mappings.
+        // We look for conventional keys under micronaut.router.static-resources.*.mapping
+        // in this order: swagger-ui, redoc, openapi-explorer, scalar, rapidoc.
+        String[] viewerKeys = new String[] {
+            "swagger-ui", "redoc", "openapi-explorer", "scalar", "rapidoc"
+        };
+        String foundViewerName = null;
+        String foundViewerUri = null;
+        for (String key : viewerKeys) {
+            String prop = "micronaut.router.static-resources." + key + ".mapping";
+            var mappingOpt = environment.getProperty(prop, String.class);
+            if (mappingOpt.isPresent()) {
+                String mapping = mappingOpt.get();
+                if (mapping != null) {
+                    // mapping is typically like "/swagger-ui/**" -> derive base path "/swagger-ui"
+                    String base = mapping.trim();
+                    // strip trailing "/**" or "/*"
+                    if (base.endsWith("/**")) {
+                        base = base.substring(0, base.length() - 3);
+                    } else if (base.endsWith("/*")) {
+                        base = base.substring(0, base.length() - 2);
+                    }
+                    // ensure leading slash
+                    if (!base.startsWith("/")) {
+                        base = "/" + base;
+                    }
+                    // avoid trailing slash for consistency
+                    if (base.length() > 1 && base.endsWith("/")) {
+                        base = base.substring(0, base.length() - 1);
+                    }
+                    foundViewerName = key;
+                    foundViewerUri = base;
+                    break;
+                }
+            }
+        }
+
+        this.body = new Body(appRoutes, micronautRoutes, foundViewerUri, foundViewerName);
         this.badge = String.valueOf(totalAppRoutes + totalMicronautRoutes);
     }
 
@@ -91,5 +129,8 @@ public class RoutesControlPanel extends AbstractControlPanel<RoutesControlPanel.
     }
 
     @ReflectiveAccess
-    record Body(Map<String, List<UriRouteInfo<?, ?>>> appRoutes, Map<String, List<UriRouteInfo<?, ?>>> micronautRoutes) { }
+    record Body(Map<String, List<UriRouteInfo<?, ?>>> appRoutes,
+                Map<String, List<UriRouteInfo<?, ?>>> micronautRoutes,
+                String openApiViewerUri,
+                String openApiViewerName) { }
 }

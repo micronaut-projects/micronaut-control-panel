@@ -1,3 +1,22 @@
 The following control panels are available by default with the UI module:
 
 * `routes`: displays information about the available HTTP routes.
+
+== OpenAPI viewer link in Routes
+
+If an OpenAPI viewer is configured as static resources, the Routes control panel displays a button linking to it.
+The following conventional keys under the `micronaut.router.static-resources.*` prefix are recognized:
+
+* `swagger-ui`
+* `redoc`
+* `openapi-explorer`
+* `scalar`
+* `rapidoc`
+
+For example:
+
+----
+micronaut.router.static-resources.swagger-ui.mapping=/swagger-ui/**
+----
+
+When present, the control panel derives the viewer URI (e.g. `/swagger-ui`) and shows a button in the panel body.
