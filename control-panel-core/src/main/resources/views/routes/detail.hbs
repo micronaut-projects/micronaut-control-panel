@@ -10,6 +10,11 @@
             <div class="card-header">
                 <h3 class="card-title">Application routes</h3>
                 <div class="card-tools">
+                    {{#if openApiViewerUri}}
+                    <a href="{{openApiViewerUri}}" target="_blank" rel="nofollow noreferrer" class="btn btn-tool" title="OpenAPI viewer">
+                        <i class="si si-swagger"></i>&nbsp;{{openApiViewerLabel}}
+                    </a>
+                    {{/if}}
                     <button type="button" class="btn btn-tool" data-card-widget="collapse">
                         <i class="fas fa-minus"></i>
                     </button>

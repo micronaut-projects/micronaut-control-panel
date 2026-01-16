@@ -28,6 +28,7 @@ micronaut-sql = "7.0.0-M4"
 micronaut-data = "4.14.2"
 micronaut-testresources = "2.10.1"
 micronaut-gradle-plugin = "4.6.1"
+micronaut-openapi = "6.19.3"
 kotlin-gradle-plugin = "2.3.0"
 micronaut-shared-settings = "7.6.6"
 sonatype-scan = "3.1.4"
@@ -37,6 +38,7 @@ test-logger-plugin = "4.0.0"
 gradle-node-plugin = "7.1.0"
 
 [libraries]
+micronaut-openapi = { module = "io.micronaut.openapi:micronaut-openapi-bom", version.ref = "micronaut-openapi" }
 micronaut-core = { module = 'io.micronaut:micronaut-core-bom', version.ref = 'micronaut' }
 micronaut-platform = { module = "io.micronaut.platform:micronaut-platform", version.ref = "micronaut-platform"}
 micronaut-views = { module = 'io.micronaut.views:micronaut-views-bom', version.ref = 'micronaut-views' }

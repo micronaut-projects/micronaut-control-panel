@@ -9,6 +9,14 @@ micronaut:
 #end::control-panel[]
     env:
       show-values: true
+  router:
+    static-resources:
+      swagger:
+        paths: classpath:META-INF/swagger
+        mapping: /swagger/**
+      swagger-ui:
+        paths: classpath:META-INF/swagger/views/swagger-ui
+        mapping: /swagger-ui/**
   object-storage:
     local:
       my-local:

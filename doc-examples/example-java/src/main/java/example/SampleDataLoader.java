@@ -1,5 +1,6 @@
 package example;
 
+import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.event.ShutdownEvent;
 import io.micronaut.context.event.StartupEvent;
 import io.micronaut.core.io.IOUtils;
@@ -20,6 +21,7 @@ import java.sql.SQLException;
 import java.util.Optional;
 
 @Singleton
+@Requires(beans = DataSource.class)
 public class SampleDataLoader {
 
     private static final Logger LOG = LoggerFactory.getLogger(SampleDataLoader.class);

@@ -1,3 +1,13 @@
 <p class="card-text">
     <strong>{{badge}}</strong> routes loaded.
 </p>
+
+{{#with controlPanel.body }}
+    {{#if openApiViewerUri}}
+        <p class="card-text">
+            <a class="btn btn-default" href="{{openApiViewerUri}}" target="_blank" rel="nofollow noreferrer" role="button">
+                <i class="si si-swagger si--color"></i>&nbsp;{{openApiViewerLabel}}
+            </a>
+        </p>
+    {{/if}}
+{{/with}}

@@ -37,4 +37,5 @@ configure<MicronautBuildSettingsExtension> {
     importMicronautCatalog("micronaut-sql")
     importMicronautCatalog("micronaut-data")
     importMicronautCatalog("micronaut-testresources")
+    importMicronautCatalog("micronaut-openapi")
 }
