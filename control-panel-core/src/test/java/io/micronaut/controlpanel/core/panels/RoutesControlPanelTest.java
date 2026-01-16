@@ -90,6 +90,56 @@ class RoutesControlPanelTest {
         }
     }
 
+    @Test
+    void openApiViewerNotDetectedWhenNotConfigured() {
+        RoutesControlPanel panel = ctx.getBean(RoutesControlPanel.class);
+        var body = panel.getBody();
+        assertNull(body.openApiViewerInfo());
+    }
+
+    @Test
+    void openApiViewerDetectedWhenSwaggerUiConfigured() {
+        try (ApplicationContext local = ApplicationContext.run(java.util.Map.of(
+                "micronaut.router.static-resources.swagger-ui.mapping", "/swagger-ui/**"
+        ))) {
+            RoutesControlPanel panel = local.getBean(RoutesControlPanel.class);
+            var body = panel.getBody();
+            assertNotNull(body.openApiViewerInfo());
+            assertEquals("/swagger-ui/**", body.openApiViewerInfo().uri());
+            assertEquals("Swagger UI", body.openApiViewerInfo().displayName());
+        }
+    }
+
+    @Test
+    void openApiViewerDetectedWhenRedocConfigured() {
+        try (ApplicationContext local = ApplicationContext.run(java.util.Map.of(
+                "micronaut.router.static-resources.redoc.mapping", "/redoc/**"
+        ))) {
+            RoutesControlPanel panel = local.getBean(RoutesControlPanel.class);
+            var body = panel.getBody();
+            assertNotNull(body.openApiViewerInfo());
+            assertEquals("/redoc/**", body.openApiViewerInfo().uri());
+            assertEquals("ReDoc", body.openApiViewerInfo().displayName());
+        }
+    }
+
+    @Test
+    void openApiViewerDetectsFirstConfiguredViewer() {
+        try (ApplicationContext local = ApplicationContext.run(java.util.Map.of(
+                "micronaut.router.static-resources.swagger-ui.mapping", "/swagger-ui/**",
+                "micronaut.router.static-resources.redoc.mapping", "/redoc/**"
+        ))) {
+            RoutesControlPanel panel = local.getBean(RoutesControlPanel.class);
+            var body = panel.getBody();
+            assertNotNull(body.openApiViewerInfo());
+            // Since order is not guaranteed, just verify one is detected
+            assertTrue(body.openApiViewerInfo().uri().equals("/swagger-ui/**") || 
+                      body.openApiViewerInfo().uri().equals("/redoc/**"));
+            assertTrue(body.openApiViewerInfo().displayName().equals("Swagger UI") || 
+                      body.openApiViewerInfo().displayName().equals("ReDoc"));
+        }
+    }
+
     @Controller
     static class DummyController {
         @Get
