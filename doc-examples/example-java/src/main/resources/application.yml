@@ -3,14 +3,10 @@ micronaut:
   control-panel:
     panels:
       my-application:
-         title: My Application Control Panel # <1>
-         icon: fa-plug # <2>
-         order: 10 # <3>
-  application:
-    name: my-application
-
+        title: My Application Control Panel # <1>
+        icon: fa-plug # <2>
+        order: 10 # <3>
 #end::control-panel[]
-
     env:
       show-values: true
   router:
@@ -28,6 +24,8 @@ micronaut:
   caches:
     my-caffeine:
       initial-capacity: 2
+  application:
+    name: myApplication
 
 ehcache:
   caches:
@@ -49,10 +47,6 @@ test:
   api-key: abc123
   token: xyz789
   normal-config: some-value
-netty:
-  default:
-    allocator:
-      max-order: 3
 endpoints:
   all:
     enabled: true
