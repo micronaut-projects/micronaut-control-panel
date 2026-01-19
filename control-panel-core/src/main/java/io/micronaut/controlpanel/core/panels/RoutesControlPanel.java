@@ -61,14 +61,22 @@ public class RoutesControlPanel extends AbstractControlPanel<RoutesControlPanel.
     private static final Comparator<UriRouteInfo<?, ?>> COMPARATOR_BY_URI =
         Comparator.comparing(r -> r.getUriMatchTemplate().toPathString());
 
+    private static final String METHOD_GET = "GET";
+    private static final String METHOD_HEAD = "HEAD";
+    private static final String MERGED_GET_HEAD = "GET, HEAD";
+
     private static final Predicate<UriRouteInfo<?, ?>> IS_MICRONAUT_ROUTE =
-        r -> r.getTargetMethod().getDeclaringType().getPackage().getName().startsWith("io.micronaut");
+        r -> {
+            Package p = r.getTargetMethod().getDeclaringType().getPackage();
+            return p != null && p.getName().startsWith("io.micronaut");
+        };
 
     private final Body body;
 
     private final String badge;
 
     public RoutesControlPanel(Router router,
+
                               @Named(NAME) ControlPanelConfiguration configuration,
                               Environment environment) {
         super(NAME, configuration);
@@ -101,7 +109,7 @@ public class RoutesControlPanel extends AbstractControlPanel<RoutesControlPanel.
             Optional<String> mappingOpt = env.getProperty(base + key + suffix, String.class);
             if (mappingOpt.isPresent()) {
                 String mapping = mappingOpt.get();
-                if (mapping != null && !mapping.isBlank()) {
+                if (!mapping.isBlank()) {
                     String basePath = mapping.endsWith("/**") ? mapping.substring(0, mapping.length() - 3) : mapping;
                     return new Viewer(label, basePath);
                 }
@@ -136,41 +144,42 @@ public class RoutesControlPanel extends AbstractControlPanel<RoutesControlPanel.
 
     private static List<RouteRow> toRows(List<UriRouteInfo<?, ?>> routes) {
         List<RouteRow> rows = new ArrayList<>(routes.size());
-        for (int i = 0; i < routes.size(); i++) {
+        int i = 0;
+        while (i < routes.size()) {
             UriRouteInfo<?, ?> current = routes.get(i);
             String method = current.getHttpMethodName();
             if (isMergeableGetWithNext(current, i, routes)) {
                 var tm = current.getTargetMethod();
-                rows.add(new RouteRow("GET, HEAD",
+                rows.add(new RouteRow(MERGED_GET_HEAD,
                     current.getUriMatchTemplate(),
                     current.getProduces(),
                     current.getConsumes(),
                     new TargetMethod(tm.getName(), toStringList(tm.getArguments()))));
-                i++;
+                i += 2;
                 continue;
             }
-            if (isSkippableHead(current, i, routes)) {
-                continue;
+            if (!isSkippableHead(current, i, routes)) {
+                var tm = current.getTargetMethod();
+                rows.add(new RouteRow(method,
+                    current.getUriMatchTemplate(),
+                    current.getProduces(),
+                    current.getConsumes(),
+                    new TargetMethod(tm.getName(), toStringList(tm.getArguments()))));
             }
-            var tm = current.getTargetMethod();
-            rows.add(new RouteRow(method,
-                current.getUriMatchTemplate(),
-                current.getProduces(),
-                current.getConsumes(),
-                new TargetMethod(tm.getName(), toStringList(tm.getArguments()))));
+            i++;
         }
         return rows;
     }
 
     private static boolean isMergeableGetWithNext(UriRouteInfo<?, ?> current, int index, List<UriRouteInfo<?, ?>> routes) {
-        if (!"GET".equals(current.getHttpMethodName())) {
+        if (!METHOD_GET.equals(current.getHttpMethodName())) {
             return false;
         }
         if (index + 1 >= routes.size()) {
             return false;
         }
         UriRouteInfo<?, ?> next = routes.get(index + 1);
-        return "HEAD".equals(next.getHttpMethodName())
+        return METHOD_HEAD.equals(next.getHttpMethodName())
             && sameUri(current, next)
             && sameTargetMethodName(current, next)
             && sameProduces(current, next)
@@ -178,23 +187,23 @@ public class RoutesControlPanel extends AbstractControlPanel<RoutesControlPanel.
     }
 
     private static boolean isSkippableHead(UriRouteInfo<?, ?> current, int index, List<UriRouteInfo<?, ?>> routes) {
-        if (!"HEAD".equals(current.getHttpMethodName()) || index == 0) {
+        if (!METHOD_HEAD.equals(current.getHttpMethodName()) || index == 0) {
             return false;
         }
         UriRouteInfo<?, ?> prev = routes.get(index - 1);
-        return "GET".equals(prev.getHttpMethodName())
+        return METHOD_GET.equals(prev.getHttpMethodName())
             && sameUri(current, prev)
             && sameTargetMethodName(current, prev)
             && sameProduces(current, prev)
             && sameConsumes(current, prev);
     }
- 
-    private static boolean sameUri(UriRouteInfo<?, ?> a, UriRouteInfo<?, ?> b) {
 
+    private static boolean sameUri(UriRouteInfo<?, ?> a, UriRouteInfo<?, ?> b) {
         return a.getUriMatchTemplate().toPathString().equals(b.getUriMatchTemplate().toPathString());
     }
 
     private static boolean sameTargetMethodName(UriRouteInfo<?, ?> a, UriRouteInfo<?, ?> b) {
+
         return a.getTargetMethod().getName().equals(b.getTargetMethod().getName());
     }
 
@@ -210,34 +219,28 @@ public class RoutesControlPanel extends AbstractControlPanel<RoutesControlPanel.
         if (args == null) {
             return List.of();
         }
-        return Arrays.stream(args).map(Object::toString).collect(Collectors.toList());
+        return Arrays.stream(args).map(Object::toString).toList();
     }
 
     private record Viewer(String label, String uri) { }
 
     /**
      * View model used by templates to render a single route row.
+     *
+     * @param httpMethodName  HTTP method name or merged value (e.g. "GET, HEAD").
+     * @param uriMatchTemplate The URI template for the route.
+     * @param produces        Produced media types.
+     * @param consumes        Consumed media types.
+     * @param targetMethod    Target method info (name, arguments).
      */
     @ReflectiveAccess
-    public static final class RouteRow {
-        private final String httpMethodName;
-        private final UriMatchTemplate uriMatchTemplate;
-        private final List<MediaType> produces;
-        private final List<MediaType> consumes;
-        private final TargetMethod targetMethod;
-
-        public RouteRow(String httpMethodName,
-                        UriMatchTemplate uriMatchTemplate,
-                        List<MediaType> produces,
-                        List<MediaType> consumes,
-                        TargetMethod targetMethod) {
-            this.httpMethodName = httpMethodName;
-            this.uriMatchTemplate = uriMatchTemplate;
-            this.produces = produces;
-            this.consumes = consumes;
-            this.targetMethod = targetMethod;
-        }
-
+    public record RouteRow(
+            String httpMethodName,
+            UriMatchTemplate uriMatchTemplate,
+            List<MediaType> produces,
+            List<MediaType> consumes,
+            TargetMethod targetMethod
+    ) {
         public String getHttpMethodName() {
             return httpMethodName;
         }
@@ -261,17 +264,15 @@ public class RoutesControlPanel extends AbstractControlPanel<RoutesControlPanel.
 
     /**
      * View model for a controller method target.
+     *
+     * @param name      Method name.
+     * @param arguments Stringified argument list.
      */
     @ReflectiveAccess
-    public static final class TargetMethod {
-        private final String name;
-        private final List<String> arguments;
-
-        public TargetMethod(String name, List<String> arguments) {
-            this.name = name;
-            this.arguments = arguments;
-        }
-
+    public record TargetMethod(
+            String name,
+            List<String> arguments
+    ) {
         public String getName() {
             return name;
         }
