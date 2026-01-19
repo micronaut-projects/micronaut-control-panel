@@ -14,17 +14,19 @@
  * limitations under the License.
  */
 package io.micronaut.controlpanel.core.panels;
-
+ 
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
+import io.micronaut.http.annotation.Head;
 import io.micronaut.inject.qualifiers.Qualifiers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
+ 
 import static org.junit.jupiter.api.Assertions.*;
+
 
 class RoutesControlPanelTest {
 
@@ -99,6 +101,29 @@ class RoutesControlPanelTest {
             RoutesControlPanel panel = local.getBean(RoutesControlPanel.class);
             assertEquals("/swagger-ui", panel.getBody().openApiViewerUri());
         }
+    }
+
+    @Test
+    void mergesGetAndHead() {
+        try (ApplicationContext local = ApplicationContext.run()) {
+            RoutesControlPanel panel = local.getBean(RoutesControlPanel.class);
+            var body = panel.getBody();
+
+            var allRows = new java.util.ArrayList<>(body.appRoutes().values().stream().flatMap(java.util.Collection::stream).toList());
+            allRows.addAll(body.micronautRoutes().values().stream().flatMap(java.util.Collection::stream).toList());
+
+            var related = allRows.stream().filter(r -> "both".equals(r.getTargetMethod().getName())).toList();
+            assertFalse(related.isEmpty());
+            assertTrue(related.stream().anyMatch(r -> r.getHttpMethodName().equals("GET, HEAD")));
+            assertFalse(related.stream().anyMatch(r -> r.getHttpMethodName().equals("HEAD")));
+        }
+    }
+
+    @Controller("/merge")
+    static class MergeController {
+        @Get("/")
+        @Head("/")
+        Object both() { return null; }
     }
 
     @Controller

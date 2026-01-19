@@ -21,12 +21,17 @@ import io.micronaut.controlpanel.core.AbstractControlPanel;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.core.annotation.ReflectiveAccess;
 import io.micronaut.core.util.StringUtils;
+import io.micronaut.http.MediaType;
+import io.micronaut.http.uri.UriMatchTemplate;
 import io.micronaut.runtime.context.scope.Refreshable;
 import io.micronaut.web.router.Router;
 import io.micronaut.web.router.UriRouteInfo;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -115,20 +120,141 @@ public class RoutesControlPanel extends AbstractControlPanel<RoutesControlPanel.
         return badge;
     }
 
-    private static LinkedHashMap<String, List<UriRouteInfo<?, ?>>> computeRoutes(Router router, Predicate<UriRouteInfo<?, ?>> filter) {
-        return router.uriRoutes()
+    private static LinkedHashMap<String, List<RouteRow>> computeRoutes(Router router, Predicate<UriRouteInfo<?, ?>> filter) {
+        Map<String, List<UriRouteInfo<?, ?>>> grouped = router.uriRoutes()
             .filter(filter)
             .distinct()
             .sorted(COMPARATOR_BY_URI.thenComparing(UriRouteInfo::getHttpMethodName))
             .collect(Collectors.groupingBy(KEY_MAPPER, LinkedHashMap::new, Collectors.toUnmodifiableList()));
+
+        LinkedHashMap<String, List<RouteRow>> result = new LinkedHashMap<>();
+        for (Map.Entry<String, List<UriRouteInfo<?, ?>>> e : grouped.entrySet()) {
+            List<UriRouteInfo<?, ?>> routes = e.getValue();
+            List<RouteRow> rows = new ArrayList<>(routes.size());
+            for (int i = 0; i < routes.size(); i++) {
+                UriRouteInfo<?, ?> current = routes.get(i);
+                String method = current.getHttpMethodName();
+                if ("GET".equals(method) && (i + 1) < routes.size()) {
+                    UriRouteInfo<?, ?> next = routes.get(i + 1);
+                    if ("HEAD".equals(next.getHttpMethodName())
+                        && sameUri(current, next)
+                        && sameTargetMethodName(current, next)) {
+                        var tm = current.getTargetMethod();
+                        rows.add(new RouteRow("GET, HEAD",
+                            current.getUriMatchTemplate(),
+                            current.getProduces(),
+                            current.getConsumes(),
+                            new TargetMethod(tm.getName(), toStringList(tm.getArguments()))));
+                        i++;
+                        continue;
+                    }
+                }
+                if ("HEAD".equals(method) && i > 0) {
+                    UriRouteInfo<?, ?> prev = routes.get(i - 1);
+                    if ("GET".equals(prev.getHttpMethodName())
+                        && sameUri(current, prev)
+                        && sameTargetMethodName(current, prev)) {
+                        continue;
+                    }
+                }
+                var tm = current.getTargetMethod();
+                rows.add(new RouteRow(method,
+                    current.getUriMatchTemplate(),
+                    current.getProduces(),
+                    current.getConsumes(),
+                    new TargetMethod(tm.getName(), toStringList(tm.getArguments()))));
+            }
+            result.put(e.getKey(), Collections.unmodifiableList(rows));
+        }
+        return result;
+    }
+
+    private static boolean sameUri(UriRouteInfo<?, ?> a, UriRouteInfo<?, ?> b) {
+        return a.getUriMatchTemplate().toPathString().equals(b.getUriMatchTemplate().toPathString());
+    }
+
+    private static boolean sameTargetMethodName(UriRouteInfo<?, ?> a, UriRouteInfo<?, ?> b) {
+        return a.getTargetMethod().getName().equals(b.getTargetMethod().getName());
+    }
+
+    private static List<String> toStringList(io.micronaut.core.type.Argument<?>[] args) {
+        if (args == null) {
+            return List.of();
+        }
+        return Arrays.stream(args).map(Object::toString).collect(Collectors.toList());
     }
 
     private record Viewer(String label, String uri) { }
 
+    /**
+     * View model used by templates to render a single route row.
+     */
     @ReflectiveAccess
-    record Body(Map<String, List<UriRouteInfo<?, ?>>> appRoutes,
-                Map<String, List<UriRouteInfo<?, ?>>> micronautRoutes,
+    public static final class RouteRow {
+        private final String httpMethodName;
+        private final UriMatchTemplate uriMatchTemplate;
+        private final List<MediaType> produces;
+        private final List<MediaType> consumes;
+        private final TargetMethod targetMethod;
+
+        public RouteRow(String httpMethodName,
+                        UriMatchTemplate uriMatchTemplate,
+                        List<MediaType> produces,
+                        List<MediaType> consumes,
+                        TargetMethod targetMethod) {
+            this.httpMethodName = httpMethodName;
+            this.uriMatchTemplate = uriMatchTemplate;
+            this.produces = produces;
+            this.consumes = consumes;
+            this.targetMethod = targetMethod;
+        }
+
+        public String getHttpMethodName() {
+            return httpMethodName;
+        }
+
+        public UriMatchTemplate getUriMatchTemplate() {
+            return uriMatchTemplate;
+        }
+
+        public List<MediaType> getProduces() {
+            return produces;
+        }
+
+        public List<MediaType> getConsumes() {
+            return consumes;
+        }
+
+        public TargetMethod getTargetMethod() {
+            return targetMethod;
+        }
+    }
+
+    /**
+     * View model for a controller method target.
+     */
+    @ReflectiveAccess
+    public static final class TargetMethod {
+        private final String name;
+        private final List<String> arguments;
+
+        public TargetMethod(String name, List<String> arguments) {
+            this.name = name;
+            this.arguments = arguments;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public List<String> getArguments() {
+            return arguments;
+        }
+    }
+
+    @ReflectiveAccess
+    record Body(Map<String, List<RouteRow>> appRoutes,
+                Map<String, List<RouteRow>> micronautRoutes,
                 String openApiViewerUri,
                 String openApiViewerLabel) { }
 }
-
