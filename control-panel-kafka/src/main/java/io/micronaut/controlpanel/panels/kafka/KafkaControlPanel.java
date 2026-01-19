@@ -15,6 +15,7 @@
  */
 package io.micronaut.controlpanel.panels.kafka;
 
+import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
 import io.micronaut.context.BeanContext;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.controlpanel.core.AbstractControlPanel;
@@ -28,12 +29,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Lists Kafka listeners and clients discovered in the Micronaut bean context, and
+ * renders a Kafka Streams topology diagram when available.
+ */
 @Singleton
 @Refreshable
 @Requires(property = KafkaControlPanel.ENABLED_PROPERTY, notEquals = StringUtils.FALSE)
-/**
- * Lists Kafka listeners and clients discovered in the Micronaut bean context.
- */
 public class KafkaControlPanel extends AbstractControlPanel<KafkaControlPanel.Body> {
 
     public static final String NAME = "kafka";
@@ -42,12 +44,59 @@ public class KafkaControlPanel extends AbstractControlPanel<KafkaControlPanel.Bo
 
     private final Body body;
 
-    private static Class<?> classForName(String name) {
-        try {
-            return Class.forName(name, false, KafkaControlPanel.class.getClassLoader());
-        } catch (Throwable e) {
-            return null;
+    public KafkaControlPanel(BeanContext beanContext,
+                             @Named(NAME) ControlPanelConfiguration configuration,
+                             List<ConfiguredStreamBuilder> streamBuilders) {
+        super(NAME, configuration);
+
+        var listeners = beanContext.getAllBeanDefinitions().stream()
+            .filter(bd -> bd.getAnnotationMetadata().hasAnnotation("io.micronaut.kafka.annotation.KafkaListener")
+                || bd.getAnnotationMetadata().hasAnnotation("io.micronaut.configuration.kafka.annotation.KafkaListener"))
+            .map(bd -> Map.<String, Object>of(
+                "type", "listener",
+                "class", bd.getBeanType().getName()
+            ))
+            .collect(Collectors.toList());
+
+        var clients = beanContext.getAllBeanDefinitions().stream()
+            .filter(bd -> bd.getAnnotationMetadata().hasAnnotation("io.micronaut.kafka.annotation.KafkaClient")
+                || bd.getAnnotationMetadata().hasAnnotation("io.micronaut.configuration.kafka.annotation.KafkaClient"))
+            .map(bd -> Map.<String, Object>of(
+                "type", "client",
+                "class", bd.getBeanType().getName()
+            ))
+            .collect(Collectors.toList());
+
+        String topologyDescription = null;
+        for (ConfiguredStreamBuilder builder : streamBuilders) {
+            try {
+                var topology = builder.build(builder.getConfiguration());
+                if (topology != null) {
+                    topologyDescription = topology.describe().toString();
+                    break;
+                }
+            } catch (Throwable ignored) {
+                // ignore builder failures
+            }
         }
+        String mermaid = generateMermaidFromDescription(topologyDescription);
+        this.body = new Body(listeners, clients, mermaid);
+    }
+
+    @Override
+    public Body getBody() {
+        return body;
+    }
+
+    @Override
+    public String getBadge() {
+        int total = body.listeners().size() + body.clients().size();
+        return String.valueOf(total);
+    }
+
+    @Override
+    public ControlPanel.Category getCategory() {
+        return CATEGORY;
     }
 
     private static String sanitizeId(String s) {
@@ -120,90 +169,6 @@ public class KafkaControlPanel extends AbstractControlPanel<KafkaControlPanel.Bo
             sb.append(e).append("\n");
         }
         return sb.toString();
-    }
-
-    private static final String TOPIC_ANN1 = "io.micronaut.kafka.annotation.Topic";
-    private static final String TOPIC_ANN2 = "io.micronaut.configuration.kafka.annotation.Topic";
-
-    /**
-     * Utility method to detect presence of an annotation by fully qualified name without
-     * introducing a hard dependency on the annotation type, keeping this module optional.
-     *
-     * @param type the class to inspect
-     * @param fqAnnotation fully qualified annotation class name
-     * @return true if present
-     */
-    private static boolean hasAnnotation(Class<?> type, String fqAnnotation) {
-        for (var a : type.getAnnotations()) {
-            if (a.annotationType().getName().equals(fqAnnotation)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public KafkaControlPanel(BeanContext beanContext, @Named(NAME) ControlPanelConfiguration configuration) {
-        super(NAME, configuration);
-        var listeners = beanContext.getAllBeanDefinitions().stream()
-            .filter(bd -> hasAnnotation(bd.getBeanType(), "io.micronaut.kafka.annotation.KafkaListener")
-                || bd.getAnnotationMetadata().hasAnnotation("io.micronaut.kafka.annotation.KafkaListener"))
-            .map(bd -> Map.<String, Object>of(
-                "type", "listener",
-                "class", bd.getBeanType().getName()
-            ))
-            .collect(Collectors.toList());
-
-        var clients = beanContext.getAllBeanDefinitions().stream()
-            .filter(bd -> hasAnnotation(bd.getBeanType(), "io.micronaut.kafka.annotation.KafkaClient")
-                || bd.getAnnotationMetadata().hasAnnotation("io.micronaut.kafka.annotation.KafkaClient"))
-            .map(bd -> Map.<String, Object>of(
-                "type", "client",
-                "class", bd.getBeanType().getName()
-            ))
-            .collect(Collectors.toList());
-
-
-        // Try to locate Kafka Streams Topology description without hard dep
-        String topologyDescription = null;
-        Class<?> topologyClass = classForName("org.apache.kafka.streams.Topology");
-        if (topologyClass != null) {
-            // Look for any bean with method 'describe' returning something with toString
-            for (var bd : beanContext.getAllBeanDefinitions()) {
-                try {
-                    var type = bd.getBeanType();
-                    // Find 'describe' no-arg
-                    var m = type.getMethod("describe");
-                    if (m != null) {
-                        var bean = beanContext.getBean(type);
-                        Object descObj = m.invoke(bean);
-                        if (descObj != null) {
-                            topologyDescription = descObj.toString();
-                            break;
-                        }
-                    }
-                } catch (Throwable ignored) {
-                    // ignore
-                }
-            }
-        }
-        String mermaid = generateMermaidFromDescription(topologyDescription);
-        this.body = new Body(listeners, clients, mermaid);
-    }
-
-    @Override
-    public Body getBody() {
-        return body;
-    }
-
-    @Override
-    public String getBadge() {
-        int total = body.listeners().size() + body.clients().size();
-        return String.valueOf(total);
-    }
-
-    @Override
-    public ControlPanel.Category getCategory() {
-        return CATEGORY;
     }
 
     public record Body(List<Map<String, Object>> listeners, List<Map<String, Object>> clients, String mermaid) { }

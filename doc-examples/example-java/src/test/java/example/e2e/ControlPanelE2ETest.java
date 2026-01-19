@@ -249,7 +249,7 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         controlPanelDetails(page, "Kafka").click();
 
         assertThat(body(page)).containsText("Kafka Topology");
-        // Mermaid should render an SVG into the container
+        
         assertThat(page.locator("#kafkaTopologyContainer")).isVisible();
         assertThat(page.locator("#kafkaTopologyContainer svg")).isVisible();
     }

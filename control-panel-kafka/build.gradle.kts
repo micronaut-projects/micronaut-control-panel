@@ -19,11 +19,13 @@ dependencies {
     // compileOnly to avoid forcing kafka dependency on consumers
     // Use reflection-free detection of annotations, avoid direct hard deps
     compileOnly(mnKafka.micronaut.kafka)
+    compileOnly(mnKafka.micronaut.kafka.streams)
 
     testImplementation(mnTest.micronaut.test.junit5)
     testRuntimeOnly(mnTest.junit.jupiter.engine)
     testAnnotationProcessor(mn.micronaut.inject.java)
     testImplementation(mnKafka.micronaut.kafka)
+    testImplementation(mnKafka.micronaut.kafka.streams)
     testImplementation(mnSerde.micronaut.serde.jackson)
     testImplementation(mn.micronaut.http.server.netty)
     testImplementation(mn.micronaut.http.client)
