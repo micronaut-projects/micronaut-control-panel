@@ -72,8 +72,8 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         controlPanelDetails(page, "HTTP Routes").click();
 
         assertThat(body(page)).containsText("Application routes");
-        assertThat(page.getByRole(AriaRole.CELL, new Page.GetByRoleOptions().setName("/demo/test1"))).hasCount(2);
-        assertThat(page.getByRole(AriaRole.CELL, new Page.GetByRoleOptions().setName("/demo/test2"))).hasCount(2);
+        assertThat(page.getByRole(AriaRole.CELL, new Page.GetByRoleOptions().setName("/demo/test1"))).hasCount(1);
+        assertThat(page.getByRole(AriaRole.CELL, new Page.GetByRoleOptions().setName("/demo/test2"))).hasCount(1);
         assertThat(body(page)).containsText("Micronaut Framework routes");
 
         var viewerLink = page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName(nameRegex("Swagger UI")));
