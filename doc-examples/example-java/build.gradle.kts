@@ -36,9 +36,15 @@ dependencies {
     runtimeOnly(mnSql.ojdbc11)
     runtimeOnly(mnSql.postgresql)
 
+    // Kafka
+    implementation(projects.micronautControlPanelKafka)
+    implementation(mnKafka.micronaut.kafka)
+    implementation("org.apache.kafka:kafka-streams")
+
     // OpenAPI + Swagger UI (views generated at compile-time)
     annotationProcessor(mnOpenapi.micronaut.openapi)
     implementation(mnOpenapi.micronaut.openapi.annotations)
+
 
     runtimeOnly(mnLogging.logback.classic)
     runtimeOnly(mn.snakeyaml)

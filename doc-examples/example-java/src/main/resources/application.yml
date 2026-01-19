@@ -3,10 +3,16 @@ micronaut:
   control-panel:
     panels:
       my-application:
-        title: My Application Control Panel # <1>
-        icon: fa-plug # <2>
-        order: 10 # <3>
+         title: My Application Control Panel # <1>
+         icon: fa-plug # <2>
+         order: 10 # <3>
+      kafka:
+        title: Kafka
+        icon: fa-diagram-project
+        enabled: true
+        order: 50
 #end::control-panel[]
+
     env:
       show-values: true
   router:

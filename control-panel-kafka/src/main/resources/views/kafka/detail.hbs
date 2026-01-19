@@ -1,7 +1,9 @@
 <div class="container">
-  <h5>Kafka Components</h5>
-  <p class="text-muted">Detected Kafka beans via @KafkaListener and @KafkaClient annotations.</p>
+  <h5>Kafka Topology</h5>
+  <pre id="kafkaMermaidCode" style="display:none;">{{{ body.mermaid }}}</pre>
+  <div id="kafkaTopologyContainer" class="mermaid"></div>
 
+  <h6 class="mt-4">Components</h6>
   <div class="row">
     <div class="col-md-6">
       <h6>Listeners</h6>
@@ -21,3 +23,45 @@
     </div>
   </div>
 </div>
+
+<script>
+  (function(){
+    var pre = document.getElementById('kafkaMermaidCode');
+    if (!pre) return;
+    var code = (pre.textContent || pre.innerText || '').replace(/\r\n/g, '\n').trimStart();
+    var container = document.getElementById('kafkaTopologyContainer');
+    var renderId = 'kafkaTopology_' + Math.random().toString(36).substring(2);
+
+    function doRender() {
+      if (!code) {
+        container.textContent = 'No topology detected';
+        return true;
+      }
+      if (window.mermaid && typeof window.mermaid.render === 'function') {
+        try {
+          window.mermaid.render(renderId, code, function(svgCode) {
+            container.innerHTML = svgCode;
+          });
+          return true;
+        } catch (e) {
+          // fall through to init
+        }
+      }
+      if (window.mermaid) {
+        container.innerText = code;
+        container.className = 'mermaid';
+        try { window.mermaid.init(undefined, container); } catch(e) {}
+        return true;
+      }
+      return false;
+    }
+
+    // Retry rendering until mermaid is available or we give up
+    var attempts = 0;
+    (function retry(){
+      if (doRender() || attempts++ > 30) return;
+      setTimeout(retry, 100);
+    })();
+  })();
+</script>
+

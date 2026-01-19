@@ -242,6 +242,18 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         assertThat(page.locator("tbody")).containsText("ACCOUNTING");
     }
 
+    @Test
+    void testKafka(Page page) {
+        page.navigate(baseUrl());
+        categoryLink(page, "Kafka").click();
+        controlPanelDetails(page, "Kafka").click();
+
+        assertThat(body(page)).containsText("Kafka Topology");
+        // Mermaid should render an SVG into the container
+        assertThat(page.locator("#kafkaTopologyContainer")).isVisible();
+        assertThat(page.locator("#kafkaTopologyContainer svg")).isVisible();
+    }
+
     public static class HeadlessBrowserOptions implements OptionsFactory {
         @Override
         public Options getOptions() {
