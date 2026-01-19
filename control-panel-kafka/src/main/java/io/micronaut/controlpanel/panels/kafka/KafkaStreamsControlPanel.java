@@ -21,7 +21,12 @@ import io.micronaut.context.annotation.Parameter;
 import io.micronaut.controlpanel.core.AbstractEachBeanControlPanel;
 import io.micronaut.controlpanel.core.ControlPanel;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
+import io.micronaut.core.annotation.ReflectiveAccess;
 import jakarta.inject.Named;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static io.micronaut.controlpanel.panels.kafka.KafkaControlPanel.CATEGORY;
 
 /**
  * A per-streams control panel that renders the Kafka Streams topology for each configured builder.
@@ -30,7 +35,8 @@ import jakarta.inject.Named;
 public class KafkaStreamsControlPanel extends AbstractEachBeanControlPanel<KafkaStreamsControlPanel.Body> {
 
     public static final String NAME = "kafkastreams";
-    private static final ControlPanel.Category CATEGORY = new ControlPanel.Category("kafka", "Kafka", "si si-apachekafka");
+
+    private static final Logger LOG = LoggerFactory.getLogger(KafkaStreamsControlPanel.class);
 
     private final String beanName;
     private final Body body;
@@ -74,6 +80,10 @@ public class KafkaStreamsControlPanel extends AbstractEachBeanControlPanel<Kafka
     }
 
     private static String generateMermaidFromDescription(String desc) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Generating Mermaid diagram from topology description: {}", desc);
+        }
+
         if (desc == null || desc.isBlank()) {
             return "flowchart LR\nEMPTY[No topology detected]";
         }
@@ -141,5 +151,6 @@ public class KafkaStreamsControlPanel extends AbstractEachBeanControlPanel<Kafka
         return sb.toString();
     }
 
+    @ReflectiveAccess
     public record Body(String mermaid) { }
 }
