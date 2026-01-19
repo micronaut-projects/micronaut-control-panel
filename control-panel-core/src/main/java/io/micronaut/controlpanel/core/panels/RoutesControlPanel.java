@@ -138,7 +138,9 @@ public class RoutesControlPanel extends AbstractControlPanel<RoutesControlPanel.
                     UriRouteInfo<?, ?> next = routes.get(i + 1);
                     if ("HEAD".equals(next.getHttpMethodName())
                         && sameUri(current, next)
-                        && sameTargetMethodName(current, next)) {
+                        && sameTargetMethodName(current, next)
+                        && sameProduces(current, next)
+                        && sameConsumes(current, next)) {
                         var tm = current.getTargetMethod();
                         rows.add(new RouteRow("GET, HEAD",
                             current.getUriMatchTemplate(),
@@ -153,7 +155,9 @@ public class RoutesControlPanel extends AbstractControlPanel<RoutesControlPanel.
                     UriRouteInfo<?, ?> prev = routes.get(i - 1);
                     if ("GET".equals(prev.getHttpMethodName())
                         && sameUri(current, prev)
-                        && sameTargetMethodName(current, prev)) {
+                        && sameTargetMethodName(current, prev)
+                        && sameProduces(current, prev)
+                        && sameConsumes(current, prev)) {
                         continue;
                     }
                 }
@@ -175,6 +179,14 @@ public class RoutesControlPanel extends AbstractControlPanel<RoutesControlPanel.
 
     private static boolean sameTargetMethodName(UriRouteInfo<?, ?> a, UriRouteInfo<?, ?> b) {
         return a.getTargetMethod().getName().equals(b.getTargetMethod().getName());
+    }
+
+    private static boolean sameProduces(UriRouteInfo<?, ?> a, UriRouteInfo<?, ?> b) {
+        return a.getProduces().equals(b.getProduces());
+    }
+
+    private static boolean sameConsumes(UriRouteInfo<?, ?> a, UriRouteInfo<?, ?> b) {
+        return a.getConsumes().equals(b.getConsumes());
     }
 
     private static List<String> toStringList(io.micronaut.core.type.Argument<?>[] args) {

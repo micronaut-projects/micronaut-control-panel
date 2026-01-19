@@ -17,9 +17,11 @@ package io.micronaut.controlpanel.core.panels;
  
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
+import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Head;
+import io.micronaut.http.annotation.Produces;
 import io.micronaut.inject.qualifiers.Qualifiers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -119,11 +121,67 @@ class RoutesControlPanelTest {
         }
     }
 
+    @Test
+    void doesNotMergeWhenProducesDifferOrMethodsDiffer() {
+        try (ApplicationContext local = ApplicationContext.run()) {
+            RoutesControlPanel panel = local.getBean(RoutesControlPanel.class);
+            var body = panel.getBody();
+
+            var allRows = new java.util.ArrayList<>(body.appRoutes().values().stream().flatMap(java.util.Collection::stream).toList());
+            allRows.addAll(body.micronautRoutes().values().stream().flatMap(java.util.Collection::stream).toList());
+
+            var jsonRows = allRows.stream().filter(r -> "/merge/json".equals(r.getUriMatchTemplate().toPathString())).toList();
+            assertFalse(jsonRows.isEmpty());
+            assertTrue(jsonRows.stream().anyMatch(r -> r.getHttpMethodName().equals("GET, HEAD")));
+            assertTrue(jsonRows.stream().anyMatch(r -> r.getHttpMethodName().equals("HEAD")));
+
+            var mismatchRows = allRows.stream().filter(r -> "/merge/mismatch".equals(r.getUriMatchTemplate().toPathString())).toList();
+            assertFalse(mismatchRows.isEmpty());
+            assertTrue(mismatchRows.stream().anyMatch(r -> r.getHttpMethodName().equals("GET, HEAD")));
+            assertTrue(mismatchRows.stream().anyMatch(r -> r.getHttpMethodName().equals("HEAD")));
+        }
+    }
+
+    @Test
+    void standaloneHeadRouteIsShown() {
+        try (ApplicationContext local = ApplicationContext.run()) {
+            RoutesControlPanel panel = local.getBean(RoutesControlPanel.class);
+            var body = panel.getBody();
+
+            var allRows = new java.util.ArrayList<>(body.appRoutes().values().stream().flatMap(java.util.Collection::stream).toList());
+            allRows.addAll(body.micronautRoutes().values().stream().flatMap(java.util.Collection::stream).toList());
+
+            var headOnlyRows = allRows.stream().filter(r -> "/merge/only".equals(r.getUriMatchTemplate().toPathString())).toList();
+            assertTrue(headOnlyRows.stream().anyMatch(r -> r.getHttpMethodName().equals("HEAD")));
+            assertFalse(headOnlyRows.stream().anyMatch(r -> r.getHttpMethodName().equals("GET")));
+            assertFalse(headOnlyRows.stream().anyMatch(r -> r.getHttpMethodName().equals("GET, HEAD")));
+        }
+    }
+
     @Controller("/merge")
     static class MergeController {
         @Get("/")
         @Head("/")
         Object both() { return null; }
+
+        @Get("/json")
+        @Produces(MediaType.APPLICATION_JSON)
+        Object getJson() { return null; }
+
+        @Head("/json")
+        @Produces(MediaType.APPLICATION_JSON)
+        Object headJson() { return null; }
+
+        @Get("/mismatch")
+        @Produces(MediaType.APPLICATION_XML)
+        Object getMismatch() { return null; }
+
+        @Head("/mismatch")
+        @Produces(MediaType.APPLICATION_JSON)
+        Object headMismatch() { return null; }
+
+        @Head("/only")
+        Object headOnly() { return null; }
     }
 
     @Controller
