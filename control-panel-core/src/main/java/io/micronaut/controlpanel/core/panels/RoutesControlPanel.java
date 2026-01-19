@@ -129,51 +129,68 @@ public class RoutesControlPanel extends AbstractControlPanel<RoutesControlPanel.
 
         LinkedHashMap<String, List<RouteRow>> result = new LinkedHashMap<>();
         for (Map.Entry<String, List<UriRouteInfo<?, ?>>> e : grouped.entrySet()) {
-            List<UriRouteInfo<?, ?>> routes = e.getValue();
-            List<RouteRow> rows = new ArrayList<>(routes.size());
-            for (int i = 0; i < routes.size(); i++) {
-                UriRouteInfo<?, ?> current = routes.get(i);
-                String method = current.getHttpMethodName();
-                if ("GET".equals(method) && (i + 1) < routes.size()) {
-                    UriRouteInfo<?, ?> next = routes.get(i + 1);
-                    if ("HEAD".equals(next.getHttpMethodName())
-                        && sameUri(current, next)
-                        && sameTargetMethodName(current, next)
-                        && sameProduces(current, next)
-                        && sameConsumes(current, next)) {
-                        var tm = current.getTargetMethod();
-                        rows.add(new RouteRow("GET, HEAD",
-                            current.getUriMatchTemplate(),
-                            current.getProduces(),
-                            current.getConsumes(),
-                            new TargetMethod(tm.getName(), toStringList(tm.getArguments()))));
-                        i++;
-                        continue;
-                    }
-                }
-                if ("HEAD".equals(method) && i > 0) {
-                    UriRouteInfo<?, ?> prev = routes.get(i - 1);
-                    if ("GET".equals(prev.getHttpMethodName())
-                        && sameUri(current, prev)
-                        && sameTargetMethodName(current, prev)
-                        && sameProduces(current, prev)
-                        && sameConsumes(current, prev)) {
-                        continue;
-                    }
-                }
-                var tm = current.getTargetMethod();
-                rows.add(new RouteRow(method,
-                    current.getUriMatchTemplate(),
-                    current.getProduces(),
-                    current.getConsumes(),
-                    new TargetMethod(tm.getName(), toStringList(tm.getArguments()))));
-            }
-            result.put(e.getKey(), Collections.unmodifiableList(rows));
+            result.put(e.getKey(), Collections.unmodifiableList(toRows(e.getValue())));
         }
         return result;
     }
 
+    private static List<RouteRow> toRows(List<UriRouteInfo<?, ?>> routes) {
+        List<RouteRow> rows = new ArrayList<>(routes.size());
+        for (int i = 0; i < routes.size(); i++) {
+            UriRouteInfo<?, ?> current = routes.get(i);
+            String method = current.getHttpMethodName();
+            if (isMergeableGetWithNext(current, i, routes)) {
+                var tm = current.getTargetMethod();
+                rows.add(new RouteRow("GET, HEAD",
+                    current.getUriMatchTemplate(),
+                    current.getProduces(),
+                    current.getConsumes(),
+                    new TargetMethod(tm.getName(), toStringList(tm.getArguments()))));
+                i++;
+                continue;
+            }
+            if (isSkippableHead(current, i, routes)) {
+                continue;
+            }
+            var tm = current.getTargetMethod();
+            rows.add(new RouteRow(method,
+                current.getUriMatchTemplate(),
+                current.getProduces(),
+                current.getConsumes(),
+                new TargetMethod(tm.getName(), toStringList(tm.getArguments()))));
+        }
+        return rows;
+    }
+
+    private static boolean isMergeableGetWithNext(UriRouteInfo<?, ?> current, int index, List<UriRouteInfo<?, ?>> routes) {
+        if (!"GET".equals(current.getHttpMethodName())) {
+            return false;
+        }
+        if (index + 1 >= routes.size()) {
+            return false;
+        }
+        UriRouteInfo<?, ?> next = routes.get(index + 1);
+        return "HEAD".equals(next.getHttpMethodName())
+            && sameUri(current, next)
+            && sameTargetMethodName(current, next)
+            && sameProduces(current, next)
+            && sameConsumes(current, next);
+    }
+
+    private static boolean isSkippableHead(UriRouteInfo<?, ?> current, int index, List<UriRouteInfo<?, ?>> routes) {
+        if (!"HEAD".equals(current.getHttpMethodName()) || index == 0) {
+            return false;
+        }
+        UriRouteInfo<?, ?> prev = routes.get(index - 1);
+        return "GET".equals(prev.getHttpMethodName())
+            && sameUri(current, prev)
+            && sameTargetMethodName(current, prev)
+            && sameProduces(current, prev)
+            && sameConsumes(current, prev);
+    }
+ 
     private static boolean sameUri(UriRouteInfo<?, ?> a, UriRouteInfo<?, ?> b) {
+
         return a.getUriMatchTemplate().toPathString().equals(b.getUriMatchTemplate().toPathString());
     }
 
