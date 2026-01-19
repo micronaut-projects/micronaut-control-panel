@@ -6,6 +6,8 @@ micronaut:
          title: My Application Control Panel # <1>
          icon: fa-plug # <2>
          order: 10 # <3>
+  application:
+    name: my-application
 
 #end::control-panel[]
 
@@ -26,8 +28,6 @@ micronaut:
   caches:
     my-caffeine:
       initial-capacity: 2
-  application:
-    name: myApplication
 
 ehcache:
   caches:
@@ -61,6 +61,10 @@ endpoints:
     details-visible: ANONYMOUS
   loggers:
     write-sensitive: false
+kafka:
+  streams:
+    default:
+      application.id: my-application
 
 infinispan:
   enabled: false

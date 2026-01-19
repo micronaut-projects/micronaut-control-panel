@@ -40,7 +40,7 @@ public class KafkaControlPanel extends AbstractControlPanel<KafkaControlPanel.Bo
 
     public static final String NAME = "kafka";
     public static final String ENABLED_PROPERTY = ControlPanelConfiguration.PREFIX + "." + NAME + ".enabled";
-    public static final ControlPanel.Category CATEGORY = new ControlPanel.Category(NAME, "Kafka", "fa-diagram-project");
+    public static final ControlPanel.Category CATEGORY = new ControlPanel.Category(NAME, "Kafka", "si si-apachekafka");
 
     private final Body body;
 
