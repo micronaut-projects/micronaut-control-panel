@@ -1,0 +1,23 @@
+<div class="container">
+  <h5>Kafka Components</h5>
+  <p class="text-muted">Detected Kafka beans via @KafkaListener and @KafkaClient annotations.</p>
+
+  <div class="row">
+    <div class="col-md-6">
+      <h6>Listeners</h6>
+      <ul class="list-group">
+        {{#each body.listeners}}
+          <li class="list-group-item"><i class="fa-solid fa-ear-listen me-2"></i>{{class}}</li>
+        {{/each}}
+      </ul>
+    </div>
+    <div class="col-md-6">
+      <h6>Clients</h6>
+      <ul class="list-group">
+        {{#each body.clients}}
+          <li class="list-group-item"><i class="fa-solid fa-paper-plane me-2"></i>{{class}}</li>
+        {{/each}}
+      </ul>
+    </div>
+  </div>
+</div>

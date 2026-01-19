@@ -17,52 +17,55 @@
 # a managed version (a version which alias starts with "managed-"
 
 [versions]
-micronaut-platform = "4.10.7"
-micronaut = "4.10.14"
-micronaut-views = '5.9.0'
-micronaut-reactor = '3.9.1'
-micronaut-serde = "2.16.2"
-micronaut-object-storage = "2.10.0"
-micronaut-cache = "5.3.0"
-micronaut-sql = "7.0.0"
-micronaut-data = "4.14.2"
-micronaut-testresources = "2.10.1"
-micronaut-gradle-plugin = "4.6.1"
-micronaut-openapi = "6.19.3"
-kotlin-gradle-plugin = "2.3.0"
-micronaut-shared-settings = "7.6.6"
-sonatype-scan = "3.1.4"
-playwright = "1.57.0"
-shadow-plugin = "9.3.1"
-test-logger-plugin = "4.0.0"
-gradle-node-plugin = "7.1.0"
+ micronaut-platform = "4.10.7"
+ micronaut = "4.10.14"
+ micronaut-views = '5.9.0'
+ micronaut-reactor = '3.9.1'
+ micronaut-serde = "2.16.2"
+ micronaut-object-storage = "2.10.0"
+ micronaut-cache = "5.3.0"
+ micronaut-sql = "7.0.0"
+ micronaut-data = "4.14.2"
+ micronaut-testresources = "2.10.1"
+ micronaut-gradle-plugin = "4.6.1"
+ micronaut-openapi = "6.19.3"
+ micronaut-kafka = "5.7.0"
+ kotlin-gradle-plugin = "2.3.0"
+ micronaut-shared-settings = "7.6.6"
+ sonatype-scan = "3.1.4"
+ playwright = "1.57.0"
+ shadow-plugin = "9.3.1"
+ test-logger-plugin = "4.0.0"
+ gradle-node-plugin = "7.1.0"
+ 
+ [libraries]
+ micronaut-openapi = { module = "io.micronaut.openapi:micronaut-openapi-bom", version.ref = "micronaut-openapi" }
+ micronaut-core = { module = 'io.micronaut:micronaut-core-bom', version.ref = 'micronaut' }
+ micronaut-platform = { module = "io.micronaut.platform:micronaut-platform", version.ref = "micronaut-platform"}
+ micronaut-views = { module = 'io.micronaut.views:micronaut-views-bom', version.ref = 'micronaut-views' }
+ micronaut-reactor = { module = 'io.micronaut.reactor:micronaut-reactor-bom', version.ref = 'micronaut-reactor' }
+ micronaut-serde = { module = "io.micronaut.serde:micronaut-serde-bom", version.ref = "micronaut-serde" }
+ micronaut-object-storage = { module = "io.micronaut.objectstorage:micronaut-object-storage-bom", version.ref = "micronaut-object-storage" }
+ micronaut-cache = { module = "io.micronaut.cache:micronaut-cache-bom", version.ref = "micronaut-cache" }
+ micronaut-sql = { module = "io.micronaut.sql:micronaut-sql-bom", version.ref = "micronaut-sql" }
+ micronaut-data = { module = "io.micronaut.data:micronaut-data-bom", version.ref = "micronaut-data" }
+ micronaut-testresources = { module = 'io.micronaut.testresources:micronaut-test-resources-bom', version.ref = "micronaut-testresources" }
+ micronaut-kafka = { module = "io.micronaut.kafka:micronaut-kafka-bom", version.ref = "micronaut-kafka" }
+ 
+ playwright = { module = "com.microsoft.playwright:playwright", version.ref = "playwright"}
+ 
+ handlebars-humanize = { module = 'com.github.jknack:handlebars-humanize' }
+ 
+ # Plugins
+ gradle-micronaut = { module = 'io.micronaut.gradle:micronaut-gradle-plugin', version.ref = 'micronaut-gradle-plugin' }
+ micronaut-shared-settings = { module = "io.micronaut.build.shared.settings:io.micronaut.build.shared.settings.gradle.plugin", version.ref = "micronaut-shared-settings" }
+ gradle-kotlin = { module = 'org.jetbrains.kotlin:kotlin-gradle-plugin', version.ref = 'kotlin-gradle-plugin' }
+ sonatype-scan = { module = "org.sonatype.gradle.plugins:scan-gradle-plugin", version.ref = "sonatype-scan" }
+ shadow-plugin = { module = "com.gradleup.shadow:com.gradleup.shadow.gradle.plugin", version.ref = "shadow-plugin" }
+ test-logger-plugin = { module = "com.adarshr.test-logger:com.adarshr.test-logger.gradle.plugin", version.ref = "test-logger-plugin"}
+ node-gradle-plugin = { module = "com.github.node-gradle:gradle-node-plugin", version.ref = "gradle-node-plugin" }
+ 
+ [bundles]
+ 
+ [plugins]
 
-[libraries]
-micronaut-openapi = { module = "io.micronaut.openapi:micronaut-openapi-bom", version.ref = "micronaut-openapi" }
-micronaut-core = { module = 'io.micronaut:micronaut-core-bom', version.ref = 'micronaut' }
-micronaut-platform = { module = "io.micronaut.platform:micronaut-platform", version.ref = "micronaut-platform"}
-micronaut-views = { module = 'io.micronaut.views:micronaut-views-bom', version.ref = 'micronaut-views' }
-micronaut-reactor = { module = 'io.micronaut.reactor:micronaut-reactor-bom', version.ref = 'micronaut-reactor' }
-micronaut-serde = { module = "io.micronaut.serde:micronaut-serde-bom", version.ref = "micronaut-serde" }
-micronaut-object-storage = { module = "io.micronaut.objectstorage:micronaut-object-storage-bom", version.ref = "micronaut-object-storage" }
-micronaut-cache = { module = "io.micronaut.cache:micronaut-cache-bom", version.ref = "micronaut-cache" }
-micronaut-sql = { module = "io.micronaut.sql:micronaut-sql-bom", version.ref = "micronaut-sql" }
-micronaut-data = { module = "io.micronaut.data:micronaut-data-bom", version.ref = "micronaut-data" }
-micronaut-testresources = { module = 'io.micronaut.testresources:micronaut-test-resources-bom', version.ref = "micronaut-testresources" }
-
-playwright = { module = "com.microsoft.playwright:playwright", version.ref = "playwright"}
-
-handlebars-humanize = { module = 'com.github.jknack:handlebars-humanize' }
-
-# Plugins
-gradle-micronaut = { module = 'io.micronaut.gradle:micronaut-gradle-plugin', version.ref = 'micronaut-gradle-plugin' }
-micronaut-shared-settings = { module = "io.micronaut.build.shared.settings:io.micronaut.build.shared.settings.gradle.plugin", version.ref = "micronaut-shared-settings" }
-gradle-kotlin = { module = 'org.jetbrains.kotlin:kotlin-gradle-plugin', version.ref = 'kotlin-gradle-plugin' }
-sonatype-scan = { module = "org.sonatype.gradle.plugins:scan-gradle-plugin", version.ref = "sonatype-scan" }
-shadow-plugin = { module = "com.gradleup.shadow:com.gradleup.shadow.gradle.plugin", version.ref = "shadow-plugin" }
-test-logger-plugin = { module = "com.adarshr.test-logger:com.adarshr.test-logger.gradle.plugin", version.ref = "test-logger-plugin"}
-node-gradle-plugin = { module = "com.github.node-gradle:gradle-node-plugin", version.ref = "gradle-node-plugin" }
-
-[bundles]
-
-[plugins]
