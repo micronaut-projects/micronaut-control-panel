@@ -61,10 +61,6 @@ endpoints:
     details-visible: ANONYMOUS
   loggers:
     write-sensitive: false
-kafka:
-  streams:
-    default:
-      application.id: my-application
 
 infinispan:
   enabled: false

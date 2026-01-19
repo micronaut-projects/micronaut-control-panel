@@ -15,54 +15,43 @@
  */
 package io.micronaut.controlpanel.panels.kafka;
 
-
-import io.micronaut.context.BeanContext;
-import io.micronaut.context.annotation.Requires;
-import io.micronaut.controlpanel.core.AbstractControlPanel;
+import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
+import io.micronaut.context.annotation.EachBean;
+import io.micronaut.context.annotation.Parameter;
+import io.micronaut.controlpanel.core.AbstractEachBeanControlPanel;
 import io.micronaut.controlpanel.core.ControlPanel;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
-import io.micronaut.core.util.StringUtils;
-import io.micronaut.runtime.context.scope.Refreshable;
 import jakarta.inject.Named;
-import jakarta.inject.Singleton;
-import java.util.List;
-import java.util.Map;
 
 /**
- * Lists Kafka listeners and clients discovered in the Micronaut bean context, and
- * renders a Kafka Streams topology diagram when available.
+ * A per-streams control panel that renders the Kafka Streams topology for each configured builder.
  */
-@Singleton
-@Refreshable
-@Requires(property = KafkaControlPanel.ENABLED_PROPERTY, notEquals = StringUtils.FALSE)
-public class KafkaControlPanel extends AbstractControlPanel<KafkaControlPanel.Body> {
+@EachBean(ConfiguredStreamBuilder.class)
+public class KafkaStreamsControlPanel extends AbstractEachBeanControlPanel<KafkaStreamsControlPanel.Body> {
 
-    public static final String NAME = "kafka";
-    public static final String ENABLED_PROPERTY = ControlPanelConfiguration.PREFIX + "." + NAME + ".enabled";
-    public static final ControlPanel.Category CATEGORY = new ControlPanel.Category(NAME, "Kafka", "si si-apachekafka");
+    public static final String NAME = "kafkastreams";
+    private static final ControlPanel.Category CATEGORY = new ControlPanel.Category("kafka", "Kafka", "si si-apachekafka");
 
+    private final String beanName;
     private final Body body;
 
-    public KafkaControlPanel(BeanContext beanContext,
-                             @Named(NAME) ControlPanelConfiguration configuration) {
+    public KafkaStreamsControlPanel(@Parameter String beanName,
+                                    ConfiguredStreamBuilder builder,
+                                    @Named(NAME) ControlPanelConfiguration configuration) {
         super(NAME, configuration);
-        var listeners = beanContext.getAllBeanDefinitions().stream()
-            .filter(bd -> bd.getAnnotationMetadata().hasAnnotation("io.micronaut.configuration.kafka.annotation.KafkaListener"))
-            .map(bd -> Map.<String, Object>of(
-                "type", "listener",
-                "class", bd.getBeanType().getName()
-            ))
-            .toList();
+        this.beanName = beanName;
+        String mermaid = generateMermaidFromDescription(builder.build(builder.getConfiguration()).describe().toString());
+        this.body = new Body(mermaid);
+    }
 
-        var clients = beanContext.getAllBeanDefinitions().stream()
-            .filter(bd -> bd.getAnnotationMetadata().hasAnnotation("io.micronaut.configuration.kafka.annotation.KafkaClient"))
-            .map(bd -> Map.<String, Object>of(
-                "type", "client",
-                "class", bd.getBeanType().getName()
-            ))
-            .toList();
+    @Override
+    protected String getBeanName() {
+        return beanName;
+    }
 
-        this.body = new Body(listeners, clients, null);
+    @Override
+    protected String getPanelName() {
+        return NAME;
     }
 
     @Override
@@ -71,9 +60,8 @@ public class KafkaControlPanel extends AbstractControlPanel<KafkaControlPanel.Bo
     }
 
     @Override
-    public String getBadge() {
-        int total = body.listeners().size() + body.clients().size();
-        return String.valueOf(total);
+    public String getIcon() {
+        return "si si-apachekafka";
     }
 
     @Override
@@ -153,5 +141,5 @@ public class KafkaControlPanel extends AbstractControlPanel<KafkaControlPanel.Bo
         return sb.toString();
     }
 
-    public record Body(List<Map<String, Object>> listeners, List<Map<String, Object>> clients, String mermaid) { }
+    public record Body(String mermaid) { }
 }

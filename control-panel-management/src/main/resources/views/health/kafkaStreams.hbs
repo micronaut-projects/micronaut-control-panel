@@ -1,0 +1,48 @@
+{{#with subDetails.details}}
+  <div class="card-text">
+    {{#each details as |stream|}}
+      <h6>{{@key}}</h6>
+      {{#with stream.details}}
+        {{#each this as |thread|}}
+          <div class="mb-2">
+            <p><strong>Thread</strong>: {{@key}}</p>
+            <ul>
+              {{#if thread.threadState}}<li><strong>State</strong>: {{thread.threadState}}</li>{{/if}}
+              {{#if thread.adminClientId}}<li><strong>Admin Client</strong>: <code>{{thread.adminClientId}}</code></li>{{/if}}
+              {{#if thread.producerClientIds}}
+                <li><strong>Producers</strong>:
+                  <ul>
+                    {{#each thread.producerClientIds}}
+                      <li><code>{{this}}</code></li>
+                    {{/each}}
+                  </ul>
+                </li>
+              {{/if}}
+              {{#if thread.consumerClientId}}<li><strong>Consumer</strong>: <code>{{thread.consumerClientId}}</code></li>{{/if}}
+              {{#if thread.restoreConsumerClientId}}<li><strong>Restore Consumer</strong>: <code>{{thread.restoreConsumerClientId}}</code></li>{{/if}}
+              {{#if thread.activeTasks}}
+                <li><strong>Active Tasks</strong>:
+                  {{#with thread.activeTasks}}
+                    {{#if taskId}}<div>taskId: {{taskId}}</div>{{/if}}
+                    {{#if partitions}}
+                      <div>partitions:</div>
+                      <ul>
+                        {{#each partitions}}
+                          <li>{{this}}</li>
+                        {{/each}}
+                      </ul>
+                    {{/if}}
+                  {{/with}}
+                </li>
+              {{/if}}
+              {{#if thread.standbyTasks}}
+                <li><strong>Standby Tasks</strong>: {{thread.standbyTasks}}</li>
+              {{/if}}
+              {{#if thread.threadName}}<li><strong>Thread Name</strong>: {{thread.threadName}}</li>{{/if}}
+            </ul>
+          </div>
+        {{/each}}
+      {{/with}}
+    {{/each}}
+  </div>
+{{/with}}
