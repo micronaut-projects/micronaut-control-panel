@@ -1,4 +1,4 @@
-package example.streams;
+package example.kafka;
 
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;

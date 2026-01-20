@@ -34,7 +34,7 @@ import static io.micronaut.controlpanel.panels.kafka.KafkaControlPanel.CATEGORY;
 @EachBean(ConfiguredStreamBuilder.class)
 public class KafkaStreamsControlPanel extends AbstractEachBeanControlPanel<KafkaStreamsControlPanel.Body> {
 
-    public static final String NAME = "kafkastreams";
+    public static final String NAME = "kafka-streams";
 
     private static final Logger LOG = LoggerFactory.getLogger(KafkaStreamsControlPanel.class);
 
@@ -63,11 +63,6 @@ public class KafkaStreamsControlPanel extends AbstractEachBeanControlPanel<Kafka
     @Override
     public Body getBody() {
         return body;
-    }
-
-    @Override
-    public String getIcon() {
-        return "si si-apachekafka";
     }
 
     @Override
