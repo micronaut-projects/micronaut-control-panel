@@ -2,6 +2,7 @@ import io.micronaut.testresources.buildtools.KnownModules
 
 plugins {
     io.micronaut.build.internal.`control-panel-example`
+    id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1"
 }
 
 dependencies {
@@ -40,10 +41,11 @@ dependencies {
     implementation(projects.micronautControlPanelKafka)
     implementation(mnKafka.micronaut.kafka)
     implementation(mnKafka.micronaut.kafka.streams)
+    implementation(libs.avro)
 
     // OpenAPI + Swagger UI (views generated at compile-time)
-    annotationProcessor(mnOpenapi.micronaut.openapi)
-    implementation(mnOpenapi.micronaut.openapi.annotations)
+//    annotationProcessor(mnOpenapi.micronaut.openapi)
+//    implementation(mnOpenapi.micronaut.openapi.annotations)
 
 
     runtimeOnly(mnLogging.logback.classic)
@@ -60,6 +62,15 @@ micronaut {
         additionalModules.add(KnownModules.CONTROL_PANEL)
         additionalModules.add(KnownModules.JDBC_ORACLE_FREE)
         additionalModules.add(KnownModules.JDBC_POSTGRESQL)
+        additionalModules.add(KnownModules.KAFKA)
+    }
+}
+
+sourceSets {
+    main {
+        resources {
+            srcDirs("src/main/avro")
+        }
     }
 }
 

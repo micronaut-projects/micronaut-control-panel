@@ -1,0 +1,12 @@
+{
+  "type": "record",
+  "name": "ProductAttribute",
+  "namespace": "dev.thriving.poc.ecommerce.avro",
+  "doc": "Represents attributes of a product such as material, color options, or features.",
+  "fields": [
+    { "name": "attributeId", "type": "string", "doc": "Primary key for the attribute." },
+    { "name": "productSku", "type": "string", "doc": "Identifier for the product to which this attribute belongs." },
+    { "name": "attributeName", "type": "string", "doc": "Name of the attribute." },
+    { "name": "attributeValue", "type": "string", "doc": "Value of the attribute." }
+  ]
+}

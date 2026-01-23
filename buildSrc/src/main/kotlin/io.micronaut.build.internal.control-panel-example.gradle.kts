@@ -71,4 +71,5 @@ graalvmNative {
 
 tasks.named("internalStartTestResourcesService") {
     setProperty("useClassDataSharing", false)
+//    setProperty("debugServer", true)
 }

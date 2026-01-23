@@ -13,5 +13,6 @@
         <appender-ref ref="STDOUT" />
     </root>
     <logger name="io.micronaut.controlpanel" level="debug" />
+    <logger name="io.micronaut.configuration.kafka.streams.KafkaStreamsFactory" level="trace" />
     <logger name="example" level="debug" />
 </configuration>

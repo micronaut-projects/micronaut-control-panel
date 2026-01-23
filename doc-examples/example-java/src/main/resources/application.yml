@@ -60,3 +60,5 @@ infinispan:
   enabled: false
 hazelcast:
   enabled: false
+kafka:
+  enabled: false

@@ -1,0 +1,20 @@
+test-resources:
+  containers:
+    kafka-native:
+      image-name: apache/kafka
+      hostnames:
+        - kafka-native.host
+      exposed-ports:
+        - kafka-native.port: 9092
+      env:
+        - KAFKA_NODE_ID: 1
+        - KAFKA_PROCESS_ROLES: broker,controller
+        - KAFKA_NUM_PARTITIONS: 3
+        - KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:" + KAFKA_PORT + ",BROKER://0.0.0.0:9093,CONTROLLER://0.0.0.0:9094
+        - KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+        - KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+        - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+
+kafka:
+  bootstrap:
+    servers: ${kafka-native.host}:${kafka-native.port}

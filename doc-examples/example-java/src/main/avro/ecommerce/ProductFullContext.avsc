@@ -1,0 +1,18 @@
+{
+  "type": "record",
+  "name": "ProductFullContext",
+  "namespace": "dev.thriving.poc.ecommerce.avro",
+  "doc": "Full context view of a product, combining the product description, a map of attributes, and full-context product variants.",
+  "fields": [
+    { "name": "productSku", "type": "string", "doc": "Primary key for the product." },
+    { "name": "name", "type": "string", "doc": "Product name." },
+    { "name": "description", "type": "string", "doc": "Detailed description of the product." },
+    { "name": "category", "type": "string", "doc": "Product category." },
+    { "name": "brand", "type": [ "null", "string" ], "default": null, "doc": "Product brand." },
+    { "name": "createdAt", "type": { "type": "long", "logicalType": "timestamp-millis" }, "doc": "Timestamp when the product was created." },
+    { "name": "updatedAt", "type": { "type": "long", "logicalType": "timestamp-millis" }, "doc": "Timestamp when the product was last updated." },
+    { "name": "attributes", "type": { "type": "map", "values": "dev.thriving.poc.ecommerce.avro.ProductAttribute" }, "doc": "Map of product attributes keyed by attributeId." },
+    { "name": "variants", "type": { "type": "array", "items": "dev.thriving.poc.ecommerce.avro.ProductVariant" }, "doc": "List of full-context product variants." },
+    { "name": "computedAt", "type": { "type": "long", "logicalType": "timestamp-millis" }, "doc": "Timestamp when the full context was computed." }
+  ]
+}
