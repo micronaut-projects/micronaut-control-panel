@@ -42,6 +42,7 @@ dependencies {
     implementation(mnKafka.micronaut.kafka)
     implementation(mnKafka.micronaut.kafka.streams)
     implementation(libs.avro)
+    implementation(libs.avro.serde)
 
     // OpenAPI + Swagger UI (views generated at compile-time)
 //    annotationProcessor(mnOpenapi.micronaut.openapi)
@@ -59,6 +60,7 @@ dependencies {
 
 micronaut {
     testResources {
+        version = mnTestResources.versions.micronaut.testresources
         additionalModules.add(KnownModules.CONTROL_PANEL)
         additionalModules.add(KnownModules.JDBC_ORACLE_FREE)
         additionalModules.add(KnownModules.JDBC_POSTGRESQL)
@@ -76,4 +78,9 @@ sourceSets {
 
 testlogger {
     showStandardStreams = true
+}
+
+repositories {
+    mavenCentral()
+    maven("https://packages.confluent.io/maven/")
 }

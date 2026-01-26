@@ -26,7 +26,7 @@ micronaut-object-storage = "2.10.0"
 micronaut-cache = "6.0.0-M1"
 micronaut-sql = "7.0.0"
 micronaut-data = "5.0.0-M1"
-micronaut-testresources = "3.0.0-M3"
+micronaut-testresources = "3.0.0-M4"
 micronaut-gradle-plugin = "4.6.1"
 micronaut-openapi = "6.19.3"
 micronaut-kafka = "6.0.0-M1"
@@ -38,6 +38,7 @@ shadow-plugin = "9.3.1"
 test-logger-plugin = "4.0.0"
 gradle-node-plugin = "7.1.0"
 avro = "1.12.1"
+avro-serde = "7.9.5"
 
 [libraries]
 micronaut-openapi = { module = "io.micronaut.openapi:micronaut-openapi-bom", version.ref = "micronaut-openapi" }
@@ -53,6 +54,7 @@ micronaut-data = { module = "io.micronaut.data:micronaut-data-bom", version.ref 
 micronaut-testresources = { module = 'io.micronaut.testresources:micronaut-test-resources-bom', version.ref = "micronaut-testresources" }
 micronaut-kafka = { module = "io.micronaut.kafka:micronaut-kafka-bom", version.ref = "micronaut-kafka" }
 avro = { module = "org.apache.avro:avro", version.ref = "avro" }
+avro-serde = { module = "io.confluent:kafka-streams-avro-serde", version.ref = "avro-serde" }
 
 playwright = { module = "com.microsoft.playwright:playwright", version.ref = "playwright"}
 

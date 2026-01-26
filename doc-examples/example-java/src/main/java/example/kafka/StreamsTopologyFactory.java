@@ -9,10 +9,12 @@ import dev.thriving.poc.ecommerce.avro.ProductVariantList;
 import dev.thriving.poc.ecommerce.avro.ProductVariantPrice;
 import dev.thriving.poc.ecommerce.avro.ProductVariantPriceAndStock;
 import dev.thriving.poc.ecommerce.avro.ProductVariantStock;
+import io.micronaut.context.annotation.Bean;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
 import io.micronaut.context.annotation.Requires;
 import jakarta.inject.Singleton;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.kstream.Consumed;
@@ -21,6 +23,8 @@ import org.apache.kafka.streams.kstream.KTable;
 import org.apache.kafka.streams.kstream.Produced;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * Source: https://github.com/thriving-dev/kstd-examples
@@ -36,6 +40,16 @@ public class StreamsTopologyFactory {
     private static final String SOURCE_TOPIC_PRODUCT_VARIANT_STOCK = "product_variant_stock_v2";
     private static final String SINK_TOPIC_PRODUCT = "product_v1";
     private static final String SINK_TOPIC_PRODUCT_JSON = "product_json_v1";
+
+    @Bean
+    List<NewTopic> topics() {
+        return Stream.of(
+                SOURCE_TOPIC_PRODUCT_DESCRIPTION, SOURCE_TOPIC_PRODUCT_ATTRIBUTE,
+                SOURCE_TOPIC_PRODUCT_VARIANT_DETAIL, SOURCE_TOPIC_PRODUCT_VARIANT_PRICE,
+                SOURCE_TOPIC_PRODUCT_VARIANT_STOCK, SINK_TOPIC_PRODUCT, SINK_TOPIC_PRODUCT_JSON)
+            .map(topic -> new NewTopic(topic, 6, (short) 1))
+            .toList();
+    }
 
     @Singleton
     KStream<String, ProductFullContext> productFullContextTopology(ConfiguredStreamBuilder builder) {

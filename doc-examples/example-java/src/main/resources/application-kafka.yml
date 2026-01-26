@@ -1,20 +1,24 @@
 test-resources:
   containers:
-    kafka-native:
-      image-name: apache/kafka
+    schema-registry:
+      image-name: confluentinc/cp-schema-registry:7.7.7
       hostnames:
-        - kafka-native.host
+        - schema-registry.host
       exposed-ports:
-        - kafka-native.port: 9092
+        - schema-registry.port: 8081
       env:
-        - KAFKA_NODE_ID: 1
-        - KAFKA_PROCESS_ROLES: broker,controller
-        - KAFKA_NUM_PARTITIONS: 3
-        - KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:" + KAFKA_PORT + ",BROKER://0.0.0.0:9093,CONTROLLER://0.0.0.0:9094
-        - KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-        - KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-        - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+        - SCHEMA_REGISTRY_HOST_NAME: schema-registry
+        - SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'broker:29092'
+        - SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
 
 kafka:
-  bootstrap:
-    servers: ${kafka-native.host}:${kafka-native.port}
+  enabled: true
+  streams:
+    default:
+      schema.registry.url: http://${schema-registry.host}:${schema-registry.port}
+      session.timeout.ms: 10000
+      internal.leave.group.on.close: true
+      topology.optimization: "reuse.ktable.source.topics"
+      default.key.serde: org.apache.kafka.common.serialization.Serdes$StringSerde
+      default.value.serde: io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
+      auto.offset.reset: earliest
