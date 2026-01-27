@@ -85,47 +85,37 @@ public class KafkaStreamsControlPanel extends AbstractEachBeanControlPanel<Kafka
         for (String raw : desc.split("\n")) {
             String line = raw.trim();
             if (line.startsWith("Step ")) {
-                int colon = line.indexOf(':');
-                if (colon > 0) {
-                    String step = line.substring(0, colon).trim();
-                    int typeStart = line.indexOf(':', colon + 1);
-                    if (typeStart > 0) {
-                        String type = line.substring(colon + 1, typeStart).trim();
-                        int nameStart = line.indexOf(':', typeStart + 1);
-                        if (nameStart > 0) {
-                            int paren = line.indexOf('(');
-                            String name = line.substring(nameStart + 1, paren > 0 ? paren : line.length()).trim();
-                            if (!name.isEmpty()) {
-                                nodes.add(name);
-                                if (current != null) {
-                                    edges.add(sanitizeId(current) + "-->" + sanitizeId(name));
-                                }
-                                current = name;
-                            }
-                            int parenStart = line.indexOf('(');
-                            if (parenStart > 0) {
-                                int closeParen = line.indexOf(')', parenStart);
-                                if (closeParen > parenStart) {
-                                    String parenContent = line.substring(parenStart + 1, closeParen);
-                                    if (type.equals("Source") || type.equals("Sink")) {
-                                        int topicsIdx = line.indexOf("topics=");
-                                        if (topicsIdx > 0) {
-                                            int lb = line.indexOf('[', topicsIdx);
-                                            int rb = line.indexOf(']', lb);
-                                            if (lb > 0 && rb > lb) {
-                                                String topicsStr = line.substring(lb + 1, rb);
-                                                for (String t : topicsStr.split(",")) {
-                                                    String topic = t.trim();
-                                                    if (!topic.isEmpty()) {
-                                                        nodes.add(topic);
-                                                        if (type.equals("Source")) {
-                                                            edges.add(sanitizeId(topic) + "-->" + sanitizeId(current));
-                                                        } else {
-                                                            edges.add(sanitizeId(current) + "-->" + sanitizeId(topic));
-                                                        }
-                                                    }
-                                                }
-                                            }
+                // Parse Step X: Type (params)
+                int firstColon = line.indexOf(':');
+                if (firstColon > 0) {
+                    String stepNum = line.substring(0, firstColon).trim();
+                    String rest = line.substring(firstColon + 1).trim();
+                    int paren = rest.indexOf('(');
+                    String typeAndName = paren > 0 ? rest.substring(0, paren).trim() : rest;
+                    String name = typeAndName.substring(typeAndName.lastIndexOf(' ') + 1).trim();
+                    if (!name.isEmpty()) {
+                        nodes.add(name);
+                        if (current != null) {
+                            edges.add(sanitizeId(current) + "-->" + sanitizeId(name));
+                        }
+                        current = name;
+                    }
+                    // Parse params for topics if Source or Sink
+                    if (paren > 0) {
+                        String params = rest.substring(paren);
+                        if (params.contains("topics=")) {
+                            int lb = params.indexOf('[');
+                            int rb = params.indexOf(']', lb);
+                            if (lb > 0 && rb > lb) {
+                                String topicsStr = params.substring(lb + 1, rb);
+                                for (String t : topicsStr.split(",")) {
+                                    String topic = t.trim();
+                                    if (!topic.isEmpty()) {
+                                        nodes.add(topic);
+                                        if (typeAndName.startsWith("Source")) {
+                                            edges.add(sanitizeId(topic) + "-->" + sanitizeId(current));
+                                        } else if (typeAndName.startsWith("Sink")) {
+                                            edges.add(sanitizeId(current) + "-->" + sanitizeId(topic));
                                         }
                                     }
                                 }
@@ -134,15 +124,21 @@ public class KafkaStreamsControlPanel extends AbstractEachBeanControlPanel<Kafka
                     }
                 }
             } else if (line.contains("->")) {
+                // Handle connections like "Step 0 -> Step 1"
                 String[] parts = line.split("->");
                 if (parts.length == 2) {
                     String from = parts[0].trim();
                     String to = parts[1].trim();
                     if (!from.isEmpty() && !to.isEmpty()) {
-                        nodes.add(from);
-                        nodes.add(to);
-                        edges.add(sanitizeId(from) + "-->" + sanitizeId(to));
-                        current = to;
+                        // Extract step names from "Step X"
+                        String fromName = from.substring(from.lastIndexOf(' ') + 1).trim();
+                        String toName = to.substring(to.lastIndexOf(' ') + 1).trim();
+                        if (!fromName.isEmpty() && !toName.isEmpty()) {
+                            nodes.add(fromName);
+                            nodes.add(toName);
+                            edges.add(sanitizeId(fromName) + "-->" + sanitizeId(toName));
+                            current = toName;
+                        }
                     }
                 }
             }
