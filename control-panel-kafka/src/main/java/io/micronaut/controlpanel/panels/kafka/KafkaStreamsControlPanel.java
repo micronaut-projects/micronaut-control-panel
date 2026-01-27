@@ -88,7 +88,7 @@ public class KafkaStreamsControlPanel extends AbstractEachBeanControlPanel<Kafka
         return String.valueOf(body.subTopologies());
     }
 
-    private static int computeSubTopologies(String desc) {
+    static int computeSubTopologies(String desc) {
         Pattern subPattern = Pattern.compile("Sub-topology:\\s*(\\d+)");
         return (int) Arrays.stream(desc.split("\\n"))
                 .map(String::trim)
@@ -100,7 +100,7 @@ public class KafkaStreamsControlPanel extends AbstractEachBeanControlPanel<Kafka
         return s.replaceAll("\\w", "_");
     }
 
-    private static String generateMermaidFromDescription(String desc) {
+    static String generateMermaidFromDescription(String desc) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Generating Mermaid diagram from topology description:\n{}", desc);
         }

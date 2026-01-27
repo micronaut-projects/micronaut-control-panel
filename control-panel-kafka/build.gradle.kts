@@ -22,6 +22,8 @@ dependencies {
     compileOnly(mnKafka.micronaut.kafka.streams)
 
     testImplementation(mnTest.micronaut.test.junit5)
+    testImplementation(mnTest.mockito.core)
+    testImplementation(mnTest.mockito.junit.jupiter)
     testRuntimeOnly(mnTest.junit.jupiter.engine)
     testAnnotationProcessor(mn.micronaut.inject.java)
     testImplementation(mnKafka.micronaut.kafka)
