@@ -75,10 +75,6 @@ public class KafkaStreamsControlPanel extends AbstractEachBeanControlPanel<Kafka
     }
 
     private static String generateMermaidFromDescription(String desc) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Generating Mermaid diagram from topology description: {}", desc);
-        }
-
         if (desc == null || desc.isBlank()) {
             return "flowchart LR\nEMPTY[No topology detected]";
         }
@@ -88,52 +84,66 @@ public class KafkaStreamsControlPanel extends AbstractEachBeanControlPanel<Kafka
         String current = null;
         for (String raw : desc.split("\n")) {
             String line = raw.trim();
-            if (line.startsWith("Source:")) {
-                int nameStart = line.indexOf(':') + 1;
-                int paren = line.indexOf('(');
-                String name = line.substring(nameStart, paren > 0 ? paren : line.length()).trim();
-                current = name;
-                nodes.add(name);
-                int topicsIdx = line.indexOf("topics:");
-                if (topicsIdx >= 0) {
-                    int lb = line.indexOf('[', topicsIdx);
-                    int rb = line.indexOf(']', lb);
-                    if (lb > 0 && rb > lb) {
-                        String topics = line.substring(lb + 1, rb);
-                        for (String t : topics.split(",")) {
-                            String topic = t.trim();
-                            if (!topic.isEmpty()) {
-                                nodes.add(topic);
-                                edges.add(sanitizeId(topic) + "-->" + sanitizeId(name));
+            if (line.startsWith("Step ")) {
+                int colon = line.indexOf(':');
+                if (colon > 0) {
+                    String step = line.substring(0, colon).trim();
+                    int typeStart = line.indexOf(':', colon + 1);
+                    if (typeStart > 0) {
+                        String type = line.substring(colon + 1, typeStart).trim();
+                        int nameStart = line.indexOf(':', typeStart + 1);
+                        if (nameStart > 0) {
+                            int paren = line.indexOf('(');
+                            String name = line.substring(nameStart + 1, paren > 0 ? paren : line.length()).trim();
+                            if (!name.isEmpty()) {
+                                nodes.add(name);
+                                if (current != null) {
+                                    edges.add(sanitizeId(current) + "-->" + sanitizeId(name));
+                                }
+                                current = name;
+                            }
+                            int parenStart = line.indexOf('(');
+                            if (parenStart > 0) {
+                                int closeParen = line.indexOf(')', parenStart);
+                                if (closeParen > parenStart) {
+                                    String parenContent = line.substring(parenStart + 1, closeParen);
+                                    if (type.equals("Source") || type.equals("Sink")) {
+                                        int topicsIdx = line.indexOf("topics=");
+                                        if (topicsIdx > 0) {
+                                            int lb = line.indexOf('[', topicsIdx);
+                                            int rb = line.indexOf(']', lb);
+                                            if (lb > 0 && rb > lb) {
+                                                String topicsStr = line.substring(lb + 1, rb);
+                                                for (String t : topicsStr.split(",")) {
+                                                    String topic = t.trim();
+                                                    if (!topic.isEmpty()) {
+                                                        nodes.add(topic);
+                                                        if (type.equals("Source")) {
+                                                            edges.add(sanitizeId(topic) + "-->" + sanitizeId(current));
+                                                        } else {
+                                                            edges.add(sanitizeId(current) + "-->" + sanitizeId(topic));
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
                 }
-            } else if (line.startsWith("Processor:")) {
-                int nameStart = line.indexOf(':') + 1;
-                int paren = line.indexOf('(');
-                String name = line.substring(nameStart, paren > 0 ? paren : line.length()).trim();
-                current = name;
-                nodes.add(name);
-            } else if (line.startsWith("Sink:")) {
-                int nameStart = line.indexOf(':') + 1;
-                int paren = line.indexOf('(');
-                String name = line.substring(nameStart, paren > 0 ? paren : line.length()).trim();
-                nodes.add(name);
-                int topicIdx = line.indexOf("topic:");
-                if (topicIdx >= 0) {
-                    int end = line.indexOf(')', topicIdx);
-                    String topic = line.substring(topicIdx + "topic:".length(), end > 0 ? end : line.length()).trim();
-                    nodes.add(topic);
-                    edges.add(sanitizeId(name) + "-->" + sanitizeId(topic));
-                }
-                current = name;
             } else if (line.contains("->")) {
-                String[] parts = line.split(">\\s*");
-                String rhs = parts[parts.length - 1].trim();
-                if (current != null && !rhs.isEmpty()) {
-                    edges.add(sanitizeId(current) + "-->" + sanitizeId(rhs));
-                    nodes.add(rhs);
+                String[] parts = line.split("->");
+                if (parts.length == 2) {
+                    String from = parts[0].trim();
+                    String to = parts[1].trim();
+                    if (!from.isEmpty() && !to.isEmpty()) {
+                        nodes.add(from);
+                        nodes.add(to);
+                        edges.add(sanitizeId(from) + "-->" + sanitizeId(to));
+                        current = to;
+                    }
                 }
             }
         }
