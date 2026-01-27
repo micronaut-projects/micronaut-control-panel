@@ -26,6 +26,11 @@ import jakarta.inject.Named;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import static io.micronaut.controlpanel.panels.kafka.KafkaControlPanel.CATEGORY;
 
 /**
@@ -82,66 +87,119 @@ public class KafkaStreamsControlPanel extends AbstractEachBeanControlPanel<Kafka
         if (desc == null || desc.isBlank()) {
             return "flowchart LR\nEMPTY[No topology detected]";
         }
-        StringBuilder sb = new StringBuilder("flowchart LR\n");
-        java.util.Set<String> nodes = new java.util.HashSet<>();
-        java.util.Set<String> edges = new java.util.HashSet<>();
-        String current = null;
-        for (String raw : desc.split("\n")) {
+
+        List<String> outside = new ArrayList<>();
+        List<String> subgraphs = new ArrayList<>();
+        String currentNode = null;
+        Integer currentSubId = null;
+        Pattern subPattern = Pattern.compile("Sub-topology:\\s*(\\d+)");
+        Pattern sourcePattern = Pattern.compile("Source:\\s*([^(]+?)\\s*\\(topics:\\s*\\[([^\\]]+)\\]\\)");
+        Pattern processorPattern = Pattern.compile("Processor:\\s*([^(]+?)\\s*\\(stores:\\s*\\[([^\\]]+)\\]\\)");
+        Pattern sinkPattern = Pattern.compile("Sink:\\s*([^(]+?)\\s*\\(topic:\\s*([^\\)]+)\\)");
+        Pattern arrowPattern = Pattern.compile("\\s*-->\\s*(.+)");
+
+        for (String raw : desc.split("\\n")) {
             String line = raw.trim();
-            if (line.startsWith("Source:")) {
-                int nameStart = line.indexOf(':') + 1;
-                int paren = line.indexOf('(');
-                String name = line.substring(nameStart, paren > 0 ? paren : line.length()).trim();
-                current = name;
-                nodes.add(name);
-                int topicsIdx = line.indexOf("topics:");
-                if (topicsIdx >= 0) {
-                    int lb = line.indexOf('[', topicsIdx);
-                    int rb = line.indexOf(']', lb);
-                    if (lb > 0 && rb > lb) {
-                        String topics = line.substring(lb + 1, rb);
-                        for (String t : topics.split(",")) {
-                            String topic = t.trim();
-                            if (!topic.isEmpty()) {
-                                nodes.add(topic);
-                                edges.add(sanitizeId(topic) + "-->" + sanitizeId(name));
-                            }
+            Matcher m = subPattern.matcher(line);
+            if (m.matches()) {
+                if (currentSubId != null) {
+                    subgraphs.add("end");
+                }
+                currentSubId = Integer.parseInt(m.group(1));
+                subgraphs.add("subgraph sub_" + currentSubId + " [\"Sub-topology: " + currentSubId + "\"]");
+                continue;
+            }
+
+            m = sourcePattern.matcher(line);
+            if (m.matches()) {
+                String name = m.group(1).trim();
+                currentNode = name;
+                String topicsStr = m.group(2);
+                String[] topics = topicsStr.split(",");
+                for (String t : topics) {
+                    String topic = t.trim();
+                    if (!topic.isEmpty()) {
+                        String idT = sanitizeId(topic);
+                        String idN = sanitizeId(name);
+                        String topicLabel = topic.replace("-", "&lt;br/&gt;");
+                        String nameLabel = name.replace("-", "&lt;br/&gt;");
+                        outside.add(idT + "[" + topicLabel + "] --> " + idN + "(" + nameLabel + ")");
+                    }
+                }
+                continue;
+            }
+
+            m = processorPattern.matcher(line);
+            if (m.matches()) {
+                String name = m.group(1).trim();
+                currentNode = name;
+                String storesStr = m.group(2);
+                String[] stores = storesStr.split(",");
+                for (String s : stores) {
+                    String store = s.trim();
+                    if (!store.isEmpty()) {
+                        String idS = sanitizeId(store);
+                        String idN = sanitizeId(name);
+                        String storeLabel = store.replace("-", "&lt;br/&gt;");
+                        String nameLabel = name.replace("-", "&lt;br/&gt;");
+                        String storeNode = idS + "[(" + storeLabel + ")]";
+                        String procNode = idN + "(" + nameLabel + ")";
+                        boolean isJoin = name.toUpperCase().contains("JOIN");
+                        if (isJoin) {
+                            outside.add(storeNode + " --> " + procNode);
+                        } else {
+                            outside.add(procNode + " --> " + storeNode);
                         }
                     }
                 }
-            } else if (line.startsWith("Processor:")) {
-                int nameStart = line.indexOf(':') + 1;
-                int paren = line.indexOf('(');
-                String name = line.substring(nameStart, paren > 0 ? paren : line.length()).trim();
-                current = name;
-                nodes.add(name);
-            } else if (line.startsWith("Sink:")) {
-                int nameStart = line.indexOf(':') + 1;
-                int paren = line.indexOf('(');
-                String name = line.substring(nameStart, paren > 0 ? paren : line.length()).trim();
-                nodes.add(name);
-                int topicIdx = line.indexOf("topic:");
-                if (topicIdx >= 0) {
-                    int end = line.indexOf(')', topicIdx);
-                    String topic = line.substring(topicIdx + "topic:".length(), end > 0 ? end : line.length()).trim();
-                    nodes.add(topic);
-                    edges.add(sanitizeId(name) + "-->" + sanitizeId(topic));
+                continue;
+            }
+
+            m = sinkPattern.matcher(line);
+            if (m.matches()) {
+                String name = m.group(1).trim();
+                currentNode = name;
+                String topic = m.group(2).trim();
+                if (!topic.isEmpty()) {
+                    String idN = sanitizeId(name);
+                    String idT = sanitizeId(topic);
+                    String nameLabel = name.replace("-", "&lt;br/&gt;");
+                    String topicLabel = topic.replace("-", "&lt;br/&gt;");
+                    outside.add(idN + "(" + nameLabel + ") --> " + idT + "[" + topicLabel + "]");
                 }
-                current = name;
-            } else if (line.contains("->")) {
-                String[] parts = line.split(">\\s*");
-                String rhs = parts[parts.length - 1].trim();
-                if (current != null && !rhs.isEmpty()) {
-                    edges.add(sanitizeId(current) + "-->" + sanitizeId(rhs));
-                    nodes.add(rhs);
+                continue;
+            }
+
+            m = arrowPattern.matcher(line);
+            if (m.matches() && currentNode != null) {
+                String targetsStr = m.group(1).trim();
+                if (!targetsStr.isEmpty()) {
+                    String[] targets = targetsStr.split(",");
+                    String fromId = sanitizeId(currentNode);
+                    String fromLabel = currentNode.replace("-", "&lt;br/&gt;");
+                    for (String t : targets) {
+                        String target = t.trim();
+                        if (!target.isEmpty() && !target.equals("none")) {
+                            String toId = sanitizeId(target);
+                            String toLabel = target.replace("-", "&lt;br/&gt;");
+                            subgraphs.add(fromId + "(" + fromLabel + ") --> " + toId + "(" + toLabel + ")");
+                        }
+                    }
                 }
+                continue;
             }
         }
-        for (String n : nodes) {
-            sb.append(sanitizeId(n)).append("[").append(n).append("]\n");
+
+        if (currentSubId != null) {
+            subgraphs.add("end");
         }
-        for (String e : edges) {
-            sb.append(e).append("\n");
+
+        StringBuilder sb = new StringBuilder("flowchart LR\n");
+        for (String l : outside) {
+            sb.append(l).append("\n");
+        }
+        for (String l : subgraphs) {
+            sb.append(l).append("\n");
         }
         return sb.toString();
     }
