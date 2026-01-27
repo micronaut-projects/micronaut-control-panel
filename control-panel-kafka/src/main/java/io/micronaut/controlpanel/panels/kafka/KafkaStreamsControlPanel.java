@@ -26,6 +26,9 @@ import jakarta.inject.Named;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -85,19 +88,12 @@ public class KafkaStreamsControlPanel extends AbstractEachBeanControlPanel<Kafka
         return String.valueOf(body.subTopologies());
     }
 
-    private int computeSubTopologies(String desc) {
-        int subTopologies = 0;
-
+    private static int computeSubTopologies(String desc) {
         Pattern subPattern = Pattern.compile("Sub-topology:\\s*(\\d+)");
-
-        for (String raw : desc.split("\\n")) {
-            String line = raw.trim();
-            if (subPattern.matcher(line).matches()) {
-                subTopologies++;
-            }
-        }
-
-        return subTopologies;
+        return (int) Arrays.stream(desc.split("\\n"))
+                .map(String::trim)
+                .filter(line -> subPattern.matcher(line).matches())
+                .count();
     }
 
     private static String sanitizeId(String s) {
@@ -106,17 +102,21 @@ public class KafkaStreamsControlPanel extends AbstractEachBeanControlPanel<Kafka
 
     private static String generateMermaidFromDescription(String desc) {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Generating Mermaid diagram from topology description: {}", desc);
+            LOG.debug("Generating Mermaid diagram from topology description:\n{}", desc);
         }
 
         if (desc == null || desc.isBlank()) {
             return "flowchart LR\nEMPTY[No topology detected]";
         }
 
-        java.util.List<String> outside = new java.util.ArrayList<>();
-        java.util.List<String> subgraphs = new java.util.ArrayList<>();
+        List<TopologyEvent> events = parseTopology(desc);
+        return buildMermaid(events);
+    }
+
+    private static List<TopologyEvent> parseTopology(String desc) {
+        List<TopologyEvent> events = new ArrayList<>();
         String currentNode = null;
-        Integer currentSubId = null;
+
         Pattern subPattern = Pattern.compile("Sub-topology:\\s*(\\d+)");
         Pattern sourcePattern = Pattern.compile("Source:\\s*([^(]+?)\\s*\\(topics:\\s*\\[([^\\]]+)\\]\\)");
         Pattern processorPattern = Pattern.compile("Processor:\\s*([^(]+?)\\s*\\(stores:\\s*\\[([^\\]]+)\\]\\)");
@@ -125,108 +125,161 @@ public class KafkaStreamsControlPanel extends AbstractEachBeanControlPanel<Kafka
 
         for (String raw : desc.split("\\n")) {
             String line = raw.trim();
+            if (line.isEmpty()) continue;
+
             Matcher m = subPattern.matcher(line);
             if (m.matches()) {
-                if (currentSubId != null) {
-                    subgraphs.add("end");
-                }
-                currentSubId = Integer.parseInt(m.group(1));
-                subgraphs.add("subgraph sub_" + currentSubId + " [\"Sub-topology: " + currentSubId + "\"]");
+                events.add(new SubTopology(Integer.parseInt(m.group(1))));
+                currentNode = null;
                 continue;
             }
 
             m = sourcePattern.matcher(line);
             if (m.matches()) {
                 String name = m.group(1).trim();
+                List<String> topics = parseList(m.group(2));
+                events.add(new SourceEvent(name, topics));
                 currentNode = name;
-                String topicsStr = m.group(2);
-                String[] topics = topicsStr.split(",");
-                for (String t : topics) {
-                    String topic = t.trim();
-                    if (!topic.isEmpty()) {
-                        String idT = sanitizeId(topic);
-                        String idN = sanitizeId(name);
-                        String topicLabel = topic.replace("-", HTML_BREAK);
-                        String nameLabel = name.replace("-", HTML_BREAK);
-                        outside.add(idT + "[" + topicLabel + "] --> " + idN + "(" + nameLabel + ")");
-                    }
-                }
                 continue;
             }
 
             m = processorPattern.matcher(line);
             if (m.matches()) {
                 String name = m.group(1).trim();
+                List<String> stores = parseList(m.group(2));
+                events.add(new ProcessorEvent(name, stores));
                 currentNode = name;
-                String storesStr = m.group(2);
-                String[] stores = storesStr.split(",");
-                for (String s : stores) {
-                    String store = s.trim();
-                    if (!store.isEmpty()) {
-                        String idS = sanitizeId(store);
-                        String idN = sanitizeId(name);
-                        String storeLabel = store.replace("-", HTML_BREAK);
-                        String nameLabel = name.replace("-", HTML_BREAK);
-                        String storeNode = idS + "[(" + storeLabel + ")]";
-                        String procNode = idN + "(" + nameLabel + ")";
-                        boolean isJoin = name.toUpperCase().contains("JOIN");
-                        if (isJoin) {
-                            outside.add(storeNode + " --> " + procNode);
-                        } else {
-                            outside.add(procNode + " --> " + storeNode);
-                        }
-                    }
-                }
                 continue;
             }
 
             m = sinkPattern.matcher(line);
             if (m.matches()) {
                 String name = m.group(1).trim();
-                currentNode = name;
                 String topic = m.group(2).trim();
-                if (!topic.isEmpty()) {
-                    String idN = sanitizeId(name);
-                    String idT = sanitizeId(topic);
-                    String nameLabel = name.replace("-", HTML_BREAK);
-                    String topicLabel = topic.replace("-", HTML_BREAK);
-                    outside.add(idN + "(" + nameLabel + ") --> " + idT + "[" + topicLabel + "]");
-                }
+                events.add(new SinkEvent(name, topic));
+                currentNode = name;
                 continue;
             }
 
             m = arrowPattern.matcher(line);
             if (m.matches() && currentNode != null) {
-                String targetsStr = m.group(1).trim();
-                if (!targetsStr.isEmpty()) {
-                    String[] targets = targetsStr.split(",");
-                    String fromId = sanitizeId(currentNode);
-                    String fromLabel = currentNode.replace("-", HTML_BREAK);
-                    for (String t : targets) {
-                        String target = t.trim();
-                        if (!target.isEmpty() && !target.equals("none")) {
-                            String toId = sanitizeId(target);
-                            String toLabel = target.replace("-", HTML_BREAK);
-                            subgraphs.add(fromId + "(" + fromLabel + ") --> " + toId + "(" + toLabel + ")");
-                        }
-                    }
-                }
+                List<String> targets = parseList(m.group(1));
+                events.add(new ArrowEvent(currentNode, targets));
             }
         }
 
-        if (currentSubId != null) {
-            subgraphs.add("end");
+        return events;
+    }
+
+    private static String buildMermaid(List<TopologyEvent> events) {
+        List<String> outside = new ArrayList<>();
+        List<String> internal = new ArrayList<>();
+        boolean inSubgraph = false;
+
+        for (TopologyEvent event : events) {
+            if (event instanceof SubTopology(int id)) {
+                if (inSubgraph) {
+                    internal.add("end");
+                }
+                internal.add("subgraph sub_" + id + " [\"Sub-topology: " + id + "\"]");
+                inSubgraph = true;
+            } else if (event instanceof SourceEvent se) {
+                addSourceEdges(se, outside);
+            } else if (event instanceof ProcessorEvent pe) {
+                addProcessorEdges(pe, outside);
+            } else if (event instanceof SinkEvent se) {
+                addSinkEdges(se, outside);
+            } else if (event instanceof ArrowEvent(String from, List<String> targets) && inSubgraph) {
+                addInternalEdges(from, targets, internal);
+            }
+        }
+
+        if (inSubgraph) {
+            internal.add("end");
         }
 
         StringBuilder sb = new StringBuilder("flowchart LR\n");
-        for (String l : outside) {
-            sb.append(l).append("\n");
-        }
-        for (String l : subgraphs) {
-            sb.append(l).append("\n");
-        }
+        outside.forEach(l -> sb.append(l).append("\n"));
+        internal.forEach(l -> sb.append(l).append("\n"));
         return sb.toString();
     }
+
+    private static List<String> parseList(String str) {
+        if (str.isEmpty()) {
+            return List.of();
+        }
+        return Arrays.stream(str.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .toList();
+    }
+
+    private static void addSourceEdges(SourceEvent event, List<String> edges) {
+        String name = event.name();
+        for (String topic : event.topics()) {
+            String idT = sanitizeId(topic);
+            String idN = sanitizeId(name);
+            String topicLabel = topic.replace("-", HTML_BREAK);
+            String nameLabel = name.replace("-", HTML_BREAK);
+            edges.add(idT + "[" + topicLabel + "] --> " + idN + "(" + nameLabel + ")");
+        }
+    }
+
+    private static void addSinkEdges(SinkEvent event, List<String> edges) {
+        String name = event.name();
+        String topic = event.topic();
+        if (!topic.isEmpty()) {
+            String idN = sanitizeId(name);
+            String idT = sanitizeId(topic);
+            String nameLabel = name.replace("-", HTML_BREAK);
+            String topicLabel = topic.replace("-", HTML_BREAK);
+            edges.add(idN + "(" + nameLabel + ") --> " + idT + "[" + topicLabel + "]");
+        }
+    }
+
+    private static void addProcessorEdges(ProcessorEvent event, List<String> edges) {
+        String name = event.name();
+        List<String> stores = event.stores();
+        String idN = sanitizeId(name);
+        String nameLabel = name.replace("-", HTML_BREAK);
+        boolean isJoin = name.toUpperCase().contains("JOIN");
+        for (String store : stores) {
+            String idS = sanitizeId(store);
+            String storeLabel = store.replace("-", HTML_BREAK);
+            String storeNode = idS + "[(" + storeLabel + ")]";
+            String procNode = idN + "(" + nameLabel + ")";
+            if (isJoin) {
+                edges.add(storeNode + " --> " + procNode);
+            } else {
+                edges.add(procNode + " --> " + storeNode);
+            }
+        }
+    }
+
+    private static void addInternalEdges(String from, List<String> targets, List<String> internal) {
+        String fromId = sanitizeId(from);
+        String fromLabel = from.replace("-", HTML_BREAK);
+        for (String target : targets) {
+            if ("none".equals(target)) {
+                continue;
+            }
+            String toId = sanitizeId(target);
+            String toLabel = target.replace("-", HTML_BREAK);
+            internal.add(fromId + "(" + fromLabel + ") --> " + toId + "(" + toLabel + ")");
+        }
+    }
+
+    sealed interface TopologyEvent permits SubTopology, SourceEvent, ProcessorEvent, SinkEvent, ArrowEvent {}
+
+    record SubTopology(int id) implements TopologyEvent {}
+
+    record SourceEvent(String name, List<String> topics) implements TopologyEvent {}
+
+    record ProcessorEvent(String name, List<String> stores) implements TopologyEvent {}
+
+    record SinkEvent(String name, String topic) implements TopologyEvent {}
+
+    record ArrowEvent(String from, List<String> targets) implements TopologyEvent {}
 
     @ReflectiveAccess
     public record Body(String mermaid, int subTopologies) { }
