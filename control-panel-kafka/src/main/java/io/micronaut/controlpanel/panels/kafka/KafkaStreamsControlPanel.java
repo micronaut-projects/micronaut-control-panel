@@ -26,12 +26,12 @@ import jakarta.inject.Named;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static io.micronaut.controlpanel.panels.kafka.KafkaControlPanel.CATEGORY;
 
 /**
  * A per-streams control panel that renders the Kafka Streams topology for each configured builder.
@@ -40,6 +40,7 @@ import static io.micronaut.controlpanel.panels.kafka.KafkaControlPanel.CATEGORY;
 public class KafkaStreamsControlPanel extends AbstractEachBeanControlPanel<KafkaStreamsControlPanel.Body> {
 
     public static final String NAME = "kafka-streams";
+    public static final ControlPanel.Category CATEGORY = new ControlPanel.Category(NAME, "Kafka", "si si-apachekafka");
 
     private static final Logger LOG = LoggerFactory.getLogger(KafkaStreamsControlPanel.class);
 
@@ -51,8 +52,10 @@ public class KafkaStreamsControlPanel extends AbstractEachBeanControlPanel<Kafka
                                     @Named(NAME) ControlPanelConfiguration configuration) {
         super(NAME, configuration);
         this.beanName = beanName;
-        String mermaid = generateMermaidFromDescription(builder.build(builder.getConfiguration()).describe().toString());
-        this.body = new Body(mermaid);
+        String desc = builder.build(builder.getConfiguration()).describe().toString();
+        String mermaid = generateMermaidFromDescription(desc);
+        Map<String, Integer> counts = computeTopologyCounts(desc);
+        this.body = new Body(mermaid, counts);
     }
 
     @Override
@@ -71,8 +74,77 @@ public class KafkaStreamsControlPanel extends AbstractEachBeanControlPanel<Kafka
     }
 
     @Override
+    public String getTitle() {
+        return "Kafka Streams: " + getBeanName();
+    }
+
+    @Override
     public ControlPanel.Category getCategory() {
         return CATEGORY;
+    }
+
+    private static Map<String, Integer> computeTopologyCounts(String desc) {
+        Map<String, Integer> counts = new TreeMap<>();
+        Set<String> topics = new HashSet<>();
+        Set<String> stores = new HashSet<>();
+        int subTopologies = 0;
+        int sources = 0;
+        int processors = 0;
+        int sinks = 0;
+
+        Pattern subPattern = Pattern.compile("Sub-topology:\\s*(\\d+)");
+        Pattern sourcePattern = Pattern.compile("Source:\\s*([^(]+?)\\s*\\(topics:\\s*\\[([^\\]]+)\\]\\)");
+        Pattern processorPattern = Pattern.compile("Processor:\\s*([^(]+?)\\s*\\(stores:\\s*\\[([^\\]]+)\\]\\)");
+        Pattern sinkPattern = Pattern.compile("Sink:\\s*([^(]+?)\\s*\\(topic:\\s*([^\\)]+)\\)");
+
+        for (String raw : desc.split("\\n")) {
+            String line = raw.trim();
+            if (subPattern.matcher(line).matches()) {
+                subTopologies++;
+            } else if (sourcePattern.matcher(line).matches()) {
+                sources++;
+                Matcher m = sourcePattern.matcher(line);
+                if (m.matches()) {
+                    String topicsStr = m.group(2);
+                    for (String t : topicsStr.split(",")) {
+                        String topic = t.trim();
+                        if (!topic.isEmpty()) {
+                            topics.add(topic);
+                        }
+                    }
+                }
+            } else if (processorPattern.matcher(line).matches()) {
+                processors++;
+                Matcher m = processorPattern.matcher(line);
+                if (m.matches()) {
+                    String storesStr = m.group(2);
+                    for (String s : storesStr.split(",")) {
+                        String store = s.trim();
+                        if (!store.isEmpty()) {
+                            stores.add(store);
+                        }
+                    }
+                }
+            } else if (sinkPattern.matcher(line).matches()) {
+                sinks++;
+                Matcher m = sinkPattern.matcher(line);
+                if (m.matches()) {
+                    String topic = m.group(2).trim();
+                    if (!topic.isEmpty()) {
+                        topics.add(topic);
+                    }
+                }
+            }
+        }
+
+        counts.put("Sub-topologies", subTopologies);
+        counts.put("Sources", sources);
+        counts.put("Processors", processors);
+        counts.put("Sinks", sinks);
+        counts.put("Topics", topics.size());
+        counts.put("Stores", stores.size());
+
+        return counts;
     }
 
     private static String sanitizeId(String s) {
@@ -88,8 +160,8 @@ public class KafkaStreamsControlPanel extends AbstractEachBeanControlPanel<Kafka
             return "flowchart LR\nEMPTY[No topology detected]";
         }
 
-        List<String> outside = new ArrayList<>();
-        List<String> subgraphs = new ArrayList<>();
+        java.util.List<String> outside = new java.util.ArrayList<>();
+        java.util.List<String> subgraphs = new java.util.ArrayList<>();
         String currentNode = null;
         Integer currentSubId = null;
         Pattern subPattern = Pattern.compile("Sub-topology:\\s*(\\d+)");
@@ -205,5 +277,5 @@ public class KafkaStreamsControlPanel extends AbstractEachBeanControlPanel<Kafka
     }
 
     @ReflectiveAccess
-    public record Body(String mermaid) { }
+    public record Body(String mermaid, Map<String, Integer> counts) { }
 }

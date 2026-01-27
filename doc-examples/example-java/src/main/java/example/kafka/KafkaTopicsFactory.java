@@ -6,12 +6,12 @@ import io.micronaut.context.annotation.Requires;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.NewTopic;
 
-import static example.kafka.SampleKafka.KAFKA_TOPIC_COUNTS;
-import static example.kafka.SampleKafka.KAFKA_TOPIC_WORDS;
-
 @Requires(bean = AdminClient.class)
 @Factory
 public class KafkaTopicsFactory {
+
+    public static final String KAFKA_TOPIC_WORDS = "words";
+    public static final String KAFKA_TOPIC_COUNTS = "counts";
 
     @Bean
     NewTopic words() {
