@@ -15,4 +15,7 @@
     <logger name="io.micronaut.controlpanel" level="debug" />
     <logger name="io.micronaut.configuration.kafka.streams.KafkaStreamsFactory" level="trace" />
     <logger name="example" level="debug" />
+
+    <logger name="org.apache.kafka" level="warn" />
+    <logger name="io.confluent.kafka" level="warn" />
 </configuration>

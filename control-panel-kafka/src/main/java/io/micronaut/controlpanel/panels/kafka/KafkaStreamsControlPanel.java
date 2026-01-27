@@ -26,10 +26,6 @@ import jakarta.inject.Named;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -40,9 +36,10 @@ import java.util.regex.Pattern;
 public class KafkaStreamsControlPanel extends AbstractEachBeanControlPanel<KafkaStreamsControlPanel.Body> {
 
     public static final String NAME = "kafka-streams";
-    public static final ControlPanel.Category CATEGORY = new ControlPanel.Category(NAME, "Kafka", "si si-apachekafka");
+    public static final ControlPanel.Category CATEGORY = new ControlPanel.Category("kafka", "Kafka", "si si-apachekafka");
 
     private static final Logger LOG = LoggerFactory.getLogger(KafkaStreamsControlPanel.class);
+    private static final String HTML_BREAK = "&lt;br/&gt;";
 
     private final String beanName;
     private final Body body;
@@ -54,8 +51,8 @@ public class KafkaStreamsControlPanel extends AbstractEachBeanControlPanel<Kafka
         this.beanName = beanName;
         String desc = builder.build(builder.getConfiguration()).describe().toString();
         String mermaid = generateMermaidFromDescription(desc);
-        Map<String, Integer> counts = computeTopologyCounts(desc);
-        this.body = new Body(mermaid, counts);
+        int subTopologies = computeSubTopologies(desc);
+        this.body = new Body(mermaid, subTopologies);
     }
 
     @Override
@@ -83,72 +80,28 @@ public class KafkaStreamsControlPanel extends AbstractEachBeanControlPanel<Kafka
         return CATEGORY;
     }
 
-    private static Map<String, Integer> computeTopologyCounts(String desc) {
-        Map<String, Integer> counts = new TreeMap<>();
-        Set<String> topics = new HashSet<>();
-        Set<String> stores = new HashSet<>();
+    @Override
+    public String getBadge() {
+        return String.valueOf(body.subTopologies());
+    }
+
+    private int computeSubTopologies(String desc) {
         int subTopologies = 0;
-        int sources = 0;
-        int processors = 0;
-        int sinks = 0;
 
         Pattern subPattern = Pattern.compile("Sub-topology:\\s*(\\d+)");
-        Pattern sourcePattern = Pattern.compile("Source:\\s*([^(]+?)\\s*\\(topics:\\s*\\[([^\\]]+)\\]\\)");
-        Pattern processorPattern = Pattern.compile("Processor:\\s*([^(]+?)\\s*\\(stores:\\s*\\[([^\\]]+)\\]\\)");
-        Pattern sinkPattern = Pattern.compile("Sink:\\s*([^(]+?)\\s*\\(topic:\\s*([^\\)]+)\\)");
 
         for (String raw : desc.split("\\n")) {
             String line = raw.trim();
             if (subPattern.matcher(line).matches()) {
                 subTopologies++;
-            } else if (sourcePattern.matcher(line).matches()) {
-                sources++;
-                Matcher m = sourcePattern.matcher(line);
-                if (m.matches()) {
-                    String topicsStr = m.group(2);
-                    for (String t : topicsStr.split(",")) {
-                        String topic = t.trim();
-                        if (!topic.isEmpty()) {
-                            topics.add(topic);
-                        }
-                    }
-                }
-            } else if (processorPattern.matcher(line).matches()) {
-                processors++;
-                Matcher m = processorPattern.matcher(line);
-                if (m.matches()) {
-                    String storesStr = m.group(2);
-                    for (String s : storesStr.split(",")) {
-                        String store = s.trim();
-                        if (!store.isEmpty()) {
-                            stores.add(store);
-                        }
-                    }
-                }
-            } else if (sinkPattern.matcher(line).matches()) {
-                sinks++;
-                Matcher m = sinkPattern.matcher(line);
-                if (m.matches()) {
-                    String topic = m.group(2).trim();
-                    if (!topic.isEmpty()) {
-                        topics.add(topic);
-                    }
-                }
             }
         }
 
-        counts.put("Sub-topologies", subTopologies);
-        counts.put("Sources", sources);
-        counts.put("Processors", processors);
-        counts.put("Sinks", sinks);
-        counts.put("Topics", topics.size());
-        counts.put("Stores", stores.size());
-
-        return counts;
+        return subTopologies;
     }
 
     private static String sanitizeId(String s) {
-        return s.replaceAll("[^A-Za-z0-9_]", "_");
+        return s.replaceAll("\\w", "_");
     }
 
     private static String generateMermaidFromDescription(String desc) {
@@ -193,8 +146,8 @@ public class KafkaStreamsControlPanel extends AbstractEachBeanControlPanel<Kafka
                     if (!topic.isEmpty()) {
                         String idT = sanitizeId(topic);
                         String idN = sanitizeId(name);
-                        String topicLabel = topic.replace("-", "&lt;br/&gt;");
-                        String nameLabel = name.replace("-", "&lt;br/&gt;");
+                        String topicLabel = topic.replace("-", HTML_BREAK);
+                        String nameLabel = name.replace("-", HTML_BREAK);
                         outside.add(idT + "[" + topicLabel + "] --> " + idN + "(" + nameLabel + ")");
                     }
                 }
@@ -212,8 +165,8 @@ public class KafkaStreamsControlPanel extends AbstractEachBeanControlPanel<Kafka
                     if (!store.isEmpty()) {
                         String idS = sanitizeId(store);
                         String idN = sanitizeId(name);
-                        String storeLabel = store.replace("-", "&lt;br/&gt;");
-                        String nameLabel = name.replace("-", "&lt;br/&gt;");
+                        String storeLabel = store.replace("-", HTML_BREAK);
+                        String nameLabel = name.replace("-", HTML_BREAK);
                         String storeNode = idS + "[(" + storeLabel + ")]";
                         String procNode = idN + "(" + nameLabel + ")";
                         boolean isJoin = name.toUpperCase().contains("JOIN");
@@ -235,8 +188,8 @@ public class KafkaStreamsControlPanel extends AbstractEachBeanControlPanel<Kafka
                 if (!topic.isEmpty()) {
                     String idN = sanitizeId(name);
                     String idT = sanitizeId(topic);
-                    String nameLabel = name.replace("-", "&lt;br/&gt;");
-                    String topicLabel = topic.replace("-", "&lt;br/&gt;");
+                    String nameLabel = name.replace("-", HTML_BREAK);
+                    String topicLabel = topic.replace("-", HTML_BREAK);
                     outside.add(idN + "(" + nameLabel + ") --> " + idT + "[" + topicLabel + "]");
                 }
                 continue;
@@ -248,17 +201,16 @@ public class KafkaStreamsControlPanel extends AbstractEachBeanControlPanel<Kafka
                 if (!targetsStr.isEmpty()) {
                     String[] targets = targetsStr.split(",");
                     String fromId = sanitizeId(currentNode);
-                    String fromLabel = currentNode.replace("-", "&lt;br/&gt;");
+                    String fromLabel = currentNode.replace("-", HTML_BREAK);
                     for (String t : targets) {
                         String target = t.trim();
                         if (!target.isEmpty() && !target.equals("none")) {
                             String toId = sanitizeId(target);
-                            String toLabel = target.replace("-", "&lt;br/&gt;");
+                            String toLabel = target.replace("-", HTML_BREAK);
                             subgraphs.add(fromId + "(" + fromLabel + ") --> " + toId + "(" + toLabel + ")");
                         }
                     }
                 }
-                continue;
             }
         }
 
@@ -277,5 +229,5 @@ public class KafkaStreamsControlPanel extends AbstractEachBeanControlPanel<Kafka
     }
 
     @ReflectiveAccess
-    public record Body(String mermaid, Map<String, Integer> counts) { }
+    public record Body(String mermaid, int subTopologies) { }
 }

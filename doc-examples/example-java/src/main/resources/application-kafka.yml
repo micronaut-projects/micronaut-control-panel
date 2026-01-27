@@ -1,21 +1,8 @@
-test-resources:
-  containers:
-    schema-registry:
-      image-name: confluentinc/cp-schema-registry:7.7.7
-      hostnames:
-        - schema-registry.host
-      exposed-ports:
-        - schema-registry.port: 8081
-      env:
-        - SCHEMA_REGISTRY_HOST_NAME: schema-registry
-        - SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'broker:29092'
-        - SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
-
 kafka:
   enabled: true
   streams:
     default:
-      schema.registry.url: http://${schema-registry.host}:${schema-registry.port}
+      schema.registry.url: http://localhost:8081
       session.timeout.ms: 10000
       internal.leave.group.on.close: true
       topology.optimization: "reuse.ktable.source.topics"
