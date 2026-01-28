@@ -125,7 +125,9 @@ public class KafkaStreamsControlPanel extends AbstractEachBeanControlPanel<Kafka
 
         for (String raw : desc.split("\\n")) {
             String line = raw.trim();
-            if (line.isEmpty()) continue;
+            if (line.isEmpty()) {
+                continue;
+            }
 
             Matcher m = subPattern.matcher(line);
             if (m.matches()) {
@@ -269,18 +271,19 @@ public class KafkaStreamsControlPanel extends AbstractEachBeanControlPanel<Kafka
         }
     }
 
-    sealed interface TopologyEvent permits SubTopology, SourceEvent, ProcessorEvent, SinkEvent, ArrowEvent {}
-
-    record SubTopology(int id) implements TopologyEvent {}
-
-    record SourceEvent(String name, List<String> topics) implements TopologyEvent {}
-
-    record ProcessorEvent(String name, List<String> stores) implements TopologyEvent {}
-
-    record SinkEvent(String name, String topic) implements TopologyEvent {}
-
-    record ArrowEvent(String from, List<String> targets) implements TopologyEvent {}
-
+    sealed interface TopologyEvent permits SubTopology, SourceEvent, ProcessorEvent, SinkEvent, ArrowEvent { }
+ 
+    record SubTopology(int id) implements TopologyEvent { }
+ 
+    record SourceEvent(String name, List<String> topics) implements TopologyEvent { }
+ 
+    record ProcessorEvent(String name, List<String> stores) implements TopologyEvent { }
+ 
+    record SinkEvent(String name, String topic) implements TopologyEvent { }
+ 
+    record ArrowEvent(String from, List<String> targets) implements TopologyEvent { }
+ 
     @ReflectiveAccess
     public record Body(String mermaid, int subTopologies) { }
 }
+
