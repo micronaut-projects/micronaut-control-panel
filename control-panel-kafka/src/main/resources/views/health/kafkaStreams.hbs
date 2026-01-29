@@ -1,48 +1,152 @@
 {{#with subDetails.details}}
   <div class="card-text">
-    {{#each details as |stream|}}
-      <h6>{{@key}}</h6>
-      {{#with stream.details}}
-        {{#each this as |thread|}}
-          <div class="mb-2">
-            <p><strong>Thread</strong>: {{@key}}</p>
-            <ul>
-              {{#if thread.threadState}}<li><strong>State</strong>: {{thread.threadState}}</li>{{/if}}
-              {{#if thread.adminClientId}}<li><strong>Admin Client</strong>: <code>{{thread.adminClientId}}</code></li>{{/if}}
-              {{#if thread.producerClientIds}}
-                <li><strong>Producers</strong>:
+    {{!-- Iterate applications under subDetails.details --}}
+    {{#each this as |app|}}
+      <div class="mb-3">
+        <h6>
+          {{@key}} —
+          {{#if app.status.name}}{{app.status.name}}{{else}}{{app.status}}{{/if}}
+        </h6>
+
+        {{!-- Scoped tree container for this application --}}
+        <div class="kstreams-tree">
+          <ul>
+            {{!-- Each thread is a top-level li with nested properties --}}
+            {{#isMap app.details}}
+              {{#each app.details as |thread|}}
+                <li data-jstree='{"type":"thread"}'>
+                  <span class="kstreams-thread-label"><strong>Thread</strong>: {{@key}}</span>
                   <ul>
-                    {{#each thread.producerClientIds}}
-                      <li><code>{{this}}</code></li>
-                    {{/each}}
+                    {{#if thread.threadState}}
+                      <li data-jstree='{"type":"prop"}'><strong>State</strong>: {{thread.threadState}}</li>
+                    {{/if}}
+
+                    {{#if thread.adminClientId}}
+                      <li data-jstree='{"type":"prop"}'><strong>Admin Client</strong>: <code style="white-space:normal;word-break:break-word;overflow-wrap:anywhere;display:inline-block;max-width:100%;font-size:0.9em;">{{thread.adminClientId}}</code></li>
+                    {{/if}}
+
+                    {{#if thread.producerClientIds}}
+                      <li data-jstree='{"type":"array"}'>
+                        <strong>Producers</strong>
+                        <ul>
+                          {{#each thread.producerClientIds}}
+                            <li data-jstree='{"type":"prop"}'><code style="white-space:normal;word-break:break-word;overflow-wrap:anywhere;display:inline-block;max-width:100%;font-size:0.9em;">{{this}}</code></li>
+                          {{/each}}
+                        </ul>
+                      </li>
+                    {{/if}}
+
+                    {{#if thread.consumerClientId}}
+                      <li data-jstree='{"type":"prop"}'><strong>Consumer</strong>: <code style="white-space:normal;word-break:break-word;overflow-wrap:anywhere;display:inline-block;max-width:100%;font-size:0.9em;">{{thread.consumerClientId}}</code></li>
+                    {{/if}}
+
+                    {{#if thread.restoreConsumerClientId}}
+                      <li data-jstree='{"type":"prop"}'><strong>Restore Consumer</strong>: <code style="white-space:normal;word-break:break-word;overflow-wrap:anywhere;display:inline-block;max-width:100%;font-size:0.9em;">{{thread.restoreConsumerClientId}}</code></li>
+                    {{/if}}
+
+                    {{#if thread.activeTasks}}
+                      <li data-jstree='{"type":"prop"}'>
+                        <strong>Active Tasks</strong>
+                        {{#with thread.activeTasks}}
+                          <ul>
+                            {{#if taskId}}
+                              <li data-jstree='{"type":"prop"}'>Task ID: <code style="white-space:normal;word-break:break-word;overflow-wrap:anywhere;display:inline-block;max-width:100%;font-size:0.9em;">{{taskId}}</code></li>
+                            {{/if}}
+                            {{#if partitions}}
+                              <li data-jstree='{"type":"array"}'>
+                                Partitions
+                                <ul>
+                                  {{#each partitions as |p|}}
+                                    <li data-jstree='{"type":"partition"}'><code style="white-space:normal;word-break:break-word;overflow-wrap:anywhere;display:inline-block;max-width:100%;font-size:0.9em;">{{p}}</code></li>
+                                  {{/each}}
+                                </ul>
+                              </li>
+                            {{/if}}
+                          </ul>
+                        {{/with}}
+                      </li>
+                    {{/if}}
+
+                    {{#if thread.threadName}}
+                      <li data-jstree='{"type":"prop"}'><strong>Thread Name</strong>: <code style="white-space:normal;word-break:break-word;overflow-wrap:anywhere;display:inline-block;max-width:100%;font-size:0.9em;">{{thread.threadName}}</code></li>
+                    {{/if}}
                   </ul>
                 </li>
-              {{/if}}
-              {{#if thread.consumerClientId}}<li><strong>Consumer</strong>: <code>{{thread.consumerClientId}}</code></li>{{/if}}
-              {{#if thread.restoreConsumerClientId}}<li><strong>Restore Consumer</strong>: <code>{{thread.restoreConsumerClientId}}</code></li>{{/if}}
-              {{#if thread.activeTasks}}
-                <li><strong>Active Tasks</strong>:
-                  {{#with thread.activeTasks}}
-                    {{#if taskId}}<div>taskId: {{taskId}}</div>{{/if}}
-                    {{#if partitions}}
-                      <div>partitions:</div>
-                      <ul>
-                        {{#each partitions}}
-                          <li>{{this}}</li>
-                        {{/each}}
-                      </ul>
-                    {{/if}}
-                  {{/with}}
-                </li>
-              {{/if}}
-              {{#if thread.standbyTasks}}
-                <li><strong>Standby Tasks</strong>: {{thread.standbyTasks}}</li>
-              {{/if}}
-              {{#if thread.threadName}}<li><strong>Thread Name</strong>: {{thread.threadName}}</li>{{/if}}
-            </ul>
-          </div>
-        {{/each}}
-      {{/with}}
+              {{/each}}
+            {{/isMap}}
+          </ul>
+        </div>
+      </div>
     {{/each}}
   </div>
 {{/with}}
+
+<script>
+  (function () {
+    if (typeof $ === 'undefined') { return; }
+
+    $(function () {
+      $('.kstreams-tree').each(function () {
+        var $tree = $(this);
+        if ($tree.data('_kstreamsInit')) {
+          return;
+        }
+
+        // Sort top-level thread <li> by their label text before jsTree init
+        var $ul = $tree.children('ul').first();
+        if ($ul.length) {
+          var lis = $ul.children('li').get();
+          lis.sort(function (a, b) {
+            var ta = $(a).find('> .kstreams-thread-label').text().toLowerCase().trim();
+            var tb = $(b).find('> .kstreams-thread-label').text().toLowerCase().trim();
+            return ta.localeCompare(tb);
+          });
+          $.each(lis, function (_, li) { $ul.append(li); });
+        }
+
+        try {
+          $tree.jstree({
+            types: {
+              "default": { "icon": "bi bi-layout-sidebar-inset" },
+              "thread": { "icon": "bi bi-diagram-3" },
+              "prop": { "icon": "bi bi-gear" },
+              "array": { "icon": "bi bi-list-ul" },
+              "partition": { "icon": "bi bi-diagram-2" }
+            },
+            plugins: ["types"]
+          });
+        } catch (e) {
+          // Leave as nested lists if jsTree is unavailable
+        }
+
+        // Post-process for abbreviations and reformatting
+        setTimeout(() => {
+          // Abbreviate long IDs with tooltip
+          $tree.find('code').each(function () {
+            var $code = $(this);
+            var full = $code.text().trim();
+            if (full.length > 30) {
+              var abbrev = full.substring(0, 20) + '...' + full.substring(full.length - 10);
+              $code.text(abbrev).attr('title', full);
+            }
+          });
+
+          // Reformat partitions: extract topic and partition, replace with short format
+          $tree.find('li[data-jstree*="partition"] code').each(function () {
+            var $code = $(this);
+            var full = $code.text().trim();
+            var pMatch = full.match(/^partition=(\\d+),\\s*topic=(.*)$/);
+            if (pMatch) {
+              var p = pMatch[1];
+              var topic = pMatch[2];
+              var short = topic.substring(0, 30) + (topic.length > 30 ? '...' : '') + ' (p=' + p + ')';
+              $code.text(short).attr('title', full);
+            }
+          });
+        }, 100); // Small delay after jsTree render
+
+        $tree.data('_kstreamsInit', true);
+      });
+    });
+  })();
+</script>
