@@ -7,7 +7,7 @@
             {{#each kafkaStreamsApp.details as |thread|}}
                 <li title="{{ thread.threadName }}">
                     <strong>Thread</strong>:
-                    <code>{{ abbreviate thread.threadName 50 }}</code> <span class="badge badge-primary">{{ thread.threadState }}
+                    <code>{{ abbreviate thread.threadName 50 }}</code> <span class="badge badge-primary">{{ thread.threadState }}</span>
                 </li>
                 <ul>
                     <li title="{{thread.adminClientId}}"><strong>Admin Client ID</strong>: <code>{{ abbreviate thread.adminClientId 40 }}</code></li>
