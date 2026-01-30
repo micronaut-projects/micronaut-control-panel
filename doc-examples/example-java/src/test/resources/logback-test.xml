@@ -14,4 +14,7 @@
     </root>
     <logger name="io.micronaut.controlpanel" level="debug" />
     <logger name="example" level="debug" />
+
+    <logger name="org.apache.kafka" level="warn" />
+    <logger name="io.confluent.kafka" level="warn" />
 </configuration>

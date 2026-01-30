@@ -11,7 +11,7 @@ import org.apache.kafka.clients.admin.NewTopic;
 public class KafkaTopicsFactory {
 
     public static final String KAFKA_TOPIC_WORDS = "words";
-    public static final String KAFKA_TOPIC_COUNTS = "subTopologies";
+    public static final String KAFKA_TOPIC_COUNTS = "counts";
 
     @Bean
     NewTopic words() {
