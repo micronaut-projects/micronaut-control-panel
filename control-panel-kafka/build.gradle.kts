@@ -16,8 +16,6 @@ dependencies {
     api(projects.micronautControlPanelCore)
     implementation(mnReactor.micronaut.reactor)
 
-    // compileOnly to avoid forcing kafka dependency on consumers
-    // Use reflection-free detection of annotations, avoid direct hard deps
     compileOnly(mnKafka.micronaut.kafka)
     compileOnly(mnKafka.micronaut.kafka.streams)
 

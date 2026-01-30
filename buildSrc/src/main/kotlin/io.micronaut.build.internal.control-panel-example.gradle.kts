@@ -36,6 +36,16 @@ tasks.withType<Test> {
     dependsOn(tasks.named("playwrightInstall"))
 }
 
+configurations.named("nativeImageTestClasspath") {
+    resolutionStrategy {
+        exclude(group = "io.micronaut.cache", module = "micronaut-cache-infinispan")
+        exclude(group = "io.micronaut.cache", module = "micronaut-cache-hazelcast")
+        exclude(group = "io.micronaut.kafka")
+        exclude(group = "org.apache.kafka")
+        exclude(group = "io.confluent")
+    }
+}
+
 graalvmNative {
     agent {
         enabled.set(false)
