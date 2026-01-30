@@ -18,6 +18,7 @@ package io.micronaut.controlpanel.panels.kafka;
 import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
 import io.micronaut.context.annotation.EachBean;
 import io.micronaut.context.annotation.Parameter;
+import io.micronaut.context.annotation.Requires;
 import io.micronaut.controlpanel.core.AbstractEachBeanControlPanel;
 import io.micronaut.controlpanel.core.ControlPanel;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
@@ -36,6 +37,7 @@ import java.util.regex.Pattern;
  * A per-streams control panel that renders the Kafka Streams topology for each configured builder.
  */
 @EachBean(ConfiguredStreamBuilder.class)
+@Requires(beans = ConfiguredStreamBuilder.class)
 public class KafkaStreamsControlPanel extends AbstractEachBeanControlPanel<KafkaStreamsControlPanel.Body> {
 
     public static final String NAME = "kafka-streams";
@@ -277,17 +279,17 @@ public class KafkaStreamsControlPanel extends AbstractEachBeanControlPanel<Kafka
     }
 
     sealed interface TopologyEvent permits SubTopology, SourceEvent, ProcessorEvent, SinkEvent, ArrowEvent { }
- 
+
     record SubTopology(int id) implements TopologyEvent { }
- 
+
     record SourceEvent(String name, List<String> topics) implements TopologyEvent { }
- 
+
     record ProcessorEvent(String name, List<String> stores) implements TopologyEvent { }
- 
+
     record SinkEvent(String name, String topic) implements TopologyEvent { }
- 
+
     record ArrowEvent(String from, List<String> targets) implements TopologyEvent { }
- 
+
     @ReflectiveAccess
     public record Body(String mermaid, int subTopologies) { }
 }

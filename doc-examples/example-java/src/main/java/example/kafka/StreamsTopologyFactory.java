@@ -31,6 +31,7 @@ import java.util.stream.Stream;
  */
 @Factory
 @Requires(property = "kafka.bootstrap.servers")
+@Requires(beans = ConfiguredStreamBuilder.class)
 public class StreamsTopologyFactory {
 
     private static final String SOURCE_TOPIC_PRODUCT_DESCRIPTION = "product_description_v1";
