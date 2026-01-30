@@ -131,8 +131,13 @@ public class KafkaStreamsControlPanel extends AbstractEachBeanControlPanel<Kafka
 
             Matcher m = subPattern.matcher(line);
             if (m.matches()) {
-                events.add(new SubTopology(Integer.parseInt(m.group(1))));
-                currentNode = null;
+                String idText = m.group(1);
+                try {
+                    events.add(new SubTopology(Integer.parseInt(idText)));
+                    currentNode = null;
+                } catch (NumberFormatException e) {
+                    // Skip invalid sub-topology ID
+                }
                 continue;
             }
 
