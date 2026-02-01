@@ -41,6 +41,9 @@ configurations.named("nativeImageTestClasspath") {
         exclude(group = "io.micronaut.kafka")
         exclude(group = "org.apache.kafka")
         exclude(group = "io.confluent")
+        exclude(group = "com.oracle.database.jdbc")
+        exclude(group = "io.micronaut.sql")
+        exclude(group = "org.postgresql")
     }
 }
 

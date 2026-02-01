@@ -19,7 +19,7 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @UsePlaywright(ControlPanelE2ETest.HeadlessBrowserOptions.class)
-@MicronautTest(environments = "kafka")
+@MicronautTest(environments = {"kafka", "oracle"})
 class ControlPanelE2ETest extends AbstractE2ETest {
 
     @Test
