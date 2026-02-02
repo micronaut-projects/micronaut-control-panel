@@ -10,8 +10,19 @@
 package io.micronaut.controlpanel.panels.kafka;
 
 import org.junit.jupiter.api.Assertions;
-
 import org.junit.jupiter.api.Test;
+import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.streams.Topology;
+import org.apache.kafka.streams.TopologyDescription;
+import org.apache.kafka.streams.processor.RecordContext;
+import org.apache.kafka.streams.processor.TopicNameExtractor;
+import org.apache.kafka.streams.processor.api.Processor;
+import org.apache.kafka.streams.processor.api.ProcessorContext;
+import org.apache.kafka.streams.processor.api.ProcessorSupplier;
+import org.apache.kafka.streams.processor.api.Record;
+import org.apache.kafka.streams.state.KeyValueStore;
+import org.apache.kafka.streams.state.StoreBuilder;
+import org.apache.kafka.streams.state.Stores;
 
 final class KafkaStreamsControlPanelTest {
 
@@ -22,8 +33,9 @@ final class KafkaStreamsControlPanelTest {
     }
 
     @Test
-    void testGenerateMermaidFromDescriptionBlank() {
-        String result = KafkaStreamsControlPanel.generateMermaidFromDescription("   \n\n\t  ");
+    void testGenerateMermaidFromDescriptionEmptyTopology() {
+        Topology topology = new Topology();
+        String result = KafkaStreamsControlPanel.generateMermaidFromDescription(topology.describe());
         Assertions.assertEquals("flowchart LR\nEMPTY[No topology detected]", result);
     }
 
@@ -59,7 +71,6 @@ final class KafkaStreamsControlPanelTest {
     }
 
     private static String tokenQuoted(String token) { return java.util.regex.Pattern.quote(token); }
-    private static String quotedLabel(String s) { return tokenQuoted(labelWithBreaks(s)); }
 
     private static String edgeRegexTopicToNode(String topic, String node) {
         return tokenQuoted("[" + labelWithBreaks(topic) + "]") + ".*" + tokenQuoted("(" + labelWithBreaks(node) + ")");
@@ -77,12 +88,6 @@ final class KafkaStreamsControlPanelTest {
         return tokenQuoted("(" + labelWithBreaks(node) + ")") + ".*" + tokenQuoted("[(" + labelWithBreaks(store) + ")]");
     }
 
-    private static String edgeRegexStoreToNode(String store, String node) {
-        return tokenQuoted("[(" + labelWithBreaks(store) + ")]") + ".*" + tokenQuoted("(" + labelWithBreaks(node) + ")");
-    }
-
-
-
     // Optional helper to assert absence
     private static void assertNotContainsNormalized(String full, String unexpected) {
         String nf = normalize(full);
@@ -90,21 +95,12 @@ final class KafkaStreamsControlPanelTest {
         Assertions.assertFalse(nf.contains(nu), () -> "Unexpected snippet was found but should not be.\nUnexpected:\n" + nu + "\nActual:\n" + nf);
     }
 
-    // Build a simple edge snippet using labels (already labelWithBreaks converted)
-    private static String edgeSnippet(String fromLabel, String toLabel) {
-        return labelWithBreaks(fromLabel) + ") --> " + labelWithBreaks(toLabel) + ")";
-    }
-
     @Test
     void testGenerateMermaidSimpleTopology() {
-        String desc = String.join("\n",
-                "Topologies:",
-                "Sub-topology: 0",
-                "Source: KSTREAM-SOURCE-0 (topics: [input-topic])",
-                "--> KSTREAM-SINK-0",
-                "Sink: KSTREAM-SINK-0 (topic: output-topic)"
-        );
-        String mermaid = KafkaStreamsControlPanel.generateMermaidFromDescription(desc);
+        Topology topology = new Topology();
+        topology.addSource("KSTREAM-SOURCE-0", "input-topic");
+        topology.addSink("KSTREAM-SINK-0", "output-topic", "KSTREAM-SOURCE-0");
+        String mermaid = KafkaStreamsControlPanel.generateMermaidFromDescription(topology.describe());
 
         assertMatchesRegexNormalized(mermaid, edgeRegexTopicToNode("input-topic", "KSTREAM-SOURCE-0"));
         assertMatchesRegexNormalized(mermaid, edgeRegexNodeToNode("KSTREAM-SOURCE-0", "KSTREAM-SINK-0"));
@@ -114,92 +110,104 @@ final class KafkaStreamsControlPanelTest {
 
     @Test
     void testGenerateMermaidWithStores() {
-        String desc = String.join("\n",
-                "Topologies:",
-                "Sub-topology: 0",
-                "Source: KSTREAM-SOURCE-0 (topics: [input])",
-                "--> KSTREAM-TRANSFORM-0",
-                "Processor: KSTREAM-TRANSFORM-0 (stores: [state-store])",
-                "--> KSTREAM-SINK-0",
-                "Sink: KSTREAM-SINK-0 (topic: output)"
-        );
-        String mermaid = KafkaStreamsControlPanel.generateMermaidFromDescription(desc);
+        Topology topology = new Topology();
+        topology.addSource("KSTREAM-SOURCE-0", "input");
+        addProcessor(topology, "KSTREAM-TRANSFORM-0", "KSTREAM-SOURCE-0");
+        addStateStore(topology, "state-store", "KSTREAM-TRANSFORM-0");
+        topology.addSink("KSTREAM-SINK-0", "output", "KSTREAM-TRANSFORM-0");
+        String mermaid = KafkaStreamsControlPanel.generateMermaidFromDescription(topology.describe());
 
         assertMatchesRegexNormalized(mermaid, edgeRegexNodeToStore("KSTREAM-TRANSFORM-0", "state-store"));
     }
 
     @Test
     void testGenerateMermaidJoin() {
-        String desc = String.join("\n",
-                "Topologies:",
-                "Sub-topology: 0",
-                "Source: KSTREAM-SOURCE-0 (topics: [left])",
-                "Source: KSTREAM-SOURCE-1 (topics: [right])",
-                "--> KSTREAM-JOIN-0",
-                "Processor: KSTREAM-JOIN-0 (stores: [join-store])",
-                "--> KSTREAM-SINK-0",
-                "Sink: KSTREAM-SINK-0 (topic: output)"
-        );
-        String mermaid = KafkaStreamsControlPanel.generateMermaidFromDescription(desc);
+        Topology topology = new Topology();
+        topology.addSource("KSTREAM-SOURCE-0", "left");
+        topology.addSource("KSTREAM-SOURCE-1", "right");
+        addProcessor(topology, "KSTREAM-JOIN-0", "KSTREAM-SOURCE-0", "KSTREAM-SOURCE-1");
+        addStateStore(topology, "join-store", "KSTREAM-JOIN-0");
+        topology.addSink("KSTREAM-SINK-0", "output", "KSTREAM-JOIN-0");
+        String mermaid = KafkaStreamsControlPanel.generateMermaidFromDescription(topology.describe());
 
         assertMatchesRegexNormalized(mermaid, edgeRegexNodeToNode("join-store", "KSTREAM-JOIN-0"));
     }
 
     @Test
-    void testGenerateMermaidArrowToNone() {
-        String desc = String.join("\n",
-                "Topologies:",
-                "Sub-topology: 0",
-                "Processor: KSTREAM-PROC-0 (stores: [])",
-                "--> none"
-        );
-        String mermaid = KafkaStreamsControlPanel.generateMermaidFromDescription(desc);
-        assertNotContainsNormalized(mermaid, ") --> none(");
+    void testGenerateMermaidProcessorWithoutSuccessors() {
+        Topology topology = new Topology();
+        topology.addSource("KSTREAM-SOURCE-0", "input");
+        addProcessor(topology, "KSTREAM-PROC-0", "KSTREAM-SOURCE-0");
+        String mermaid = KafkaStreamsControlPanel.generateMermaidFromDescription(topology.describe());
+        assertNotContainsNormalized(mermaid, labelWithBreaks("KSTREAM-PROC-0") + ") -->");
     }
 
     @Test
     void testComputeSubTopologiesTwoSubs() {
-        String desc = String.join("\n",
-                "Topologies:",
-                "Sub-topology: 0",
-                "Sub-topology: 1"
-        );
-        int count = KafkaStreamsControlPanel.computeSubTopologies(desc);
+        Topology topology = new Topology();
+        topology.addSource("SOURCE-0", "in-0");
+        topology.addSink("SINK-0", "out-0", "SOURCE-0");
+        topology.addSource("SOURCE-1", "in-1");
+        topology.addSink("SINK-1", "out-1", "SOURCE-1");
+        TopologyDescription description = topology.describe();
+        int count = KafkaStreamsControlPanel.computeSubTopologies(description);
         Assertions.assertEquals(2, count);
 
-        String mermaid = KafkaStreamsControlPanel.generateMermaidFromDescription(desc);
+        String mermaid = KafkaStreamsControlPanel.generateMermaidFromDescription(description);
         assertContainsNormalized(mermaid, "subgraph sub_0 [\"Sub-topology: 0\"]");
         assertContainsNormalized(mermaid, "subgraph sub_1 [\"Sub-topology: 1\"]");
     }
 
     @Test
     void testSinkWithEmptyTopicDoesNotRenderEdge() {
-        String desc = String.join("\n",
-                "Topologies:",
-                "Sub-topology: 0",
-                "Source: KSTREAM-SOURCE-0 (topics: [in])",
-                "--> KSTREAM-SINK-0",
-                "Sink: KSTREAM-SINK-0 (topic: )"
-        );
-        String mermaid = KafkaStreamsControlPanel.generateMermaidFromDescription(desc);
+        Topology topology = new Topology();
+        topology.addSource("KSTREAM-SOURCE-0", "in");
+        topology.addSink("KSTREAM-SINK-0", new TopicNameExtractor<Object, Object>() {
+            @Override
+            public String extract(Object key, Object value, RecordContext recordContext) {
+                return "ignored";
+            }
+        }, "KSTREAM-SOURCE-0");
+        String mermaid = KafkaStreamsControlPanel.generateMermaidFromDescription(topology.describe());
         Assertions.assertFalse(mermaid.contains(") --> ["));
     }
 
     @Test
     void testHyphenLabelBreaks() {
-        String desc = String.join("\n",
-                "Topologies:",
-                "Sub-topology: 0",
-                "Source: KSTREAM-SOURCE-0 (topics: [a-b])",
-                "--> KSTREAM-TRANSFORM-1",
-                "Processor: KSTREAM-TRANSFORM-1 (stores: [])",
-                "--> KSTREAM-SINK-1",
-                "Sink: KSTREAM-SINK-1 (topic: out-put)"
-        );
-        String mermaid = KafkaStreamsControlPanel.generateMermaidFromDescription(desc);
+        Topology topology = new Topology();
+        topology.addSource("KSTREAM-SOURCE-0", "a-b");
+        addProcessor(topology, "KSTREAM-TRANSFORM-1", "KSTREAM-SOURCE-0");
+        topology.addSink("KSTREAM-SINK-1", "out-put", "KSTREAM-TRANSFORM-1");
+        String mermaid = KafkaStreamsControlPanel.generateMermaidFromDescription(topology.describe());
 
         assertMatchesRegexNormalized(mermaid, edgeRegexTopicToNode("a-b", "KSTREAM-SOURCE-0"));
         assertMatchesRegexNormalized(mermaid, edgeRegexNodeToNode("KSTREAM-SOURCE-0", "KSTREAM-TRANSFORM-1"));
         assertMatchesRegexNormalized(mermaid, edgeRegexNodeToTopic("KSTREAM-SINK-1", "out-put"));
+    }
+
+    private static void addProcessor(Topology topology, String name, String... parents) {
+        ProcessorSupplier<Object, Object, Object, Object> supplier = () -> new Processor<Object, Object, Object, Object>() {
+            @Override
+            public void init(ProcessorContext<Object, Object> context) {
+            }
+
+            @Override
+            public void process(Record<Object, Object> record) {
+            }
+
+            @Override
+            public void close() {
+            }
+        };
+        topology.addProcessor(name, supplier, parents);
+    }
+
+    private static void addStateStore(Topology topology, String storeName, String... processors) {
+        StoreBuilder<KeyValueStore<String, String>> storeBuilder = Stores.keyValueStoreBuilder(
+                Stores.inMemoryKeyValueStore(storeName),
+                Serdes.String(),
+                Serdes.String()
+        );
+        topology.addStateStore(storeBuilder, processors);
     }
 }
