@@ -1,0 +1,45 @@
+{{#with subDetails.details}}
+    <p class="card-text">
+    {{#each details as |kafkaStreamsApp|}}
+        <p><strong>Kafka Streams</strong>: <code>{{@key}}</code></p>
+        {{#eq subDetails.status.name 'UP'}}
+            <ul>
+            {{#each kafkaStreamsApp.details as |thread|}}
+                <li title="{{ thread.threadName }}">
+                    <strong>Thread</strong>:
+                    <code>{{ abbreviate thread.threadName 50 }}</code> <span class="badge badge-primary">{{ thread.threadState }}</span>
+                </li>
+                <ul>
+                    <li title="{{thread.adminClientId}}"><strong>Admin Client ID</strong>: <code>{{ abbreviate thread.adminClientId 40 }}</code></li>
+                    <li title="{{thread.consumerClientId}}"><strong>Consumer Client ID</strong>: <code>{{ abbreviate thread.consumerClientId 40 }}</code></li>
+                    <li title="{{thread.restoreConsumerClientId}}"><strong>Restore Consumer Client ID</strong>: <code>{{ abbreviate thread.restoreConsumerClientId 40 }}</code></li>
+                    <li><strong>Producer Client IDs</strong>:</li>
+                    <ul>
+                        {{#each thread.producerClientIds as |pci| }}
+                            <li title="{{pci}}"><code>{{abbreviate pci 30}}</code></li>
+                        {{/each}}
+                    </ul>
+                    <li><strong>Stand-by tasks</strong>:</li>
+                    {{#if thread.standbyTasks.taskId }}
+                        <ul>
+                            <li><strong>Task ID</strong>: {{ thread.standbyTasks.taskId }}</li>
+                            <li><strong>Partition/topic</strong>: {{ size thread.standbyTasks.partitions }}</li>
+                        </ul>
+                    {{/if}}
+                    <li><strong>Active tasks</strong>:</li>
+                    {{#if thread.activeTasks.taskId }}
+                        <ul>
+                            <li><strong>Task ID</strong>: {{ thread.activeTasks.taskId }}</li>
+                            <li><strong>Partition/topic</strong>: {{ size thread.activeTasks.partitions }}</li>
+                        </ul>
+                    {{/if}}
+                </ul>
+            {{/each}}
+            </ul>
+        {{/eq}}
+        {{#eq subDetails.status.name 'DOWN'}}
+            <p>Kafka Streams processor appears to be down</p>
+        {{/eq}}
+    {{/each}}
+    </p>
+{{/with}}

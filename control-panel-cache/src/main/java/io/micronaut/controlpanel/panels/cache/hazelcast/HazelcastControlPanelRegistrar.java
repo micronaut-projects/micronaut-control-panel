@@ -24,7 +24,11 @@ import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.RuntimeBeanDefinition;
 import io.micronaut.context.annotation.Context;
 import io.micronaut.context.annotation.Requires;
+import io.micronaut.controlpanel.core.AbstractControlPanel;
+import io.micronaut.controlpanel.core.AbstractEachBeanControlPanel;
+import io.micronaut.controlpanel.core.ControlPanel;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
+import io.micronaut.controlpanel.panels.cache.AbstractCacheControlPanel;
 import io.micronaut.core.type.Argument;
 import io.micronaut.inject.qualifiers.Qualifiers;
 import jakarta.inject.Named;
@@ -75,9 +79,12 @@ public class HazelcastControlPanelRegistrar implements DistributedObjectListener
         var controlPanel = new HazelcastSyncCacheControlPanel(syncCache, configuration);
 
         LOG.debug("Created HazelcastSyncCacheControlPanel for {}", cacheName);
+        var panelArgument = Argument.of(HazelcastSyncCacheControlPanel.class);
         beanContext.registerBeanDefinition(RuntimeBeanDefinition
-            .builder(Argument.of(HazelcastSyncCacheControlPanel.class), () -> controlPanel)
+            .builder(panelArgument, () -> controlPanel)
             .singleton(true)
+            .exposedTypes(AbstractCacheControlPanel.class, AbstractEachBeanControlPanel.class, AbstractControlPanel.class, ControlPanel.class)
+            .typeArguments(AbstractCacheControlPanel.class, panelArgument)
             .qualifier(Qualifiers.byName(NAME + "-" + cacheName))
             .build());
     }

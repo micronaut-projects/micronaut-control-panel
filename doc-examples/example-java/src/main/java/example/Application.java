@@ -31,6 +31,8 @@ public class Application {
             if (!NativeImageUtils.inImageCode()) {
                 builder.defaultEnvironments("hazelcast");
                 builder.defaultEnvironments("infinispan");
+                builder.defaultEnvironments("oracle");
+                builder.defaultEnvironments("kafka");
             }
         }
     }

@@ -1,0 +1,24 @@
+{
+  "type": "record",
+  "name": "ProductVariantPrice",
+  "namespace": "dev.thriving.poc.ecommerce.avro",
+  "doc": "Provides pricing information for a product variant, including discount details in a nested discount record.",
+  "fields": [
+    { "name": "variantSku", "type": "string", "doc": "Primary key for the price record corresponding to the variant." },
+    { "name": "currency", "type": "string", "doc": "Currency code (ISO 4217 format, e.g., USD, EUR)." },
+    { "name": "price", "type": "double", "doc": "Base price of the product variant." },
+    {
+      "name": "discount",
+      "type": {
+        "type": "record",
+        "name": "Discount",
+        "fields": [
+          { "name": "discountPrice", "type": [ "null", "double" ], "default": null, "doc": "Discounted price if applicable." },
+          { "name": "validFrom", "type": [ "null", { "type": "long", "logicalType": "timestamp-millis" } ], "default": null, "doc": "Discount validity start time." },
+          { "name": "validTo", "type": [ "null", { "type": "long", "logicalType": "timestamp-millis" } ], "default": null, "doc": "Discount validity end time." }
+        ]
+      },
+      "doc": "Discount information for the product variant."
+    }
+  ]
+}

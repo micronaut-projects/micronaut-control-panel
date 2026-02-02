@@ -35,8 +35,9 @@ The cache control panel is automatically enabled when you include the `micronaut
 ----
 micronaut:
   control-panel:
-    cache:
-      enabled: false
+    panels:
+        cache:
+          enabled: false
 ----
 
 Individual cache panels can also be disabled by setting the cache-specific property:

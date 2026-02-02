@@ -33,9 +33,6 @@ ehcache:
       enabled: true
 
 datasources:
-  my-oracle:
-    db-type: oracle
-    driver-class-name: oracle.jdbc.OracleDriver
   my-postgres:
     db-type: postgres
     driver-class-name: org.postgresql.Driver
@@ -47,10 +44,6 @@ test:
   api-key: abc123
   token: xyz789
   normal-config: some-value
-netty:
-  default:
-    allocator:
-      max-order: 3
 endpoints:
   all:
     enabled: true
@@ -63,4 +56,6 @@ endpoints:
 infinispan:
   enabled: false
 hazelcast:
+  enabled: false
+kafka:
   enabled: false

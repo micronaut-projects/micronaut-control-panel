@@ -1,0 +1,41 @@
+{
+  "type": "record",
+  "name": "ProductVariant",
+  "namespace": "dev.thriving.poc.ecommerce.avro",
+  "doc": "Full context product variant event, flattened from variant detail, price, and stock data streams.",
+  "fields": [
+    { "name": "variantSku", "type": "string", "doc": "Primary key for the product variant." },
+    { "name": "productSku", "type": "string", "doc": "Identifier for the product this variant belongs to." },
+    {
+      "name": "variant",
+      "type": { "type": "map", "values": "string" },
+      "doc": "Map that uniquely identifies the variant (e.g., {\"colour\": \"black\", \"size\": \"M\"})."
+    },
+    { "name": "currency", "type": "string", "doc": "Currency code (ISO 4217 format, e.g., USD, EUR)." },
+    { "name": "price", "type": "double", "doc": "Base price of the product variant." },
+    {
+      "name": "discount",
+      "type": {
+        "type": "record",
+        "name": "Discount",
+        "fields": [
+          { "name": "discountPrice", "type": [ "null", "double" ], "default": null, "doc": "Discounted price if applicable." },
+          { "name": "validFrom", "type": [ "null", { "type": "long", "logicalType": "timestamp-millis" } ], "default": null, "doc": "Discount validity start time." },
+          { "name": "validTo", "type": [ "null", { "type": "long", "logicalType": "timestamp-millis" } ], "default": null, "doc": "Discount validity end time." }
+        ]
+      },
+      "doc": "Discount information for the product variant."
+    },
+    { "name": "stockLevel", "type": "int", "doc": "Current stock level for the product variant." },
+    {
+      "name": "availabilityStatus",
+      "type": {
+        "type": "enum",
+        "name": "AvailabilityStatus",
+        "symbols": ["IN_STOCK", "OUT_OF_STOCK", "PREORDER"]
+      },
+      "doc": "Availability status of the product variant."
+    },
+    { "name": "lastUpdated", "type": { "type": "long", "logicalType": "timestamp-millis" }, "doc": "Timestamp when the stock information was last updated." }
+  ]
+}

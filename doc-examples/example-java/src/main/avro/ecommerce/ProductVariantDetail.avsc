@@ -1,0 +1,15 @@
+{
+  "type": "record",
+  "name": "ProductVariantDetail",
+  "namespace": "dev.thriving.poc.ecommerce.avro",
+  "doc": "Defines product variant details. Contains unique variant identification as a map.",
+  "fields": [
+    { "name": "variantSku", "type": "string", "doc": "Primary key for the variant detail." },
+    { "name": "productSku", "type": "string", "doc": "Identifier for the product this variant belongs to." },
+    {
+      "name": "variant",
+      "type": { "type": "map", "values": "string" },
+      "doc": "Map that identifies the unique variant (e.g., {\"colour\": \"black\", \"size\": \"M\"} or {\"storage\": \"32GB\"})."
+    }
+  ]
+}

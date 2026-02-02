@@ -26,6 +26,8 @@ import io.micronaut.core.io.scan.ClassPathResourceLoader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.function.Function;
 
@@ -52,7 +54,10 @@ public class ControlPanelContextConfigurer implements ApplicationContextConfigur
                 accumulator.putAll(properties);
                 return accumulator;
             }).orElse(new Properties());
-        var propertySource = new MapPropertySource(PROPERTY_SOURCE_NAME, result) {
+        Map<String, Object> map = new HashMap<>();
+        result.stringPropertyNames().forEach(key -> map.put(key, result.get(key)));
+
+        var propertySource = new MapPropertySource(PROPERTY_SOURCE_NAME, map) {
             @Override
             public int getOrder() {
                 return SystemPropertiesPropertySource.POSITION + 50;

@@ -1,0 +1,4 @@
+datasources:
+  my-oracle:
+    db-type: oracle
+    driver-class-name: oracle.jdbc.OracleDriver

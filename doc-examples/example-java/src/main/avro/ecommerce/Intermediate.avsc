@@ -1,0 +1,30 @@
+[
+  {
+    "type": "record",
+    "name": "ProductAttributeList",
+    "namespace": "dev.thriving.poc.ecommerce.avro",
+    "doc": "Intermediate type: list of attributes",
+    "fields": [
+      { "name": "attributes", "type":{ "type": "array", "items": "ProductAttribute" } }
+    ]
+  },
+  {
+    "type": "record",
+    "name": "ProductVariantPriceAndStock",
+    "namespace": "dev.thriving.poc.ecommerce.avro",
+    "doc": "Intermediate type: tuple of price and stock",
+    "fields": [
+      { "name": "price", "type": "ProductVariantPrice" },
+      { "name": "stock", "type": "ProductVariantStock" }
+    ]
+  },
+  {
+    "type": "record",
+    "name": "ProductVariantList",
+    "namespace": "dev.thriving.poc.ecommerce.avro",
+    "doc": "Intermediate type: list of variants",
+    "fields": [
+      { "name": "variants", "type":{ "type": "array", "items": "ProductVariant" } }
+    ]
+  }
+]

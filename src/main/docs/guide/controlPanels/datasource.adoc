@@ -28,6 +28,7 @@ You can disable it by setting:
 ----
 micronaut:
   control-panel:
-    datasource:
-      enabled: false
+    panels:
+        datasource:
+          enabled: false
 ----

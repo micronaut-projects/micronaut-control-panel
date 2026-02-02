@@ -1,0 +1,20 @@
+{
+  "type": "record",
+  "name": "ProductVariantStock",
+  "namespace": "dev.thriving.poc.ecommerce.avro",
+  "doc": "Provides stock and availability information for a product variant.",
+  "fields": [
+    { "name": "variantSku", "type": "string", "doc": "Primary key for the stock record, corresponding to the variant." },
+    { "name": "stockLevel", "type": "int", "doc": "Current stock level." },
+    {
+      "name": "availabilityStatus",
+      "type": {
+        "type": "enum",
+        "name": "AvailabilityStatus",
+        "symbols": ["IN_STOCK", "OUT_OF_STOCK", "PREORDER"]
+      },
+      "doc": "Availability status of the variant."
+    },
+    { "name": "lastUpdated", "type": { "type": "long", "logicalType": "timestamp-millis" }, "doc": "Timestamp when the stock information was last updated." }
+  ]
+}

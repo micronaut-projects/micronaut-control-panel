@@ -1,0 +1,15 @@
+{
+  "type": "record",
+  "name": "ProductDescription",
+  "namespace": "dev.thriving.poc.ecommerce.avro",
+  "doc": "Provides basic product information such as name, description, and category.",
+  "fields": [
+    { "name": "productSku", "type": "string", "doc": "Primary key for the product." },
+    { "name": "name", "type": "string", "doc": "Product name." },
+    { "name": "description", "type": "string", "doc": "Detailed description of the product." },
+    { "name": "category", "type": "string", "doc": "Product category." },
+    { "name": "brand", "type": [ "null", "string" ], "default": null, "doc": "Product brand." },
+    { "name": "createdAt", "type": { "type": "long", "logicalType": "timestamp-millis" }, "doc": "Timestamp when the product was created." },
+    { "name": "updatedAt", "type": { "type": "long", "logicalType": "timestamp-millis" }, "doc": "Timestamp when the product was last updated." }
+  ]
+}

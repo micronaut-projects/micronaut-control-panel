@@ -8,7 +8,7 @@ pluginManagement {
 }
 
 plugins {
-    id("io.micronaut.build.shared.settings") version "8.0.0-M12"
+    id("io.micronaut.build.shared.settings") version "8.0.0-M14"
 }
 
 rootProject.name = "control-panel-parent"
@@ -20,6 +20,7 @@ include("control-panel-object-storage")
 include("control-panel-cache")
 include("control-panel-datasource")
 include("control-panel-ui")
+include("control-panel-kafka")
 
 include("doc-examples:example-java")
 
@@ -38,4 +39,5 @@ configure<MicronautBuildSettingsExtension> {
     importMicronautCatalog("micronaut-data")
     importMicronautCatalog("micronaut-testresources")
     importMicronautCatalog("micronaut-openapi")
+    importMicronautCatalog("micronaut-kafka")
 }

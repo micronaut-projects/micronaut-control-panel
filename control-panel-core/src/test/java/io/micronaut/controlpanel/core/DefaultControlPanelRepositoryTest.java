@@ -25,6 +25,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import jakarta.inject.Singleton;
 
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class DefaultControlPanelRepositoryTest {
@@ -33,7 +35,7 @@ class DefaultControlPanelRepositoryTest {
 
     @BeforeAll
     static void setupContext() {
-        ctx = ApplicationContext.run(java.util.Map.of("endpoints.all.enabled", true));
+        ctx = ApplicationContext.run(Map.of("endpoints.all.enabled", true));
     }
 
     @AfterAll
