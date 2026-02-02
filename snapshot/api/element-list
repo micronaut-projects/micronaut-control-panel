@@ -1,11 +1,13 @@
 io.micronaut.controlpanel.core
 io.micronaut.controlpanel.core.config
 io.micronaut.controlpanel.core.panels
+io.micronaut.controlpanel.info
 io.micronaut.controlpanel.panels.cache
 io.micronaut.controlpanel.panels.cache.hazelcast
 io.micronaut.controlpanel.panels.cache.infinispan
 io.micronaut.controlpanel.panels.datasource
 io.micronaut.controlpanel.panels.datasource.model
+io.micronaut.controlpanel.panels.kafka
 io.micronaut.controlpanel.panels.management
 io.micronaut.controlpanel.panels.management.beans
 io.micronaut.controlpanel.panels.objectstorage

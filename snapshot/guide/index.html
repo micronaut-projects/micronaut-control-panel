@@ -105,6 +105,8 @@
         
         <div class="toc-item" style="margin-left:10px" id="toc-item-datasource"><a href="#datasource"><strong>4.5</strong><span>Datasource</span></a></div>
         
+        <div class="toc-item" style="margin-left:10px" id="toc-item-kafka"><a href="#kafka"><strong>4.6</strong><span>Kafka Streams</span></a></div>
+        
         <div class="toc-item" style="margin-left:0px" id="toc-item-custom"><a href="#custom"><strong>5</strong><span>Creating Custom Control Panels</span></a></div>
         
         <div class="toc-item" style="margin-left:0px" id="toc-item-repository"><a href="#repository"><strong>6</strong><span>Repository</span></a></div>
@@ -513,31 +515,35 @@ Micronaut Endpoints require having the <code>io.micronaut:micronaut-management</
 <div class="content">
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">micronaut.control-panel.cache.enabled=false</code></pre>
+<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">micronaut.control-panel.panels.cache.enabled=false</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">micronaut:
   control-panel:
-    cache:
-      enabled: false</code></pre>
+    panels:
+        cache:
+          enabled: false</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[micronaut]
   [micronaut.control-panel]
-    [micronaut.control-panel.cache]
-      enabled=false</code></pre>
+    [micronaut.control-panel.panels]
+      [micronaut.control-panel.panels.cache]
+        enabled=false</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-groovy-config hljs" data-lang="groovy-config">micronaut {
   controlPanel {
-    cache {
-      enabled = false
+    panels {
+      cache {
+        enabled = false
+      }
     }
   }
 }</code></pre>
@@ -548,8 +554,10 @@ Micronaut Endpoints require having the <code>io.micronaut:micronaut-management</
 <pre class="highlightjs highlight"><code class="language-hocon hljs" data-lang="hocon">{
   micronaut {
     control-panel {
-      cache {
-        enabled = false
+      panels {
+        cache {
+          enabled = false
+        }
       }
     }
   }
@@ -561,8 +569,10 @@ Micronaut Endpoints require having the <code>io.micronaut:micronaut-management</
 <pre class="highlightjs highlight"><code class="language-json-config hljs" data-lang="json-config">{
   "micronaut": {
     "control-panel": {
-      "cache": {
-        "enabled": false
+      "panels": {
+        "cache": {
+          "enabled": false
+        }
       }
     }
   }
@@ -1367,14 +1377,158 @@ You can disable it by setting:</p>
 <div class="content">
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">micronaut.control-panel.datasource.enabled=false</code></pre>
+<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">micronaut.control-panel.panels.datasource.enabled=false</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">micronaut:
   control-panel:
-    datasource:
+    panels:
+        datasource:
+          enabled: false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[micronaut]
+  [micronaut.control-panel]
+    [micronaut.control-panel.panels]
+      [micronaut.control-panel.panels.datasource]
+        enabled=false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-groovy-config hljs" data-lang="groovy-config">micronaut {
+  controlPanel {
+    panels {
+      datasource {
+        enabled = false
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-hocon hljs" data-lang="hocon">{
+  micronaut {
+    control-panel {
+      panels {
+        datasource {
+          enabled = false
+        }
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json-config hljs" data-lang="json-config">{
+  "micronaut": {
+    "control-panel": {
+      "panels": {
+        "datasource": {
+          "enabled": false
+        }
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<h2 id="kafka"><a class="anchor" href="#kafka"></a>4.6 Kafka Streams</h2>
+
+<div class='contribute-btn'>
+    <button type='button' class='btn btn-default' onclick='window.location.href="https://github.com/micronaut-projects/micronaut-control-panel/edit/2.0.x/src/main/docs/guide/controlPanels/kafka.adoc"'>
+        <i class='fa fa-pencil-square-o'></i> Improve this doc
+    </button>
+</div>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>The Kafka Streams Control Panel provides a visual representation of your Kafka Streams topologies:</p>
+</div>
+<div class="paragraph">
+<p>Features include:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Visualize the stream processing topology using Mermaid diagrams.</p>
+</li>
+<li>
+<p>View the number of sub-topologies as a badge.</p>
+</li>
+<li>
+<p>Automatically generated from the configured <code>ConfiguredStreamBuilder</code> beans.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>To get started, add the following module as a development-time dependency:</p>
+</div>
+<div class="paragraph">
+<p>        <div class="listingblock multi-language-sample">
+<div class="title"></div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="gradle">developmentOnly(<span class="hljs-string">"io.micronaut.controlpanel:micronaut-control-panel-kafka")</span></code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="maven">&lt;dependency&gt;
+    &lt;groupId&gt;io.micronaut.controlpanel&lt;/groupId&gt;
+    &lt;artifactId&gt;micronaut-control-panel-kafka&lt;/artifactId&gt;
+    &lt;scope&gt;provided&lt;/scope&gt;
+&lt;/dependency&gt;</code></pre>
+</div>
+</div>
+</p>
+</div>
+<div class="paragraph">
+<p>It is assumed that you already have Kafka Streams configured in your application. If not, you can check the following documentation:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://micronaut-projects.github.io/micronaut-kafka/latest/guide/#kafkaStreams">Micronaut Kafka Streams Documentation</a></p>
+</li>
+<li>
+<p><a href="https://guides.micronaut.io/latest/tag-kafka.html">Kafka Guides</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_configuration">Configuration</h3>
+<div class="paragraph">
+<p>The Kafka Streams control panel is automatically enabled when you include the <code>micronaut-control-panel-kafka</code> module in your project.
+You can disable it by setting:</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">micronaut.control-panel.kafka-streams.enabled=false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">micronaut:
+  control-panel:
+    kafka-streams:
       enabled: false</code></pre>
 </div>
 </div>
@@ -1382,7 +1536,7 @@ You can disable it by setting:</p>
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[micronaut]
   [micronaut.control-panel]
-    [micronaut.control-panel.datasource]
+    [micronaut.control-panel.kafka-streams]
       enabled=false</code></pre>
 </div>
 </div>
@@ -1390,7 +1544,7 @@ You can disable it by setting:</p>
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-groovy-config hljs" data-lang="groovy-config">micronaut {
   controlPanel {
-    datasource {
+    kafkaStreams {
       enabled = false
     }
   }
@@ -1402,7 +1556,7 @@ You can disable it by setting:</p>
 <pre class="highlightjs highlight"><code class="language-hocon hljs" data-lang="hocon">{
   micronaut {
     control-panel {
-      datasource {
+      kafka-streams {
         enabled = false
       }
     }
@@ -1415,7 +1569,7 @@ You can disable it by setting:</p>
 <pre class="highlightjs highlight"><code class="language-json-config hljs" data-lang="json-config">{
   "micronaut": {
     "control-panel": {
-      "datasource": {
+      "kafka-streams": {
         "enabled": false
       }
     }
