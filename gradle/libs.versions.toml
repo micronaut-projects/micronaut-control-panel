@@ -18,7 +18,7 @@
 
 [versions]
 micronaut-platform = "4.10.8"
-micronaut = "5.0.0-M13"
+micronaut = "5.0.0-M14"
 micronaut-views = "6.0.0-M1"
 micronaut-reactor = "4.0.0-M1"
 micronaut-serde = "3.0.0-M2"
