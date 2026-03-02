@@ -17,12 +17,12 @@
 # a managed version (a version which alias starts with "managed-"
 
 [versions]
-micronaut-platform = "4.10.8"
+micronaut-platform = "4.10.9"
 micronaut = "5.0.0-M14"
 micronaut-views = "6.0.0-M1"
 micronaut-reactor = "4.0.0-M1"
 micronaut-serde = "3.0.0-M2"
-micronaut-object-storage = "3.0.0-M1"
+micronaut-object-storage = "3.0.0-M2"
 micronaut-cache = "6.0.0-M2"
 micronaut-sql = "7.0.0-M7"
 micronaut-data = "5.0.0-M2"
