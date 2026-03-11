@@ -6,11 +6,6 @@ plugins {
 dependencies {
     api(projects.micronautControlPanelCore)
     api(mnViews.micronaut.views.handlebars)
-    api(libs.handlebars.humanize) {
-        version {
-            require(mnViews.versions.handlebars.get())
-        }
-    }
     implementation(mn.micronaut.http.server)
     compileOnly(mn.micronaut.management)
 

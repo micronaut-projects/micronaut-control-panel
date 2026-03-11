@@ -17,7 +17,6 @@ package io.micronaut.controlpanel.ui.handlebars;
 
 import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.Helper;
-import com.github.jknack.handlebars.HumanizeHelper;
 import com.github.jknack.handlebars.cache.HighConcurrencyTemplateCache;
 import com.github.jknack.handlebars.io.TemplateLoader;
 import com.github.jknack.handlebars.helper.ConditionalHelpers;
@@ -30,6 +29,8 @@ import io.micronaut.core.util.NativeImageUtils;
 import io.micronaut.views.ViewsConfigurationProperties;
 import jakarta.inject.Singleton;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.io.IOException;
 import java.net.JarURLConnection;
 import java.net.URL;
@@ -39,11 +40,15 @@ import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +57,15 @@ import org.slf4j.LoggerFactory;
 @Singleton
 class HandlebarsHelperRegistrar implements BeanCreatedEventListener<Handlebars> {
     private static final Logger LOG = LoggerFactory.getLogger(HandlebarsHelperRegistrar.class);
+    private static final int BINARY_PREFIX_BASE = 1024;
+    private static final Pattern SPLIT_CAMEL = Pattern.compile("(?<=[A-Z])(?=[A-Z][a-z])|(?<=[^A-Z])(?=[A-Z])|(?<=[A-Za-z])(?=[^A-Za-z])");
+    private static final Pattern WHITESPACE_OR_UNDERSCORE = Pattern.compile("[\\s_]+");
+    private static final String SPACE = " ";
+    private static final Map<Long, String> BINARY_PREFIXES = binaryPrefixes();
+    private static final List<String> TITLE_IGNORED_WORDS = List.of(
+        "a", "an", "and", "but", "nor", "it", "the", "to", "with", "in", "on", "of",
+        "up", "or", "at", "into", "onto", "by", "from", "then", "for", "via", "versus"
+    );
 
     private final ViewsConfigurationProperties viewsConfiguration;
 
@@ -62,7 +76,9 @@ class HandlebarsHelperRegistrar implements BeanCreatedEventListener<Handlebars> 
     @Override
     public Handlebars onCreated(@NonNull BeanCreatedEvent<Handlebars> event) {
         Handlebars handlebars = event.getBean();
-        HumanizeHelper.register(handlebars);
+        handlebars.registerHelper("binaryPrefix", binaryPrefixHelper());
+        handlebars.registerHelper("decamelize", decamelizeHelper());
+        handlebars.registerHelper("titleize", titleizeHelper());
         handlebars.registerHelpers(ConditionalHelpers.class);
         handlebars.registerHelpers(StringHelpers.class);
         handlebars.registerHelper("percentage", percentageHelper());
@@ -85,6 +101,93 @@ class HandlebarsHelperRegistrar implements BeanCreatedEventListener<Handlebars> 
         return (context, options) -> context
             .replace("[", "<code>")
             .replace("]", "</code>");
+    }
+
+    private static Helper<Object> binaryPrefixHelper() {
+        return (context, options) -> {
+            if (!(context instanceof final Number value)) {
+                return context == null ? "" : context.toString();
+            }
+            long numeric = value.longValue();
+            if (numeric < 0) {
+                return value.toString();
+            }
+            DecimalFormat formatter = new DecimalFormat();
+            formatter.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.getDefault()));
+            for (Map.Entry<Long, String> entry : BINARY_PREFIXES.entrySet()) {
+                long threshold = entry.getKey();
+                if (threshold <= numeric) {
+                    formatter.applyPattern(entry.getValue());
+                    double result = numeric >= BINARY_PREFIX_BASE ? (double) numeric / threshold : numeric;
+                    return stripTrailingZeros(formatter, formatter.format(result));
+                }
+            }
+            return stripTrailingZeros(formatter, formatter.format(value));
+        };
+    }
+
+    private static Helper<Object> decamelizeHelper() {
+        return (context, options) -> {
+            if (context == null) {
+                return "";
+            }
+            String replacement = options.hash("replacement", SPACE);
+            return SPLIT_CAMEL.matcher(context.toString()).replaceAll(replacement);
+        };
+    }
+
+    private static Helper<Object> titleizeHelper() {
+        return (context, options) -> {
+            if (context == null) {
+                return "";
+            }
+            String normalized = WHITESPACE_OR_UNDERSCORE.matcher(context.toString().toLowerCase(Locale.ENGLISH))
+                .replaceAll(SPACE)
+                .trim();
+            if (normalized.isEmpty()) {
+                return "";
+            }
+            String[] words = normalized.split(SPACE);
+            StringBuilder out = new StringBuilder(normalized.length());
+            for (int i = 0; i < words.length; i++) {
+                String word = words[i];
+                if (i > 0 && i < words.length - 1 && TITLE_IGNORED_WORDS.contains(word)) {
+                    out.append(word);
+                } else {
+                    out.append(capitalizeWord(word));
+                }
+                if (i < words.length - 1) {
+                    out.append(SPACE);
+                }
+            }
+            return out.toString();
+        };
+    }
+
+    private static String capitalizeWord(String word) {
+        if (word.isEmpty()) {
+            return word;
+        }
+        if (word.length() == 1) {
+            return word.toUpperCase(Locale.ENGLISH);
+        }
+        return Character.toUpperCase(word.charAt(0)) + word.substring(1);
+    }
+
+    private static String stripTrailingZeros(DecimalFormat decimalFormat, String formatted) {
+        String trailingZeros = decimalFormat.getDecimalFormatSymbols().getDecimalSeparator() + "00";
+        return formatted.replace(trailingZeros, "");
+    }
+
+    private static Map<Long, String> binaryPrefixes() {
+        Map<Long, String> prefixes = new LinkedHashMap<>();
+        prefixes.put(1125899906842624L, "#.## PB");
+        prefixes.put(1099511627776L, "#.## TB");
+        prefixes.put(1073741824L, "#.## GB");
+        prefixes.put(1048576L, "#.## MB");
+        prefixes.put(1024L, "#.# KB");
+        prefixes.put(0L, "# bytes");
+        return prefixes;
     }
 
     private static Helper<Object> unwrapOptional() {

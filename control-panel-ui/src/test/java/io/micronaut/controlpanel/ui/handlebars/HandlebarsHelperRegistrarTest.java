@@ -95,6 +95,27 @@ class HandlebarsHelperRegistrarTest {
     }
 
     @Test
+    void testBinaryPrefixHelper() throws Exception {
+        var template = handlebars.compileInline("{{binaryPrefix value}}\n");
+        assertEquals("100 bytes\n", template.apply(java.util.Map.of("value", 100L)));
+        assertEquals("1 KB\n", template.apply(java.util.Map.of("value", 1024L)));
+        assertEquals("1 MB\n", template.apply(java.util.Map.of("value", 1048576L)));
+    }
+
+    @Test
+    void testDecamelizeAndTitleizeHelpers() throws Exception {
+        var template = handlebars.compileInline("{{titleize (decamelize value)}}\n");
+        assertEquals("Implementation Class\n", template.apply(java.util.Map.of("value", "implementationClass")));
+        assertEquals("Disk Space\n", template.apply(java.util.Map.of("value", "diskSpace")));
+    }
+
+    @Test
+    void testDecamelizeReplacementHash() throws Exception {
+        var template = handlebars.compileInline("{{decamelize value replacement='-'}}\n");
+        assertEquals("GL-11-Version\n", template.apply(java.util.Map.of("value", "GL11Version")));
+    }
+
+    @Test
     void testIsMapHelper() throws Exception {
         var template = handlebars.compileInline("{{#isMap myParam}}is map{{else}}is not map{{/isMap}}\n");
         var result = template.apply(java.util.Map.of("myParam", java.util.Map.of("a",1, "b",2)));
