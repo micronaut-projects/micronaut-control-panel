@@ -48,6 +48,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -58,6 +59,7 @@ import org.slf4j.LoggerFactory;
 class HandlebarsHelperRegistrar implements BeanCreatedEventListener<Handlebars> {
     private static final Logger LOG = LoggerFactory.getLogger(HandlebarsHelperRegistrar.class);
     private static final int BINARY_PREFIX_BASE = 1024;
+    private static final Locale BINARY_PREFIX_LOCALE = Locale.ROOT;
     private static final Pattern SPLIT_CAMEL = Pattern.compile("(?<=[A-Z])(?=[A-Z][a-z])|(?<=[^A-Z])(?=[A-Z])|(?<=[A-Za-z])(?=[^A-Za-z])");
     private static final Pattern WHITESPACE_OR_UNDERSCORE = Pattern.compile("[\\s_]+");
     private static final String SPACE = " ";
@@ -112,8 +114,11 @@ class HandlebarsHelperRegistrar implements BeanCreatedEventListener<Handlebars> 
             if (numeric < 0) {
                 return value.toString();
             }
+            if (numeric == 1) {
+                return "1 byte";
+            }
             DecimalFormat formatter = new DecimalFormat();
-            formatter.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.getDefault()));
+            formatter.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(BINARY_PREFIX_LOCALE));
             for (Map.Entry<Long, String> entry : BINARY_PREFIXES.entrySet()) {
                 long threshold = entry.getKey();
                 if (threshold <= numeric) {
@@ -132,7 +137,10 @@ class HandlebarsHelperRegistrar implements BeanCreatedEventListener<Handlebars> 
                 return "";
             }
             String replacement = options.hash("replacement", SPACE);
-            return SPLIT_CAMEL.matcher(context.toString()).replaceAll(replacement);
+            if (replacement == null) {
+                replacement = SPACE;
+            }
+            return SPLIT_CAMEL.matcher(context.toString()).replaceAll(Matcher.quoteReplacement(replacement));
         };
     }
 

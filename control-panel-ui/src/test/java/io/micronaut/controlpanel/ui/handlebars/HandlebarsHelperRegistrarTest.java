@@ -22,6 +22,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.util.Locale;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class HandlebarsHelperRegistrarTest {
@@ -97,9 +99,22 @@ class HandlebarsHelperRegistrarTest {
     @Test
     void testBinaryPrefixHelper() throws Exception {
         var template = handlebars.compileInline("{{binaryPrefix value}}\n");
+        assertEquals("1 byte\n", template.apply(java.util.Map.of("value", 1L)));
         assertEquals("100 bytes\n", template.apply(java.util.Map.of("value", 100L)));
         assertEquals("1 KB\n", template.apply(java.util.Map.of("value", 1024L)));
         assertEquals("1 MB\n", template.apply(java.util.Map.of("value", 1048576L)));
+    }
+
+    @Test
+    void testBinaryPrefixIsLocaleStable() throws Exception {
+        Locale previous = Locale.getDefault();
+        Locale.setDefault(Locale.GERMANY);
+        try {
+            var template = handlebars.compileInline("{{binaryPrefix value}}\n");
+            assertEquals("1.5 KB\n", template.apply(java.util.Map.of("value", 1536L)));
+        } finally {
+            Locale.setDefault(previous);
+        }
     }
 
     @Test
@@ -113,6 +128,12 @@ class HandlebarsHelperRegistrarTest {
     void testDecamelizeReplacementHash() throws Exception {
         var template = handlebars.compileInline("{{decamelize value replacement='-'}}\n");
         assertEquals("GL-11-Version\n", template.apply(java.util.Map.of("value", "GL11Version")));
+    }
+
+    @Test
+    void testDecamelizeReplacementEscapesRegexSpecials() throws Exception {
+        var template = handlebars.compileInline("{{decamelize value replacement='$'}}\n");
+        assertEquals("GL$11$Version\n", template.apply(java.util.Map.of("value", "GL11Version")));
     }
 
     @Test
