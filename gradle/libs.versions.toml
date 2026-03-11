@@ -17,16 +17,16 @@
 # a managed version (a version which alias starts with "managed-"
 
 [versions]
-micronaut-platform = "4.10.8"
+micronaut-platform = "4.10.9"
 micronaut = "5.0.0-M14"
 micronaut-views = "6.0.0-M1"
 micronaut-reactor = "4.0.0-M1"
 micronaut-serde = "3.0.0-M2"
-micronaut-object-storage = "2.10.0"
+micronaut-object-storage = "3.0.0-M2"
 micronaut-cache = "6.0.0-M2"
 micronaut-sql = "7.0.0-M7"
 micronaut-data = "5.0.0-M2"
-micronaut-testresources = "3.0.0-M6"
+micronaut-testresources = "4.0.0-M1"
 micronaut-gradle-plugin = "4.6.2"
 micronaut-openapi = "6.19.3"
 micronaut-kafka = "6.0.0-M1"
@@ -38,6 +38,8 @@ test-logger-plugin = "4.0.0"
 gradle-node-plugin = "7.1.0"
 avro = "1.12.1"
 avro-serde = "7.9.5"
+
+handlebars-humanize = "4.3.1"
 
 [libraries]
 micronaut-openapi = { module = "io.micronaut.openapi:micronaut-openapi-bom", version.ref = "micronaut-openapi" }
