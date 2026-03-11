@@ -45,8 +45,9 @@ dependencies {
     implementation(libs.avro.serde)
 
     // OpenAPI + Swagger UI (views generated at compile-time)
-//    annotationProcessor(mnOpenapi.micronaut.openapi)
-//    implementation(mnOpenapi.micronaut.openapi.annotations)
+    annotationProcessor(mnOpenapi.micronaut.openapi)
+    testAnnotationProcessor(mnOpenapi.micronaut.openapi)
+    implementation(mnOpenapi.micronaut.openapi.annotations)
 
 
     runtimeOnly(mnLogging.logback.classic)
