@@ -15,6 +15,7 @@
  */
 package io.micronaut.controlpanel.core;
 
+import io.micronaut.core.annotation.ReflectiveAccess;
 import io.micronaut.core.naming.Named;
 import io.micronaut.core.order.Ordered;
 import io.micronaut.core.util.Toggleable;
@@ -31,14 +32,20 @@ public interface ConfigurableControlPanel extends Named, Ordered, Toggleable {
     /**
      * @return whether this control panel is enabled or not.
      */
+    @ReflectiveAccess
     @Override
     boolean isEnabled();
+
+    @ReflectiveAccess
+    @Override
+    String getName();
 
     /**
      * The title is displayed in the header of the card UI element.
      *
      * @return the title of the control panel.
      */
+    @ReflectiveAccess
     String getTitle();
 
     /**
@@ -46,5 +53,6 @@ public interface ConfigurableControlPanel extends Named, Ordered, Toggleable {
      *
      * @return the icon class of the control panel.
      */
+    @ReflectiveAccess
     String getIcon();
 }

@@ -24,7 +24,7 @@ infinispan:
         authentication:
           password: admin
           realm: default
-          sasl-mechanism: DIGEST-MD5
+          sasl-mechanism: DIGEST-SHA-512
           server-name: infinispan
           username: admin
       server:
