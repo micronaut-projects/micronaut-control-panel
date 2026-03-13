@@ -34,6 +34,7 @@ public interface ControlPanel<B> extends ConfigurableControlPanel {
      *
      * @return the body of the control panel.
      */
+    @ReflectiveAccess
     B getBody();
 
     /**
@@ -41,6 +42,7 @@ public interface ControlPanel<B> extends ConfigurableControlPanel {
      *
      * @return the view of the control panel.
      */
+    @ReflectiveAccess
     default View getBodyView() {
         return new View("/views/" + getName() + "/body");
     }
@@ -51,6 +53,7 @@ public interface ControlPanel<B> extends ConfigurableControlPanel {
      *
      * @return the view of the control panel.
      */
+    @ReflectiveAccess
     default View getDetailedView() {
         return new View("/views/" + getName() + "/detail");
     }
@@ -60,6 +63,7 @@ public interface ControlPanel<B> extends ConfigurableControlPanel {
      *
      * @return the badge text of the control panel.
      */
+    @ReflectiveAccess
     default String getBadge() {
         return EMPTY_STRING;
     }
@@ -80,6 +84,7 @@ public interface ControlPanel<B> extends ConfigurableControlPanel {
      * @since 2.0.0
      * @return true if the control panel has details, false otherwise
      */
+    @ReflectiveAccess
     default boolean hasDetails() {
         return true;
     }
