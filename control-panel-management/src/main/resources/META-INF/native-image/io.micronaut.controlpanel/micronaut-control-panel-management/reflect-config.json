@@ -1,0 +1,14 @@
+[
+  {
+    "condition": {
+      "typeReachable": "com.github.jknack.handlebars.internal.ForwardingTemplate"
+    },
+    "name": "io.micronaut.core.beans.BeanInfo",
+    "methods": [
+      {
+        "name": "getBeanType",
+        "parameterTypes": []
+      }
+    ]
+  }
+]
