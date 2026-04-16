@@ -32,7 +32,7 @@ dependencies {
 }
 
 micronautBuild {
-    binaryCompatibility.enabledAfter("2.0.0")
+    binaryCompatibility.enabledAfter("2.1.0")
 }
 
 tasks.named("internalStartTestResourcesService") {
