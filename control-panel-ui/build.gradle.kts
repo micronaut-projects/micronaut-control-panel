@@ -25,3 +25,7 @@ dependencies {
 
     testRuntimeOnly(mn.snakeyaml)
 }
+
+micronautBuild {
+    binaryCompatibility.enabledAfter("2.1.0")
+}
