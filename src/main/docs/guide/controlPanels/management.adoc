@@ -14,29 +14,50 @@ The following panels are available:
 * `beans`: Bean Definitions
 * `loggers`: Logging Configuration
 
+=== Protecting The Control Panel
+
+If your application already uses Micronaut Security, you can protect the control-panel-owned HTTP surface without
+turning the module into a separate OAuth client. Set `micronaut.control-panel.security.access=AUTHENTICATED` and let
+your existing Micronaut Security authentication mechanism authenticate the browser request.
+
+The following example keeps the control panel opt-in and requires an authenticated user before the UI or helper
+controllers can be reached:
+
+[configuration]
+----
+include::doc-examples/example-java/src/main/resources/application-secured.yml[tags=control-panel-authenticated]
+----
+
+This secures the control panel routes themselves. Management endpoint security remains under the normal Micronaut
+management configuration for your application.
+
 === Application Heath
 
 This panel displays the health information of your application, and relies on the
-https://docs.micronaut.io/latest/guide/#healthEndpoint[Health Endpoint] to display its information. Note that, by
-default, the health endpoint only displays the details to authenticated users. To be able to see the details in the
-control panel, you need to configure the health endpoint to expose the details to unauthenticated users:
+https://docs.micronaut.io/latest/guide/#healthEndpoint[Health Endpoint] to display its information. By default, the
+health endpoint only displays details to authenticated users. When the control panel itself is protected with
+`micronaut.control-panel.security.access=AUTHENTICATED`, the current authenticated request is reused and
+`details-visible: AUTHENTICATED` works as expected:
 
 IMPORTANT: Make sure this is done in an environment-specific configuration file, for example, `application-dev.yml`.
 
-.Configuring the Health Endpoint to expose details to anonymous users
+.Configuring authenticated-only health details for the control panel
 [configuration]
 ----
 endpoints:
   health:
-    details-visible: ANONYMOUS
+    details-visible: AUTHENTICATED
 ----
+
+If you keep `micronaut.control-panel.security.access=ANONYMOUS`, anonymous control-panel requests continue to see the
+anonymous health view.
 
 === Environment Properties
 
 This panel displays all the configuration properties resolved, and relies on the
 https://docs.micronaut.io/latest/guide/#environmentEndpoint[Environment Endpoint] to display all the properties. This
-endpoint is disabled and sensitive (requires authentication to display the information) by default, so you need to
-configure it to be enabled and accessible to anonymous users in the environments where the control panel is enabled:
+endpoint is disabled by default, so you need to configure it to be enabled in the environments where the control panel
+is enabled:
 
 IMPORTANT: Make sure this is done in an environment-specific configuration file, for example, `application-dev.yml`.
 
@@ -46,7 +67,6 @@ IMPORTANT: Make sure this is done in an environment-specific configuration file,
 endpoints:
   env:
     enabled: true
-    sensitive: false
 ----
 
 Also, by default, all the values will be masked. If you want to see the actual configuration values in the control panel,
@@ -67,19 +87,9 @@ This will show all values apart from those that contain the words `password`, `c
 === Bean Definitions
 
 This panel displays all the beans, and their relationships, grouped by packages. It relies on the
-https://docs.micronaut.io/latest/guide/#beansEndpoint[Beans Endpoint] to display all the bean definitions. This endpoint
-is sensitive by default, so if you want to see the bean definitions in the control panel, you need to configure the
-endpoint to be accessible to anonymous users in the environments where the control panel is enabled:
-
-IMPORTANT: Make sure this is done in an environment-specific configuration file, for example, `application-dev.yml`.
-
-.Configuring the Beans Endpoint
-[configuration]
-----
-endpoints:
-  beans:
-    sensitive: false
-----
+https://docs.micronaut.io/latest/guide/#beansEndpoint[Beans Endpoint] to display all the bean definitions. Protect the
+control panel itself with `micronaut.control-panel.security.access=AUTHENTICATED` when you do not want to expose that
+information to anonymous users.
 
 === Disabled Beans
 

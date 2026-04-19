@@ -16,6 +16,7 @@
 package io.micronaut.controlpanel.panels.datasource;
 
 import io.micronaut.context.BeanLocator;
+import io.micronaut.controlpanel.core.security.ControlPanelSecurityPaths;
 import io.micronaut.controlpanel.panels.datasource.model.Table;
 import io.micronaut.core.annotation.Internal;
 import io.micronaut.core.annotation.Introspected;
@@ -50,7 +51,7 @@ import java.util.LinkedHashMap;
  * @author Álvaro Sánchez-Mariscal
  * @since 2.0.0
  */
-@Controller("/datasource-control-panel-controller")
+@Controller(ControlPanelSecurityPaths.DATASOURCE)
 @ExecuteOn(TaskExecutors.BLOCKING)
 @Internal
 public final class DataSourceController {

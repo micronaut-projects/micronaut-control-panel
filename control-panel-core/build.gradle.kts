@@ -7,11 +7,14 @@ dependencies {
     implementation(mn.micronaut.discovery.core)
     implementation(mn.micronaut.http.server)
     implementation(mn.micronaut.json.core)
+    compileOnly(libs.micronaut.security)
 
     compileOnly(mnTestResources.micronaut.test.resources.client)
 
     testImplementation(mn.micronaut.http)
     testImplementation(mn.micronaut.management)
+    testImplementation(mnReactor.micronaut.reactor)
+    testImplementation(libs.micronaut.security)
     testImplementation(projects.micronautControlPanelManagement)
 
     testImplementation(mnTest.micronaut.test.junit5)
