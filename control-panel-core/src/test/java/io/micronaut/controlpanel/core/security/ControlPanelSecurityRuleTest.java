@@ -35,9 +35,9 @@ class ControlPanelSecurityRuleTest {
         ControlPanelSecurityRule rule = newRule(ControlPanelSecurityConfiguration.Access.ANONYMOUS, null);
 
         assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.GET("/control-panel"), null));
-        assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.DELETE("/cache-control-panel-controller/demo"), null));
-        assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.POST("/datasource-control-panel-controller/default/query", "{}"), null));
-        assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.GET("/object-storage-control-panel-controller/local/object"), null));
+        assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.DELETE(ControlPanelSecurityPaths.CACHE + "/demo"), null));
+        assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.POST(ControlPanelSecurityPaths.DATASOURCE + "/default/query", "{}"), null));
+        assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.GET(ControlPanelSecurityPaths.OBJECT_STORAGE + "/local/object"), null));
     }
 
     @Test
@@ -46,7 +46,7 @@ class ControlPanelSecurityRuleTest {
 
         assertEquals(SecurityRuleResult.REJECTED, check(rule, HttpRequest.GET("/control-panel"), null));
         assertEquals(SecurityRuleResult.REJECTED, check(rule, HttpRequest.GET("/control-panel/routes"), null));
-        assertEquals(SecurityRuleResult.REJECTED, check(rule, HttpRequest.DELETE("/cache-control-panel-controller/demo"), null));
+        assertEquals(SecurityRuleResult.REJECTED, check(rule, HttpRequest.DELETE(ControlPanelSecurityPaths.CACHE + "/demo"), null));
     }
 
     @Test
@@ -55,7 +55,7 @@ class ControlPanelSecurityRuleTest {
         Authentication authentication = Authentication.build("sherlock", Set.of("USER"), Map.of());
 
         assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.GET("/app/control-panel"), authentication));
-        assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.GET("/app/object-storage-control-panel-controller/local/object"), authentication));
+        assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.GET("/app" + ControlPanelSecurityPaths.OBJECT_STORAGE + "/local/object"), authentication));
     }
 
     @Test

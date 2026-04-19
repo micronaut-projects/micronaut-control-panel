@@ -31,7 +31,7 @@ include::doc-examples/example-java/src/main/resources/application-secured.yml[ta
 This secures the control panel routes themselves. Management endpoint security remains under the normal Micronaut
 management configuration for your application.
 
-=== Application Heath
+=== Application Health
 
 This panel displays the health information of your application, and relies on the
 https://docs.micronaut.io/latest/guide/#healthEndpoint[Health Endpoint] to display its information. By default, the

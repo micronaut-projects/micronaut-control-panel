@@ -14,6 +14,7 @@ dependencies {
     testImplementation(mn.micronaut.http)
     testImplementation(mn.micronaut.management)
     testImplementation(mnReactor.micronaut.reactor)
+    testImplementation(mnSerde.micronaut.serde.jackson)
     testImplementation(libs.micronaut.security)
     testImplementation(projects.micronautControlPanelManagement)
 
