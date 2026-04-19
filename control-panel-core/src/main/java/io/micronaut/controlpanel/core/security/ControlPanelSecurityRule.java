@@ -45,7 +45,7 @@ import static io.micronaut.controlpanel.util.ControlPanelUtils.computeControlPan
 @Singleton
 public final class ControlPanelSecurityRule implements SecurityRule<HttpRequest<?>> {
 
-    static final int ORDER = ConfigurationInterceptUrlMapRule.ORDER + 50;
+    static final int ORDER = ConfigurationInterceptUrlMapRule.ORDER - 50;
 
     private final ControlPanelSecurityConfiguration.Access access;
     private final List<String> protectedRoutePrefixes;
