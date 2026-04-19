@@ -20,6 +20,7 @@ import io.micronaut.context.annotation.Requires;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.health.HealthStatus;
 import io.micronaut.http.HttpRequest;
+import io.micronaut.http.MutableHttpRequest;
 import io.micronaut.http.context.ServerRequestContext;
 import io.micronaut.inject.qualifiers.Qualifiers;
 import io.micronaut.management.health.indicator.HealthResult;
@@ -69,7 +70,7 @@ class HealthControlPanelTest {
             Object anonymousDetails = ServerRequestContext.with(HttpRequest.GET("/control-panel/health"), (Supplier<Object>) () -> panel.getBody().getDetails());
             assertNull(anonymousDetails);
 
-            HttpRequest<?> authenticatedRequest = HttpRequest.GET("/control-panel/health");
+            MutableHttpRequest<?> authenticatedRequest = HttpRequest.GET("/control-panel/health");
             authenticatedRequest.setUserPrincipal((Principal) () -> "user");
             Object authenticatedDetails = ServerRequestContext.with(authenticatedRequest, (Supplier<Object>) () -> panel.getBody().getDetails());
             @SuppressWarnings("unchecked")
