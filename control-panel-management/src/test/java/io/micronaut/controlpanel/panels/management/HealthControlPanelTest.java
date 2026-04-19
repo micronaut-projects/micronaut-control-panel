@@ -16,11 +16,22 @@
 package io.micronaut.controlpanel.panels.management;
 
 import io.micronaut.context.ApplicationContext;
+import io.micronaut.context.annotation.Requires;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.health.HealthStatus;
+import io.micronaut.http.HttpRequest;
+import io.micronaut.http.context.ServerRequestContext;
 import io.micronaut.inject.qualifiers.Qualifiers;
+import io.micronaut.management.health.indicator.HealthResult;
+import io.micronaut.management.health.indicator.HealthIndicator;
 import io.micronaut.management.health.indicator.service.ServiceReadyHealthIndicator;
+import jakarta.inject.Singleton;
 import org.junit.jupiter.api.Test;
+import reactor.core.publisher.Mono;
+
+import java.security.Principal;
+import java.util.Map;
+import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -43,6 +54,40 @@ class HealthControlPanelTest {
             ControlPanelConfiguration cfg = ctx.getBean(ControlPanelConfiguration.class, Qualifiers.byName(HealthControlPanel.NAME));
             assertFalse(cfg.isEnabled());
             assertFalse(ctx.containsBean(HealthControlPanel.class));
+        }
+    }
+
+    @Test
+    void itUsesTheCurrentRequestPrincipalForAuthenticatedHealthDetails() {
+        try (ApplicationContext ctx = ApplicationContext.run(Map.of(
+            "spec.name", "HealthControlPanelTest",
+            ServiceReadyHealthIndicator.ENABLED, false,
+            "endpoints.health.details-visible", "AUTHENTICATED"
+        ))) {
+            HealthControlPanel panel = ctx.getBean(HealthControlPanel.class);
+
+            Object anonymousDetails = ServerRequestContext.with(HttpRequest.GET("/control-panel/health"), (Supplier<Object>) () -> panel.getBody().getDetails());
+            assertNull(anonymousDetails);
+
+            HttpRequest<?> authenticatedRequest = HttpRequest.GET("/control-panel/health");
+            authenticatedRequest.setUserPrincipal((Principal) () -> "user");
+            Object authenticatedDetails = ServerRequestContext.with(authenticatedRequest, (Supplier<Object>) () -> panel.getBody().getDetails());
+            @SuppressWarnings("unchecked")
+            Map<String, ?> aggregatedDetails = (Map<String, ?>) authenticatedDetails;
+            HealthResult detailed = (HealthResult) aggregatedDetails.get("detailed");
+            assertEquals(Map.of("secret", "visible-to-authenticated-users"), detailed.getDetails());
+        }
+    }
+
+    @Requires(property = "spec.name", value = "HealthControlPanelTest")
+    @Singleton
+    static class DetailedHealthIndicator implements HealthIndicator {
+
+        @Override
+        public org.reactivestreams.Publisher<io.micronaut.management.health.indicator.HealthResult> getResult() {
+            return Mono.just(io.micronaut.management.health.indicator.HealthResult.builder("detailed", HealthStatus.UP)
+                .details(Map.of("secret", "visible-to-authenticated-users"))
+                .build());
         }
     }
 }
