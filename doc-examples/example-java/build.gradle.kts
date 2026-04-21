@@ -13,6 +13,7 @@ dependencies {
     runtimeOnly(projects.micronautControlPanelUi)
     implementation(projects.micronautControlPanelManagement)
     implementation(mn.micronaut.management)
+    implementation(mnMicrometer.micronaut.micrometer.core)
 
     // Object Storage
     implementation(projects.micronautControlPanelObjectStorage)

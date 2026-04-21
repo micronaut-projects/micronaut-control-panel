@@ -24,6 +24,7 @@ micronaut-reactor = "4.0.0-M1"
 micronaut-serde = "3.0.0-M6"
 micronaut-object-storage = "3.0.0-M2"
 micronaut-cache = "6.0.0-M2"
+micronaut-micrometer = "6.0.1-M1"
 micronaut-sql = "7.0.0-M7"
 micronaut-data = "5.0.0-M5"
 micronaut-testresources = "4.0.0-M1"
@@ -50,6 +51,7 @@ micronaut-reactor = { module = 'io.micronaut.reactor:micronaut-reactor-bom', ver
 micronaut-serde = { module = "io.micronaut.serde:micronaut-serde-bom", version.ref = "micronaut-serde" }
 micronaut-object-storage = { module = "io.micronaut.objectstorage:micronaut-object-storage-bom", version.ref = "micronaut-object-storage" }
 micronaut-cache = { module = "io.micronaut.cache:micronaut-cache-bom", version.ref = "micronaut-cache" }
+micronaut-micrometer = { module = "io.micronaut.micrometer:micronaut-micrometer-bom", version.ref = "micronaut-micrometer" }
 micronaut-sql = { module = "io.micronaut.sql:micronaut-sql-bom", version.ref = "micronaut-sql" }
 micronaut-data = { module = "io.micronaut.data:micronaut-data-bom", version.ref = "micronaut-data" }
 micronaut-testresources = { module = 'io.micronaut.testresources:micronaut-test-resources-bom', version.ref = "micronaut-testresources" }

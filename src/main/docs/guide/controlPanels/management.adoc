@@ -7,10 +7,15 @@ https://docs.micronaut.io/latest/guide/#management[Management] module:
 
 dependency:io.micronaut.:micronaut-management[scope=runtimeOnly]
 
+For the Metrics panel, you also need Micrometer support on the classpath:
+
+dependency:io.micronaut.micrometer:micronaut-micrometer-core[scope=runtimeOnly]
+
 The following panels are available:
 
 * `health`: Application Health
 * `env`: Environment Properties
+* `metrics`: Metrics
 * `beans`: Bean Definitions
 * `loggers`: Logging Configuration
 
@@ -63,6 +68,29 @@ micronaut:
 
 This will show all values apart from those that contain the words `password`, `credential`, `certificate`, `key`,
 `secret` or `token` anywhere in their name.
+
+=== Metrics
+
+This panel provides a lightweight, read-only Micrometer inspector for development use. It relies on the
+https://micronaut-projects.github.io/micronaut-micrometer/latest/guide/#metricsEndpoint[Metrics Endpoint] to list
+metric names and fetch the current description, base unit, measurements, and available tags for a selected metric.
+
+The panel only appears when Micrometer support is on the classpath and the endpoint bean is present. It does not add
+historical charts or mutation/reset operations, so it complements rather than replaces a full observability stack such
+as Grafana.
+
+To make the panel available in environments where the control panel is enabled, add the Micrometer dependency and
+enable the endpoint if your environment does not already expose it:
+
+IMPORTANT: Make sure this is done in an environment-specific configuration file, for example, `application-dev.yml`.
+
+.Configuring the Metrics Endpoint
+[configuration]
+----
+endpoints:
+  metrics:
+    enabled: true
+----
 
 === Bean Definitions
 

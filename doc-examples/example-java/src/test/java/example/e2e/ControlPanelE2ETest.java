@@ -32,6 +32,7 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         assertThat(body).containsText("Application Health");
         assertThat(body).containsText("Environment Properties");
         assertThat(body).containsText("HTTP Routes");
+        assertThat(body).containsText("Metrics");
         assertThat(body).containsText("Loggers");
 
         //Category links
@@ -131,6 +132,27 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         page.getByRole(AriaRole.CELL, new Page.GetByRoleOptions().setName(nameRegex("Reconfigure"))).first().getByRole(AriaRole.BUTTON).click();
         page.getByLabel("Level:").selectOption("INFO");
         button(page, "Submit").click();
+    }
+
+    @Test
+    void testMetrics(Page page) {
+        page.navigate(baseUrl());
+        controlPanelDetails(page, "Metrics").click();
+
+        assertThat(body(page)).containsText("example.orders.processed");
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName(nameRegex("example.orders.processed"))).click();
+
+        assertThat(body(page)).containsText("Processed example orders");
+        assertThat(body(page)).containsText("COUNT");
+        assertThat(body(page)).containsText("channel");
+        assertThat(body(page)).containsText("status");
+
+        page.getByLabel("channel").selectOption("web");
+        button(page, "Apply filters").click();
+
+        assertThat(body(page)).containsText("channel:web");
+        assertThat(body(page)).containsText("COUNT");
+        assertThat(body(page)).containsText("4");
     }
 
     @Test
@@ -255,7 +277,7 @@ class ControlPanelE2ETest extends AbstractE2ETest {
     public static class HeadlessBrowserOptions implements OptionsFactory {
         @Override
         public Options getOptions() {
-            if (System.getenv("CI") == null) {
+            if (System.getenv("CI") == null && System.getenv("DISPLAY") != null) {
                 return new Options().setHeadless(false);
             } else {
                 return new Options();

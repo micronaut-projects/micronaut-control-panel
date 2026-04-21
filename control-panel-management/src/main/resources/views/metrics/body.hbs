@@ -1,0 +1,69 @@
+{{#with controlPanel.body }}
+    <p class="card-text">
+        <strong>{{badge}}</strong> metrics available.
+    </p>
+
+    {{#if metricNames}}
+        <div class="form-group mb-2">
+            <label class="sr-only" for="metrics-dashboard-search">Search metrics</label>
+            <input type="search"
+                   class="form-control form-control-sm"
+                   id="metrics-dashboard-search"
+                   placeholder="Search metrics"
+                   autocomplete="off">
+        </div>
+
+        <ul class="list-group list-group-flush mb-2" id="metrics-dashboard-preview">
+            {{#each previewMetricNames }}
+                <li class="list-group-item px-0 py-1 border-top-0">
+                    <code>{{ this }}</code>
+                </li>
+            {{/each}}
+        </ul>
+
+        <p class="card-text mb-0">
+            <small>Showing {{size previewMetricNames}} of {{size metricNames}}. Open details to inspect samples and tags.</small>
+        </p>
+
+        <script>
+            (function() {
+                const input = document.getElementById('metrics-dashboard-search');
+                const preview = document.getElementById('metrics-dashboard-preview');
+                const metricNames = [
+                    {{#each metricNames }}"{{ this }}"{{#unless @last}}, {{/unless}}{{/each}}
+                ];
+
+                function escapeHtml(value) {
+                    return value
+                        .replaceAll('&', '&amp;')
+                        .replaceAll('<', '&lt;')
+                        .replaceAll('>', '&gt;')
+                        .replaceAll('"', '&quot;')
+                        .replaceAll("'", '&#39;');
+                }
+
+                function render(query) {
+                    const normalized = query.trim().toLowerCase();
+                    const matches = normalized.length === 0
+                        ? metricNames.slice(0, 5)
+                        : metricNames.filter(name => name.toLowerCase().includes(normalized)).slice(0, 5);
+
+                    if (matches.length === 0) {
+                        preview.innerHTML = '<li class="list-group-item px-0 py-1 border-top-0 text-muted">No matching metrics.</li>';
+                        return;
+                    }
+
+                    preview.innerHTML = matches
+                        .map(name => '<li class="list-group-item px-0 py-1 border-top-0"><code>' + escapeHtml(name) + '</code></li>')
+                        .join('');
+                }
+
+                input.addEventListener('input', function(event) {
+                    render(event.target.value);
+                });
+            })();
+        </script>
+    {{else}}
+        <p class="card-text text-muted mb-0">No Micrometer metrics are currently registered.</p>
+    {{/if}}
+{{/with}}

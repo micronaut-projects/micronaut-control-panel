@@ -37,6 +37,7 @@ configure<MicronautBuildSettingsExtension> {
     importMicronautCatalog("micronaut-cache")
     importMicronautCatalog("micronaut-sql")
     importMicronautCatalog("micronaut-data")
+    importMicronautCatalog("micronaut-micrometer")
     importMicronautCatalog("micronaut-testresources")
     importMicronautCatalog("micronaut-openapi")
     importMicronautCatalog("micronaut-kafka")

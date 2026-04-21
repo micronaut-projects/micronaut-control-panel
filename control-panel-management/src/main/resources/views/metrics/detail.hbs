@@ -1,0 +1,236 @@
+{{#with controlPanel.body }}
+    <style>
+        .metrics-list {
+            max-height: 32rem;
+            overflow-y: auto;
+        }
+
+        .metrics-list .list-group-item code {
+            white-space: normal;
+        }
+
+        .metrics-detail-card {
+            min-height: 24rem;
+        }
+    </style>
+
+    {{#if metricNames}}
+        <div class="row">
+            <div class="col-lg-4 mb-3">
+                <label for="metrics-search"><strong>Search metrics</strong></label>
+                <input type="search"
+                       class="form-control mb-3"
+                       id="metrics-search"
+                       placeholder="Filter metric names"
+                       autocomplete="off">
+
+                <div class="list-group metrics-list" id="metrics-list">
+                    {{#each metricNames }}
+                        <button type="button"
+                                class="list-group-item list-group-item-action{{#if @first}} active{{/if}}"
+                                data-metric-name="{{ this }}">
+                            <code>{{ this }}</code>
+                        </button>
+                    {{/each}}
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div class="card card-light metrics-detail-card">
+                    <div class="card-body">
+                        <div id="metrics-feedback"></div>
+                        <div id="metrics-detail-content" class="mb-3">
+                            <p class="text-muted mb-0">Loading metric details...</p>
+                        </div>
+                        <div id="metrics-filter-controls"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            (function() {
+                const list = document.getElementById('metrics-list');
+                const searchInput = document.getElementById('metrics-search');
+                const detailContent = document.getElementById('metrics-detail-content');
+                const filterControls = document.getElementById('metrics-filter-controls');
+                const feedback = document.getElementById('metrics-feedback');
+                const initialMetricName = {{#if initialMetricName}}"{{ initialMetricName }}"{{else}}null{{/if}};
+                let currentMetric = initialMetricName;
+                let currentSelectedTags = [];
+
+                function escapeHtml(value) {
+                    return String(value)
+                        .replaceAll('&', '&amp;')
+                        .replaceAll('<', '&lt;')
+                        .replaceAll('>', '&gt;')
+                        .replaceAll('"', '&quot;')
+                        .replaceAll("'", '&#39;');
+                }
+
+                function setFeedback(message, level) {
+                    if (!message) {
+                        feedback.innerHTML = '';
+                        return;
+                    }
+                    feedback.innerHTML = '<div class="alert alert-' + level + '">' + message + '</div>';
+                }
+
+                function setActiveMetric(metricName) {
+                    list.querySelectorAll('[data-metric-name]').forEach(function(element) {
+                        element.classList.toggle('active', element.dataset.metricName === metricName);
+                    });
+                }
+
+                function renderDetails(detail) {
+                    const description = detail.description
+                        ? '<p class="mb-2">' + escapeHtml(detail.description) + '</p>'
+                        : '<p class="text-muted mb-2">No description is available for this metric.</p>';
+                    const baseUnit = detail.baseUnit
+                        ? '<span class="badge badge-light">' + escapeHtml(detail.baseUnit) + '</span>'
+                        : '<span class="text-muted">None</span>';
+                    const selectedTags = detail.selectedTags || [];
+                    const selectedBadges = selectedTags.length === 0
+                        ? '<span class="text-muted">None</span>'
+                        : selectedTags.map(function(tag) {
+                            return '<span class="badge badge-primary mr-1">' + escapeHtml(tag) + '</span>';
+                        }).join('');
+                    const measurements = detail.measurements.length === 0
+                        ? '<p class="text-muted mb-0">No measurements are available for this metric.</p>'
+                        : '<table class="table table-sm"><thead><tr><th>Statistic</th><th>Value</th></tr></thead><tbody>' +
+                            detail.measurements.map(function(measurement) {
+                                return '<tr><td><code>' + escapeHtml(measurement.statistic) + '</code></td><td>' + escapeHtml(measurement.value) + '</td></tr>';
+                            }).join('') +
+                            '</tbody></table>';
+
+                    detailContent.innerHTML =
+                        '<h4><code>' + escapeHtml(detail.name) + '</code></h4>' +
+                        description +
+                        '<dl class="row">' +
+                        '<dt class="col-sm-3">Base unit</dt><dd class="col-sm-9">' + baseUnit + '</dd>' +
+                        '<dt class="col-sm-3">Selected tags</dt><dd class="col-sm-9">' + selectedBadges + '</dd>' +
+                        '</dl>' +
+                        '<h5>Measurements</h5>' +
+                        measurements;
+
+                    if (detail.availableTags.length === 0 && selectedTags.length === 0) {
+                        filterControls.innerHTML = '';
+                        return;
+                    }
+
+                    const options = detail.availableTags.map(function(tag) {
+                        const values = tag.values.map(function(value) {
+                            return '<option value="' + escapeHtml(value) + '">' + escapeHtml(value) + '</option>';
+                        }).join('');
+                        return '<div class="form-group col-md-6">' +
+                            '<label for="tag-' + escapeHtml(tag.tag) + '">' + escapeHtml(tag.tag) + '</label>' +
+                            '<select class="form-control metric-tag-filter" id="tag-' + escapeHtml(tag.tag) + '" data-tag-name="' + escapeHtml(tag.tag) + '">' +
+                            '<option value="">Any</option>' +
+                            values +
+                            '</select>' +
+                            '</div>';
+                    }).join('');
+
+                    filterControls.innerHTML =
+                        '<hr>' +
+                        '<h5>Filter by tags</h5>' +
+                        '<form id="metrics-filter-form">' +
+                        '<div class="form-row">' + options + '</div>' +
+                        '<div class="d-flex gap-2">' +
+                        '<button type="submit" class="btn btn-primary mr-2">Apply filters</button>' +
+                        '<button type="button" class="btn btn-secondary" id="metrics-clear-filters">Clear filters</button>' +
+                        '</div>' +
+                        '</form>';
+
+                    document.getElementById('metrics-filter-form').addEventListener('submit', function(event) {
+                        event.preventDefault();
+                        const selected = Array.from(document.querySelectorAll('.metric-tag-filter'))
+                            .filter(function(select) {
+                                return select.value;
+                            })
+                            .map(function(select) {
+                                return select.dataset.tagName + ':' + select.value;
+                            });
+                        loadMetric(currentMetric, selected);
+                    });
+
+                    document.getElementById('metrics-clear-filters').addEventListener('click', function() {
+                        loadMetric(currentMetric, []);
+                    });
+                }
+
+                function loadMetric(metricName, selectedTags) {
+                    if (!metricName) {
+                        detailContent.innerHTML = '<p class="text-muted mb-0">Select a metric to inspect its current samples and available tags.</p>';
+                        filterControls.innerHTML = '';
+                        setFeedback('', 'info');
+                        return;
+                    }
+
+                    currentMetric = metricName;
+                    currentSelectedTags = selectedTags || [];
+                    setActiveMetric(metricName);
+                    setFeedback('', 'info');
+                    detailContent.innerHTML = '<p class="text-muted mb-0">Loading metric details...</p>';
+                    filterControls.innerHTML = '';
+
+                    const params = new URLSearchParams();
+                    currentSelectedTags.forEach(function(tag) {
+                        params.append('tag', tag);
+                    });
+                    const queryString = params.toString();
+                    const url = '{{ext.controlPanelPath}}/metrics/details/' + encodeURIComponent(metricName) + (queryString ? '?' + queryString : '');
+
+                    fetch(url, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                        .then(function(response) {
+                            if (response.status === 404) {
+                                setFeedback('No metric details are available for the selected metric and tag combination.', 'warning');
+                                detailContent.innerHTML = '<p class="text-muted mb-0">Try clearing filters or selecting a different metric.</p>';
+                                return null;
+                            }
+                            if (!response.ok) {
+                                throw new Error('Unable to load metric details.');
+                            }
+                            return response.json();
+                        })
+                        .then(function(detail) {
+                            if (!detail) {
+                                return;
+                            }
+                            renderDetails(detail);
+                        })
+                        .catch(function() {
+                            setFeedback('Metric details could not be loaded right now.', 'danger');
+                            detailContent.innerHTML = '<p class="text-muted mb-0">Retry the request or select a different metric.</p>';
+                        });
+                }
+
+                searchInput.addEventListener('input', function(event) {
+                    const query = event.target.value.trim().toLowerCase();
+                    list.querySelectorAll('[data-metric-name]').forEach(function(element) {
+                        const matches = element.dataset.metricName.toLowerCase().includes(query);
+                        element.classList.toggle('d-none', !matches);
+                    });
+                });
+
+                list.addEventListener('click', function(event) {
+                    const button = event.target.closest('[data-metric-name]');
+                    if (!button) {
+                        return;
+                    }
+                    loadMetric(button.dataset.metricName, []);
+                });
+
+                loadMetric(initialMetricName, []);
+            })();
+        </script>
+    {{else}}
+        <div class="alert alert-info mb-0">
+            No Micrometer metrics are currently registered.
+        </div>
+    {{/if}}
+{{/with}}
