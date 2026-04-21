@@ -68,7 +68,7 @@ public class MetricsControlPanelController {
         int separatorIndex = tag.indexOf(':');
         if (separatorIndex < 0) {
             throw new UnsatisfiedArgumentException(
-                Argument.of(List.class, "tags"),
+                Argument.of(List.class, "tag", Argument.STRING),
                 "Tags must be in the form key:value"
             );
         }

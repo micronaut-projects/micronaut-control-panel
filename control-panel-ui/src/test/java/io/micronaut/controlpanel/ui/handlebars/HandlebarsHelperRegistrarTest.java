@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.Locale;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -143,5 +144,43 @@ class HandlebarsHelperRegistrarTest {
         assertEquals("is map\n", result);
         result = template.apply(java.util.Map.of("myParam", "something else"));
         assertEquals("is not map\n", result);
+    }
+
+    @Test
+    void metricsTemplatesAvoidInlineJavaScriptInterpolationForMetricNames() throws Exception {
+        Handlebars templateHandlebars = configuredHandlebars(new Handlebars());
+        String metricName = "metric\"with\\slash";
+        Map<String, Object> context = Map.of(
+            "controlPanel", Map.of(
+                "badge", "1",
+                "body", Map.of(
+                    "metricNames", java.util.List.of(metricName),
+                    "previewMetricNames", java.util.List.of(metricName),
+                    "initialMetricName", metricName
+                )
+            ),
+            "ext", Map.of("controlPanelPath", "/control-panel")
+        );
+
+        String dashboardHtml = templateHandlebars.compile("views/metrics/body").apply(context);
+        assertTrue(dashboardHtml.contains("id=\"metrics-dashboard-data\""));
+        assertTrue(dashboardHtml.contains("class=\"metrics-dashboard-name\""));
+        assertTrue(dashboardHtml.contains("<code>metric&quot;with\\slash</code>"));
+        assertFalse(dashboardHtml.contains("const metricNames = ["));
+
+        String detailHtml = templateHandlebars.compile("views/metrics/detail").apply(context);
+        assertTrue(detailHtml.contains("const initialMetricButton = list.querySelector('.list-group-item.active');"));
+        assertTrue(detailHtml.contains("function metricNameFromElement(element) {"));
+        assertTrue(detailHtml.contains("<code>metric&quot;with\\slash</code>"));
+        assertFalse(detailHtml.contains("const initialMetricName = \""));
+        assertFalse(detailHtml.contains("data-metric-name="));
+    }
+
+    private Handlebars configuredHandlebars(Handlebars target) {
+        @SuppressWarnings("unchecked")
+        BeanCreatedEvent<Handlebars> event = (BeanCreatedEvent<Handlebars>) Mockito.mock(BeanCreatedEvent.class);
+        Mockito.when(event.getBean()).thenReturn(target);
+        registrar.onCreated(event);
+        return target;
     }
 }

@@ -17,12 +17,14 @@ package io.micronaut.controlpanel.panels.management;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import io.micronaut.core.bind.exceptions.UnsatisfiedArgumentException;
 import io.micronaut.http.HttpStatus;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class MetricsControlPanelControllerTest {
 
@@ -100,6 +102,19 @@ class MetricsControlPanelControllerTest {
         var response = controller.detail("unknown.metric", null);
 
         assertEquals(HttpStatus.NOT_FOUND, response.status());
+    }
+
+    @Test
+    void itReportsInvalidTagsAgainstTheTagQueryArgument() {
+        SimpleMeterRegistry registry = new SimpleMeterRegistry();
+        MetricsControlPanelController controller = new MetricsControlPanelController(registry);
+
+        UnsatisfiedArgumentException exception = assertThrows(
+            UnsatisfiedArgumentException.class,
+            () -> controller.detail("example.orders.processed", java.util.List.of("invalid-tag"))
+        );
+
+        assertEquals("tag", exception.getArgument().getName());
     }
 
     @Test

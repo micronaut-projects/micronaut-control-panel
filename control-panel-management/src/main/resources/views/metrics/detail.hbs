@@ -27,8 +27,7 @@
                 <div class="list-group metrics-list" id="metrics-list">
                     {{#each metricNames }}
                         <button type="button"
-                                class="list-group-item list-group-item-action{{#if @first}} active{{/if}}"
-                                data-metric-name="{{ this }}">
+                                class="list-group-item list-group-item-action{{#if @first}} active{{/if}}">
                             <code>{{ this }}</code>
                         </button>
                     {{/each}}
@@ -55,7 +54,8 @@
                 const detailContent = document.getElementById('metrics-detail-content');
                 const filterControls = document.getElementById('metrics-filter-controls');
                 const feedback = document.getElementById('metrics-feedback');
-                const initialMetricName = {{#if initialMetricName}}"{{ initialMetricName }}"{{else}}null{{/if}};
+                const initialMetricButton = list.querySelector('.list-group-item.active');
+                const initialMetricName = initialMetricButton ? metricNameFromElement(initialMetricButton) : null;
                 let currentMetric = initialMetricName;
                 let currentSelectedTags = [];
 
@@ -68,6 +68,11 @@
                         .replaceAll("'", '&#39;');
                 }
 
+                function metricNameFromElement(element) {
+                    const code = element.querySelector('code');
+                    return code ? code.textContent : element.textContent.trim();
+                }
+
                 function setFeedback(message, level) {
                     if (!message) {
                         feedback.innerHTML = '';
@@ -77,8 +82,8 @@
                 }
 
                 function setActiveMetric(metricName) {
-                    list.querySelectorAll('[data-metric-name]').forEach(function(element) {
-                        element.classList.toggle('active', element.dataset.metricName === metricName);
+                    list.querySelectorAll('.list-group-item').forEach(function(element) {
+                        element.classList.toggle('active', metricNameFromElement(element) === metricName);
                     });
                 }
 
@@ -211,18 +216,18 @@
 
                 searchInput.addEventListener('input', function(event) {
                     const query = event.target.value.trim().toLowerCase();
-                    list.querySelectorAll('[data-metric-name]').forEach(function(element) {
-                        const matches = element.dataset.metricName.toLowerCase().includes(query);
+                    list.querySelectorAll('.list-group-item').forEach(function(element) {
+                        const matches = metricNameFromElement(element).toLowerCase().includes(query);
                         element.classList.toggle('d-none', !matches);
                     });
                 });
 
                 list.addEventListener('click', function(event) {
-                    const button = event.target.closest('[data-metric-name]');
+                    const button = event.target.closest('.list-group-item');
                     if (!button) {
                         return;
                     }
-                    loadMetric(button.dataset.metricName, []);
+                    loadMetric(metricNameFromElement(button), []);
                 });
 
                 loadMetric(initialMetricName, []);

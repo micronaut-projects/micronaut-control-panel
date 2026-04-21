@@ -21,6 +21,12 @@
             {{/each}}
         </ul>
 
+        <div class="d-none" id="metrics-dashboard-data" aria-hidden="true">
+            {{#each metricNames }}
+                <span class="metrics-dashboard-name">{{ this }}</span>
+            {{/each}}
+        </div>
+
         <p class="card-text mb-0">
             <small>Showing {{size previewMetricNames}} of {{size metricNames}}. Open details to inspect samples and tags.</small>
         </p>
@@ -29,9 +35,10 @@
             (function() {
                 const input = document.getElementById('metrics-dashboard-search');
                 const preview = document.getElementById('metrics-dashboard-preview');
-                const metricNames = [
-                    {{#each metricNames }}"{{ this }}"{{#unless @last}}, {{/unless}}{{/each}}
-                ];
+                const metricNames = Array.from(document.querySelectorAll('#metrics-dashboard-data .metrics-dashboard-name'))
+                    .map(function(element) {
+                        return element.textContent;
+                    });
 
                 function escapeHtml(value) {
                     return value
