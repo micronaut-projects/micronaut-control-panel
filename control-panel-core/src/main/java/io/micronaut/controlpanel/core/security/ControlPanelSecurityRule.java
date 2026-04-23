@@ -69,10 +69,14 @@ public final class ControlPanelSecurityRule implements SecurityRule<HttpRequest<
         if (request == null || !matches(request.getPath())) {
             return Publishers.just(SecurityRuleResult.UNKNOWN);
         }
-        if (access == ControlPanelSecurityConfiguration.Access.ANONYMOUS || authentication != null) {
+        if (access == ControlPanelSecurityConfiguration.Access.ANONYMOUS) {
             return Publishers.just(SecurityRuleResult.ALLOWED);
         }
-        return Publishers.just(SecurityRuleResult.REJECTED);
+        if (authentication == null) {
+            return Publishers.just(SecurityRuleResult.REJECTED);
+        }
+        // Let stricter host-application authorization rules evaluate authenticated principals.
+        return Publishers.just(SecurityRuleResult.UNKNOWN);
     }
 
     @Override

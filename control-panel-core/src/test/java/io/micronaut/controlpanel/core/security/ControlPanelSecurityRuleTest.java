@@ -50,12 +50,12 @@ class ControlPanelSecurityRuleTest {
     }
 
     @Test
-    void authenticatedModeAllowsAuthenticatedControlPanelRequests() {
+    void authenticatedModeLeavesAuthenticatedControlPanelRequestsForHostAuthorization() {
         ControlPanelSecurityRule rule = newRule(ControlPanelSecurityConfiguration.Access.AUTHENTICATED, "/app");
         Authentication authentication = Authentication.build("sherlock", Set.of("USER"), Map.of());
 
-        assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.GET("/app/control-panel"), authentication));
-        assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.GET("/app" + ControlPanelSecurityPaths.OBJECT_STORAGE + "/local/object"), authentication));
+        assertEquals(SecurityRuleResult.UNKNOWN, check(rule, HttpRequest.GET("/app/control-panel"), authentication));
+        assertEquals(SecurityRuleResult.UNKNOWN, check(rule, HttpRequest.GET("/app" + ControlPanelSecurityPaths.OBJECT_STORAGE + "/local/object"), authentication));
     }
 
     @Test

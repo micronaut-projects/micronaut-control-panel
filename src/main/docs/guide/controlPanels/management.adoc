@@ -17,26 +17,32 @@ The following panels are available:
 === Protecting The Control Panel
 
 If your application already uses Micronaut Security, you can protect the control-panel-owned HTTP surface without
-turning the module into a separate OAuth client. Set `micronaut.control-panel.security.access=AUTHENTICATED` and let
-your existing Micronaut Security authentication mechanism authenticate the browser request.
+turning the module into a separate OAuth client. Set `micronaut.control-panel.security.access=AUTHENTICATED` to reject
+anonymous requests, then keep the actual authorization in your host application's Micronaut Security configuration.
 
-The following example keeps the control panel opt-in and requires an authenticated user before the UI or helper
-controllers can be reached:
+WARNING: `AUTHENTICATED` only blocks anonymous access. In shared or production-like environments, also require an
+admin-only role or a dedicated service principal for the UI path and the helper-controller paths shown below so the
+feature is not available to every authenticated user.
+
+The following example keeps the control panel opt-in, rejects anonymous requests, and limits the UI plus helper
+controllers to an admin role owned by the host application:
 
 [configuration]
 ----
 include::doc-examples/example-java/src/main/resources/application-secured.yml[tags=control-panel-authenticated]
 ----
 
-This secures the control panel routes themselves. Management endpoint security remains under the normal Micronaut
+This secures the control panel UI plus its helper-controller routes while still letting the host application decide
+which authenticated principals may use them. Management endpoint security remains under the normal Micronaut
 management configuration for your application.
 
 === Application Health
 
 This panel displays the health information of your application, and relies on the
 https://docs.micronaut.io/latest/guide/#healthEndpoint[Health Endpoint] to display its information. By default, the
-health endpoint only displays details to authenticated users. When the control panel itself is protected with
-`micronaut.control-panel.security.access=AUTHENTICATED`, the current authenticated request is reused and
+health endpoint only displays details to authenticated users. When the control panel itself rejects anonymous traffic
+with `micronaut.control-panel.security.access=AUTHENTICATED` and the authenticated principal is authorized by your host
+application, the current request is reused and
 `details-visible: AUTHENTICATED` works as expected:
 
 IMPORTANT: Make sure this is done in an environment-specific configuration file, for example, `application-dev.yml`.
@@ -88,8 +94,8 @@ This will show all values apart from those that contain the words `password`, `c
 
 This panel displays all the beans, and their relationships, grouped by packages. It relies on the
 https://docs.micronaut.io/latest/guide/#beansEndpoint[Beans Endpoint] to display all the bean definitions. Protect the
-control panel itself with `micronaut.control-panel.security.access=AUTHENTICATED` when you do not want to expose that
-information to anonymous users.
+control panel itself with `micronaut.control-panel.security.access=AUTHENTICATED` plus an admin-only host
+authorization rule when you do not want to expose that information to anonymous users or regular authenticated users.
 
 === Disabled Beans
 

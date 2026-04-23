@@ -4,6 +4,22 @@ micronaut:
     enabled: true
     basic-auth:
       enabled: true
+    intercept-url-map:
+      - pattern: /control-panel
+        access:
+          - ROLE_ADMIN
+      - pattern: /control-panel/**
+        access:
+          - ROLE_ADMIN
+      - pattern: /cache-control-panel-controller/**
+        access:
+          - ROLE_ADMIN
+      - pattern: /datasource-control-panel-controller/**
+        access:
+          - ROLE_ADMIN
+      - pattern: /object-storage-control-panel-controller/**
+        access:
+          - ROLE_ADMIN
   control-panel:
     security:
       access: AUTHENTICATED
