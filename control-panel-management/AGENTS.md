@@ -1,44 +1,25 @@
-# MODULE KNOWLEDGE BASE: control-panel-management
+# control-panel-management Agent Guidance
 
-Generated: 2026-01-14
-Commit: d5ed20d (aligned with root)
-Branch: 2.0.x
+This module owns control panels backed by Micronaut management endpoints such as health, environment, loggers, and beans.
 
-## OVERVIEW
-Module providing control panels integrating with Micronaut management endpoints for environment, health, loggers, and beans.
+## Where To Work
 
-## WHERE TO LOOK
-- Core panel implementations: src/main/java/io/micronaut/controlpanel/panels/management
-- Beans-specific panels: src/main/java/io/micronaut/controlpanel/panels/management/beans
-- Filters for endpoints: src/main/java/io/micronaut/controlpanel/panels/management (e.g., AllPlainEnvironmentEndpointFilter.java)
-- Spock tests: src/test/groovy/io/micronaut/controlpanel/panels/management (e.g., EnvironmentControlPanelSpec.groovy)
-- Build configuration: build.gradle.kts (dependencies on core and management modules)
-- Resources: src/main/resources/micronaut-control-panel (properties) and views (templates for panel rendering)
+- Panel implementations: `src/main/java/io/micronaut/controlpanel/panels/management`
+- Beans panels: `src/main/java/io/micronaut/controlpanel/panels/management/beans`
+- Endpoint filtering helpers: `src/main/java/io/micronaut/controlpanel/panels/management`
+- Templates: `src/main/resources/views`
+- Module defaults: `src/main/resources/micronaut-control-panel`
+- Tests: `src/test/java/io/micronaut/controlpanel/panels/management`
 
-## CODE MAP
-- EnvironmentControlPanel (class): panels/management/EnvironmentControlPanel.java — Displays environment properties via EnvironmentEndpoint
-- HealthControlPanel (class): panels/management/HealthControlPanel.java — Shows application health status using HealthEndpoint
-- LoggersControlPanel (class): panels/management/LoggersControlPanel.java — Manages logger configurations with ManagedLoggingSystem
-- BeansControlPanel (class): panels/management/beans/BeansControlPanel.java — Lists active beans grouped by package from BeanContext
-- DisabledBeansControlPanel (class): panels/management/beans/DisabledBeansControlPanel.java — Displays disabled beans from BeanContext
-- AllPlainEnvironmentEndpointFilter (class): panels/management/AllPlainEnvironmentEndpointFilter.java — Filter to show unmasked environment values (no Routes-specific filter; use for general endpoint filtering)
+## Rules
 
-## CONVENTIONS
-- Panels extend AbstractControlPanel and use @Requires for conditional enabling based on endpoint beans and config properties
-- Use @Singleton and @Refreshable where appropriate for panel lifecycle
-- Integrate directly with Micronaut endpoints (e.g., EnvironmentEndpoint, HealthEndpoint) for data retrieval
-- Tests exclusively in Spock (Groovy) under src/test/groovy with behavior-driven specs
-- Configuration via properties like micronaut.control-panel.<panel-name>.enabled
-- Panels compute badges (e.g., property count) and bodies from endpoint data
+- Integrate through Micronaut management endpoint beans rather than duplicating endpoint behavior.
+- Use `@Requires` conditions so panels are present only when their backing endpoint and configuration are available.
+- Keep endpoint-specific logic isolated; do not mix health, environment, logger, and bean concerns.
+- Preserve masking and filtering behavior for environment data unless a change explicitly targets it.
+- Keep panel badges and bodies cheap to compute and representative of endpoint state.
 
-## ANTI-PATTERNS (THIS MODULE)
-- Avoid direct reflection; rely on Micronaut's annotation-driven injection
-- Do not mix panel logic across domains (e.g., keep beans separate from loggers)
-- No custom build logic in build.gradle.kts; use root conventions
-- Steer clear of hardcoded values; use configurable filters like AllPlainEnvironmentEndpointFilter
-- Do not add dependencies without BOM alignment; stick to management and core modules
+## Verification
 
-## NOTES
-- Module requires Micronaut management features enabled
-- Focus on development-time visibility; not for production use
-- Tests validate panel enabling/disabling and data accuracy with Spock
+- Targeted tests: `./gradlew :micronaut-control-panel-management:test`
+- Run broader checks when endpoint contracts or shared panel behavior change.
