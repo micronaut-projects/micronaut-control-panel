@@ -57,6 +57,21 @@ Once you are satisfied with your changes:
 - Push your changes to your remote branch on GitHub
 - Send us a [pull request](https://help.github.com/articles/creating-a-pull-request)
 
+### UI changes and screenshots
+
+Every pull request that changes the Control Panel UI must include screenshots in the pull request description showing
+the visible behavior that was added or changed. This includes new control panels, changes to existing panels, template
+changes, JavaScript behavior, styling updates, and changes that affect the rendered UI indirectly.
+
+If the change is a useful long-term example, add it to `doc-examples/example-java` and capture the screenshots from that
+application. The example application is verified in CI, so only add scenarios that should remain part of the maintained
+example. When a scenario should be available only for focused UI verification, gate it behind an optional Micronaut
+environment and document the environment used to capture the screenshots.
+
+For UI changes that should not permanently live in the example application, create a separate temporary application
+outside the pull request and use it only to capture the screenshots. Do not commit that temporary application or its
+generated files.
+
 ## Merging a pull request
 
 Before we merge into a module's `master` branch a PR, we have to consider.
