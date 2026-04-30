@@ -124,6 +124,65 @@ class ControlPanelSecurityTest {
         }
     }
 
+    @Test
+    void hostInterceptUrlMapRulesAreAuthoritativeInAnonymousMode() {
+        try (EmbeddedServer server = ApplicationContext.run(EmbeddedServer.class, Map.ofEntries(
+            Map.entry("spec.name", "ControlPanelSecurityTest"),
+            Map.entry("micronaut.security.enabled", true),
+            Map.entry("micronaut.security.basic-auth.enabled", true),
+            Map.entry("micronaut.security.intercept-url-map[0].pattern", ControlPanelModuleConfiguration.DEFAULT_PATH + "/**"),
+            Map.entry("micronaut.security.intercept-url-map[0].access[0]", "ROLE_ADMIN")
+        ))) {
+            HttpClient client = server.getApplicationContext().createBean(HttpClient.class, server.getURL());
+
+            HttpClientResponseException nonAdmin = assertThrows(
+                HttpClientResponseException.class,
+                () -> client.toBlocking().exchange(authenticatedRequest(HttpRequest.GET(ControlPanelModuleConfiguration.DEFAULT_PATH), "user", "password"))
+            );
+            assertEquals(HttpStatus.FORBIDDEN, nonAdmin.getStatus());
+
+            assertEquals(HttpStatus.OK, client.toBlocking().exchange(
+                authenticatedRequest(HttpRequest.GET(ControlPanelModuleConfiguration.DEFAULT_PATH), "admin", "password")
+            ).status());
+
+            client.close();
+        }
+    }
+
+    @Test
+    void hostInterceptUrlMapRulesAreAuthoritativeInAuthenticatedMode() {
+        try (EmbeddedServer server = ApplicationContext.run(EmbeddedServer.class, Map.ofEntries(
+            Map.entry("spec.name", "ControlPanelSecurityTest"),
+            Map.entry("micronaut.security.enabled", true),
+            Map.entry("micronaut.security.basic-auth.enabled", true),
+            Map.entry(ControlPanelSecurityConfiguration.PROPERTY_ACCESS, "AUTHENTICATED"),
+            Map.entry("micronaut.security.intercept-url-map[0].pattern", ControlPanelModuleConfiguration.DEFAULT_PATH + "/**"),
+            Map.entry("micronaut.security.intercept-url-map[0].access[0]", "ROLE_ADMIN"),
+            Map.entry("micronaut.security.intercept-url-map[1].pattern", ControlPanelSecurityPaths.CACHE + "/**"),
+            Map.entry("micronaut.security.intercept-url-map[1].access[0]", "ROLE_ADMIN")
+        ))) {
+            HttpClient client = server.getApplicationContext().createBean(HttpClient.class, server.getURL());
+
+            HttpClientResponseException nonAdminControlPanel = assertThrows(
+                HttpClientResponseException.class,
+                () -> client.toBlocking().exchange(authenticatedRequest(HttpRequest.GET(ControlPanelModuleConfiguration.DEFAULT_PATH), "user", "password"))
+            );
+            assertEquals(HttpStatus.FORBIDDEN, nonAdminControlPanel.getStatus());
+
+            HttpClientResponseException nonAdminHelper = assertThrows(
+                HttpClientResponseException.class,
+                () -> client.toBlocking().exchange(authenticatedRequest(HttpRequest.DELETE(ControlPanelSecurityPaths.CACHE + "/demo"), "user", "password"))
+            );
+            assertEquals(HttpStatus.FORBIDDEN, nonAdminHelper.getStatus());
+
+            assertEquals(HttpStatus.OK, client.toBlocking().exchange(
+                authenticatedRequest(HttpRequest.GET(ControlPanelModuleConfiguration.DEFAULT_PATH), "admin", "password")
+            ).status());
+
+            client.close();
+        }
+    }
+
     private static List<String> helperPaths() {
         return List.of(
             ControlPanelSecurityPaths.CACHE + "/demo",
@@ -133,11 +192,21 @@ class ControlPanelSecurityTest {
     }
 
     private static MutableHttpRequest<?> authenticatedRequest(MutableHttpRequest<?> request) {
-        return request.header("Authorization", basicAuthorization());
+        return authenticatedRequest(request, "user", "password");
+    }
+
+    private static MutableHttpRequest<?> authenticatedRequest(MutableHttpRequest<?> request,
+                                                             String username,
+                                                             String password) {
+        return request.header("Authorization", basicAuthorization(username, password));
     }
 
     private static String basicAuthorization() {
-        return "Basic " + Base64.getEncoder().encodeToString("user:password".getBytes(StandardCharsets.UTF_8));
+        return basicAuthorization("user", "password");
+    }
+
+    private static String basicAuthorization(String username, String password) {
+        return "Basic " + Base64.getEncoder().encodeToString((username + ":" + password).getBytes(StandardCharsets.UTF_8));
     }
 
     @Requires(property = "spec.name", value = "ControlPanelSecurityTest")
@@ -147,8 +216,13 @@ class ControlPanelSecurityTest {
         @Override
         public AuthenticationResponse authenticate(io.micronaut.http.HttpRequest<B> requestContext,
                                                    AuthenticationRequest<String, String> authRequest) {
-            if ("user".equals(authRequest.getIdentity()) && "password".equals(authRequest.getSecret())) {
-                return AuthenticationResponse.success("user");
+            if ("password".equals(authRequest.getSecret())) {
+                if ("admin".equals(authRequest.getIdentity())) {
+                    return AuthenticationResponse.success("admin", List.of("ROLE_ADMIN"));
+                }
+                if ("user".equals(authRequest.getIdentity())) {
+                    return AuthenticationResponse.success("user", List.of("ROLE_USER"));
+                }
             }
             return AuthenticationResponse.failure();
         }

@@ -19,6 +19,7 @@ import io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.server.HttpServerConfiguration;
 import io.micronaut.security.authentication.Authentication;
+import io.micronaut.security.rules.ConfigurationInterceptUrlMapRule;
 import io.micronaut.security.rules.SecurityRuleResult;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
@@ -29,6 +30,13 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ControlPanelSecurityRuleTest {
+
+    @Test
+    void ruleRunsAfterHostInterceptUrlMapRules() {
+        ControlPanelSecurityRule rule = newRule(ControlPanelSecurityConfiguration.Access.AUTHENTICATED, null);
+
+        assertEquals(ConfigurationInterceptUrlMapRule.ORDER + 50, rule.getOrder());
+    }
 
     @Test
     void anonymousModeAllowsTheControlPanelSurface() {
