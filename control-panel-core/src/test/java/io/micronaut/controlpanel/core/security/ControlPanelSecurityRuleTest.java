@@ -64,9 +64,25 @@ class ControlPanelSecurityRuleTest {
 
         assertEquals(SecurityRuleResult.UNKNOWN, check(rule, HttpRequest.GET("/health"), null));
         assertEquals(SecurityRuleResult.UNKNOWN, check(rule, HttpRequest.GET("/demo"), Authentication.build("watson")));
+        assertEquals(SecurityRuleResult.UNKNOWN, check(rule, HttpRequest.GET("/micronaut-control-panel/js/editor.bundle.js"), null));
+    }
+
+    @Test
+    void configuredControlPanelPathIsProtectedWithContextPath() {
+        ControlPanelSecurityRule rule = newRule(ControlPanelSecurityConfiguration.Access.AUTHENTICATED, "/app", "/admin/panel");
+
+        assertEquals(SecurityRuleResult.REJECTED, check(rule, HttpRequest.GET("/app/admin/panel"), null));
+        assertEquals(SecurityRuleResult.REJECTED, check(rule, HttpRequest.GET("/app/admin/panel/routes"), null));
+        assertEquals(SecurityRuleResult.UNKNOWN, check(rule, HttpRequest.GET("/app/control-panel"), null));
     }
 
     private static ControlPanelSecurityRule newRule(ControlPanelSecurityConfiguration.Access access, String contextPath) {
+        return newRule(access, contextPath, ControlPanelModuleConfiguration.DEFAULT_PATH);
+    }
+
+    private static ControlPanelSecurityRule newRule(ControlPanelSecurityConfiguration.Access access,
+                                                    String contextPath,
+                                                    String controlPanelPath) {
         ControlPanelSecurityConfiguration securityConfiguration = () -> access;
         ControlPanelModuleConfiguration moduleConfiguration = new ControlPanelModuleConfiguration() {
             @Override
@@ -81,7 +97,7 @@ class ControlPanelSecurityRuleTest {
 
             @Override
             public String getPath() {
-                return ControlPanelModuleConfiguration.DEFAULT_PATH;
+                return controlPanelPath;
             }
 
             @Override
