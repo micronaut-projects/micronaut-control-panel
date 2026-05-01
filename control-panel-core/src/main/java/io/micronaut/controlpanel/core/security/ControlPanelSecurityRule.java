@@ -17,6 +17,7 @@ package io.micronaut.controlpanel.core.security;
 
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration;
+import io.micronaut.core.annotation.Internal;
 import io.micronaut.core.async.publisher.Publishers;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.server.HttpServerConfiguration;
@@ -43,6 +44,7 @@ import static io.micronaut.controlpanel.util.ControlPanelUtils.computeControlPan
  */
 @Requires(beans = SecurityFilter.class)
 @Singleton
+@Internal
 public final class ControlPanelSecurityRule implements SecurityRule<HttpRequest<?>> {
 
     static final int ORDER = ConfigurationInterceptUrlMapRule.ORDER + 50;

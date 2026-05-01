@@ -201,10 +201,6 @@ class ControlPanelSecurityTest {
         return request.header("Authorization", basicAuthorization(username, password));
     }
 
-    private static String basicAuthorization() {
-        return basicAuthorization("user", "password");
-    }
-
     private static String basicAuthorization(String username, String password) {
         return "Basic " + Base64.getEncoder().encodeToString((username + ":" + password).getBytes(StandardCharsets.UTF_8));
     }
