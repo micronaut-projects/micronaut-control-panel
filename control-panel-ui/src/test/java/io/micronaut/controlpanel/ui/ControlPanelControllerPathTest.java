@@ -17,10 +17,13 @@ package io.micronaut.controlpanel.ui;
 
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration;
+import io.micronaut.controlpanel.core.security.ControlPanelSecurityConfiguration;
 import io.micronaut.http.HttpStatus;
 import io.micronaut.http.client.HttpClient;
 import io.micronaut.runtime.server.EmbeddedServer;
 import org.junit.jupiter.api.Test;
+
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -28,7 +31,7 @@ class ControlPanelControllerPathTest {
 
     @Test
     void controlPanelIsAccessibleInTheDefaultPath() {
-        EmbeddedServer server = ApplicationContext.run(EmbeddedServer.class);
+        EmbeddedServer server = ApplicationContext.run(EmbeddedServer.class, anonymousControlPanelAccess());
         var ctx = server.getApplicationContext();
         var client = ctx.createBean(HttpClient.class, server.getURL()).toBlocking();
         var status = client.exchange(ControlPanelModuleConfiguration.DEFAULT_PATH).status();
@@ -39,7 +42,7 @@ class ControlPanelControllerPathTest {
     @Test
     void controlPanelPathIsConfigurable() {
         String path = "/cp";
-        EmbeddedServer server = ApplicationContext.run(EmbeddedServer.class, java.util.Map.of(ControlPanelModuleConfiguration.PROPERTY_PATH, path));
+        EmbeddedServer server = ApplicationContext.run(EmbeddedServer.class, anonymousControlPanelAccess(ControlPanelModuleConfiguration.PROPERTY_PATH, path));
         var ctx = server.getApplicationContext();
         var client = ctx.createBean(HttpClient.class, server.getURL()).toBlocking();
         var status = client.exchange(path).status();
@@ -50,7 +53,7 @@ class ControlPanelControllerPathTest {
     @Test
     void controlPanelHtmlTemplatesUseTheCustomPathInLinks() {
         String customPath = "/admin";
-        EmbeddedServer server = ApplicationContext.run(EmbeddedServer.class, java.util.Map.of(ControlPanelModuleConfiguration.PROPERTY_PATH, customPath));
+        EmbeddedServer server = ApplicationContext.run(EmbeddedServer.class, anonymousControlPanelAccess(ControlPanelModuleConfiguration.PROPERTY_PATH, customPath));
         var ctx = server.getApplicationContext();
         var client = ctx.createBean(HttpClient.class, server.getURL()).toBlocking();
         var response = client.exchange(customPath, String.class);
@@ -67,7 +70,7 @@ class ControlPanelControllerPathTest {
     void controlPanelHonoursApplicationContextPath() {
         String appPath = "/app";
         String controlPanelPath = "/cp";
-        EmbeddedServer server = ApplicationContext.run(EmbeddedServer.class, java.util.Map.of(
+        EmbeddedServer server = ApplicationContext.run(EmbeddedServer.class, anonymousControlPanelAccess(
             "micronaut.server.context-path", appPath,
             ControlPanelModuleConfiguration.PROPERTY_PATH, controlPanelPath
         ));
@@ -81,5 +84,27 @@ class ControlPanelControllerPathTest {
         assertTrue(html.contains("\"/app/cp/"));
         assertFalse(html.contains("\"/control-panel/"));
         server.stop();
+    }
+
+    private static Map<String, Object> anonymousControlPanelAccess() {
+        return Map.of(ControlPanelSecurityConfiguration.PROPERTY_ACCESS, "ANONYMOUS");
+    }
+
+    private static Map<String, Object> anonymousControlPanelAccess(String firstProperty,
+                                                                   Object firstValue,
+                                                                   String secondProperty,
+                                                                   Object secondValue) {
+        return Map.of(
+            ControlPanelSecurityConfiguration.PROPERTY_ACCESS, "ANONYMOUS",
+            firstProperty, firstValue,
+            secondProperty, secondValue
+        );
+    }
+
+    private static Map<String, Object> anonymousControlPanelAccess(String property, Object value) {
+        return Map.of(
+            ControlPanelSecurityConfiguration.PROPERTY_ACCESS, "ANONYMOUS",
+            property, value
+        );
     }
 }
