@@ -31,6 +31,33 @@ include::doc-examples/example-java/src/main/resources/application-secured.yml[ta
 This secures the control panel routes themselves. Management endpoint security remains under the normal Micronaut
 management configuration for your application.
 
+`AUTHENTICATED` is the control panel fallback rule: it requires a logged-in user, but it does not choose an application
+role for you. To restrict the control panel to administrators, configure role-based access with Micronaut Security in
+the host application. Host `intercept-url-map` rules run before the control-panel fallback rule, so they can require a
+role such as `ROLE_ADMIN` for the UI and helper controller routes:
+
+.Configuring role-based access for the control panel
+[configuration]
+----
+micronaut:
+  security:
+    intercept-url-map:
+      - pattern: /control-panel/**
+        access:
+          - ROLE_ADMIN
+      - pattern: /cache-control-panel-controller/**
+        access:
+          - ROLE_ADMIN
+      - pattern: /datasource-control-panel-controller/**
+        access:
+          - ROLE_ADMIN
+      - pattern: /object-storage-control-panel-controller/**
+        access:
+          - ROLE_ADMIN
+----
+
+If you customize `micronaut.control-panel.path`, use that path instead of `/control-panel/**` in the UI rule.
+
 === Application Health
 
 This panel displays the health information of your application, and relies on the
