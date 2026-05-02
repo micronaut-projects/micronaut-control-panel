@@ -47,25 +47,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class ControlPanelSecurityTest {
 
     @Test
-    void anonymousAccessRemainsAvailableByDefaultWhenSecurityIsEnabled() {
+    void authenticatedAccessIsRequiredByDefaultWhenSecurityIsEnabled() {
         try (EmbeddedServer server = ApplicationContext.run(EmbeddedServer.class, Map.of(
             "spec.name", "ControlPanelSecurityTest",
             "micronaut.security.enabled", true,
             "micronaut.security.basic-auth.enabled", true
-        ))) {
-            HttpClient client = server.getApplicationContext().createBean(HttpClient.class, server.getURL());
-            assertEquals(HttpStatus.OK, client.toBlocking().exchange(ControlPanelModuleConfiguration.DEFAULT_PATH).status());
-            client.close();
-        }
-    }
-
-    @Test
-    void authenticatedAccessRejectsAnonymousRequestsAndAllowsAuthenticatedOnes() {
-        try (EmbeddedServer server = ApplicationContext.run(EmbeddedServer.class, Map.of(
-            "spec.name", "ControlPanelSecurityTest",
-            "micronaut.security.enabled", true,
-            "micronaut.security.basic-auth.enabled", true,
-            ControlPanelSecurityConfiguration.PROPERTY_ACCESS, "AUTHENTICATED"
         ))) {
             HttpClient client = server.getApplicationContext().createBean(HttpClient.class, server.getURL());
 
@@ -75,9 +61,24 @@ class ControlPanelSecurityTest {
             );
             assertEquals(HttpStatus.UNAUTHORIZED, anonymous.getStatus());
 
-            HttpRequest<?> authenticatedRequest = HttpRequest.GET(ControlPanelModuleConfiguration.DEFAULT_PATH)
-                .header("Authorization", "Basic " + Base64.getEncoder().encodeToString("user:password".getBytes(StandardCharsets.UTF_8)));
-            assertEquals(HttpStatus.OK, client.toBlocking().exchange(authenticatedRequest).status());
+            assertEquals(HttpStatus.OK, client.toBlocking().exchange(
+                authenticatedRequest(HttpRequest.GET(ControlPanelModuleConfiguration.DEFAULT_PATH))
+            ).status());
+
+            client.close();
+        }
+    }
+
+    @Test
+    void anonymousAccessCanBeRestoredWhenSecurityIsEnabled() {
+        try (EmbeddedServer server = ApplicationContext.run(EmbeddedServer.class, Map.of(
+            "spec.name", "ControlPanelSecurityTest",
+            "micronaut.security.enabled", true,
+            "micronaut.security.basic-auth.enabled", true,
+            ControlPanelSecurityConfiguration.PROPERTY_ACCESS, "ANONYMOUS"
+        ))) {
+            HttpClient client = server.getApplicationContext().createBean(HttpClient.class, server.getURL());
+            assertEquals(HttpStatus.OK, client.toBlocking().exchange(ControlPanelModuleConfiguration.DEFAULT_PATH).status());
 
             client.close();
         }
@@ -130,6 +131,7 @@ class ControlPanelSecurityTest {
             Map.entry("spec.name", "ControlPanelSecurityTest"),
             Map.entry("micronaut.security.enabled", true),
             Map.entry("micronaut.security.basic-auth.enabled", true),
+            Map.entry(ControlPanelSecurityConfiguration.PROPERTY_ACCESS, "ANONYMOUS"),
             Map.entry("micronaut.security.intercept-url-map[0].pattern", ControlPanelModuleConfiguration.DEFAULT_PATH + "/**"),
             Map.entry("micronaut.security.intercept-url-map[0].access[0]", "ROLE_ADMIN")
         ))) {

@@ -5,8 +5,7 @@ micronaut:
     basic-auth:
       enabled: true
   control-panel:
-    security:
-      access: AUTHENTICATED
+    enabled: true
 
 endpoints:
   env:

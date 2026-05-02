@@ -25,22 +25,22 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class ControlPanelSecurityConfigurationTest {
 
     @Test
-    void defaultsToAnonymousAccess() {
+    void defaultsToAuthenticatedAccess() {
         try (ApplicationContext context = ApplicationContext.run()) {
             ControlPanelSecurityConfiguration configuration = context.getBean(ControlPanelSecurityConfiguration.class);
 
-            assertEquals(ControlPanelSecurityConfiguration.Access.ANONYMOUS, configuration.getAccess());
+            assertEquals(ControlPanelSecurityConfiguration.Access.AUTHENTICATED, configuration.getAccess());
         }
     }
 
     @Test
-    void bindsAuthenticatedAccess() {
+    void bindsAnonymousAccess() {
         try (ApplicationContext context = ApplicationContext.run(Map.of(
-            ControlPanelSecurityConfiguration.PROPERTY_ACCESS, "AUTHENTICATED"
+            ControlPanelSecurityConfiguration.PROPERTY_ACCESS, "ANONYMOUS"
         ))) {
             ControlPanelSecurityConfiguration configuration = context.getBean(ControlPanelSecurityConfiguration.class);
 
-            assertEquals(ControlPanelSecurityConfiguration.Access.AUTHENTICATED, configuration.getAccess());
+            assertEquals(ControlPanelSecurityConfiguration.Access.ANONYMOUS, configuration.getAccess());
         }
     }
 }
