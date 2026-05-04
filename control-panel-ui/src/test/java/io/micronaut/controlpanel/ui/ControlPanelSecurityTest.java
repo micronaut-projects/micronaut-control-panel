@@ -131,13 +131,34 @@ class ControlPanelSecurityTest {
             }
 
             assertEquals(HttpStatus.NO_CONTENT, client.toBlocking().exchange(
-                authenticatedRequest(HttpRequest.DELETE(ControlPanelSecurityPaths.CACHE + "/demo"))
+                authenticatedRequest(HttpRequest.DELETE(helperPath(ControlPanelSecurityPaths.CACHE_PATH, "/demo")))
             ).status());
             assertEquals(HttpStatus.OK, client.toBlocking().exchange(
-                authenticatedRequest(HttpRequest.GET(ControlPanelSecurityPaths.DATASOURCE + "/default/schema.js"))
+                authenticatedRequest(HttpRequest.GET(helperPath(ControlPanelSecurityPaths.DATASOURCE_PATH, "/default/schema.js")))
             ).status());
             assertEquals(HttpStatus.OK, client.toBlocking().exchange(
-                authenticatedRequest(HttpRequest.GET(ControlPanelSecurityPaths.OBJECT_STORAGE + "/default/hello.txt"))
+                authenticatedRequest(HttpRequest.GET(helperPath(ControlPanelSecurityPaths.OBJECT_STORAGE_PATH, "/default/hello.txt")))
+            ).status());
+
+            client.close();
+        }
+    }
+
+    @Test
+    void helperControllersHonorConfiguredControlPanelPath() {
+        String controlPanelPath = "/admin/panel";
+        try (EmbeddedServer server = ApplicationContext.run(EmbeddedServer.class, Map.ofEntries(
+            Map.entry("spec.name", "ControlPanelSecurityTest"),
+            Map.entry("micronaut.security.enabled", true),
+            Map.entry("micronaut.security.basic-auth.enabled", true),
+            Map.entry(ControlPanelSecurityConfiguration.PROPERTY_ACCESS, "AUTHENTICATED"),
+            Map.entry(ControlPanelModuleConfiguration.PROPERTY_PATH, controlPanelPath),
+            Map.entry("micronaut.caches.demo.initial-capacity", 1)
+        ))) {
+            HttpClient client = server.getApplicationContext().createBean(HttpClient.class, server.getURL());
+
+            assertEquals(HttpStatus.NO_CONTENT, client.toBlocking().exchange(
+                authenticatedRequest(HttpRequest.DELETE(helperPath(controlPanelPath, ControlPanelSecurityPaths.CACHE_PATH, "/demo")))
             ).status());
 
             client.close();
@@ -179,7 +200,7 @@ class ControlPanelSecurityTest {
             Map.entry(ControlPanelSecurityConfiguration.PROPERTY_ACCESS, "AUTHENTICATED"),
             Map.entry("micronaut.security.intercept-url-map[0].pattern", ControlPanelModuleConfiguration.DEFAULT_PATH + "/**"),
             Map.entry("micronaut.security.intercept-url-map[0].access[0]", "ROLE_ADMIN"),
-            Map.entry("micronaut.security.intercept-url-map[1].pattern", ControlPanelSecurityPaths.CACHE + "/**"),
+            Map.entry("micronaut.security.intercept-url-map[1].pattern", helperPath(ControlPanelSecurityPaths.CACHE_PATH, "/**")),
             Map.entry("micronaut.security.intercept-url-map[1].access[0]", "ROLE_ADMIN")
         ))) {
             HttpClient client = server.getApplicationContext().createBean(HttpClient.class, server.getURL());
@@ -192,7 +213,7 @@ class ControlPanelSecurityTest {
 
             HttpClientResponseException nonAdminHelper = assertThrows(
                 HttpClientResponseException.class,
-                () -> client.toBlocking().exchange(authenticatedRequest(HttpRequest.DELETE(ControlPanelSecurityPaths.CACHE + "/demo"), "user", "password"))
+                () -> client.toBlocking().exchange(authenticatedRequest(HttpRequest.DELETE(helperPath(ControlPanelSecurityPaths.CACHE_PATH, "/demo")), "user", "password"))
             );
             assertEquals(HttpStatus.FORBIDDEN, nonAdminHelper.getStatus());
 
@@ -206,10 +227,18 @@ class ControlPanelSecurityTest {
 
     private static List<String> helperPaths() {
         return List.of(
-            ControlPanelSecurityPaths.CACHE + "/demo",
-            ControlPanelSecurityPaths.DATASOURCE + "/default/schema.js",
-            ControlPanelSecurityPaths.OBJECT_STORAGE + "/default/hello.txt"
+            helperPath(ControlPanelSecurityPaths.CACHE_PATH, "/demo"),
+            helperPath(ControlPanelSecurityPaths.DATASOURCE_PATH, "/default/schema.js"),
+            helperPath(ControlPanelSecurityPaths.OBJECT_STORAGE_PATH, "/default/hello.txt")
         );
+    }
+
+    private static String helperPath(String helperPath, String route) {
+        return helperPath(ControlPanelModuleConfiguration.DEFAULT_PATH, helperPath, route);
+    }
+
+    private static String helperPath(String controlPanelPath, String helperPath, String route) {
+        return controlPanelPath + helperPath + route;
     }
 
     private static MutableHttpRequest<?> authenticatedRequest(MutableHttpRequest<?> request) {

@@ -146,7 +146,7 @@
         $(function() {
             const type = "{{dataSourceInfo.type}}";
             const ds = "{{ controlPanel.title }}";
-            const schemaUrl = "{{ ext.appPath }}/datasource-control-panel-controller/" + encodeURIComponent(ds) + "/schema.js";
+            const schemaUrl = "{{ ext.controlPanelPath }}/datasource-control-panel-controller/" + encodeURIComponent(ds) + "/schema.js";
             const cm = window.codemirror;
 
             function initEditor() {
@@ -326,9 +326,9 @@
         }
 
         function loadQueryPage() {
-            const appPath = '{{ ext.appPath }}';
+            const controlPanelPath = '{{ ext.controlPanelPath }}';
             const ds = '{{ controlPanel.title }}';
-            const url = appPath + '/datasource-control-panel-controller/' + encodeURIComponent(ds) + '/query';
+            const url = controlPanelPath + '/datasource-control-panel-controller/' + encodeURIComponent(ds) + '/query';
 
             globalAlertMessageClear();
             $.ajax({

@@ -15,6 +15,7 @@
  */
 package io.micronaut.controlpanel.core.security;
 
+import io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration;
 import io.micronaut.core.annotation.Internal;
 
 import java.util.List;
@@ -25,17 +26,21 @@ import java.util.List;
 @Internal
 public final class ControlPanelSecurityPaths {
 
-    public static final String CACHE = "/cache-control-panel-controller";
-    public static final String DATASOURCE = "/datasource-control-panel-controller";
-    public static final String OBJECT_STORAGE = "/object-storage-control-panel-controller";
+    public static final String CONTROL_PANEL = "${" + ControlPanelModuleConfiguration.PROPERTY_PATH + ":" + ControlPanelModuleConfiguration.DEFAULT_PATH + "}";
+    public static final String CACHE_PATH = "/cache-control-panel-controller";
+    public static final String DATASOURCE_PATH = "/datasource-control-panel-controller";
+    public static final String OBJECT_STORAGE_PATH = "/object-storage-control-panel-controller";
+    public static final String CACHE = CONTROL_PANEL + CACHE_PATH;
+    public static final String DATASOURCE = CONTROL_PANEL + DATASOURCE_PATH;
+    public static final String OBJECT_STORAGE = CONTROL_PANEL + OBJECT_STORAGE_PATH;
 
-    private static final List<String> HELPER_PATHS = List.of(CACHE, DATASOURCE, OBJECT_STORAGE);
+    private static final List<String> HELPER_PATHS = List.of(CACHE_PATH, DATASOURCE_PATH, OBJECT_STORAGE_PATH);
 
     private ControlPanelSecurityPaths() {
     }
 
     /**
-     * @return helper route prefixes that belong to the control panel HTTP surface
+     * @return helper route path suffixes that belong to the control panel HTTP surface
      */
     public static List<String> helperPaths() {
         return HELPER_PATHS;

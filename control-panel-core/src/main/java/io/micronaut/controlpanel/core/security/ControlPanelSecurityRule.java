@@ -55,12 +55,13 @@ public final class ControlPanelSecurityRule implements SecurityRule<HttpRequest<
     public ControlPanelSecurityRule(ControlPanelSecurityConfiguration securityConfiguration,
                                     ControlPanelModuleConfiguration moduleConfiguration,
                                     HttpServerConfiguration serverConfiguration) {
-        this.access = securityConfiguration.getAccess();
+        this.access = securityConfiguration.access();
         String applicationPath = Optional.ofNullable(serverConfiguration.getContextPath()).orElse("");
+        String controlPanelPath = computeControlPanelPath(applicationPath, moduleConfiguration.getPath());
         List<String> prefixes = new ArrayList<>();
-        prefixes.add(computeControlPanelPath(applicationPath, moduleConfiguration.getPath()));
+        prefixes.add(controlPanelPath);
         for (String helperPath : ControlPanelSecurityPaths.helperPaths()) {
-            prefixes.add(computeControlPanelPath(applicationPath, helperPath));
+            prefixes.add(controlPanelPath + helperPath);
         }
         this.protectedRoutePrefixes = List.copyOf(prefixes);
     }

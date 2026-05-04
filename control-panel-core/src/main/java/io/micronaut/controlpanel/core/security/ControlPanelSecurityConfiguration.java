@@ -26,19 +26,19 @@ import io.micronaut.core.bind.annotation.Bindable;
  * @since 2.0.0
  */
 @ConfigurationProperties(ControlPanelSecurityConfiguration.PREFIX)
-public interface ControlPanelSecurityConfiguration {
-
-    String PREFIX = ControlPanelModuleConfiguration.PREFIX + ".security";
-    String PROPERTY_ACCESS = PREFIX + ".access";
-    String DEFAULT_ACCESS = "ANONYMOUS";
-
+public record ControlPanelSecurityConfiguration(
     /**
      * Controls how the control panel HTTP routes are exposed.
      *
      * @return the configured access mode
      */
-    @Bindable(defaultValue = DEFAULT_ACCESS)
-    Access getAccess();
+    @Bindable(defaultValue = "ANONYMOUS")
+    Access access
+) {
+
+    public static final String PREFIX = ControlPanelModuleConfiguration.PREFIX + ".security";
+    public static final String PROPERTY_ACCESS = PREFIX + ".access";
+    public static final String DEFAULT_ACCESS = "ANONYMOUS";
 
     /**
      * Available access modes for the control panel HTTP surface.

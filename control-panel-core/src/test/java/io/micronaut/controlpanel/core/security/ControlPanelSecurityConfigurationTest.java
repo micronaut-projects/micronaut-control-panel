@@ -29,7 +29,7 @@ class ControlPanelSecurityConfigurationTest {
         try (ApplicationContext context = ApplicationContext.run()) {
             ControlPanelSecurityConfiguration configuration = context.getBean(ControlPanelSecurityConfiguration.class);
 
-            assertEquals(ControlPanelSecurityConfiguration.Access.ANONYMOUS, configuration.getAccess());
+            assertEquals(ControlPanelSecurityConfiguration.Access.ANONYMOUS, configuration.access());
         }
     }
 
@@ -40,7 +40,7 @@ class ControlPanelSecurityConfigurationTest {
         ))) {
             ControlPanelSecurityConfiguration configuration = context.getBean(ControlPanelSecurityConfiguration.class);
 
-            assertEquals(ControlPanelSecurityConfiguration.Access.AUTHENTICATED, configuration.getAccess());
+            assertEquals(ControlPanelSecurityConfiguration.Access.AUTHENTICATED, configuration.access());
         }
     }
 }
