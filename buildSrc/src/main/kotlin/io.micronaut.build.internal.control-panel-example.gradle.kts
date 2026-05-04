@@ -34,6 +34,7 @@ tasks.register<JavaExec>("playwrightInstall") {
 
 tasks.withType<Test> {
     dependsOn(tasks.named("playwrightInstall"))
+    systemProperty("micronaut.test.resources.server.client.read.timeout", "180")
 }
 
 configurations.named("nativeImageTestClasspath") {
