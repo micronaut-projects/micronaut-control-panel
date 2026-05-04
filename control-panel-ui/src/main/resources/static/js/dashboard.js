@@ -337,6 +337,49 @@
         $table.find("[data-filter-table-page-size-select]").val(String(pageSize));
     }
 
+    function bindModalEvents() {
+        $(document).on("click", "[data-toggle='modal'], [data-dialog-target]", function (event) {
+            event.preventDefault();
+            var targetSelector = this.getAttribute("data-dialog-target") || this.getAttribute("data-target") || this.getAttribute("href");
+            if (!targetSelector) {
+                return;
+            }
+            var target = document.querySelector(targetSelector);
+            if (target) {
+                showModal(target, this);
+            }
+            var menu = this.closest("[data-actions-menu]");
+            if (menu) {
+                menu.removeAttribute("open");
+            }
+        });
+
+        $(document).on("click", "[data-dismiss='modal'], [data-dialog-close]", function (event) {
+            event.preventDefault();
+            var modal = this.closest(".modal");
+            if (modal) {
+                hideModal(modal);
+            }
+        });
+
+        $(document).on("click", "." + modalBackdropClass, function () {
+            var modals = document.querySelectorAll(".modal.show");
+            if (modals.length > 0) {
+                hideModal(modals[modals.length - 1]);
+            }
+        });
+
+        $(document).on("keydown", function (event) {
+            if (event.key !== "Escape") {
+                return;
+            }
+            var modals = document.querySelectorAll(".modal.show");
+            if (modals.length > 0) {
+                hideModal(modals[modals.length - 1]);
+            }
+        });
+    }
+
     $.fn.modal = function (action, relatedTarget) {
         return this.each(function () {
             if (action === "hide") {
@@ -373,6 +416,8 @@
         $("#globalAlert").hide();
     };
 
+    bindModalEvents();
+
     $(function () {
         var title = sessionStorage.getItem("globalAlertTitle");
         if (title !== null) {
@@ -384,22 +429,6 @@
             );
             sessionStorage.clear();
         }
-
-        $(document).on("click", "[data-toggle='modal'], [data-dialog-target]", function (event) {
-            event.preventDefault();
-            var targetSelector = this.getAttribute("data-dialog-target") || this.getAttribute("data-target") || this.getAttribute("href");
-            if (!targetSelector) {
-                return;
-            }
-            var target = document.querySelector(targetSelector);
-            if (target) {
-                showModal(target, this);
-            }
-            var menu = this.closest("[data-actions-menu]");
-            if (menu) {
-                menu.removeAttribute("open");
-            }
-        });
 
         $(document).on("click", function (event) {
             if (event.target.closest("[data-actions-menu]")) {
@@ -428,31 +457,6 @@
         window.addEventListener("scroll", positionOpenActionMenus, true);
         window.addEventListener("resize", positionOpenHoverCards);
         window.addEventListener("scroll", positionOpenHoverCards, true);
-
-        $(document).on("click", "[data-dismiss='modal'], [data-dialog-close]", function (event) {
-            event.preventDefault();
-            var modal = this.closest(".modal");
-            if (modal) {
-                hideModal(modal);
-            }
-        });
-
-        $(document).on("click", "." + modalBackdropClass, function () {
-            var modals = document.querySelectorAll(".modal.show");
-            if (modals.length > 0) {
-                hideModal(modals[modals.length - 1]);
-            }
-        });
-
-        $(document).on("keydown", function (event) {
-            if (event.key !== "Escape") {
-                return;
-            }
-            var modals = document.querySelectorAll(".modal.show");
-            if (modals.length > 0) {
-                hideModal(modals[modals.length - 1]);
-            }
-        });
 
         $(document).on("click", "[data-card-widget='collapse']", function (event) {
             event.preventDefault();

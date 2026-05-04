@@ -1149,14 +1149,18 @@ dl.row dt {
 }
 
 #stopRefreshModal #stopConfirm,
-#stopRefreshModal #refreshForce {
+#stopRefreshModal #refreshForce,
+#invalidateConfirmModal #invalidateConfirm,
+#invalidateAllConfirmModal #invalidateAllConfirm {
     border-color: #dc2626;
     background: #dc2626;
     color: #fff;
 }
 
 #stopRefreshModal #stopConfirm:hover,
-#stopRefreshModal #refreshForce:hover {
+#stopRefreshModal #refreshForce:hover,
+#invalidateConfirmModal #invalidateConfirm:hover,
+#invalidateAllConfirmModal #invalidateAllConfirm:hover {
     border-color: #b91c1c;
     background: #b91c1c;
     color: #fff;

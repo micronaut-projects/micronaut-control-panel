@@ -126,6 +126,7 @@ class ControlPanelE2ETest extends AbstractE2ETest {
             .filter(new Locator.FilterOptions().setHasText("ROOT"))
             .getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName("Reconfigure"))
             .click();
+        assertThat(page.locator("#actionsModal")).isVisible();
         assertThat(page.locator("#modalLabel")).containsText("Reconfigure logger ROOT");
 
         page.locator("#actionsModal").getByLabel("Level:").selectOption("DEBUG");
@@ -213,6 +214,7 @@ class ControlPanelE2ETest extends AbstractE2ETest {
                 .first();
             fooRow.locator("[data-actions-menu] summary").click();
             fooRow.locator("[data-target='#invalidateConfirmModal']").click();
+            assertThat(page.locator("#invalidateConfirmModal")).isVisible();
             id(page, "invalidateConfirm").click();
 
             assertThat(page.locator("#globalAlertTitle")).containsText("Success");
@@ -231,6 +233,7 @@ class ControlPanelE2ETest extends AbstractE2ETest {
                 .locator(".card-tools [data-actions-menu] summary")
                 .click();
             page.locator("[data-target='#invalidateAllConfirmModal']").click();
+            assertThat(page.locator("#invalidateAllConfirmModal")).isVisible();
             id(page, "invalidateAllConfirm").click();
 
             assertThat(page.locator("#globalAlertTitle")).containsText("Success");
@@ -251,6 +254,7 @@ class ControlPanelE2ETest extends AbstractE2ETest {
 
         controlPanelDetails(page, "my-oracle").click();
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Show ER diagram")).click();
+        assertThat(page.locator("#erDiagramDialog")).isVisible();
         assertThat(page.locator("#erDiagramDialog")).containsText("Entity Relationship Diagram");
         assertThat(page.locator("#mermaidErCode")).containsText("TEST_DEPT");
         assertThat(page.locator("#mermaidErCode")).containsText("TEST_EMP");
