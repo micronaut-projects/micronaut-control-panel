@@ -1,63 +1,94 @@
 {{#with controlPanel.body }}
-<p class="card-text">
-    <dl class="row">
-        <dt class="col-sm-2">Levels</dt>
-        <dd class="col-sm-10">
-            {{#each levels}}
-                <span class="badge badge-primary">{{ this }}</span>
-            {{/each}}
-        </dd>
+<div class="cp-dashboard-stack">
+    <div class="card card-light">
+        <div class="card-header">
+            <h3 class="card-title">Logger configuration</h3>
+            <div class="card-tools">
+                <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#actionsModal">
+                    <i class="fa fa-plus"></i>
+                    Add new logger
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-2">Levels</dt>
+                <dd class="col-sm-10">
+                    {{#each levels}}
+                        <span class="badge">{{ this }}</span>
+                    {{/each}}
+                </dd>
 
-        {{#if loggers.ROOT }}
-            <dt class="col-sm-2">Effective level for unconfigured packages</dt>
-            <dd class="col-sm-10">
-                <span class="badge badge-primary">{{ loggers.ROOT.configuredLevel }}</span>
-            </dd>
-        {{/if}}
-    </dl>
+                {{#if loggers.ROOT }}
+                    <dt class="col-sm-2">Effective level for unconfigured packages</dt>
+                    <dd class="col-sm-10">
+                        <span class="badge">{{ loggers.ROOT.configuredLevel }}</span>
+                    </dd>
+                {{/if}}
+            </dl>
+        </div>
+    </div>
 
-    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#actionsModal">
-        <i class="fa fa-plus"></i>
-        Add new logger
-    </button>
+    <div class="card card-light">
+        <div class="card-header">
+            <h3 class="card-title">Configured loggers</h3>
+        </div>
+        <div class="card-body">
+            <div class="cp-data-table" data-filter-table data-filter-table-label="logger" data-filter-table-label-plural="loggers">
+                <div class="cp-data-table-toolbar">
+                    <div class="cp-data-table-summary" data-filter-table-summary>{{ loggers.size }} loggers</div>
+                    <div class="cp-data-table-search">
+                        <input type="text" class="form-control" data-filter-table-search placeholder="Search loggers" aria-label="Search loggers">
+                    </div>
+                </div>
+                <div class="cp-data-table-container">
+                    <table class="table cp-data-table-table cp-data-table-fixed">
+                        <thead>
+                        <tr>
+                            <th>Logger name</th>
+                            <th class="cp-logger-level">Level</th>
+                            <th class="cp-logger-actions">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {{#each loggers as |logger|}}
+                            <tr data-filter-table-row>
+                                <td><code class="cp-table-code">{{@key}}</code></td>
+                                <td class="cp-logger-level">
+                                    <span class="badge">{{ logger.configuredLevel }}</span>
+                                </td>
+                                <td class="cp-logger-actions">
+                                    <button type="button" class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#actionsModal" data-logger="{{@key}}" data-currentlevel="{{ logger.configuredLevel }}">
+                                        <i class="fa fa-edit"></i>
+                                        Reconfigure
+                                    </button>
+                                </td>
+                            </tr>
+                        {{/each}}
+                        <tr data-filter-table-empty hidden>
+                            <td class="cp-data-table-empty-cell" colspan="3">No loggers found.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-</p>
-<p class="card-text">
-    <table class="table">
-        <thead>
-        <tr>
-            <th>Logger name</th>
-            <th>Level</th>
-            <th>Actions</th>
-        </tr>
-        </thead>
-        <tbody>
-            {{#each loggers as |logger|}}
-            <tr>
-                <td><code>{{@key}}</code></td>
-                <td>
-                    <span class="badge badge-primary">{{ logger.configuredLevel }}</span>
-                </td>
-                <td>
-                    <button type="button" class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#actionsModal" data-logger="{{@key}}" data-currentlevel="{{ logger.configuredLevel }}">
-                        <i class="fa fa-edit"></i>
-                        Reconfigure
-                    </button>
-                </td>
-            </tr>
-            {{/each}}
-        </tbody>
-    </table>
-</p>
-
-<!-- Modal -->
-<div class="modal fade" id="actionsModal" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
+<div class="modal fade cp-dialog" id="actionsModal" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalLabel">Reconfigure logger</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+        <div class="modal-content cp-dialog-content">
+            <div class="modal-header cp-dialog-header">
+                <div class="cp-dialog-heading">
+                    <h5 class="modal-title cp-dialog-title" id="modalLabel">Reconfigure logger</h5>
+                    <p class="cp-dialog-description">Set an explicit log level for a logger name.</p>
+                </div>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" title="Close">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M18 6 6 18"></path>
+                        <path d="m6 6 12 12"></path>
+                    </svg>
                 </button>
             </div>
             <div class="modal-body">
@@ -68,7 +99,7 @@
                         <label for="configuredLevel" class="col-form-label">Level:</label>
                         <select name="configuredLevel" class="form-control" id="configuredLevel">
                             {{#each levels as |level|}}
-                                <option {{#eq level logger.effectiveLevel}}selected{{/eq}}>{{level}}</option>
+                                <option>{{level}}</option>
                             {{/each}}
                         </select>
                     </div>
@@ -85,9 +116,9 @@
 
 <script>
     $('#actionsModal').on('show.bs.modal', function (event) {
-        var button = $(event.relatedTarget) // Button that triggered the modal
-        var logger = button.data('logger') // Extract info from data-* attributes
-        var currentlevel = button.data('currentlevel') // Extract info from data-* attributes
+        var button = $(event.relatedTarget)
+        var logger = button.data('logger')
+        var currentlevel = button.data('currentlevel')
 
         var modal = $(this)
         if (logger) {

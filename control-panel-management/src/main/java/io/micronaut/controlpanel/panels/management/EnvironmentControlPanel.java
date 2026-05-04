@@ -28,6 +28,8 @@ import jakarta.inject.Singleton;
 import java.util.Map;
 import java.util.stream.StreamSupport;
 
+import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
+
 /**
  * Control panel that displays information about the environment properties.
  *
@@ -62,7 +64,12 @@ public class EnvironmentControlPanel extends AbstractControlPanel<Map<String, Ob
 
     @Override
     public String getBadge() {
-        return String.valueOf(totalProperties);
+        return EMPTY_STRING;
+    }
+
+    @Override
+    public String getDetailLinkName() {
+        return "Browse properties";
     }
 
 }

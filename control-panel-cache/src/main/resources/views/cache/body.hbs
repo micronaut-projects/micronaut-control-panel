@@ -1,3 +1,5 @@
-<p class="card-text">
-    <strong>{{badge}}</strong> objects in the cache.
-</p>
+{{#with controlPanel.body }}
+    <p class="card-text">
+        {{ cacheAsMap.size }} objects in the cache.
+    </p>
+{{/with}}

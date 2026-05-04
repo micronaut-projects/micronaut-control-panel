@@ -1,41 +1,42 @@
-<style>
-    .card-columns {
-        column-count: 4;
-    }
-</style>
-
-<div class="card-columns">
+<div class="cp-panel-grid">
     {{#each ext.controlPanels as |controlPanel|}}
-        <div class="card card-primary">
+        <article class="card cp-card cp-panel-card">
             <div class="card-header">
-                <div class="row">
-                    <div class="col">
-                        <h3 class="card-title">
-                            {{#if controlPanel.icon}}
-                                <i class="fa {{ controlPanel.icon }}"></i> &nbsp;
-                            {{/if}}
-                            {{{ controlPanel.title }}}
-                            {{#if controlPanel.badge }}
-                                <span class="badge badge-light">{{ controlPanel.badge }}</span>
-                            {{/if}}
-                        </h3>
-                    </div>
-                    {{#if controlPanel.hasDetails}}
-                        <div class="col text-right">
-                            <a class="btn btn-secondary btn-xs" role="button" href="{{ext.controlPanelPath}}/{{ controlPanel.name }}">
-                                <i class="fa fa-arrow-circle-right"></i> &nbsp; Details
-                            </a>
-                        </div>
+                <div class="cp-card-heading">
+                    {{#if controlPanel.icon}}
+                        <span class="cp-card-icon">
+                            <i class="fa {{ controlPanel.icon }}"></i>
+                        </span>
+                    {{/if}}
+                    <h2 class="cn-card-title cn-font-heading">
+                        {{{ controlPanel.title }}}
+                    </h2>
+                </div>
+                <div class="cp-card-action">
+                    {{#if controlPanel.badge }}
+                        <span class="badge badge-secondary">{{ controlPanel.badge }}</span>
                     {{/if}}
                 </div>
-
             </div>
-            <div class="card-body">
+            <div class="card-body cp-card-content">
                 {{> (lookup . 'controlPanel.bodyView.file') parameter=controlPanel }}
             </div>
-        </div>
-        {{#mod @index 4 0}}
-            <div class="w-100"></div>
-        {{/mod}}
+            {{#eq controlPanel.name "test-resources"}}
+                <div class="cp-card-footer">
+                    <a class="btn btn-secondary btn-sm w-100" target="_blank" rel="nofollow noreferrer" href="{{controlPanel.body}}/control-panel">
+                        Test Resources Control Panel
+                        <i class="fas fa-arrow-up-right-from-square"></i>
+                    </a>
+                </div>
+            {{else}}
+                {{#if controlPanel.hasDetails}}
+                <div class="cp-card-footer">
+                    <a class="btn btn-secondary btn-sm w-100" role="button" href="{{ext.controlPanelPath}}/{{ controlPanel.name }}">
+                        {{ controlPanel.detailLinkName }}
+                    </a>
+                </div>
+                {{/if}}
+            {{/eq}}
+        </article>
     {{/each}}
 </div>

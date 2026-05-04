@@ -25,7 +25,18 @@ import io.micronaut.core.annotation.ReflectiveAccess;
  * @param username The database username
  * @param password The database password
  * @param type     The database type/dialect
+ * @param jdbcInfo Additional JDBC metadata
  */
 @ReflectiveAccess
-public record DataSourceInfo(String name, String jdbcUrl, String username, String password, DatabaseType type) {
+public record DataSourceInfo(String name, String jdbcUrl, String username, String password, DatabaseType type, JdbcInfo jdbcInfo) {
+
+    public DataSourceInfo(String name, String jdbcUrl, String username, String password, DatabaseType type) {
+        this(name, jdbcUrl, username, password, type, JdbcInfo.EMPTY);
+    }
+
+    public DataSourceInfo {
+        if (jdbcInfo == null) {
+            jdbcInfo = JdbcInfo.EMPTY;
+        }
+    }
 }

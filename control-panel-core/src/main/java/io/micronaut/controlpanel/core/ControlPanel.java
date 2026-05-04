@@ -90,6 +90,16 @@ public interface ControlPanel<B> extends ConfigurableControlPanel {
     }
 
     /**
+     * Label used for the link that opens the detailed control panel view.
+     *
+     * @since 2.0.0
+     * @return the detail link label
+     */
+    default String getDetailLinkName() {
+        return "Details";
+    }
+
+    /**
      * Control panels are grouped by category. Categories are used to render the menu items of the
      * control panel UI.
      *
@@ -100,7 +110,7 @@ public interface ControlPanel<B> extends ConfigurableControlPanel {
      */
     @ReflectiveAccess
     record Category (String id, String name, String iconClass, Integer order) {
-        public static final Category MAIN = new Category("main", "Dashboard", "fa-tachometer-alt", Integer.MIN_VALUE);
+        public static final Category MAIN = new Category("main", "Dashboard", "fas fa-gauge-high", Integer.MIN_VALUE);
 
         public Category(String id, String name, String iconClass) {
             this(id, name, iconClass, 0);

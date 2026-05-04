@@ -29,6 +29,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.StreamSupport;
 
+import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
+
 /**
  * Base class for control panels for managing caches.
  * This class provides common functionality for displaying cache information
@@ -84,9 +86,7 @@ public abstract class AbstractCacheControlPanel<C extends SyncCache<?>> extends 
      */
     @Override
     public String getBadge() {
-        return getCacheSize()
-            .map(String::valueOf)
-            .orElseGet(super::getBadge);
+        return EMPTY_STRING;
     }
 
     /**
@@ -115,7 +115,7 @@ public abstract class AbstractCacheControlPanel<C extends SyncCache<?>> extends 
      */
     @Override
     public Category getCategory() {
-        return new Category(NAME, "Cache", "fa-memory");
+        return new Category(NAME, "Cache", "fas fa-memory");
     }
 
     /**

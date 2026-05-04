@@ -1,48 +1,103 @@
 {{#with controlPanel.body }}
+    <div class="cp-dashboard-stack cp-env-detail">
+        <div class="card card-light cp-env-property-card">
+            <div class="card-body cp-fill-card-body">
+                {{#if propertySources}}
+                    <div class="tabs cp-fill-tabs cp-property-source-tabs" data-tabs>
+                        <div class="tabs-list" role="tablist" aria-label="Property sources">
+                            <button type="button" class="tabs-trigger active" id="tab-property-sources-all" role="tab" aria-selected="true" aria-controls="panel-property-sources-all" data-tabs-trigger="property-sources-all">
+                                <span>All</span>
+                            </button>
+                            {{#each propertySources as |ps|}}
+                                <button type="button" class="tabs-trigger cp-hover-card" id="tab-property-source-{{@index}}" role="tab" aria-selected="false" aria-controls="panel-property-source-{{@index}}" data-tabs-trigger="property-source-{{@index}}" data-hover-card aria-describedby="property-source-order-{{@index}}">
+                                    <span>{{ps.name}}</span>
+                                    <span class="cp-hover-card-content" role="tooltip" id="property-source-order-{{@index}}">
+                                        <span class="cp-hover-card-label">Property source order</span>
+                                        <span class="cp-hover-card-value">{{ps.order}}</span>
+                                    </span>
+                                </button>
+                            {{/each}}
+                        </div>
 
-    <dl class="row">
-        <dt class="col-sm-2">Active environments</dt>
-        <dd class="col-sm-10">
-            {{#if activeEnvironments}}
-                {{#each activeEnvironments }}
-                    <span class="badge badge-primary">{{ this }}</span>
-                {{/each}}
-            {{else}}
-                (none)
-            {{/if}}
-        </dd>
+                        <div class="tabs-panel" id="panel-property-sources-all" role="tabpanel" aria-labelledby="tab-property-sources-all" data-tabs-panel="property-sources-all">
+                            <div class="cp-property-source-panel">
+                                <div class="cp-data-table cp-data-table-unpaged" data-filter-table data-filter-table-unpaged data-filter-table-label="property" data-filter-table-label-plural="properties">
+                                    <div class="cp-data-table-toolbar">
+                                        <div class="cp-data-table-summary" data-filter-table-summary>All properties</div>
+                                        <div class="cp-data-table-search">
+                                            <input type="text" class="form-control" data-filter-table-search placeholder="Search all properties" aria-label="Search all properties">
+                                        </div>
+                                    </div>
+                                    <div class="cp-data-table-container">
+                                        <table class="table cp-data-table-table cp-data-table-fixed">
+                                            <thead>
+                                            <tr>
+                                                <th class="cp-property-source-column">Source</th>
+                                                <th class="cp-property-name-column">Property</th>
+                                                <th>Value</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            {{#each propertySources as |ps|}}
+                                                {{#each ps.properties as |p|}}
+                                                    <tr data-filter-table-row>
+                                                        <td><code class="cp-table-code">{{ps.name}}</code></td>
+                                                        <td><code class="cp-table-code">{{@key}}</code></td>
+                                                        <td><code class="cp-table-code cp-property-value">{{p}}</code></td>
+                                                    </tr>
+                                                {{/each}}
+                                            {{/each}}
+                                            <tr data-filter-table-empty hidden>
+                                                <td class="cp-data-table-empty-cell" colspan="3">No properties found.</td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-        {{#if packages}}
-            <dt class="col-sm-2">Packages</dt>
-            <dd class="col-sm-10">
-                <code>{{join packages ", "}}</code>
-            </dd>
-        {{/if}}
-    </dl>
-
-    <div class="card-columns">
-        {{#each propertySources as |ps|}}
-            <div class="card card-light">
-                <div class="card-header">
-                    <h3 class="card-title">Property source: <code>{{ps.name}}</code></h3>
-                    <div class="card-tools">
-                        Order: <span class="badge badge-primary">{{ps.order}}</span>
+                        {{#each propertySources as |ps|}}
+                            <div class="tabs-panel" id="panel-property-source-{{@index}}" role="tabpanel" aria-labelledby="tab-property-source-{{@index}}" data-tabs-panel="property-source-{{@index}}" hidden>
+                                <div class="cp-property-source-panel">
+                                    <div class="cp-data-table cp-data-table-unpaged" data-filter-table data-filter-table-unpaged data-filter-table-label="property" data-filter-table-label-plural="properties">
+                                        <div class="cp-data-table-toolbar">
+                                            <div class="cp-data-table-summary" data-filter-table-summary>{{ps.properties.size}} properties</div>
+                                            <div class="cp-data-table-search">
+                                                <input type="text" class="form-control" data-filter-table-search placeholder="Search properties" aria-label="Search properties in {{ps.name}}">
+                                            </div>
+                                        </div>
+                                        <div class="cp-data-table-container">
+                                            <table class="table cp-data-table-table cp-data-table-fixed">
+                                                <thead>
+                                                <tr>
+                                                    <th class="cp-property-name-column">Property</th>
+                                                    <th>Value</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                {{#each ps.properties as |p|}}
+                                                    <tr data-filter-table-row>
+                                                        <td><code class="cp-table-code">{{@key}}</code></td>
+                                                        <td><code class="cp-table-code cp-property-value">{{p}}</code></td>
+                                                    </tr>
+                                                {{/each}}
+                                                <tr data-filter-table-empty hidden>
+                                                    <td class="cp-data-table-empty-cell" colspan="2">No properties found.</td>
+                                                </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {{/each}}
                     </div>
-                </div>
-                <div class="card-body">
-                    {{#neq ps.properties.size 0 }}
-                        <pre>
-                            <code class="language-properties">{{#each ps.properties as |p|}}{{@key}} = {{p}}
-{{/each}}</code></pre>
-                    {{else}}
-                        No properties
-                    {{/neq}}
-                </div>
+                {{else}}
+                    <div class="cp-data-table-empty">No property sources found.</div>
+                {{/if}}
             </div>
-            {{#mod @index 2 0}}
-                <div class="w-100"></div>
-            {{/mod}}
-        {{/each}}
+        </div>
     </div>
 
 {{/with}}

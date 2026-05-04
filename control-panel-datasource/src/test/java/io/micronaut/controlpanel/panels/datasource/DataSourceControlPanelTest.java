@@ -67,6 +67,7 @@ class DataSourceControlPanelTest {
         // Then
         assertEquals(BEAN_NAME, panel.getBeanName());
         assertEquals(DataSourceControlPanel.NAME, panel.getPanelName());
+        assertEquals("Query", panel.getDetailLinkName());
         assertNotNull(panel.getBody());
         verify(dataSourceService).getTables();
         verify(dataSourceService).generateMermaidER(EMPTY_TABLE_LIST);
@@ -117,7 +118,7 @@ class DataSourceControlPanelTest {
     }
 
     @Test
-    void getBadgeReturnsTableCount() {
+    void getBadgeIsEmptyWhenTableCountIsRenderedInTheBody() {
         // Given
         List<Table> tables = List.of(new Table("", "test", List.of(), Set.of(), List.of()));
         when(dataSourceService.getTables()).thenReturn(tables);
@@ -127,7 +128,7 @@ class DataSourceControlPanelTest {
         DataSourceControlPanel panel = new DataSourceControlPanel(BEAN_NAME, dataSourceService, environment, configuration);
 
         // Then
-        assertEquals("1", panel.getBadge());
+        assertEquals("", panel.getBadge());
     }
 
     @Test

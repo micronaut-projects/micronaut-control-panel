@@ -31,6 +31,7 @@ import jakarta.inject.Singleton;
 import java.util.Collection;
 import java.util.Comparator;
 
+import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
 import static io.micronaut.controlpanel.panels.management.beans.BeansControlPanel.BEANS_CATEGORY;
 
 /**
@@ -71,7 +72,7 @@ public class DisabledBeansControlPanel extends AbstractControlPanel<DisabledBean
 
     @Override
     public String getBadge() {
-        return String.valueOf(beanDefinitionsCount);
+        return EMPTY_STRING;
     }
 
     /**

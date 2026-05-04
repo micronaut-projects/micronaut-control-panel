@@ -31,6 +31,8 @@ import org.slf4j.LoggerFactory;
 import javax.sql.DataSource;
 import java.util.List;
 
+import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
+
 /**
  * Control panel for DataSource metadata, displaying tables, columns, keys, etc.
  */
@@ -38,7 +40,7 @@ import java.util.List;
 public class DataSourceControlPanel extends AbstractEachBeanControlPanel<Body> {
 
     public static final String NAME = "datasource";
-    public static final String DEFAULT_ICON_CLASS = "fa-database";
+    public static final String DEFAULT_ICON_CLASS = "fas fa-database";
     private static final Logger LOG = LoggerFactory.getLogger(DataSourceControlPanel.class);
 
     private final String beanName;
@@ -56,24 +58,25 @@ public class DataSourceControlPanel extends AbstractEachBeanControlPanel<Body> {
             LOG.debug("Initializing DataSourceControlPanel for bean='{}'", beanName);
         }
         this.tables = dataSourceService.getTables();
-        this.dataSourceInfo = createDataSourceInfo(environment, beanName);
+        this.dataSourceInfo = createDataSourceInfo(environment, beanName, dataSourceService);
         this.body = new Body(dataSourceInfo, tables, dataSourceService.generateMermaidER(tables));
         if (LOG.isDebugEnabled()) {
             LOG.debug("DataSourceControlPanel initialized: bean='{}', tables={}, dbType={} URL='{}' user='{}'", beanName, tables.size(), dataSourceInfo.type(), safeUrl(dataSourceInfo.jdbcUrl()), safeUser(dataSourceInfo.username()));
         }
     }
 
-    private DataSourceInfo createDataSourceInfo(Environment env, String beanName) {
+    private DataSourceInfo createDataSourceInfo(Environment env, String beanName, DataSourceService dataSourceService) {
         var jdbUrl = env.getProperty("datasources.%s.url".formatted(beanName), String.class, "");
         var username = env.getProperty("datasources.%s.username".formatted(beanName), String.class, "");
         var password = env.getProperty("datasources.%s.password".formatted(beanName), String.class, "");
         var dialect = env.getProperty("datasources.%s.dialect".formatted(beanName), String.class, "");
         var dbType = env.getProperty("datasources.%s.db-type".formatted(beanName), String.class, "");
+        var jdbcInfo = dataSourceService.getJdbcInfo();
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("Resolved datasource props for bean='{}': url='{}', user='{}', dialect='{}', dbType='{}'", beanName, safeUrl(jdbUrl), safeUser(username), dialect, dbType);
         }
-        return new DataSourceInfo(beanName, jdbUrl, username, password, DatabaseType.of(dialect, dbType));
+        return new DataSourceInfo(beanName, jdbUrl, username, password, DatabaseType.of(dialect, dbType), jdbcInfo);
     }
 
     @Override
@@ -96,7 +99,12 @@ public class DataSourceControlPanel extends AbstractEachBeanControlPanel<Body> {
 
     @Override
     public String getBadge() {
-        return String.valueOf(tables.size());
+        return EMPTY_STRING;
+    }
+
+    @Override
+    public String getDetailLinkName() {
+        return "Query";
     }
 
     private static String safeUrl(String url) {

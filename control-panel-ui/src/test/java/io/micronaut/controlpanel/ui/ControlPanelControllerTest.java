@@ -106,7 +106,7 @@ class ControlPanelControllerTest {
 
         @Override
         public Category getCategory() {
-            return new Category("application", "My Application", "fa-copy", Integer.MAX_VALUE);
+            return new Category("application", "My Application", "fas fa-copy", Integer.MAX_VALUE);
         }
 
         @Override

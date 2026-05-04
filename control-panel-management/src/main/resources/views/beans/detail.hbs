@@ -1,45 +1,112 @@
-<style>
-    button {
-        margin: 5px;
-    }
-</style>
-
 {{#with controlPanel.body }}
-    <div class="row">
-        <div class="card card-light">
-            <div class="card-header">
-                <h3 class="card-title">Other beans</h3>
-                <div class="card-tools">
-                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                        <i class="fas fa-minus"></i>
-                    </button>
-                </div>
-            </div>
+    <div class="cp-dashboard-stack">
+        <div class="card card-light cp-fill-card cp-beans-detail-card">
+            <div class="card-body cp-fill-card-body">
+                <div class="tabs cp-fill-tabs" data-tabs>
+                    <div class="tabs-list" role="tablist" aria-label="Bean groups">
+                        <button type="button" class="tabs-trigger active" id="tab-micronaut-beans" role="tab" aria-selected="true" aria-controls="panel-micronaut-beans" data-tabs-trigger="micronaut-beans">
+                            Micronaut Framework
+                            <span class="badge badge-secondary">{{ micronautBeansByPackage.size }}</span>
+                        </button>
+                        <button type="button" class="tabs-trigger" id="tab-other-beans" role="tab" aria-selected="false" aria-controls="panel-other-beans" data-tabs-trigger="other-beans">
+                            Other beans
+                            <span class="badge badge-secondary">{{ otherBeansByPackage.size }}</span>
+                        </button>
+                    </div>
 
-            <div class="card-body">
-                {{#each otherBeansByPackage as |pkg|}}
-                    {{> "views/beans/package" parameter=pkg pkgType="other"}}
-                {{/each}}
+                    <div class="tabs-panel" id="panel-micronaut-beans" role="tabpanel" aria-labelledby="tab-micronaut-beans" data-tabs-panel="micronaut-beans">
+                        <div class="cp-data-table cp-data-table-paged" data-filter-table data-filter-table-page-size="8" data-filter-table-label="package" data-filter-table-label-plural="packages">
+                            <div class="cp-data-table-toolbar">
+                                <div class="cp-data-table-summary" data-filter-table-summary>{{ micronautBeansByPackage.size }} packages</div>
+                                <div class="cp-data-table-search">
+                                    <input type="text" class="form-control" data-filter-table-search placeholder="Search packages" aria-label="Search Micronaut Framework packages">
+                                </div>
+                            </div>
+                            <div class="cp-data-table-container">
+                                <table class="table cp-data-table-table cp-data-table-fixed">
+                                    <thead>
+                                    <tr>
+                                        <th>Package</th>
+                                        <th class="cp-bean-count">Beans</th>
+                                        <th class="cp-bean-actions">Actions</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {{#each micronautBeansByPackage as |pkg|}}
+                                        {{> "views/beans/package" parameter=pkg pkgType="micronaut" tableRow=true}}
+                                    {{/each}}
+                                    <tr data-filter-table-empty hidden>
+                                        <td class="cp-data-table-empty-cell" colspan="3">No packages found.</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="cp-data-table-footer">
+                                <label class="cp-data-table-page-size">
+                                    Rows per page
+                                    <select class="form-control" data-filter-table-page-size-select aria-label="Micronaut Framework packages per page">
+                                        <option value="5">5</option>
+                                        <option value="8" selected>8</option>
+                                        <option value="10">10</option>
+                                        <option value="20">20</option>
+                                    </select>
+                                </label>
+                                <div class="cp-data-table-pagination">
+                                    <span class="cp-data-table-page" data-filter-table-page>Page 1 of 1</span>
+                                    <button type="button" class="btn btn-secondary btn-sm" data-filter-table-prev>Previous</button>
+                                    <button type="button" class="btn btn-secondary btn-sm" data-filter-table-next>Next</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tabs-panel" id="panel-other-beans" role="tabpanel" aria-labelledby="tab-other-beans" data-tabs-panel="other-beans" hidden>
+                        <div class="cp-data-table cp-data-table-paged" data-filter-table data-filter-table-page-size="8" data-filter-table-label="package" data-filter-table-label-plural="packages">
+                            <div class="cp-data-table-toolbar">
+                                <div class="cp-data-table-summary" data-filter-table-summary>{{ otherBeansByPackage.size }} packages</div>
+                                <div class="cp-data-table-search">
+                                    <input type="text" class="form-control" data-filter-table-search placeholder="Search packages" aria-label="Search other bean packages">
+                                </div>
+                            </div>
+                            <div class="cp-data-table-container">
+                                <table class="table cp-data-table-table cp-data-table-fixed">
+                                    <thead>
+                                    <tr>
+                                        <th>Package</th>
+                                        <th class="cp-bean-count">Beans</th>
+                                        <th class="cp-bean-actions">Actions</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {{#each otherBeansByPackage as |pkg|}}
+                                        {{> "views/beans/package" parameter=pkg pkgType="other" tableRow=true}}
+                                    {{/each}}
+                                    <tr data-filter-table-empty hidden>
+                                        <td class="cp-data-table-empty-cell" colspan="3">No packages found.</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="cp-data-table-footer">
+                                <label class="cp-data-table-page-size">
+                                    Rows per page
+                                    <select class="form-control" data-filter-table-page-size-select aria-label="Other bean packages per page">
+                                        <option value="5">5</option>
+                                        <option value="8" selected>8</option>
+                                        <option value="10">10</option>
+                                        <option value="20">20</option>
+                                    </select>
+                                </label>
+                                <div class="cp-data-table-pagination">
+                                    <span class="cp-data-table-page" data-filter-table-page>Page 1 of 1</span>
+                                    <button type="button" class="btn btn-secondary btn-sm" data-filter-table-prev>Previous</button>
+                                    <button type="button" class="btn btn-secondary btn-sm" data-filter-table-next>Next</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    <div class="row">
-        <div class="card card-light">
-            <div class="card-header">
-                <h3 class="card-title">Micronaut Framework beans</h3>
-                <div class="card-tools">
-                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                        <i class="fas fa-minus"></i>
-                    </button>
-                </div>
-            </div>
-
-            <div class="card-body">
-                {{#each micronautBeansByPackage as |pkg|}}
-                    {{> "views/beans/package" parameter=pkg pkgType="micronaut" }}
-                {{/each}}
-            </div>
-        </div>
-    </div>
-
 {{/with}}

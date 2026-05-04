@@ -1,31 +1,34 @@
-<div class="card card-light">
+<div class="card card-light cp-route-card">
     <div class="card-header">
         <h3 class="card-title"><code>{{@key}}</code></h3>
     </div>
     <div class="card-body">
-        <table class="table">
-            <thead>
-            <tr>
-                <th>HTTP method(s)</th>
-                <th>URI</th>
-                <th>Produces</th>
-                <th>Consumes</th>
-                <th>Method</th>
-            </tr>
-            </thead>
-            <tbody>
-            {{#each routes as |route|}}
+        <div class="cp-data-table-container">
+            <table class="table cp-data-table-table">
+                <thead>
                 <tr>
-                    <td><code>{{route.httpMethodName}}</code></td>
-                    <td><code><a href="{{route.uriMatchTemplate}}" target="_blank">{{route.uriMatchTemplate}}</a></code></td>
-                    <td><code>{{join route.produces ", "}}</code></td>
-                    <td><code>{{defaultIfEmpty (join route.consumes ", ") ""}}</code></td>
-                    <td><code>{{route.targetMethod.name}}({{join route.targetMethod.arguments ", "}})</code></td>
+                    <th>HTTP method(s)</th>
+                    <th>URI</th>
+                    <th>Produces</th>
+                    <th>Consumes</th>
+                    <th>Method</th>
                 </tr>
-
-            {{/each}}
-            </tbody>
-        </table>
-
+                </thead>
+                <tbody>
+                {{#each routes as |route|}}
+                    <tr>
+                        <td><code>{{route.httpMethodName}}</code></td>
+                        <td><code><a href="{{route.uriMatchTemplate}}" target="_blank" rel="noreferrer">{{route.uriMatchTemplate}}</a></code></td>
+                        <td><code>{{join route.produces ", "}}</code></td>
+                        <td><code>{{defaultIfEmpty (join route.consumes ", ") ""}}</code></td>
+                        <td><code>{{route.targetMethod.name}}({{join route.targetMethod.arguments ", "}})</code></td>
+                    </tr>
+                {{/each}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer">
+        <span class="badge badge-secondary">{{routes.size}} routes</span>
     </div>
 </div>

@@ -1,12 +1,12 @@
 {{#with controlPanel.body }}
     <p class="card-text">
-        <strong>{{badge}}</strong> properties resolved across <strong>{{ propertySources.size }}</strong> property sources.
+        Properties resolved across {{ propertySources.size }} property sources.
     </p>
     <p class="card-text">
-        <strong>Active environments:</strong>
+        Active environments:
         {{#if activeEnvironments}}
             {{#each activeEnvironments }}
-                <span class="badge badge-primary">{{ this }}</span>
+                <span class="badge">{{ this }}</span>
             {{/each}}
         {{else}}
             (none)

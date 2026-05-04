@@ -100,7 +100,7 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         categoryLink(page, "Beans").click();
         controlPanelDetails(page, "Disabled Beans").click();
 
-        var searchBox = page.getByRole(AriaRole.SEARCHBOX, new GetByRoleOptions().setName("Search:"));
+        var searchBox = page.getByRole(AriaRole.TEXTBOX, new GetByRoleOptions().setName("Search disabled beans"));
         searchBox.click();
         searchBox.fill("jcache");
 
@@ -234,7 +234,8 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         assertThat(page.locator("#erDiagramContainer")).matchesAriaSnapshot("- document: /TEST_DEPT numeric\\(2\\) DEPTNO PK NOT NULL string\\(\\d+\\) DNAME string\\(\\d+\\) LOC TEST_EMP numeric\\(4\\) EMPNO PK NOT NULL string\\(\\d+\\) ENAME string\\(9\\) JOB numeric\\(4\\) MGR FK date HIREDATE numeric\\(7\\) SAL numeric\\(7\\) COMM numeric\\(2\\) DEPTNO FK FK_DEPTNO FK_EMPNO/");
 
         page.getByLabel("Close").click();
-        assertThat(page.locator("#jstree")).matchesAriaSnapshot("- tree:\n  - treeitem \" DEPT\" [level=1]\n  - treeitem \" EMP\" [level=1]");
+        assertThat(page.locator("[data-schema-tree]")).containsText("DEPT");
+        assertThat(page.locator("[data-schema-tree]")).containsText("EMP");
 
         page.getByRole(AriaRole.TEXTBOX).fill("SELECT * FROM DEPT");
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Execute query")).click();

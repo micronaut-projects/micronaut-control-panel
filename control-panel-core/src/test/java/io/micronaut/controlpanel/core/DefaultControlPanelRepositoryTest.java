@@ -152,7 +152,7 @@ class DefaultControlPanelRepositoryTest {
 
         @Override
         public Category getCategory() {
-            return new Category("application", "My Application", "fa-copy");
+            return new Category("application", "My Application", "fas fa-copy");
         }
 
         @Override

@@ -1,74 +1,80 @@
 {{#with controlPanel.body }}
+    <div class="cp-dashboard-stack">
+        {{#eq status.name 'UP'}}
+            <div class="card card-success">
+                <div class="card-header">
+                    <h3 class="card-title">Status</h3>
+                </div>
+                <div class="card-body">
+                    <p class="card-text"><i class="icon fas fa-check"></i> All health checks passed</p>
+                </div>
+            </div>
+        {{/eq}}
 
-    {{#eq status.name 'UP'}}
-        <div class="alert alert-success">
-            <h5><i class="icon fas fa-check"></i> All health checks passed</h5>
-        </div>
-    {{/eq}}
+        <div class="cp-detail-card-grid">
+            {{#each details as |subDetails|}}
+                {{#if subDetails.details}}
+                    {{#partialExists (stringFormat "views/health/%s" (cut @key '()'))}}
+                        {{#eq subDetails.status.name 'UP'}}
+                            <div class="card card-success">
+                        {{/eq}}
+                        {{#eq subDetails.status.name 'DOWN'}}
+                            <div class="card card-danger">
+                        {{/eq}}
+                        {{#eq subDetails.status.name 'UNKNOWN'}}
+                            <div class="card card-warning">
+                        {{/eq}}
 
-    <div class="card-columns">
-        {{#each details as |subDetails|}}
-            {{#if subDetails.details}}
-                {{#partialExists (stringFormat "views/health/%s" (cut @key '()'))}}
-                    {{#eq subDetails.status.name 'UP'}}
-                        <div class="card card-success">
-                    {{/eq}}
-                    {{#eq subDetails.status.name 'DOWN'}}
-                        <div class="card card-danger">
-                    {{/eq}}
-                    {{#eq subDetails.status.name 'UNKNOWN'}}
-                        <div class="card card-warning">
-                    {{/eq}}
-
-                        <div class="card-header">
-                            <h3 class="card-title">{{titleize (decamelize (cut @key '()')) }}</h3>
+                            <div class="card-header">
+                                <h3 class="card-title">{{titleize (decamelize (cut @key '()')) }}</h3>
+                            </div>
+                            <div class="card-body">
+                                {{> (stringFormat "views/health/%s" (cut @key '()')) parameter=subDetails }}
+                            </div>
                         </div>
-                        <div class="card-body">
-                            {{> (stringFormat "views/health/%s" (cut @key '()')) parameter=subDetails }}
-                        </div>
-                    </div>
-                {{else}}
-                    {{#eq subDetails.status.name 'UP'}}
-                        <div class="card card-success">
-                    {{/eq}}
-                    {{#eq subDetails.status.name 'DOWN'}}
-                        <div class="card card-danger">
-                    {{/eq}}
-                    {{#eq subDetails.status.name 'UNKNOWN'}}
-                        <div class="card card-warning">
-                    {{/eq}}
+                    {{else}}
+                        {{#eq subDetails.status.name 'UP'}}
+                            <div class="card card-success">
+                        {{/eq}}
+                        {{#eq subDetails.status.name 'DOWN'}}
+                            <div class="card card-danger">
+                        {{/eq}}
+                        {{#eq subDetails.status.name 'UNKNOWN'}}
+                            <div class="card card-warning">
+                        {{/eq}}
 
-                        <div class="card-header">
-                            <h3 class="card-title">{{titleize (decamelize (cut @key '()')) }}</h3>
-                        </div>
-                        <div class="card-body">
-                            <p class="card-text">
+                            <div class="card-header">
+                                <h3 class="card-title">{{titleize (decamelize (cut @key '()')) }}</h3>
+                            </div>
+                            <div class="card-body">
                                 {{#isMap subDetails.details}}
-                                    <table class="table table-sm">
-                                        <thead>
-                                            <tr>
-                                                <th>Property</th>
-                                                <th>Value</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {{#each subDetails.details as |it|}}
+                                    <div class="cp-data-table-container">
+                                        <table class="table table-sm cp-data-table-table">
+                                            <thead>
                                                 <tr>
-                                                    <td>{{titleize (decamelize (cut @key '()')) }}</td>
-                                                    <td>{{it}}</td>
+                                                    <th>Property</th>
+                                                    <th>Value</th>
                                                 </tr>
-                                            {{/each}}
-                                        </tbody>
-                                    </table>
+                                            </thead>
+                                            <tbody>
+                                                {{#each subDetails.details as |it|}}
+                                                    <tr>
+                                                        <td>{{titleize (decamelize (cut @key '()')) }}</td>
+                                                        <td>{{it}}</td>
+                                                    </tr>
+                                                {{/each}}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 {{else}}
-                                    {{subDetails.details}}
+                                    <p class="card-text">{{subDetails.details}}</p>
                                 {{/isMap}}
-                            </p>
+                            </div>
                         </div>
-                    </div>
-                {{/partialExists}}
-            {{/if}}
-        {{/each}}
+                    {{/partialExists}}
+                {{/if}}
+            {{/each}}
+        </div>
     </div>
 
 {{/with}}
