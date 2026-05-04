@@ -41,6 +41,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
+
 /**
  * Control panel that displays information about the available routes.
  *
@@ -73,8 +75,6 @@ public class RoutesControlPanel extends AbstractControlPanel<RoutesControlPanel.
 
     private final Body body;
 
-    private final String badge;
-
     public RoutesControlPanel(Router router,
 
                               @Named(NAME) ControlPanelConfiguration configuration,
@@ -89,8 +89,8 @@ public class RoutesControlPanel extends AbstractControlPanel<RoutesControlPanel.
 
         this.body = new Body(appRoutes, micronautRoutes,
             viewer == null ? null : viewer.uri(),
-            viewer == null ? null : viewer.label());
-        this.badge = String.valueOf(totalAppRoutes + totalMicronautRoutes);
+            viewer == null ? null : viewer.label(),
+            totalAppRoutes + totalMicronautRoutes);
     }
 
     private static Viewer resolveOpenApiViewer(Environment env) {
@@ -125,7 +125,7 @@ public class RoutesControlPanel extends AbstractControlPanel<RoutesControlPanel.
 
     @Override
     public String getBadge() {
-        return badge;
+        return EMPTY_STRING;
     }
 
     private static LinkedHashMap<String, List<RouteRow>> computeRoutes(Router router, Predicate<UriRouteInfo<?, ?>> filter) {
@@ -286,5 +286,6 @@ public class RoutesControlPanel extends AbstractControlPanel<RoutesControlPanel.
     record Body(Map<String, List<RouteRow>> appRoutes,
                 Map<String, List<RouteRow>> micronautRoutes,
                 String openApiViewerUri,
-                String openApiViewerLabel) { }
+                String openApiViewerLabel,
+                int totalRoutes) { }
 }

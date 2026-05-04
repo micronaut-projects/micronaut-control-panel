@@ -109,6 +109,35 @@ class DataSourceServiceTest {
     }
 
     @Test
+    @DisplayName("column display type includes size for sized types")
+    void testColumnDisplayTypeIncludesSizeForSizedTypes() {
+        assertEquals("TEXT(255)", new Column("name", ColumnType.TEXT, 255, "YES", false, false, false).displayType());
+        assertEquals("NUMERIC(10)", new Column("id", ColumnType.NUMERIC, 10, "NO", false, true, false).displayType());
+        assertEquals("BOOLEAN", new Column("active", ColumnType.BOOLEAN, 0, "YES", false, false, false).displayType());
+    }
+
+    @Test
+    @DisplayName("getJdbcInfo returns database and driver metadata")
+    void testGetJdbcInfo() throws SQLException {
+        // Given
+        when(databaseMetaData.getDatabaseProductName()).thenReturn("PostgreSQL");
+        when(databaseMetaData.getDatabaseProductVersion()).thenReturn("17.5");
+        when(databaseMetaData.getDriverName()).thenReturn("PostgreSQL JDBC Driver");
+        when(databaseMetaData.getDriverVersion()).thenReturn("42.7.7");
+
+        // When
+        var jdbcInfo = dataSourceService.getJdbcInfo();
+
+        // Then
+        assertEquals("PostgreSQL", jdbcInfo.database());
+        assertEquals("17.5", jdbcInfo.version());
+        assertEquals("PostgreSQL JDBC Driver", jdbcInfo.driverName());
+        assertEquals("42.7.7", jdbcInfo.driverVersion());
+        assertEquals("test_catalog", jdbcInfo.catalog());
+        assertEquals("test_schema", jdbcInfo.schema());
+    }
+
+    @Test
     @DisplayName("getTables with SQLException throws RuntimeException")
     void testGetTablesWithSQLException() throws SQLException {
         // Given

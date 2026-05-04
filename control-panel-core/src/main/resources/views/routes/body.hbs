@@ -1,12 +1,14 @@
-<p class="card-text">
-    <strong>{{badge}}</strong> routes loaded.
-</p>
-
 {{#with controlPanel.body }}
+    <p class="card-text">
+        {{totalRoutes}} routes loaded.
+    </p>
+
     {{#if openApiViewerUri}}
         <p class="card-text">
-            <a class="btn btn-default" href="{{openApiViewerUri}}" target="_blank" rel="nofollow noreferrer" role="button">
-                <i class="si si-swagger si--color"></i>&nbsp;{{openApiViewerLabel}}
+            <a class="btn btn-secondary w-100" href="{{openApiViewerUri}}" target="_blank" rel="nofollow noopener noreferrer" role="button" title="Open {{openApiViewerLabel}} in a new window">
+                <i class="si si-swagger si--color"></i>
+                Open {{openApiViewerLabel}}
+                <i class="fas fa-arrow-up-right-from-square"></i>
             </a>
         </p>
     {{/if}}

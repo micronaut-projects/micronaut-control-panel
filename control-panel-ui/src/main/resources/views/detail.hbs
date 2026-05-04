@@ -1,19 +1,7 @@
 {{#with ext.controlPanel as |controlPanel|}}
-<div class="card card-primary">
-    <div class="card-header">
-        <h3 class="card-title">
-            {{#if controlPanel.icon}}
-                <i class="fa {{ controlPanel.icon }}"></i> &nbsp;
-            {{/if}}
-            {{{ controlPanel.title }}}
-            {{#if controlPanel.badge }}
-                <span class="badge badge-light">{{ controlPanel.badge }}</span>
-            {{/if}}
-        </h3>
-    </div>
-    <div class="card-body">
+<section class="cp-detail-shell">
+    <div class="cp-detail-body">
         {{> (lookup . 'controlPanel.detailedView.file') parameter=controlPanel }}
     </div>
-    <!-- /.card-body -->
-</div>
+</section>
 {{/with}}

@@ -30,6 +30,7 @@ class EnvironmentControlPanelTest {
             assertEquals("Environment Properties", panel.getTitle());
             assertEquals("fa-sliders", panel.getIcon());
             assertEquals(10, panel.getOrder());
+            assertEquals("Browse properties", panel.getDetailLinkName());
             @SuppressWarnings("unchecked")
             var body = (java.util.Map<String, Object>) panel.getBody();
             @SuppressWarnings("unchecked")

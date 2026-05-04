@@ -62,7 +62,7 @@ class ObjectStorageControlPanelTest {
     @Test
     void itHasCorrectIcon() {
         ObjectStorageControlPanel panel = createPanel(Mockito.mock(ObjectStorageOperations.class), Mockito.mock(AbstractObjectStorageConfiguration.class), Mockito.mock(ControlPanelConfiguration.class));
-        assertEquals("fa-cloud-arrow-down", panel.getIcon());
+        assertEquals(ObjectStorageControlPanel.DEFAULT_ICON_CLASS, panel.getIcon());
     }
 
     @Test
@@ -82,7 +82,7 @@ class ObjectStorageControlPanelTest {
         ObjectStorageControlPanel panel = createPanel(Mockito.mock(ObjectStorageOperations.class), Mockito.mock(AbstractObjectStorageConfiguration.class), Mockito.mock(ControlPanelConfiguration.class));
         assertEquals("object-storage", panel.getCategory().id());
         assertEquals("Object Storage", panel.getCategory().name());
-        assertEquals("fa-cloud-arrow-down", panel.getCategory().iconClass());
+        assertEquals(ObjectStorageControlPanel.DEFAULT_ICON_CLASS, panel.getCategory().iconClass());
     }
 
     @Test
@@ -118,11 +118,11 @@ class ObjectStorageControlPanelTest {
     }
 
     @Test
-    void getBadgeReturnsNumberOfObjectsAsString() {
+    void getBadgeIsEmptyWhenObjectCountIsRenderedInTheBody() {
         ObjectStorageOperations operations = Mockito.mock(ObjectStorageOperations.class);
         Mockito.doReturn(java.util.Set.of(Mockito.mock(ObjectStorageEntry.class), Mockito.mock(ObjectStorageEntry.class), Mockito.mock(ObjectStorageEntry.class))).when(operations).listObjects();
         ObjectStorageControlPanel panel = createPanel(operations, Mockito.mock(AbstractObjectStorageConfiguration.class), Mockito.mock(ControlPanelConfiguration.class));
-        assertEquals("3", panel.getBadge());
+        assertEquals("", panel.getBadge());
     }
 
     @Test
@@ -130,7 +130,7 @@ class ObjectStorageControlPanelTest {
         ObjectStorageOperations operations = Mockito.mock(ObjectStorageOperations.class);
         Mockito.doReturn(java.util.Set.of()).when(operations).listObjects();
         ObjectStorageControlPanel panel = createPanel(operations, Mockito.mock(AbstractObjectStorageConfiguration.class), Mockito.mock(ControlPanelConfiguration.class));
-        assertEquals("0", panel.getBadge());
+        assertEquals("", panel.getBadge());
     }
 
     @Test

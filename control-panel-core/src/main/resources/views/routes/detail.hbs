@@ -1,53 +1,30 @@
-<style>
-    .card-columns {
-        column-count: 2;
-    }
-</style>
-
 {{#with controlPanel.body }}
-    <div class="row">
-        <div class="card card-light">
-            <div class="card-header">
-                <h3 class="card-title">Application routes</h3>
-                <div class="card-tools">
-                    {{#if openApiViewerUri}}
-                    <a href="{{openApiViewerUri}}" target="_blank" rel="nofollow noreferrer" class="btn btn-tool" title="OpenAPI viewer">
-                        <i class="si si-swagger"></i>&nbsp;{{openApiViewerLabel}}
-                    </a>
-                    {{/if}}
-                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                        <i class="fas fa-minus"></i>
-                    </button>
-                </div>
+    <div class="cp-dashboard-stack">
+        <div class="cp-detail-section-heading">
+            <div>
+                <h3 class="cp-detail-section-title">Application routes</h3>
             </div>
-
-            <div class="card-body">
-                <div class="card-columns">
-                    {{#each appRoutes as |routes|}}
-                        {{> "views/routes/routes" parameter=routes}}
-                    {{/each}}
-                </div>
-            </div>
+            {{#if openApiViewerUri}}
+                <a href="{{openApiViewerUri}}" target="_blank" rel="nofollow noopener noreferrer" class="btn btn-secondary btn-sm" title="Open {{openApiViewerLabel}} in a new window">
+                    <i class="si si-swagger"></i>
+                    Open {{openApiViewerLabel}}
+                    <i class="fas fa-arrow-up-right-from-square"></i>
+                </a>
+            {{/if}}
         </div>
-    </div>
-    <div class="row">
-        <div class="card card-light">
-            <div class="card-header">
-                <h3 class="card-title">Micronaut Framework routes</h3>
-                <div class="card-tools">
-                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                        <i class="fas fa-minus"></i>
-                    </button>
-                </div>
-            </div>
+        <div class="cp-detail-card-grid">
+            {{#each appRoutes as |routes|}}
+                {{> "views/routes/routes" parameter=routes}}
+            {{/each}}
+        </div>
 
-            <div class="card-body">
-                <div class="card-columns">
-                    {{#each micronautRoutes as |routes|}}
-                        {{> "views/routes/routes" parameter=routes}}
-                    {{/each}}
-                </div>
-            </div>
+        <div class="cp-detail-section-heading">
+            <h3 class="cp-detail-section-title">Micronaut Framework routes</h3>
+        </div>
+        <div class="cp-detail-card-grid">
+            {{#each micronautRoutes as |routes|}}
+                {{> "views/routes/routes" parameter=routes}}
+            {{/each}}
         </div>
     </div>
 {{/with}}

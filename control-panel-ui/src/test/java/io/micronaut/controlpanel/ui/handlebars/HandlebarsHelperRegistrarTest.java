@@ -144,4 +144,5 @@ class HandlebarsHelperRegistrarTest {
         result = template.apply(java.util.Map.of("myParam", "something else"));
         assertEquals("is not map\n", result);
     }
+
 }

@@ -56,7 +56,7 @@ class RoutesControlPanelTest {
         assertEquals(0, panel.getBody().appRoutes().size());
 
         assertTrue(panel.getBody().micronautRoutes().size() > 0);
-        assertTrue(Integer.parseInt(panel.getBadge()) > 0);
+        assertEquals("", panel.getBadge());
         assertNull(panel.getBody().openApiViewerUri());
     }
 

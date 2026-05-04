@@ -31,4 +31,16 @@ import io.micronaut.core.annotation.ReflectiveAccess;
 @ReflectiveAccess
 public record Column(String name, ColumnType type, int size, String nullable, boolean binary,
                      boolean isPrimaryKey, boolean isForeignKey) {
+
+    /**
+     * @return A compact display value for the column type.
+     */
+    public String displayType() {
+        ColumnType columnType = type == null ? ColumnType.GENERIC : type;
+        return switch (columnType) {
+            case TEXT -> size > 0 ? "TEXT(" + size + ")" : "TEXT";
+            case NUMERIC -> size > 0 ? "NUMERIC(" + size + ")" : "NUMERIC";
+            default -> columnType.name();
+        };
+    }
 }

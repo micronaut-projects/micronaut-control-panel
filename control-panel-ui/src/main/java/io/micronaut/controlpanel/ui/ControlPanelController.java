@@ -132,6 +132,9 @@ public class ControlPanelController implements ControlPanelApi {
         baseExtra.put("controlPanelPath", controlPanelPath);
         baseExtra.put("appPath", appPath);
         baseExtra.put("categoryCount", categoryCount);
+        repository.findByName("health")
+            .map(ControlPanel::getBody)
+            .ifPresent(body -> baseExtra.put("applicationHealth", body));
         return new CommonData(categories, baseExtra);
     }
 

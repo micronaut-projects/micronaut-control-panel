@@ -36,6 +36,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
+
 /**
  * Control panel that displays information about the beans loaded in the application.
  *
@@ -49,7 +51,7 @@ import java.util.stream.Collectors;
 public class BeansControlPanel extends AbstractControlPanel<BeansControlPanel.Body> {
 
     public static final String NAME = "beans";
-    public static final Category BEANS_CATEGORY = new Category(NAME, "Beans", "fa-plug");
+    public static final Category BEANS_CATEGORY = new Category(NAME, "Beans", "fas fa-mug-saucer");
     public static final String ENABLED_PROPERTY = ControlPanelConfiguration.PREFIX + "." + NAME + ".enabled";
 
     private static final Function<BeanDefinition<?>, String> BY_PACKAGE =
@@ -83,8 +85,8 @@ public class BeansControlPanel extends AbstractControlPanel<BeansControlPanel.Bo
         super(NAME, configuration);
         var micronautBeansByPackage = computeBeansByPackage(beanContext, beanDefinitionData, IS_MICRONAUT_PACKAGE, BY_MICRONAUT_PACKAGE);
         var otherBeansByPackage = computeBeansByPackage(beanContext, beanDefinitionData, IS_MICRONAUT_PACKAGE.negate(), BY_PACKAGE);
-        this.body = new Body(micronautBeansByPackage, otherBeansByPackage);
         this.beanDefinitionsCount = beanContext.getAllBeanDefinitions().size();
+        this.body = new Body(micronautBeansByPackage, otherBeansByPackage, beanDefinitionsCount);
     }
 
     @Override
@@ -94,7 +96,7 @@ public class BeansControlPanel extends AbstractControlPanel<BeansControlPanel.Bo
 
     @Override
     public String getBadge() {
-        return String.valueOf(beanDefinitionsCount);
+        return EMPTY_STRING;
     }
 
     private LinkedHashMap<String, List<Map<String, Object>>> computeBeansByPackage(BeanContext beanContext, DefaultBeanDefinitionData beanDefinitionData, Predicate<BeanDefinition<?>> filter, Function<BeanDefinition<?>, String> groupBy) {
@@ -115,10 +117,12 @@ public class BeansControlPanel extends AbstractControlPanel<BeansControlPanel.Bo
      *
      * @param micronautBeansByPackage a map of Micronaut beans by package
      * @param otherBeansByPackage a map of non-Micronaut beans by package
+     * @param beanDefinitionsCount the number of bean definitions loaded in the application
      */
     @ReflectiveAccess
     public record Body(
         Map<String, List<Map<String, Object>>> micronautBeansByPackage,
-        Map<String, List<Map<String, Object>>> otherBeansByPackage) {
+        Map<String, List<Map<String, Object>>> otherBeansByPackage,
+        long beanDefinitionsCount) {
     }
 }

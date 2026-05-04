@@ -1,33 +1,62 @@
 {{#with controlPanel.body }}
-    <table id="disabledBeans" class="table table-bordered table-striped">
-        <thead>
-        <tr>
-            <th>Type</th>
-            <th>Reason(s)</th>
-        </tr>
-        </thead>
-    <tbody>
-    {{#each disabledBeans as |db|}}
-        <tr>
-            <td>
-                <code>{{ db.beanType.name }}</code>
-                {{#if db.qualifier}}
-                    <span class="badge badge-info">{{ db.qualifier }}</span>
-                {{/if}}
-            </td>
-            <td>
-                <ul>
-                    {{#each db.reasons as |reason|}}
-                        <li>{{{ formatReason reason }}}</li>
-                    {{/each}}
-                </ul>
-            </td>
-        </tr>
-    {{/each}}
-    </tbody>
-    </table>
+    <div class="card card-light cp-fill-card">
+        <div class="card-body cp-fill-card-body">
+            <div class="cp-data-table cp-data-table-paged" data-filter-table data-filter-table-page-size="8" data-filter-table-label="disabled bean" data-filter-table-label-plural="disabled beans">
+                <div class="cp-data-table-toolbar">
+                    <div class="cp-data-table-summary" data-filter-table-summary>{{ disabledBeans.size }} disabled beans</div>
+                    <div class="cp-data-table-search">
+                        <input type="text" class="form-control" data-filter-table-search placeholder="Search disabled beans" aria-label="Search disabled beans">
+                    </div>
+                </div>
+                <div class="cp-data-table-container">
+                    <table id="disabledBeans" class="table cp-data-table-table cp-data-table-fixed">
+                        <thead>
+                        <tr>
+                            <th class="cp-disabled-bean-type">Type</th>
+                            <th>Reason(s)</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {{#each disabledBeans as |db|}}
+                            <tr data-filter-table-row>
+                                <td class="cp-disabled-bean-type">
+                                    <code class="cp-table-code">{{ db.beanType.name }}</code>
+                                    {{#if db.qualifier}}
+                                        <span class="badge badge-secondary">{{ db.qualifier }}</span>
+                                    {{/if}}
+                                </td>
+                                <td>
+                                    <ul class="cp-data-table-list">
+                                        {{#each db.reasons as |reason|}}
+                                            <li>{{{ formatReason reason }}}</li>
+                                        {{/each}}
+                                    </ul>
+                                </td>
+                            </tr>
+                        {{/each}}
+                        <tr data-filter-table-empty hidden>
+                            <td class="cp-data-table-empty-cell" colspan="2">No disabled beans found.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="cp-data-table-footer">
+                    <label class="cp-data-table-page-size">
+                        Rows per page
+                        <select class="form-control" data-filter-table-page-size-select aria-label="Disabled beans per page">
+                            <option value="5">5</option>
+                            <option value="8" selected>8</option>
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                        </select>
+                    </label>
+                    <div class="cp-data-table-pagination">
+                        <span class="cp-data-table-page" data-filter-table-page>Page 1 of 1</span>
+                        <button type="button" class="btn btn-secondary btn-sm" data-filter-table-prev>Previous</button>
+                        <button type="button" class="btn btn-secondary btn-sm" data-filter-table-next>Next</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 {{/with}}
-
-<script>
-    new DataTable('#disabledBeans');
-</script>

@@ -26,7 +26,8 @@ import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 
 import java.util.Map;
-import java.util.stream.StreamSupport;
+
+import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
 
 /**
  * Control panel that displays information about the environment properties.
@@ -44,15 +45,9 @@ public class EnvironmentControlPanel extends AbstractControlPanel<Map<String, Ob
     public static final String ENABLED_PROPERTY = ControlPanelConfiguration.PREFIX + "." + NAME + ".enabled";
     private final EnvironmentEndpoint endpoint;
 
-    private final long totalProperties;
-
     public EnvironmentControlPanel(EnvironmentEndpoint endpoint, Environment environment, @Named(NAME) ControlPanelConfiguration configuration) {
         super(NAME, configuration);
         this.endpoint = endpoint;
-        this.totalProperties = environment.getPropertySources().stream()
-            .map(ps -> StreamSupport.stream(ps.spliterator(), false).count())
-            .mapToLong(Long::longValue)
-            .sum();
     }
 
     @Override
@@ -62,7 +57,12 @@ public class EnvironmentControlPanel extends AbstractControlPanel<Map<String, Ob
 
     @Override
     public String getBadge() {
-        return String.valueOf(totalProperties);
+        return EMPTY_STRING;
+    }
+
+    @Override
+    public String getDetailLinkName() {
+        return "Browse properties";
     }
 
 }

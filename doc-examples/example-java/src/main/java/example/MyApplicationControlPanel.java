@@ -23,7 +23,7 @@ public class MyApplicationControlPanel extends AbstractControlPanel<MyApplicatio
 
     @Override
     public Category getCategory() {
-        return new Category(NAME, "My Application", "fa-copy", 1); // <4>
+        return new Category(NAME, "My Application", "fas fa-copy", 1); // <4>
     }
 
     @ReflectiveAccess // <5>

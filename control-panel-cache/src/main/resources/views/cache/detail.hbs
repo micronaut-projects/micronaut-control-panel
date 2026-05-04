@@ -1,67 +1,124 @@
 {{#with controlPanel.body }}
 
-    <p class="card-text">
-    <dl class="row">
-        {{#if cacheInfo.get.implementationClass }}
-            <dt class="col-sm-2">Implementation Class</dt>
-            <dd class="col-sm-10"><code>{{ cacheInfo.get.implementationClass }}</code></dd>
-            {{#each cacheInfo.get.caffeine }}
-                <dt class="col-sm-2">{{ titleize (decamelize @key) }}</dt>
-                <dd class="col-sm-10"><code>{{this}}</code></dd>
-            {{/each}}
-            {{#each cacheInfo.get.ehcache }}
-                <dt class="col-sm-2">{{ titleize (decamelize @key) }}</dt>
-                <dd class="col-sm-10"><code>{{this}}</code></dd>
-            {{/each}}
-            {{#each cacheInfo.get.infinispan }}
-                <dt class="col-sm-2">{{ titleize (decamelize @key) }}</dt>
-                <dd class="col-sm-10"><code>{{this}}</code></dd>
-            {{/each}}
-        {{/if}}
-    </dl>
+    <div class="cp-dashboard-stack">
+        <div class="card card-light">
+            <div class="card-header">
+                <h3 class="card-title">Cache information</h3>
+            </div>
+            <div class="card-body">
+                {{#if cacheInfo.get.implementationClass }}
+                    <dl class="row">
+                        <dt class="col-sm-2">Implementation Class</dt>
+                        <dd class="col-sm-10"><code>{{ cacheInfo.get.implementationClass }}</code></dd>
+                        {{#each cacheInfo.get.caffeine }}
+                            <dt class="col-sm-2">{{ titleize (decamelize @key) }}</dt>
+                            <dd class="col-sm-10"><code>{{this}}</code></dd>
+                        {{/each}}
+                        {{#each cacheInfo.get.ehcache }}
+                            <dt class="col-sm-2">{{ titleize (decamelize @key) }}</dt>
+                            <dd class="col-sm-10"><code>{{this}}</code></dd>
+                        {{/each}}
+                        {{#each cacheInfo.get.infinispan }}
+                            <dt class="col-sm-2">{{ titleize (decamelize @key) }}</dt>
+                            <dd class="col-sm-10"><code>{{this}}</code></dd>
+                        {{/each}}
+                    </dl>
+                {{else}}
+                    <div class="cp-data-table-empty">No cache metadata available.</div>
+                {{/if}}
+            </div>
+        </div>
 
-    </p>
+        <div class="card card-light">
+            <div class="card-header">
+                <h3 class="card-title">Entries</h3>
+                {{#not cacheAsMap.empty }}
+                    <div class="card-tools">
+                        <details class="cp-actions-menu" data-actions-menu>
+                            <summary class="btn btn-secondary btn-sm">
+                                Actions
+                                <i class="fas fa-chevron-down"></i>
+                            </summary>
+                            <div class="cp-actions-menu-content">
+                                <button type="button" class="cp-actions-menu-item cp-actions-menu-item-danger" data-toggle="modal" data-target="#invalidateAllConfirmModal">
+                                    <i class="fa fa-trash"></i>
+                                    Invalidate all keys
+                                </button>
+                            </div>
+                        </details>
+                    </div>
+                {{/not}}
+            </div>
+            <div class="card-body">
+                {{#not cacheAsMap.empty }}
+                    <div class="cp-data-table" data-filter-table data-filter-table-label="entry" data-filter-table-label-plural="entries">
+                        <div class="cp-data-table-toolbar">
+                            <div class="cp-data-table-summary" data-filter-table-summary>{{ cacheAsMap.size }} entries</div>
+                            <div class="cp-data-table-search">
+                                <input type="text" class="form-control" data-filter-table-search placeholder="Search cache entries" aria-label="Search cache entries">
+                            </div>
+                        </div>
+                        <div class="cp-data-table-container">
+                            <table class="table cp-data-table-table cp-data-table-fixed">
+                                <thead>
+                                <tr>
+                                    <th class="cp-cache-entry-key">Key</th>
+                                    <th>Value</th>
+                                    <th class="cp-cache-entry-actions">Actions</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {{#each cacheAsMap }}
+                                    <tr data-filter-table-row>
+                                        <td class="cp-cache-entry-key"><code class="cp-table-code">{{ @key }}</code></td>
+                                        <td class="cp-cache-entry-value">{{ this }}</td>
+                                        <td class="cp-cache-entry-actions">
+                                            <details class="cp-actions-menu cp-actions-menu-end" data-actions-menu>
+                                                <summary class="btn btn-ghost btn-icon" aria-label="Open actions menu for {{ @key }}" title="Actions">
+                                                    <i class="fas fa-ellipsis"></i>
+                                                </summary>
+                                                <div class="cp-actions-menu-content">
+                                                    <button type="button" class="cp-actions-menu-item cp-actions-menu-item-danger" data-toggle="modal" data-target="#invalidateConfirmModal" data-key="{{ @key }}">
+                                                        <i class="fa fa-trash"></i>
+                                                        Invalidate
+                                                    </button>
+                                                </div>
+                                            </details>
+                                        </td>
+                                    </tr>
+                                {{/each}}
+                                <tr data-filter-table-empty hidden>
+                                    <td class="cp-data-table-empty-cell" colspan="3">No cache entries found.</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                {{else}}
+                    <div class="cp-data-table-empty">No cache entries.</div>
+                {{/not}}
+            </div>
+        </div>
+    </div>
 
     {{#not cacheAsMap.empty }}
-        <p class="card-text">
-            <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#invalidateAllConfirmModal">
-                <i class="fa fa-trash"></i>
-                Invalidate all keys
-            </button>
-        </p>
-        <p class="card-text">
-        <table class="table">
-            <thead>
-            <tr>
-                <th>Key</th>
-                <th>Value</th>
-                <th>Actions</th>
-            </tr>
-            </thead>
-            <tbody>
-            {{#each cacheAsMap }}
-                <tr>
-                    <td><code>{{ @key }}</code></td>
-                    <td>
-                        {{ this }}
-                    </td>
-                    <td>
-                        <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#invalidateConfirmModal" data-key="{{ @key }}">
-                            <i class="fa fa-trash"></i>
-                            Invalidate
-                        </button>
-                    </td>
-                </tr>
-            {{/each}}
-            </tbody>
-        </table>
-        </p>
-
-        <div class="modal fade" id="invalidateAllConfirmModal" tabindex="-1" role="dialog" aria-labelledby="invalidateAllConfirmModalLabel" aria-hidden="true">
+        <div class="modal fade cp-dialog" id="invalidateAllConfirmModal" tabindex="-1" role="dialog" aria-labelledby="invalidateAllConfirmModalLabel" aria-describedby="invalidateAllConfirmModalDescription" aria-hidden="true">
             <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="invalidateAllConfirmModalLabel">Confirm invalidation</h5>
+                <div class="modal-content cp-dialog-content">
+                    <div class="modal-header cp-dialog-header">
+                        <div class="cp-dialog-heading">
+                            <h5 class="modal-title cp-dialog-title" id="invalidateAllConfirmModalLabel">
+                                <i class="fa fa-trash"></i>
+                                Confirm invalidation
+                            </h5>
+                            <p class="cp-dialog-description" id="invalidateAllConfirmModalDescription">This removes every object from the selected cache.</p>
+                        </div>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" title="Close">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M18 6 6 18"></path>
+                                <path d="m6 6 12 12"></path>
+                            </svg>
+                        </button>
                     </div>
                     <div class="modal-body">
                         Are you sure you want to evict all objects from the <code>{{ cache.name }}</code> cache?
@@ -70,16 +127,27 @@
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                         <button type="button" class="btn btn-danger" id="invalidateAllConfirm">Invalidate</button>
                     </div>
-                    <input type="hidden" id="cacheKey"/>
                 </div>
             </div>
         </div>
 
-        <div class="modal fade" id="invalidateConfirmModal" tabindex="-1" role="dialog" aria-labelledby="invalidateConfirmModalLabel" aria-hidden="true">
+        <div class="modal fade cp-dialog" id="invalidateConfirmModal" tabindex="-1" role="dialog" aria-labelledby="invalidateConfirmModalLabel" aria-describedby="invalidateConfirmModalDescription" aria-hidden="true">
             <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="invalidateConfirmModalLabel">Confirm invalidation</h5>
+                <div class="modal-content cp-dialog-content">
+                    <div class="modal-header cp-dialog-header">
+                        <div class="cp-dialog-heading">
+                            <h5 class="modal-title cp-dialog-title" id="invalidateConfirmModalLabel">
+                                <i class="fa fa-trash"></i>
+                                Confirm invalidation
+                            </h5>
+                            <p class="cp-dialog-description" id="invalidateConfirmModalDescription">This removes one object from the selected cache.</p>
+                        </div>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" title="Close">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M18 6 6 18"></path>
+                                <path d="m6 6 12 12"></path>
+                            </svg>
+                        </button>
                     </div>
                     <div class="modal-body">
                     </div>
@@ -87,7 +155,6 @@
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                         <button type="button" class="btn btn-danger" id="invalidateConfirm">Invalidate</button>
                     </div>
-                    <input type="hidden" id="cacheKey"/>
                 </div>
             </div>
         </div>
@@ -97,25 +164,25 @@
         $('#invalidateConfirmModal').on('show.bs.modal', function (event) {
             var modal = $(this)
             var button = $(event.relatedTarget) // Button that triggered the modal
-            var key = button.data('key') // Extract info from data-* attributes
+            var key = button.attr('data-key') // Extract info from data-* attributes
             var body = "Are you sure you want to evict object with key <code>" + key + "</code> from the <code>{{ cache.name }}</code> cache?"
             modal.find('.modal-body').html('<p class="card-text">' + body + '</p>')
-            $('#cacheKey').val(key)
+            $('#invalidateConfirm').attr('data-key', key)
         })
 
         $('#invalidateConfirm').click(function(event) {
-            var cacheKey = $('#cacheKey').val();
+            var cacheKey = $(this).attr('data-key');
             $.ajax({
                 url: '{{ ext.appPath }}/cache-control-panel-controller/{{ cache.name }}/' + cacheKey,
                 type: 'DELETE',
                 contentType: "application/json; charset=utf-8",
                 success: function(result) {
                     $('#invalidateConfirmModal').modal('hide')
-                    $('#cacheKey').val('')
+                    $('#invalidateConfirm').removeAttr('data-key')
                     globalAlertMessageReload("Success", "Object with key " + cacheKey + " successfully removed from the cache {{ cache.name}}", "alert-success", "fa-check")
                 },
                 error: function(xhr, status, error) {
-                    $('#deleteConfirmModal').modal('hide')
+                    $('#invalidateConfirmModal').modal('hide')
                     globalAlertMessageDisplay('Error', error, 'alert-danger', 'fa-circle-exclamation')
                 }
             });
@@ -131,7 +198,7 @@
                     globalAlertMessageReload("Success", "Cache {{ cache.name}} emptied successfully", "alert-success", "fa-check")
                 },
                 error: function(xhr, status, error) {
-                    $('#deleteConfirmModal').modal('hide')
+                    $('#invalidateAllConfirmModal').modal('hide')
                     globalAlertMessageDisplay('Error', error, 'alert-danger', 'fa-circle-exclamation')
                 }
             });

@@ -35,6 +35,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
+
 /**
  * Control panel that displays information about the application loggers.
  *
@@ -69,7 +71,7 @@ public class LoggersControlPanel extends AbstractControlPanel<LoggersControlPane
 
     @Override
     public String getBadge() {
-        return String.valueOf(getLoggers().count());
+        return EMPTY_STRING;
     }
 
     private Stream<LoggerConfiguration> getLoggers() {

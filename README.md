@@ -10,7 +10,15 @@
 The Micronaut Control Panel module provides a web UI that allows you to view and manage the state of your Micronaut
 application, typically in a development environment.
 
-![Micronaut Control Panel](src/main/docs/resources/img/control-panel.png)
+The bundled interface follows the [shadcn/ui](https://ui.shadcn.com/) dashboard and component design language.
+
+### Light Theme
+
+![Micronaut Control Panel light theme](src/main/docs/resources/img/control-panel-light.png)
+
+### Dark Theme
+
+![Micronaut Control Panel dark theme](src/main/docs/resources/img/control-panel-dark.png)
 
 ## Documentation
 

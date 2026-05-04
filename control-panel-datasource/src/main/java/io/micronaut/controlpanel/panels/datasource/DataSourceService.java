@@ -19,8 +19,9 @@ import io.micronaut.context.annotation.EachBean;
 import io.micronaut.context.annotation.Parameter;
 import io.micronaut.controlpanel.panels.datasource.model.Column;
 import io.micronaut.controlpanel.panels.datasource.model.ColumnType;
-import io.micronaut.controlpanel.panels.datasource.model.Table;
 import io.micronaut.controlpanel.panels.datasource.model.ForeignKey;
+import io.micronaut.controlpanel.panels.datasource.model.JdbcInfo;
+import io.micronaut.controlpanel.panels.datasource.model.Table;
 import io.micronaut.data.connection.jdbc.advice.DelegatingDataSource;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
@@ -58,6 +59,28 @@ public class DataSourceService {
 
     public DataSourceService(@Parameter DataSource dataSource) {
         this.dataSource = DelegatingDataSource.unwrapDataSource(dataSource);
+    }
+
+    /**
+     * Retrieves JDBC product and driver metadata for the datasource.
+     *
+     * @return JDBC metadata, or an empty metadata object if it cannot be read
+     */
+    public JdbcInfo getJdbcInfo() {
+        try (var connection = dataSource.getConnection()) {
+            var dbMetaData = connection.getMetaData();
+            return new JdbcInfo(
+                valueOrEmpty(dbMetaData.getDatabaseProductName()),
+                valueOrEmpty(dbMetaData.getDatabaseProductVersion()),
+                valueOrEmpty(dbMetaData.getDriverName()),
+                valueOrEmpty(dbMetaData.getDriverVersion()),
+                valueOrEmpty(connection.getCatalog()),
+                valueOrEmpty(connection.getSchema())
+            );
+        } catch (SQLException e) {
+            LOG.warn("Exception while getting JDBC metadata: {}", e.getMessage());
+            return JdbcInfo.EMPTY;
+        }
     }
 
     /**
@@ -222,6 +245,10 @@ public class DataSourceService {
             case Types.BINARY, Types.VARBINARY, Types.LONGVARBINARY, Types.BLOB -> ColumnType.BLOB;
             default -> ColumnType.GENERIC;
         };
+    }
+
+    private static String valueOrEmpty(String value) {
+        return value == null ? "" : value;
     }
 
     /**

@@ -41,6 +41,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
+
 /**
  * A control panel for managing object storage.
  *
@@ -55,7 +57,7 @@ public class ObjectStorageControlPanel extends AbstractEachBeanControlPanel<Obje
 
     public static final String NAME = "object-storage";
     public static final String ENABLED_PROPERTY = ControlPanelConfiguration.PREFIX + "." + NAME + ".enabled";
-    public static final String DEFAULT_ICON_CLASS = "fa-cloud-arrow-down";
+    public static final String DEFAULT_ICON_CLASS = "fas fa-cloud-arrow-down";
     public static final String BUCKET = "bucket";
 
     private final ObjectStorageOperations<?, ?, ?> operations;
@@ -94,7 +96,7 @@ public class ObjectStorageControlPanel extends AbstractEachBeanControlPanel<Obje
 
     @Override
     public String getBadge() {
-        return String.valueOf(operations.listObjects().size());
+        return EMPTY_STRING;
     }
 
     @Override

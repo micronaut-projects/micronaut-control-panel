@@ -1,15 +1,64 @@
 {{#with controlPanel.body }}
-    <p class="card-text">
-        <strong>{{badge}}</strong> tables in the datasource.
-    </p>
-    <p class="card-text">
-        <dl>
-            <dt>URL</dt>
-            <dd><code>{{ dataSourceInfo.jdbcUrl }}</code></dd>
-            <dt>Username</dt>
-            <dd><code>{{ dataSourceInfo.username }}</code></dd>
-            <dt>Password</dt>
-            <dd><code>{{ dataSourceInfo.password }}</code></dd>
-        </dl>
-    </p>
+    <div class="cp-data-table-container cp-vertical-table">
+        <table class="table cp-data-table-table">
+            <tbody>
+            <tr>
+                <th scope="row">Tables</th>
+                <td>{{tables.size}} tables</td>
+            </tr>
+            <tr>
+                <th scope="row">Type</th>
+                <td><code class="cp-table-code">{{ dataSourceInfo.type }}</code></td>
+            </tr>
+            {{#if dataSourceInfo.jdbcInfo.database}}
+                <tr>
+                    <th scope="row">Database</th>
+                    <td><code class="cp-table-code">{{ dataSourceInfo.jdbcInfo.database }}</code></td>
+                </tr>
+            {{/if}}
+            {{#if dataSourceInfo.jdbcInfo.version}}
+                <tr>
+                    <th scope="row">Version</th>
+                    <td><code class="cp-table-code">{{ dataSourceInfo.jdbcInfo.version }}</code></td>
+                </tr>
+            {{/if}}
+            {{#if dataSourceInfo.jdbcInfo.driverName}}
+                <tr>
+                    <th scope="row">Driver</th>
+                    <td><code class="cp-table-code">{{ dataSourceInfo.jdbcInfo.driverName }}</code></td>
+                </tr>
+            {{/if}}
+            {{#if dataSourceInfo.jdbcInfo.driverVersion}}
+                <tr>
+                    <th scope="row">Driver version</th>
+                    <td><code class="cp-table-code">{{ dataSourceInfo.jdbcInfo.driverVersion }}</code></td>
+                </tr>
+            {{/if}}
+            {{#if dataSourceInfo.jdbcInfo.catalog}}
+                <tr>
+                    <th scope="row">Catalog</th>
+                    <td><code class="cp-table-code">{{ dataSourceInfo.jdbcInfo.catalog }}</code></td>
+                </tr>
+            {{/if}}
+            {{#if dataSourceInfo.jdbcInfo.schema}}
+                <tr>
+                    <th scope="row">Schema</th>
+                    <td><code class="cp-table-code">{{ dataSourceInfo.jdbcInfo.schema }}</code></td>
+                </tr>
+            {{/if}}
+            <tr>
+                <th scope="row">URL</th>
+                <td><code class="cp-table-code">{{ dataSourceInfo.jdbcUrl }}</code></td>
+            </tr>
+            <tr>
+                <th scope="row">Username</th>
+                <td><code class="cp-table-code">{{ dataSourceInfo.username }}</code></td>
+            </tr>
+            <tr>
+                <th scope="row">Password</th>
+                <td><code class="cp-table-code">{{ dataSourceInfo.password }}</code></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
 {{/with}}

@@ -45,7 +45,7 @@ import java.util.LinkedHashMap;
 
 /**
  * REST controller to execute SQL queries against a specific DataSource for the Control Panel.
- * Designed to work with jQuery DataTables in server-side mode.
+ * Designed to return paged query results for the Control Panel table renderer.
  *
  * @author Álvaro Sánchez-Mariscal
  * @since 2.0.0
@@ -250,15 +250,15 @@ public final class DataSourceController {
      * @param sql    SQL to execute (SELECT/WITH only)
      * @param start  Pagination start offset
      * @param length Page size
-     * @param draw   DataTables draw counter
+     * @param draw   Client request sequence counter
      */
     @Introspected
     public record QueryRequest(String sql, Integer start, Integer length, Integer draw) { }
 
     /**
-     * Response DTO matching DataTables server-side structure with extra cols.
+     * Response DTO for paged query results with column labels.
      *
-     * @param draw            DataTables draw counter (echoed)
+     * @param draw            Client request sequence counter (echoed)
      * @param recordsTotal    Total number of rows
      * @param recordsFiltered Total number of rows after filtering (same as total)
      * @param data            Page rows (arrays of strings)

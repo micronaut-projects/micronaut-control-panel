@@ -4,8 +4,22 @@ You can add your own control panels to the Control Panel UI. Creating custom pan
 * Some configuration values.
 * The views.
 
-The Control Panel UI uses the open-source https://github.com/ColorlibHQ/AdminLTE[AdminLTE] template, including
-https://getbootstrap.com/docs/4.6/[Bootstrap] and https://fontawesome.com/search?o=r&m=free[Font Awesome].
+The Control Panel UI follows the https://ui.shadcn.com/[shadcn/ui] component and dashboard design language. The runtime
+UI is server-rendered with Micronaut Views and Handlebars templates, with local CSS and JavaScript assets implementing
+the component behavior.
+
+When creating custom control panel views, follow these conventions:
+
+* Use the existing card, button, badge, dialog, table, tabs, breadcrumb, sidebar, hover-card, and action-menu classes
+  before adding new styling.
+* Use semantic CSS tokens from the bundled stylesheet instead of hard-coded colors, so the view works in light and dark
+  modes.
+* Keep detail pages card-based, place destructive actions behind confirmation dialogs, and use action menus for table row
+  actions.
+* Use searchable data tables for large or filterable lists.
+* Keep custom markup accessible with semantic buttons and links, labels for icon-only controls, keyboard-reachable
+  dialogs and menus, and readable contrast in both color themes.
+* Use icons from the bundled Font Awesome assets when an icon is needed.
 
 The categories are used to group the control panels in the UI. Categories are rendered as left side menu items. There is
 a default category called `Dashboard` that is used for all control panels that don't specify a category.

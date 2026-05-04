@@ -1,16 +1,49 @@
-<!-- Button trigger modal -->
-<button type="button" class="btn btn-light" data-toggle="modal" data-target="#modal_{{pkgType}}_{{@index}}">
-    Package <code>{{@key}} </code>
-</button>
+{{#if tableRow}}
+    <tr data-filter-table-row>
+        <td><code class="cp-table-code">{{@key}}</code></td>
+        <td class="cp-bean-count">
+            <span class="badge badge-secondary">{{parameter.size}}</span>
+        </td>
+        <td class="cp-bean-actions">
+            <button type="button" class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#modal_{{pkgType}}_{{@index}}">
+                <i class="fas fa-diagram-project"></i>
+                View dependencies
+            </button>
+        </td>
+    </tr>
+{{else}}
+    <div class="card card-light cp-bean-package-card">
+        <div class="card-header">
+            <h3 class="card-title">Package</h3>
+        </div>
+        <div class="card-body">
+            <code class="cp-table-code">{{@key}}</code>
+        </div>
+        <div class="card-footer">
+            <button type="button" class="btn btn-secondary w-100" data-toggle="modal" data-target="#modal_{{pkgType}}_{{@index}}">
+                <i class="fas fa-diagram-project"></i>
+                View dependencies
+            </button>
+        </div>
+    </div>
+{{/if}}
 
 <!-- Modal -->
-<div class="modal fade" id="modal_{{pkgType}}_{{@index}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade cp-dialog" id="modal_{{pkgType}}_{{@index}}" tabindex="-1" role="dialog" aria-labelledby="modalLabel_{{pkgType}}_{{@index}}" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Package <code>{{@key}}</code></h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+        <div class="modal-content cp-dialog-content">
+            <div class="modal-header cp-dialog-header">
+                <div class="cp-dialog-heading">
+                    <h5 class="modal-title cp-dialog-title" id="modalLabel_{{pkgType}}_{{@index}}">
+                        Package <code>{{@key}}</code>
+                    </h5>
+                    <p class="cp-dialog-description">Bean dependency graph for this package.</p>
+                </div>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" title="Close">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M18 6 6 18"></path>
+                        <path d="m6 6 12 12"></path>
+                    </svg>
                 </button>
             </div>
             <div class="modal-body">
@@ -26,7 +59,7 @@
 <!-- Mermaid code -->
 <div id="mermaid_code_{{pkgType}}_{{@index}}" style="visibility: hidden; display: none">
     graph LR
-    {{#each pkg as |bd|}}
+    {{#each parameter as |bd|}}
         {{#if bd.dependencies}}
             {{#each bd.dependencies as |dep|}}{{bd.type}} --> {{cut dep "[L"}};
             {{/each}}
