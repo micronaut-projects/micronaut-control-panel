@@ -382,7 +382,7 @@ dialect, or the Micronaut Test Resources' configured db type.</div>
 </dd>
 <dt><a href="io/micronaut/controlpanel/panels/datasource/DataSourceService.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.datasource">DataSourceService</a> - Class in <a href="io/micronaut/controlpanel/panels/datasource/package-summary.html">io.micronaut.controlpanel.panels.datasource</a></dt>
 <dd>
-<div class="block">Service for a specific <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.sql/javax/sql/DataSource.html" title="class or interface in javax.sql" class="external-link"><code>DataSource</code></a>, providing metadata about tables, columns, keys, etc.</div>
+<div class="block">Service for a specific <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.sql/javax/sql/DataSource.html" title="class or interface in javax.sql" class="external-link"><code>DataSource</code></a>, providing metadata about tables, columns, keys, etc.</div>
 </dd>
 <dt><a href="io/micronaut/controlpanel/panels/datasource/DataSourceService.html#%3Cinit%3E(javax.sql.DataSource)" class="member-name-link">DataSourceService(DataSource)</a> - Constructor for class io.micronaut.controlpanel.panels.datasource.<a href="io/micronaut/controlpanel/panels/datasource/DataSourceService.html" title="class in io.micronaut.controlpanel.panels.datasource">DataSourceService</a></dt>
 <dd>&nbsp;</dd>
@@ -422,7 +422,7 @@ as beans, as well as dynamically created control panels.</div>
 <div class="deprecation-block"><span class="deprecated-label">Deprecated, for removal: This API element is subject to removal in a future version.</span>
 <div class="deprecation-comment">As of version <strong>2.0.0</strong> this constructor is no longer supported and will be
 removed in a future release.  It is retained only for binary‑compatibility reasons and deliberately
-throws an <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/IllegalArgumentException.html" title="class or interface in java.lang" class="external-link"><code>IllegalArgumentException</code></a> to make sure it is never used.</div>
+throws an <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/IllegalArgumentException.html" title="class or interface in java.lang" class="external-link"><code>IllegalArgumentException</code></a> to make sure it is never used.</div>
 </div>
 </dd>
 <dt><a href="io/micronaut/controlpanel/panels/objectstorage/ObjectStorageController.html#delete(java.lang.String,java.lang.String)" class="member-name-link">delete(String, String)</a> - Method in class io.micronaut.controlpanel.panels.objectstorage.<a href="io/micronaut/controlpanel/panels/objectstorage/ObjectStorageController.html" title="class in io.micronaut.controlpanel.panels.objectstorage">ObjectStorageController</a></dt>
@@ -1039,8 +1039,6 @@ selected.</div>
 <dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/core/panels/package-summary.html">io.micronaut.controlpanel.core.panels</a> - package io.micronaut.controlpanel.core.panels</dt>
 <dd>&nbsp;</dd>
-<dt><a href="io/micronaut/controlpanel/info/package-summary.html">io.micronaut.controlpanel.info</a> - package io.micronaut.controlpanel.info</dt>
-<dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/panels/cache/package-summary.html">io.micronaut.controlpanel.panels.cache</a> - package io.micronaut.controlpanel.panels.cache</dt>
 <dd>
 <div class="block">Cache Control Panel classes.</div>
@@ -1177,34 +1175,6 @@ selected.</div>
 <dd>
 <div class="block">Returns the value of the <a href="./io/micronaut/controlpanel/panels/management/beans/BeansControlPanel.Body.html#param-micronautBeansByPackage"><code>micronautBeansByPackage</code></a> record component.</div>
 </dd>
-<dt><a href="io/micronaut/controlpanel/info/MicronautControlPanelCacheModuleInfo.html" class="type-name-link" title="class in io.micronaut.controlpanel.info">MicronautControlPanelCacheModuleInfo</a> - Class in <a href="io/micronaut/controlpanel/info/package-summary.html">io.micronaut.controlpanel.info</a></dt>
-<dd>&nbsp;</dd>
-<dt><a href="io/micronaut/controlpanel/info/MicronautControlPanelCacheModuleInfo.html#%3Cinit%3E()" class="member-name-link">MicronautControlPanelCacheModuleInfo()</a> - Constructor for class io.micronaut.controlpanel.info.<a href="io/micronaut/controlpanel/info/MicronautControlPanelCacheModuleInfo.html" title="class in io.micronaut.controlpanel.info">MicronautControlPanelCacheModuleInfo</a></dt>
-<dd>&nbsp;</dd>
-<dt><a href="io/micronaut/controlpanel/info/MicronautControlPanelCoreModuleInfo.html" class="type-name-link" title="class in io.micronaut.controlpanel.info">MicronautControlPanelCoreModuleInfo</a> - Class in <a href="io/micronaut/controlpanel/info/package-summary.html">io.micronaut.controlpanel.info</a></dt>
-<dd>&nbsp;</dd>
-<dt><a href="io/micronaut/controlpanel/info/MicronautControlPanelCoreModuleInfo.html#%3Cinit%3E()" class="member-name-link">MicronautControlPanelCoreModuleInfo()</a> - Constructor for class io.micronaut.controlpanel.info.<a href="io/micronaut/controlpanel/info/MicronautControlPanelCoreModuleInfo.html" title="class in io.micronaut.controlpanel.info">MicronautControlPanelCoreModuleInfo</a></dt>
-<dd>&nbsp;</dd>
-<dt><a href="io/micronaut/controlpanel/info/MicronautControlPanelDatasourceModuleInfo.html" class="type-name-link" title="class in io.micronaut.controlpanel.info">MicronautControlPanelDatasourceModuleInfo</a> - Class in <a href="io/micronaut/controlpanel/info/package-summary.html">io.micronaut.controlpanel.info</a></dt>
-<dd>&nbsp;</dd>
-<dt><a href="io/micronaut/controlpanel/info/MicronautControlPanelDatasourceModuleInfo.html#%3Cinit%3E()" class="member-name-link">MicronautControlPanelDatasourceModuleInfo()</a> - Constructor for class io.micronaut.controlpanel.info.<a href="io/micronaut/controlpanel/info/MicronautControlPanelDatasourceModuleInfo.html" title="class in io.micronaut.controlpanel.info">MicronautControlPanelDatasourceModuleInfo</a></dt>
-<dd>&nbsp;</dd>
-<dt><a href="io/micronaut/controlpanel/info/MicronautControlPanelKafkaModuleInfo.html" class="type-name-link" title="class in io.micronaut.controlpanel.info">MicronautControlPanelKafkaModuleInfo</a> - Class in <a href="io/micronaut/controlpanel/info/package-summary.html">io.micronaut.controlpanel.info</a></dt>
-<dd>&nbsp;</dd>
-<dt><a href="io/micronaut/controlpanel/info/MicronautControlPanelKafkaModuleInfo.html#%3Cinit%3E()" class="member-name-link">MicronautControlPanelKafkaModuleInfo()</a> - Constructor for class io.micronaut.controlpanel.info.<a href="io/micronaut/controlpanel/info/MicronautControlPanelKafkaModuleInfo.html" title="class in io.micronaut.controlpanel.info">MicronautControlPanelKafkaModuleInfo</a></dt>
-<dd>&nbsp;</dd>
-<dt><a href="io/micronaut/controlpanel/info/MicronautControlPanelManagementModuleInfo.html" class="type-name-link" title="class in io.micronaut.controlpanel.info">MicronautControlPanelManagementModuleInfo</a> - Class in <a href="io/micronaut/controlpanel/info/package-summary.html">io.micronaut.controlpanel.info</a></dt>
-<dd>&nbsp;</dd>
-<dt><a href="io/micronaut/controlpanel/info/MicronautControlPanelManagementModuleInfo.html#%3Cinit%3E()" class="member-name-link">MicronautControlPanelManagementModuleInfo()</a> - Constructor for class io.micronaut.controlpanel.info.<a href="io/micronaut/controlpanel/info/MicronautControlPanelManagementModuleInfo.html" title="class in io.micronaut.controlpanel.info">MicronautControlPanelManagementModuleInfo</a></dt>
-<dd>&nbsp;</dd>
-<dt><a href="io/micronaut/controlpanel/info/MicronautControlPanelObjectStorageModuleInfo.html" class="type-name-link" title="class in io.micronaut.controlpanel.info">MicronautControlPanelObjectStorageModuleInfo</a> - Class in <a href="io/micronaut/controlpanel/info/package-summary.html">io.micronaut.controlpanel.info</a></dt>
-<dd>&nbsp;</dd>
-<dt><a href="io/micronaut/controlpanel/info/MicronautControlPanelObjectStorageModuleInfo.html#%3Cinit%3E()" class="member-name-link">MicronautControlPanelObjectStorageModuleInfo()</a> - Constructor for class io.micronaut.controlpanel.info.<a href="io/micronaut/controlpanel/info/MicronautControlPanelObjectStorageModuleInfo.html" title="class in io.micronaut.controlpanel.info">MicronautControlPanelObjectStorageModuleInfo</a></dt>
-<dd>&nbsp;</dd>
-<dt><a href="io/micronaut/controlpanel/info/MicronautControlPanelUiModuleInfo.html" class="type-name-link" title="class in io.micronaut.controlpanel.info">MicronautControlPanelUiModuleInfo</a> - Class in <a href="io/micronaut/controlpanel/info/package-summary.html">io.micronaut.controlpanel.info</a></dt>
-<dd>&nbsp;</dd>
-<dt><a href="io/micronaut/controlpanel/info/MicronautControlPanelUiModuleInfo.html#%3Cinit%3E()" class="member-name-link">MicronautControlPanelUiModuleInfo()</a> - Constructor for class io.micronaut.controlpanel.info.<a href="io/micronaut/controlpanel/info/MicronautControlPanelUiModuleInfo.html" title="class in io.micronaut.controlpanel.info">MicronautControlPanelUiModuleInfo</a></dt>
-<dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/ui/Model.html" class="type-name-link" title="class in io.micronaut.controlpanel.ui">Model</a> - Record Class in <a href="io/micronaut/controlpanel/ui/package-summary.html">io.micronaut.controlpanel.ui</a></dt>
 <dd>
 <div class="block">Model to be passed to the view for rendering.</div>
