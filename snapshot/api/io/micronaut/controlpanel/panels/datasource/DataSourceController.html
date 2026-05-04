@@ -87,7 +87,7 @@ loadScripts(document, 'script');</script>
 </span><span class="modifiers">public final class </span><span class="element-name type-name-label">DataSourceController</span>
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a></span></div>
 <div class="block">REST controller to execute SQL queries against a specific DataSource for the Control Panel.
-Designed to work with jQuery DataTables in server-side mode.</div>
+Designed to return paged query results for the Control Panel table renderer.</div>
 <dl class="notes">
 <dt>Since:</dt>
 <dd>2.0.0</dd>
@@ -115,7 +115,7 @@ Designed to work with jQuery DataTables in server-side mode.</div>
 <div class="col-first odd-row-color"><code>static final record&nbsp;</code></div>
 <div class="col-second odd-row-color"><code><a href="DataSourceController.QueryResponse.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.datasource">DataSourceController.QueryResponse</a></code></div>
 <div class="col-last odd-row-color">
-<div class="block">Response DTO matching DataTables server-side structure with extra cols.</div>
+<div class="block">Response DTO for paged query results with column labels.</div>
 </div>
 </div>
 </section>

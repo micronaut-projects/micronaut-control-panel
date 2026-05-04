@@ -65,6 +65,7 @@ loadScripts(document, 'script');</script>
 <li><a href="#getBadge()" tabindex="0">getBadge()</a></li>
 <li><a href="#getCategory()" tabindex="0">getCategory()</a></li>
 <li><a href="#hasDetails()" tabindex="0">hasDetails()</a></li>
+<li><a href="#getDetailLinkName()" tabindex="0">getDetailLinkName()</a></li>
 </ol>
 </li>
 </ol>
@@ -170,9 +171,14 @@ extends <a href="ConfigurableControlPanel.html" title="interface in io.micronaut
 <div class="block"><a href="ControlPanel.View.html" title="class in io.micronaut.controlpanel.core"><code>ControlPanel.View</code></a> that will be used to render the body of the control panel when it has been
 selected.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code>default boolean</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code><a href="#hasDetails()" class="member-name-link">hasDetails</a>()</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code>default <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code><a href="#getDetailLinkName()" class="member-name-link">getDetailLinkName</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5">
+<div class="block">Label used for the link that opens the detailed control panel view.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code>default boolean</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code><a href="#hasDetails()" class="member-name-link">hasDetails</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5">
 <div class="block">Indicates whether this control panel has additional details that can be displayed.</div>
 </div>
 </div>
@@ -271,6 +277,21 @@ By default, it is assumed that a control panel has details.</div>
 <dl class="notes">
 <dt>Returns:</dt>
 <dd>true if the control panel has details, false otherwise</dd>
+<dt>Since:</dt>
+<dd>2.0.0</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="getDetailLinkName()">
+<h3>getDetailLinkName</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">default</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">getDetailLinkName</span>()</div>
+<div class="block">Label used for the link that opens the detailed control panel view.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the detail link label</dd>
 <dt>Since:</dt>
 <dd>2.0.0</dd>
 </dl>

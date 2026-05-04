@@ -135,10 +135,22 @@
 <p>The Micronaut Control Panel module provides a web UI that allows you to view and manage the state of your Micronaut
 application, typically in a development environment.</p>
 </div>
+<div class="paragraph">
+<p>The bundled interface follows the <a href="https://ui.shadcn.com/">shadcn/ui</a> dashboard and component design language. It uses
+server-rendered Micronaut Views templates with local CSS and JavaScript assets, while matching shadcn/ui conventions for
+cards, buttons, badges, dialogs, data tables, tabs, breadcrumbs, sidebars, and light or dark color themes.</p>
+</div>
 <div class="imageblock">
 <div class="content">
-<img src="../img/control-panel.png" alt="control panel">
+<img src="../img/control-panel-light.png" alt="Micronaut Control Panel light theme">
 </div>
+<div class="title">Figure 1. Light theme</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../img/control-panel-dark.png" alt="Micronaut Control Panel dark theme">
+</div>
+<div class="title">Figure 2. Dark theme</div>
 </div>
 
 <h1 id="releaseHistory"><a class="anchor" href="#releaseHistory"></a>2 Release History</h1>
@@ -1607,8 +1619,38 @@ You can disable it by setting:</p>
 </ul>
 </div>
 <div class="paragraph">
-<p>The Control Panel UI uses the open-source <a href="https://github.com/ColorlibHQ/AdminLTE">AdminLTE</a> template, including
-<a href="https://getbootstrap.com/docs/4.6/">Bootstrap</a> and <a href="https://fontawesome.com/search?o=r&amp;m=free">Font Awesome</a>.</p>
+<p>The Control Panel UI follows the <a href="https://ui.shadcn.com/">shadcn/ui</a> component and dashboard design language. The runtime
+UI is server-rendered with Micronaut Views and Handlebars templates, with local CSS and JavaScript assets implementing
+the component behavior.</p>
+</div>
+<div class="paragraph">
+<p>When creating custom control panel views, follow these conventions:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Use the existing card, button, badge, dialog, table, tabs, breadcrumb, sidebar, hover-card, and action-menu classes
+before adding new styling.</p>
+</li>
+<li>
+<p>Use semantic CSS tokens from the bundled stylesheet instead of hard-coded colors, so the view works in light and dark
+modes.</p>
+</li>
+<li>
+<p>Keep detail pages card-based, place destructive actions behind confirmation dialogs, and use action menus for table row
+actions.</p>
+</li>
+<li>
+<p>Use searchable data tables for large or filterable lists.</p>
+</li>
+<li>
+<p>Keep custom markup accessible with semantic buttons and links, labels for icon-only controls, keyboard-reachable
+dialogs and menus, and readable contrast in both color themes.</p>
+</li>
+<li>
+<p>Use icons from the bundled Font Awesome assets when an icon is needed.</p>
+</li>
+</ul>
 </div>
 <div class="paragraph">
 <p>The categories are used to group the control panels in the UI. Categories are rendered as left side menu items. There is
@@ -1638,7 +1680,7 @@ public class MyApplicationControlPanel extends AbstractControlPanel&lt;MyApplica
 
     @Override
     public Category getCategory() {
-        return new Category(NAME, "My Application", "fa-copy", 1); // <b class="conum">(4)</b>
+        return new Category(NAME, "My Application", "fas fa-copy", 1); // <b class="conum">(4)</b>
     }
 
     @ReflectiveAccess // <b class="conum">(5)</b>
@@ -1808,9 +1850,11 @@ context, so you can implicitly access its methods and properties. For example, t
 <div class="listingblock">
 <div class="title"><code>src/main/resources/views/my-application/body.hbs</code>.</div>
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-html hljs" data-lang="html">&lt;p class="card-text"&gt;
-    &lt;strong&gt;{{badge}}&lt;/strong&gt; bean definitions active.
-&lt;/p&gt;</code></pre>
+<pre class="highlightjs highlight"><code class="language-html hljs" data-lang="html">{{#with controlPanel.body }}
+    &lt;p class="card-text"&gt;
+        {{beanDefinitionsCount}} bean definitions active.
+    &lt;/p&gt;
+{{/with}}</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1820,7 +1864,14 @@ to access the body of our control panel example:</p>
 <div class="listingblock">
 <div class="title"><code>src/main/resources/views/my-application/detail.hbs</code>.</div>
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-html hljs" data-lang="html">{{ controlPanel.body.text }}</code></pre>
+<pre class="highlightjs highlight"><code class="language-html hljs" data-lang="html">&lt;div class="card card-light"&gt;
+    &lt;div class="card-header"&gt;
+        &lt;h3 class="card-title"&gt;Details&lt;/h3&gt;
+    &lt;/div&gt;
+    &lt;div class="card-body"&gt;
+        {{ controlPanel.body.text }}
+    &lt;/div&gt;
+&lt;/div&gt;</code></pre>
 </div>
 </div>
 </div>

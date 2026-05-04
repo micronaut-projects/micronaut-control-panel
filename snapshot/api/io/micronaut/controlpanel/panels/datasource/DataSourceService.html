@@ -64,6 +64,7 @@ loadScripts(document, 'script');</script>
 </li>
 <li><a href="#method-detail" tabindex="0">Method Details</a>
 <ol class="toc-list">
+<li><a href="#getJdbcInfo()" tabindex="0">getJdbcInfo()</a></li>
 <li><a href="#getTables()" tabindex="0">getTables()</a></li>
 <li><a href="#generateMermaidER(java.util.List)" tabindex="0">generateMermaidER(List)</a></li>
 <li><a href="#executeQuery(java.lang.String,int,int)" tabindex="0">executeQuery(String, int, int)</a></li>
@@ -143,9 +144,14 @@ loadScripts(document, 'script');</script>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Generate a Mermaid ER diagram for the current datasource based on the provided tables metadata.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a><wbr>&lt;<a href="model/Table.html" title="class in io.micronaut.controlpanel.panels.datasource.model">Table</a>&gt;</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getTables()" class="member-name-link">getTables</a>()</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="model/JdbcInfo.html" title="class in io.micronaut.controlpanel.panels.datasource.model">JdbcInfo</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getJdbcInfo()" class="member-name-link">getJdbcInfo</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Retrieves JDBC product and driver metadata for the datasource.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a><wbr>&lt;<a href="model/Table.html" title="class in io.micronaut.controlpanel.panels.datasource.model">Table</a>&gt;</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getTables()" class="member-name-link">getTables</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Retrieves a list of tables from the database, including schema, columns, primary keys, and foreign keys.</div>
 </div>
 </div>
@@ -182,6 +188,19 @@ loadScripts(document, 'script');</script>
 <section class="method-details" id="method-detail">
 <h2>Method Details</h2>
 <ul class="member-list">
+<li>
+<section class="detail" id="getJdbcInfo()">
+<h3>getJdbcInfo</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="model/JdbcInfo.html" title="class in io.micronaut.controlpanel.panels.datasource.model">JdbcInfo</a></span>&nbsp;<span class="element-name">getJdbcInfo</span>()</div>
+<div class="block">Retrieves JDBC product and driver metadata for the datasource.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>JDBC metadata, or an empty metadata object if it cannot be read</dd>
+</dl>
+</div>
+</section>
+</li>
 <li>
 <section class="detail" id="getTables()">
 <h3>getTables</h3>
