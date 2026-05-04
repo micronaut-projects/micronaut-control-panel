@@ -56,11 +56,12 @@ class AbstractE2ETest {
 
     static Locator controlPanelDetails(final Page page, final String name) {
         return page
-            .locator(".row")
+            .locator(".cp-panel-card")
             .filter(
                 new Locator.FilterOptions()
                     .setHas(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName(nameRegex(name))))
             )
+            .locator(".cp-card-footer")
             .getByRole(AriaRole.BUTTON);
     }
 

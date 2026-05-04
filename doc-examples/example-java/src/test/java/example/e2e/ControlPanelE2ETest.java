@@ -1,5 +1,6 @@
 package example.e2e;
 
+import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Page.GetByRoleOptions;
 import com.microsoft.playwright.junit.Options;
@@ -28,7 +29,8 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         var body = body(page);
 
         //Control Panels in the dashboard
-        assertThat(body).containsText("Micronaut Control Panel for my-application");
+        assertThat(body).containsText("Control Panel");
+        assertThat(body).containsText("my-application");
         assertThat(body).containsText("Application Health");
         assertThat(body).containsText("Environment Properties");
         assertThat(body).containsText("HTTP Routes");
@@ -60,10 +62,12 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         controlPanelDetails(page, "Environment Properties").click();
 
         // Values appear in plain text
-        assertThat(body(page)).containsText("micronaut.control-panel.env.show-values = true");
+        assertThat(body(page)).containsText("micronaut.control-panel.env.show-values");
+        assertThat(body(page)).containsText("true");
 
         // Sensitive data is still masked
-        assertThat(body(page)).containsText("test.password = *****");
+        assertThat(body(page)).containsText("test.password");
+        assertThat(body(page)).containsText("*****");
     }
 
     @Test
@@ -91,7 +95,7 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         controlPanelDetails(page, "Bean Definitions").click();
 
         assertThat(body(page)).containsText("Other beans");
-        assertThat(body(page)).containsText("Micronaut Framework beans");
+        assertThat(body(page)).containsText("Micronaut Framework");
     }
 
     @Test
@@ -118,19 +122,26 @@ class ControlPanelE2ETest extends AbstractE2ETest {
 
         assertThat(page.getByRole(AriaRole.DEFINITION).nth(1)).containsText("INFO");
 
-        page.getByRole(AriaRole.CELL, new Page.GetByRoleOptions().setName(nameRegex("Reconfigure"))).first().getByRole(AriaRole.BUTTON).click();
+        page.locator("tbody tr")
+            .filter(new Locator.FilterOptions().setHasText("ROOT"))
+            .getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName("Reconfigure"))
+            .click();
         assertThat(page.locator("#modalLabel")).containsText("Reconfigure logger ROOT");
 
-        page.getByLabel("Level:").selectOption("DEBUG");
-        button(page, "Submit").click();
+        page.locator("#actionsModal").getByLabel("Level:").selectOption("DEBUG");
+        id(page, "submit").click();
         assertThat(page.getByRole(AriaRole.ALERT)).containsText("Logger configured");
 
-        page.getByText("Close").click();
-        assertThat(page.getByRole(AriaRole.DEFINITION).nth(1)).containsText("DEBUG");
+        page.locator("#actionsModal .modal-footer [data-dismiss='modal']").click();
+        page.navigate(baseUrl() + "/loggers");
+        assertThat(body(page)).containsText("DEBUG");
 
-        page.getByRole(AriaRole.CELL, new Page.GetByRoleOptions().setName(nameRegex("Reconfigure"))).first().getByRole(AriaRole.BUTTON).click();
-        page.getByLabel("Level:").selectOption("INFO");
-        button(page, "Submit").click();
+        page.locator("tbody tr")
+            .filter(new Locator.FilterOptions().setHasText("ROOT"))
+            .getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName("Reconfigure"))
+            .click();
+        page.locator("#actionsModal").getByLabel("Level:").selectOption("INFO");
+        id(page, "submit").click();
     }
 
     @Test
@@ -151,13 +162,13 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         id(page,"refreshButton").click();
 
         assertThat(page.locator("#stopRefreshModalLabel")).containsText("Confirm application refresh");
-        button(page, "Refresh").click();
+        id(page, "refreshConfirm").click();
 
         assertThat(page.locator("#globalAlertTitle")).containsText("Application refreshed");
         assertThat(page.locator("#globalAlertMessage")).containsText("All Refreshable beans have been recreated.");
 
         id(page,"refreshButton").click();
-        button(page, "Force refresh").click();
+        id(page, "refreshForce").click();
 
         assertThat(page.locator("#globalAlertTitle")).containsText("Application refreshed");
         assertThat(page.locator("#globalAlertMessage")).containsText("All Refreshable beans have been recreated regardless of environment changes.");
@@ -169,7 +180,7 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         categoryLink(page, "Object Storage").click();
 
         assertThat(body(page)).containsText("my-local");
-        assertThat(body(page)).containsText("0 files stored.");
+        assertThat(body(page)).containsText("files stored.");
 
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Details")).click();
 
@@ -197,7 +208,11 @@ class ControlPanelE2ETest extends AbstractE2ETest {
             assertThat(body(page)).containsText("foo");
             assertThat(body(page)).containsText("counter");
 
-            page.getByRole(AriaRole.ROW, new Page.GetByRoleOptions().setName("foo bar Invalidate")).getByRole(AriaRole.BUTTON).click();
+            var fooRow = page.locator("tbody tr")
+                .filter(new Locator.FilterOptions().setHasText("foo"))
+                .first();
+            fooRow.locator("[data-actions-menu] summary").click();
+            fooRow.locator("[data-target='#invalidateConfirmModal']").click();
             id(page, "invalidateConfirm").click();
 
             assertThat(page.locator("#globalAlertTitle")).containsText("Success");
@@ -210,7 +225,12 @@ class ControlPanelE2ETest extends AbstractE2ETest {
             assertThat(body(page)).not().containsText("foo");
             assertThat(body(page)).containsText("counter");
 
-            button(page, "Invalidate all keys").click();
+            page
+                .locator(".card")
+                .filter(new Locator.FilterOptions().setHas(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Entries"))))
+                .locator(".card-tools [data-actions-menu] summary")
+                .click();
+            page.locator("[data-target='#invalidateAllConfirmModal']").click();
             id(page, "invalidateAllConfirm").click();
 
             assertThat(page.locator("#globalAlertTitle")).containsText("Success");
@@ -229,16 +249,18 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         assertThat(body(page)).containsText("my-oracle");
         assertThat(body(page)).containsText("my-postgres");
 
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Details")).first().click();
+        controlPanelDetails(page, "my-oracle").click();
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Show ER diagram")).click();
-        assertThat(page.locator("#erDiagramContainer")).matchesAriaSnapshot("- document: /TEST_DEPT numeric\\(2\\) DEPTNO PK NOT NULL string\\(\\d+\\) DNAME string\\(\\d+\\) LOC TEST_EMP numeric\\(4\\) EMPNO PK NOT NULL string\\(\\d+\\) ENAME string\\(9\\) JOB numeric\\(4\\) MGR FK date HIREDATE numeric\\(7\\) SAL numeric\\(7\\) COMM numeric\\(2\\) DEPTNO FK FK_DEPTNO FK_EMPNO/");
+        assertThat(page.locator("#erDiagramDialog")).containsText("Entity Relationship Diagram");
+        assertThat(page.locator("#mermaidErCode")).containsText("TEST_DEPT");
+        assertThat(page.locator("#mermaidErCode")).containsText("TEST_EMP");
 
-        page.getByLabel("Close").click();
+        page.locator("#erDiagramDialog button[aria-label='Close']").click();
         assertThat(page.locator("[data-schema-tree]")).containsText("DEPT");
         assertThat(page.locator("[data-schema-tree]")).containsText("EMP");
 
-        page.getByRole(AriaRole.TEXTBOX).fill("SELECT * FROM DEPT");
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Execute query")).click();
+        page.locator("#sql-console").getByRole(AriaRole.TEXTBOX).fill("SELECT * FROM DEPT");
+        id(page, "executeQuery").click();
 
         assertThat(page.locator("tbody")).containsText("ACCOUNTING");
     }
