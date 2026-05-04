@@ -104,32 +104,6 @@ html[data-theme="light"] {
     --shadow-lg: 0 20px 25px -5px rgb(0 0 0 / 0.12), 0 8px 10px -6px rgb(0 0 0 / 0.08);
 }
 
-html[data-theme="light"] .cp-sidebar {
-    top: 0;
-    height: 100svh;
-    margin: 0;
-    border-width: 0 1px 0 0;
-    border-radius: 0;
-    box-shadow: none;
-}
-
-html[data-theme="light"] .cp-sidebar-inset {
-    min-height: 100svh;
-    margin: 0;
-    border: 0;
-    border-radius: 0;
-    box-shadow: none;
-}
-
-html[data-theme="light"] .cp-header {
-    background: var(--background);
-}
-
-html[data-theme="light"] .card,
-html[data-theme="light"] .card.cp-card {
-    background: var(--card);
-}
-
 * {
     box-sizing: border-box;
 }
@@ -620,31 +594,28 @@ html[data-sidebar="collapsed"] .cp-sidebar-actions .btn {
     height: 1rem;
 }
 
+.cp-theme-toggle {
+    border: 0;
+}
+
 .cp-theme-icon {
-    position: absolute;
     width: 1.2rem;
     height: 1.2rem;
-    transition: all 180ms ease;
+    flex: 0 0 auto;
 }
 
-.cp-theme-icon-sun {
-    opacity: 0;
-    transform: rotate(-90deg) scale(0);
+.cp-theme-icon-background {
+    fill: var(--background);
 }
 
-.cp-theme-icon-moon {
-    opacity: 1;
-    transform: rotate(0deg) scale(1);
+.cp-theme-icon-fill {
+    fill: var(--foreground);
 }
 
-html[data-theme="light"] .cp-theme-icon-sun {
-    opacity: 1;
-    transform: rotate(0deg) scale(1);
-}
-
-html[data-theme="light"] .cp-theme-icon-moon {
-    opacity: 0;
-    transform: rotate(90deg) scale(0);
+.cp-theme-icon-ring {
+    fill: none;
+    stroke: var(--foreground);
+    stroke-width: 2;
 }
 
 .cp-title-block {
@@ -689,8 +660,7 @@ html[data-theme="light"] .cp-theme-icon-moon {
 }
 
 .cp-dashboard-container {
-    width: min(100%, 1480px);
-    margin: 0 auto;
+    width: 100%;
     padding: 1.25rem;
 }
 

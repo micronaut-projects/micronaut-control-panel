@@ -6,8 +6,25 @@
     var sidebarStorageKey = "control-panel-sidebar";
     var sidebarBreakpoint = 1000;
 
+    function systemTheme() {
+        return window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+    }
+
+    function hasStoredTheme() {
+        try {
+            var theme = localStorage.getItem(themeStorageKey);
+            return theme === "light" || theme === "dark";
+        } catch (error) {
+            return false;
+        }
+    }
+
     function readTheme() {
-        return document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark";
+        var theme = document.documentElement.getAttribute("data-theme");
+        if (theme === "light" || theme === "dark") {
+            return theme;
+        }
+        return systemTheme();
     }
 
     function writeTheme(theme) {
@@ -29,6 +46,13 @@
         var label = "Switch to " + nextTheme + " mode";
         button.setAttribute("aria-label", label);
         button.setAttribute("title", label);
+    }
+
+    function syncThemeWithSystem() {
+        if (!hasStoredTheme()) {
+            document.documentElement.setAttribute("data-theme", systemTheme());
+            updateThemeButton();
+        }
     }
 
     function isMobileSidebar() {
@@ -463,6 +487,16 @@
             updateSidebarButtons();
         });
 
+        if (window.matchMedia) {
+            var colorScheme = window.matchMedia("(prefers-color-scheme: light)");
+            if (typeof colorScheme.addEventListener === "function") {
+                colorScheme.addEventListener("change", syncThemeWithSystem);
+            } else if (typeof colorScheme.addListener === "function") {
+                colorScheme.addListener(syncThemeWithSystem);
+            }
+        }
+
+        syncThemeWithSystem();
         updateThemeButton();
         updateSidebarButtons();
 

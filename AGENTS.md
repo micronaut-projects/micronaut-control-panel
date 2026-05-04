@@ -31,6 +31,16 @@ This repository builds the Micronaut Control Panel libraries and example applica
 - Keep controllers, panels, templates, and tests in the package/domain already used by the module.
 - Prefer targeted module tests for code changes. Run the full `check` task only when shared behavior, build logic, or cross-module contracts changed.
 
+## UI Design System
+
+- The Control Panel UI follows [shadcn/ui](https://ui.shadcn.com/) component and block patterns, implemented with server-rendered Handlebars templates, static CSS, and small JavaScript helpers rather than React runtime components.
+- Prefer shadcn/ui component vocabulary and behavior for new UI: `Card`, `Button`, `Badge`, `Dialog`, `Dropdown Menu`, `Data Table`, `Tabs`, `Breadcrumb`, `Sidebar`, `Hover Card`, and `Table`.
+- Use the existing semantic CSS tokens in `control-panel-ui/src/main/resources/static/css/dashboard.css` (`--background`, `--foreground`, `--card`, `--border`, `--sidebar`, `--muted`, `--accent`, and related foreground tokens) instead of adding one-off colors.
+- Keep dark and light themes structurally identical. Theme changes should swap tokens and assets, not remove borders, spacing, shadows, or sidebar/card layout.
+- Preserve accessibility contracts: semantic buttons and links, labels for icon-only controls, visible focus states, keyboard-usable dialogs/menus/tables, and readable text contrast in both themes.
+- Prefer existing partials/classes and local shadcn-style patterns before adding new CSS. If new styling is required, keep it token-based and scoped to the component or panel.
+- Verify substantial UI work in a browser at desktop and mobile widths, including collapsed sidebar state and both color schemes.
+
 ## Documentation System
 
 - User-guide sources live in `src/main/docs/guide`; `toc.yml` is the guide navigation source of truth.

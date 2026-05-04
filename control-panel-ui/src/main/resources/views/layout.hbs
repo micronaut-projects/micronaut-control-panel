@@ -19,13 +19,18 @@
     <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/styles/github.min.css">
     <script>
         (function () {
+            function preferredTheme() {
+                if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) {
+                    return "light";
+                }
+                return "dark";
+            }
+
             try {
                 var theme = localStorage.getItem("control-panel-theme");
-                if (theme === "light" || theme === "dark") {
-                    document.documentElement.setAttribute("data-theme", theme);
-                }
+                document.documentElement.setAttribute("data-theme", theme === "light" || theme === "dark" ? theme : preferredTheme());
             } catch (error) {
-                document.documentElement.removeAttribute("data-theme");
+                document.documentElement.setAttribute("data-theme", preferredTheme());
             }
             try {
                 if (localStorage.getItem("control-panel-sidebar") === "collapsed") {
@@ -206,25 +211,14 @@
             </div>
 
             <div class="cp-header-actions">
-                <div class="cp-button-group">
-                    <button class="btn btn-outline btn-icon" id="themeToggle" type="button" title="Switch color mode" aria-label="Switch color mode" aria-live="polite">
-                        <svg class="cp-theme-icon cp-theme-icon-sun" xmlns="http://www.w3.org/2000/svg" width="19.2" height="19.2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <circle cx="12" cy="12" r="4"></circle>
-                            <path d="M12 2v2"></path>
-                            <path d="M12 20v2"></path>
-                            <path d="m4.93 4.93 1.41 1.41"></path>
-                            <path d="m17.66 17.66 1.41 1.41"></path>
-                            <path d="M2 12h2"></path>
-                            <path d="M20 12h2"></path>
-                            <path d="m6.34 17.66-1.41 1.41"></path>
-                            <path d="m19.07 4.93-1.41 1.41"></path>
-                        </svg>
-                        <svg class="cp-theme-icon cp-theme-icon-moon" xmlns="http://www.w3.org/2000/svg" width="19.2" height="19.2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
-                        </svg>
-                        <span class="sr-only">Toggle theme</span>
-                    </button>
-                </div>
+                <button class="btn btn-ghost btn-icon cp-theme-toggle" id="themeToggle" type="button" title="Switch color mode" aria-label="Switch color mode" aria-live="polite">
+                    <svg class="cp-theme-icon" xmlns="http://www.w3.org/2000/svg" width="19.2" height="19.2" viewBox="0 0 24 24" aria-hidden="true">
+                        <circle class="cp-theme-icon-background" cx="12" cy="12" r="9"></circle>
+                        <path class="cp-theme-icon-fill" d="M12 3a9 9 0 0 0 0 18Z"></path>
+                        <circle class="cp-theme-icon-ring" cx="12" cy="12" r="9"></circle>
+                    </svg>
+                    <span class="sr-only">Toggle theme</span>
+                </button>
             </div>
         </header>
 
