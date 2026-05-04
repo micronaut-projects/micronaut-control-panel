@@ -493,18 +493,7 @@ html[data-sidebar="collapsed"] .cp-sidebar-actions .btn {
 
 .cp-environment-list {
     gap: 0.1rem;
-}
-
-.cp-sidebar-footer .cp-environments {
-    align-items: flex-start;
-    gap: 0.35rem;
-    padding: 0 0.6rem;
-}
-
-.cp-environment-tag {
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    margin-inline: 0.6rem;
 }
 
 .cp-nav-static .cp-nav-icon {
@@ -1224,6 +1213,11 @@ dl.row dt {
     white-space: nowrap;
     background: var(--primary);
     color: var(--primary-foreground);
+}
+
+.badge.cp-environment-tag {
+    background: oklch(0.45 0 0);
+    color: oklch(0.985 0 0);
 }
 
 .badge-secondary {
