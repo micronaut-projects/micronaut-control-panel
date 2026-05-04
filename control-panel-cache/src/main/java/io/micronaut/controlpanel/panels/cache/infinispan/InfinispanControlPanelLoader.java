@@ -26,6 +26,8 @@ import io.micronaut.core.annotation.TypeHint;
 import io.micronaut.core.util.StringUtils;
 import jakarta.inject.Named;
 import org.infinispan.client.hotrod.RemoteCacheManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,6 +46,8 @@ import static io.micronaut.controlpanel.panels.cache.AbstractCacheControlPanel.N
 @Requires(property = "infinispan.enabled", notEquals = StringUtils.FALSE, defaultValue = StringUtils.FALSE)
 @TypeHint(value = { InfinispanCacheInfo.class }, accessType = TypeHint.AccessType.ALL_PUBLIC)
 public class InfinispanControlPanelLoader implements ControlPanelLoader {
+
+    private static final Logger LOG = LoggerFactory.getLogger(InfinispanControlPanelLoader.class);
 
     private final ControlPanelConfiguration configuration;
 
@@ -77,9 +81,15 @@ public class InfinispanControlPanelLoader implements ControlPanelLoader {
             cacheNames = List.copyOf(infinispanCacheManager.getConfiguration().remoteCaches().keySet());
         }
         for (String cacheName : cacheNames) {
-            var syncCache = (InfinispanSyncCache) micronautCacheManager.getCache(cacheName);
-            var controlPanel = new InfinispanSyncCacheControlPanel(syncCache, configuration);
-            controlPanels.add(controlPanel);
+            try {
+                var syncCache = (InfinispanSyncCache) micronautCacheManager.getCache(cacheName);
+                var controlPanel = new InfinispanSyncCacheControlPanel(syncCache, configuration);
+                controlPanels.add(controlPanel);
+            } catch (RuntimeException e) {
+                LOG.warn("Skipping Infinispan cache '{}' because it cannot be loaded by the Micronaut cache manager: {}",
+                    cacheName,
+                    e.getMessage());
+            }
         }
         return controlPanels;
     }
