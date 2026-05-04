@@ -30,7 +30,7 @@ public interface ControlPanelSecurityConfiguration {
 
     String PREFIX = ControlPanelModuleConfiguration.PREFIX + ".security";
     String PROPERTY_ACCESS = PREFIX + ".access";
-    String DEFAULT_ACCESS = "AUTHENTICATED";
+    String DEFAULT_ACCESS = "ANONYMOUS";
 
     /**
      * Controls how the control panel HTTP routes are exposed.

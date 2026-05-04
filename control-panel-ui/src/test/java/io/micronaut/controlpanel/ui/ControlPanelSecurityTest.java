@@ -47,11 +47,30 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class ControlPanelSecurityTest {
 
     @Test
-    void authenticatedAccessIsRequiredByDefaultWhenSecurityIsEnabled() {
+    void anonymousAccessIsAllowedByDefaultWhenSecurityIsEnabled() {
         try (EmbeddedServer server = ApplicationContext.run(EmbeddedServer.class, Map.of(
             "spec.name", "ControlPanelSecurityTest",
             "micronaut.security.enabled", true,
             "micronaut.security.basic-auth.enabled", true
+        ))) {
+            HttpClient client = server.getApplicationContext().createBean(HttpClient.class, server.getURL());
+
+            assertEquals(HttpStatus.OK, client.toBlocking().exchange(ControlPanelModuleConfiguration.DEFAULT_PATH).status());
+            assertEquals(HttpStatus.OK, client.toBlocking().exchange(
+                authenticatedRequest(HttpRequest.GET(ControlPanelModuleConfiguration.DEFAULT_PATH))
+            ).status());
+
+            client.close();
+        }
+    }
+
+    @Test
+    void authenticatedAccessCanBeRequiredWhenSecurityIsEnabled() {
+        try (EmbeddedServer server = ApplicationContext.run(EmbeddedServer.class, Map.of(
+            "spec.name", "ControlPanelSecurityTest",
+            "micronaut.security.enabled", true,
+            "micronaut.security.basic-auth.enabled", true,
+            ControlPanelSecurityConfiguration.PROPERTY_ACCESS, "AUTHENTICATED"
         ))) {
             HttpClient client = server.getApplicationContext().createBean(HttpClient.class, server.getURL());
 
@@ -70,7 +89,7 @@ class ControlPanelSecurityTest {
     }
 
     @Test
-    void anonymousAccessCanBeRestoredWhenSecurityIsEnabled() {
+    void anonymousAccessCanBeConfiguredExplicitlyWhenSecurityIsEnabled() {
         try (EmbeddedServer server = ApplicationContext.run(EmbeddedServer.class, Map.of(
             "spec.name", "ControlPanelSecurityTest",
             "micronaut.security.enabled", true,

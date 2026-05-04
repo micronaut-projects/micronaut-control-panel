@@ -6,6 +6,8 @@ micronaut:
       enabled: true
   control-panel:
     enabled: true
+    security:
+      access: authenticated
 
 endpoints:
   env:
