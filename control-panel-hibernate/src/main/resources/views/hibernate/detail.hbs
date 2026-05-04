@@ -1,0 +1,20 @@
+{{#with controlPanel.body }}
+
+    <div class="cp-dashboard-stack cp-hibernate-detail">
+        <div class="tabs cp-hibernate-tabs" data-tabs data-tabs-storage-key="hibernate-tabs-{{ sessionFactory.beanName }}">
+            {{> "views/hibernate/detail-tabs" }}
+            {{> "views/hibernate/detail-data-sources" }}
+            {{> "views/hibernate/detail-session-details" }}
+            {{> "views/hibernate/detail-statistics" }}
+            {{> "views/hibernate/detail-cache" }}
+            {{> "views/hibernate/detail-entity-types" }}
+            {{> "views/hibernate/detail-named-queries" }}
+            {{> "views/hibernate/detail-hql-console" }}
+        </div>
+    </div>
+
+    {{> "views/hibernate/detail-delete-dialog" }}
+
+    {{> "views/hibernate/detail-scripts" }}
+
+{{/with}}

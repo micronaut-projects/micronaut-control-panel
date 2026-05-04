@@ -22,6 +22,7 @@ import java.util.Optional;
 
 @Singleton
 @Requires(beans = DataSource.class)
+@Requires(env = "hibernate")
 @Requires(env = "oracle")
 public class SampleDataLoader {
 

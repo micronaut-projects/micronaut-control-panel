@@ -1,0 +1,47 @@
+{{#with controlPanel.body }}
+    <div class="cp-data-table-container cp-vertical-table">
+        <table class="table cp-data-table-table">
+            <tbody>
+            <tr>
+                <th scope="row">Entities</th>
+                <td>{{ entities.size }} entities</td>
+            </tr>
+            <tr>
+                <th scope="row">Collections</th>
+                <td>{{ collections.size }} collection roles</td>
+            </tr>
+            <tr>
+                <th scope="row">Second-level cache</th>
+                <td>
+                    {{#if sessionFactory.secondLevelCacheEnabled}}
+                        <span class="badge badge-secondary">enabled</span>
+                    {{else}}
+                        <span class="badge badge-secondary">disabled</span>
+                    {{/if}}
+                    {{ cacheRegions.size }} regions
+                </td>
+            </tr>
+            <tr>
+                <th scope="row">Query cache</th>
+                <td>
+                    {{#if sessionFactory.queryCacheEnabled}}
+                        <span class="badge badge-secondary">enabled</span>
+                    {{else}}
+                        <span class="badge badge-secondary">disabled</span>
+                    {{/if}}
+                </td>
+            </tr>
+            <tr>
+                <th scope="row">Statistics</th>
+                <td>
+                    {{#if statistics.statisticsEnabled}}
+                        <span class="badge badge-secondary">enabled</span>
+                    {{else}}
+                        <span class="badge badge-secondary">disabled</span>
+                    {{/if}}
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+{{/with}}

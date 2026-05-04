@@ -46,6 +46,9 @@ This repository builds the Micronaut Control Panel libraries and example applica
 - User-guide sources live in `src/main/docs/guide`; `toc.yml` is the guide navigation source of truth.
 - Release notes are maintained in `src/main/docs/guide/releaseHistory.adoc`.
 - Shared guide images live in `src/main/docs/resources/img/`.
+- Use PNG screenshots for guide images. Prefer a consistent `1200px` image width: `1200 x 800` for full panel screenshots and about `1200 x 520` to `1200 x 600` for wide overview screenshots.
+- Only use larger screenshots, up to about `1600px` wide, when dense dashboard or table content becomes unreadable at `1200px`.
+- Crop unnecessary browser chrome and vertical whitespace, capture at 100% browser zoom, and keep documentation screenshots reasonably small, ideally under about `250 KB` when image quality remains readable.
 - Prefer validated snippets from `doc-examples/` and generated configuration property includes over hand-maintained prose or tables.
 - Use `./gradlew publishGuide` for guide assembly and `./gradlew docs` when API docs also matter.
 

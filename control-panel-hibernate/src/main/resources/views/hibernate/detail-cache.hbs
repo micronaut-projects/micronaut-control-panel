@@ -1,0 +1,177 @@
+            <div class="tabs-panel" role="tabpanel" data-tabs-panel="cache" hidden>
+                <div class="cp-dashboard-stack">
+                    <div class="card card-light" data-hibernate-card="cache">
+                        <div class="card-header">
+                            <div class="cp-card-heading">
+                                <div class="cp-card-header-text">
+                                    <div class="card-description">Shows Hibernate second-level and query cache regions. Eviction actions are available without statistics; counters and memory metrics require statistics.</div>
+                                </div>
+                            </div>
+                            <div class="card-tools">
+                                <details class="cp-actions-menu" data-actions-menu>
+                                    <summary class="btn btn-secondary btn-sm">
+                                        Actions
+                                        <i class="fas fa-chevron-down"></i>
+                                    </summary>
+                                    <div class="cp-actions-menu-content">
+                                        <button type="button" class="cp-actions-menu-item cp-actions-menu-item-danger" data-toggle="modal" data-target="#hibernateDeleteConfirmModal" data-hibernate-delete-action="all-cache" title="Evict all cache regions">
+                                            <i class="fas fa-trash"></i>
+                                            Evict all regions
+                                        </button>
+                                        {{#if sessionFactory.queryCacheEnabled}}
+                                            <button type="button" class="cp-actions-menu-item cp-actions-menu-item-danger" data-toggle="modal" data-target="#hibernateDeleteConfirmModal" data-hibernate-delete-action="default-query-region" title="Evict default query region">
+                                                <i class="fas fa-trash"></i>
+                                                Evict default query region
+                                            </button>
+                                            <button type="button" class="cp-actions-menu-item cp-actions-menu-item-danger" data-toggle="modal" data-target="#hibernateDeleteConfirmModal" data-hibernate-delete-action="query-regions" title="Evict query regions">
+                                                <i class="fas fa-trash"></i>
+                                                Evict query regions
+                                            </button>
+                                        {{/if}}
+                                    </div>
+                                </details>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            {{#if cacheRegions}}
+                                {{#if statistics.statisticsEnabled}}
+                                {{else}}
+                                    <div class="cp-data-table-empty">Enable statistics to see cache hits, misses, puts, elements, and memory size.</div>
+                                {{/if}}
+                                <div class="cp-data-table" data-filter-table data-filter-table-label="region" data-filter-table-label-plural="regions">
+                                    <div class="cp-data-table-toolbar">
+                                        <div class="cp-data-table-summary" data-filter-table-summary>{{ cacheRegions.size }} regions</div>
+                                        <div class="cp-data-table-search">
+                                            <input type="text" class="form-control" data-filter-table-search placeholder="Search cache regions" aria-label="Search cache regions">
+                                        </div>
+                                    </div>
+                                    <div class="cp-data-table-container">
+                                        <table class="table cp-data-table-table cp-data-table-fixed">
+                                            <colgroup>
+                                                <col class="cp-hibernate-long-column">
+                                                {{#if statistics.statisticsEnabled}}
+                                                    <col class="cp-hibernate-metric-column">
+                                                    <col class="cp-hibernate-metric-column">
+                                                    <col class="cp-hibernate-metric-column">
+                                                    <col class="cp-hibernate-metric-column">
+                                                    <col class="cp-hibernate-metric-column">
+                                                {{/if}}
+                                                <col class="cp-hibernate-actions-column">
+                                            </colgroup>
+                                            <thead>
+                                            <tr>
+                                                <th>Region</th>
+                                                {{#if statistics.statisticsEnabled}}
+                                                    <th>Hits</th>
+                                                    <th>Misses</th>
+                                                    <th>Puts</th>
+                                                    <th>Elements</th>
+                                                    <th>Size</th>
+                                                {{/if}}
+                                                <th class="cp-cache-entry-actions">Actions</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            {{#each cacheRegions}}
+                                                <tr data-filter-table-row>
+                                                    <td><code class="cp-table-code">{{ name }}</code></td>
+                                                    {{#if ../statistics.statisticsEnabled}}
+                                                        <td>{{ hitCount }}</td>
+                                                        <td>{{ missCount }}</td>
+                                                        <td>{{ putCount }}</td>
+                                                        <td>{{ elementCountInMemory }}</td>
+                                                        <td>{{ sizeInMemory }}</td>
+                                                    {{/if}}
+                                                    <td class="cp-cache-entry-actions">
+                                                        <details class="cp-actions-menu cp-actions-menu-end" data-actions-menu>
+                                                            <summary class="btn btn-ghost btn-icon" aria-label="Open actions menu for {{ name }}" title="Actions">
+                                                                <i class="fas fa-ellipsis"></i>
+                                                            </summary>
+                                                            <div class="cp-actions-menu-content">
+                                                                <button type="button" class="cp-actions-menu-item cp-actions-menu-item-danger" data-toggle="modal" data-target="#hibernateDeleteConfirmModal" data-hibernate-delete-action="region" data-hibernate-action-value="{{ name }}">
+                                                                    <i class="fas fa-trash"></i>
+                                                                    Evict
+                                                                </button>
+                                                            </div>
+                                                        </details>
+                                                    </td>
+                                                </tr>
+                                            {{/each}}
+                                            <tr data-filter-table-empty hidden>
+                                                <td class="cp-data-table-empty-cell" colspan="{{#if statistics.statisticsEnabled}}7{{else}}2{{/if}}">No cache regions found.</td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            {{else}}
+                                <div class="cp-data-table-empty">No second-level cache regions.</div>
+                            {{/if}}
+                        </div>
+                    </div>
+
+                    {{#if statistics.statisticsEnabled}}
+                        {{#if cacheRegions}}
+                            <div class="card card-light">
+                                <div class="card-header">
+                                    <div class="cp-card-heading">
+                                        <div class="cp-card-header-text">
+                                            <h3 class="card-title">Elements in memory</h3>
+                                            <div class="card-description">Provider-reported entries currently stored in each Hibernate cache region.</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="cp-chart-container" data-hibernate-cache-chart>
+                                        {{#each cacheRegions}}
+                                            <div class="cp-chart-row" data-hibernate-cache-value="{{ elementCountInMemory }}">
+                                                <div class="cp-chart-label"><code class="cp-table-code">{{ name }}</code></div>
+                                                <div class="cp-chart-track" aria-hidden="true">
+                                                    <span class="cp-chart-bar"></span>
+                                                </div>
+                                                <div class="cp-chart-value">
+                                                    {{#if elementCountInMemory}}
+                                                        {{ elementCountInMemory }}
+                                                    {{else}}
+                                                        Not reported
+                                                    {{/if}}
+                                                </div>
+                                            </div>
+                                        {{/each}}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card card-light">
+                                <div class="card-header">
+                                    <div class="cp-card-heading">
+                                        <div class="cp-card-header-text">
+                                            <h3 class="card-title">Size in memory</h3>
+                                            <div class="card-description">Provider-reported memory usage for each cache region when extended statistics are available.</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="cp-chart-container" data-hibernate-cache-chart>
+                                        {{#each cacheRegions}}
+                                            <div class="cp-chart-row" data-hibernate-cache-value="{{ sizeInMemory }}">
+                                                <div class="cp-chart-label"><code class="cp-table-code">{{ name }}</code></div>
+                                                <div class="cp-chart-track" aria-hidden="true">
+                                                    <span class="cp-chart-bar"></span>
+                                                </div>
+                                                <div class="cp-chart-value">
+                                                    {{#if sizeInMemory}}
+                                                        {{ sizeInMemory }}
+                                                    {{else}}
+                                                        Not reported
+                                                    {{/if}}
+                                                </div>
+                                            </div>
+                                        {{/each}}
+                                    </div>
+                                </div>
+                            </div>
+                        {{/if}}
+                    {{/if}}
+                </div>
+            </div>

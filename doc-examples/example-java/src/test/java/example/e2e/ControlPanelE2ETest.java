@@ -7,6 +7,7 @@ import com.microsoft.playwright.junit.Options;
 import com.microsoft.playwright.junit.OptionsFactory;
 import com.microsoft.playwright.junit.UsePlaywright;
 import com.microsoft.playwright.options.AriaRole;
+import io.micronaut.context.annotation.Property;
 import io.micronaut.http.HttpStatus;
 import io.micronaut.http.client.HttpClient;
 import io.micronaut.http.client.annotation.Client;
@@ -18,9 +19,11 @@ import java.util.regex.Pattern;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @UsePlaywright(ControlPanelE2ETest.HeadlessBrowserOptions.class)
-@MicronautTest(environments = {"kafka", "oracle"})
+@MicronautTest(environments = {"hibernate", "kafka", "oracle"})
+@Property(name = "kafka.streams.default.state.dir", value = "build/tmp/kafka-streams-e2e")
 class ControlPanelE2ETest extends AbstractE2ETest {
 
     @Test
@@ -277,6 +280,348 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         controlPanelDetails(page, "Kafka").click();
 
         assertThat(page.locator("html").getByRole(AriaRole.DOCUMENT)).matchesAriaSnapshot("- document: \"Sub-topology: 2 Sub-topology: 1 Sub-topology: 0 KTABLE SELECT 0000000028 variant detail source variant detail source source variant stock source variant stock source source KSTREAM SINK 0000000030 KSTREAM KEY SELECT 0000000013 attribute source KTABLE JOINOTHER 0000000024 KSTREAM MAPVALUES 0000000038 product json sink KSTREAM FILTER 0000000017 KTABLE MERGE 0000000025 KTABLE JOINTHIS 0000000023 product sink description source description source source KSTREAM AGGREGATE STATE STORE 0000000014 KSTREAM AGGREGATE STATE STORE 0000000014 repartition KTABLE AGGREGATE STATE STORE 0000000029 repartition KTABLE AGGREGATE STATE STORE 0000000029 product_description_v1 STATE STORE 0000000000 product_description_v1 product_json_v1 product_v1 product_attribute_v3 product_variant_stock_v2 STATE STORE 0000000010 product_variant_detail_v1 STATE STORE 0000000004 product_variant_detail_v1 product_variant_stock_v2\"");
+    }
+
+    @Test
+    @DisabledInNativeImage
+    void testHibernate(Page page) {
+        page.navigate(baseUrl());
+        categoryLink(page, "Hibernate").click();
+
+        assertThat(body(page)).containsText("my-postgres");
+        assertThat(body(page)).containsText("hibernate-reporting");
+        assertThat(body(page)).containsText("2 entities");
+        assertThat(body(page)).containsText("1 collection roles");
+
+        controlPanelDetails(page, "my-postgres").click();
+        page.waitForLoadState();
+
+        openHibernateTab(page, "Session statistics");
+        assertHibernateStatisticsToggle(page, false);
+        assertThat(hibernateCard(page, "Session statistics")).containsText("No runtime statistics recorded while statistics collection is disabled.");
+        openHibernateTab(page, "Performance");
+        assertThat(hibernateCard(page, "Common performance metrics")).containsText("Enable statistics to display common performance metrics to monitor.");
+        assertThat(hibernateCard(page, "Common performance metrics")).not().containsText("Query executions");
+        openHibernateTab(page, "Query statistics");
+        assertThat(hibernateCard(page, "Query statistics")).containsText("Enable statistics to record Hibernate query executions.");
+        openHibernateTab(page, "Cache");
+        assertThat(hibernateCard(page, "Cache")).containsText("Enable statistics to see cache hits, misses, puts, elements, and memory size.");
+        openHibernateTab(page, "Session details");
+        assertThat(hibernateCard(page, "Session details")).containsText("Shows the selected Hibernate persistence unit");
+        assertThat(hibernateTableRow(page, "Session details", "Second-level cache")).containsText("true");
+        assertThat(hibernateSessionDetailRow(page, "Statistics", "false")).isVisible();
+
+        page.navigate(server.getURL() + "/hibernate-demo/my-postgres/statistics/fill?runs=100");
+        assertThat(body(page)).containsText("hibernateSessionFactory");
+        assertThat(body(page)).containsText("datasource");
+        assertThat(body(page)).containsText("my-postgres");
+        assertThat(body(page)).containsText(Pattern.compile("\"runs\"\\s*:\\s*100"));
+        assertThat(body(page)).containsText("statisticsEnabled");
+        assertThat(body(page)).containsText("statisticsEnabledByEndpoint");
+        assertThat(body(page)).containsText("cacheWarmupAuthors");
+        assertThat(body(page)).containsText("cacheWarmupBooks");
+        assertThat(body(page)).containsText("cacheWarmupCollectionItems");
+        assertThat(body(page)).containsText("collectionItemsRead");
+        assertThat(body(page)).containsText("entityLoads");
+        assertThat(body(page)).containsText("nativeRowsRead");
+        assertThat(body(page)).containsText("Native SQL");
+        assertThat(body(page)).containsText("rowsUpdated");
+
+        page.navigate(baseUrl());
+        categoryLink(page, "Hibernate").click();
+        controlPanelDetails(page, "my-postgres").click();
+        page.waitForLoadState();
+
+        openHibernateTab(page, "Performance");
+        assertThat(hibernateCard(page, "Common performance metrics")).containsText("Query executions");
+        assertThat(hibernateCard(page, "Common performance metrics")).containsText("Second-level cache hits / misses");
+        assertThat(hibernateCard(page, "Common performance metrics")).containsText("Slowest query time");
+        assertMetricRecorded(page, "Common performance metrics", "Query executions");
+        assertMetricRecorded(page, "Common performance metrics", "Second-level cache hits / misses");
+        assertThat(body(page)).containsText("Session statistics");
+        openHibernateTab(page, "Session statistics");
+        assertMetricRecorded(page, "Session statistics", "Query executions");
+        assertMetricRecorded(page, "Session statistics", "Query cache hits");
+        assertMetricRecorded(page, "Session statistics", "Second-level cache hits");
+        assertHibernateTableFitsPage(page, "Session statistics", false);
+        openHibernateTab(page, "Session details");
+        assertThat(hibernateCard(page, "Session details")).containsText("Shows the selected Hibernate persistence unit");
+        assertThat(hibernateTableRow(page, "Session details", "Second-level cache")).containsText("true");
+        assertThat(hibernateTableRow(page, "Session details", "Query cache")).containsText("true");
+        assertThat(hibernateSessionDetailRow(page, "Statistics", "true")).isVisible();
+        assertThat(hibernateTableRow(page, "Session details", "hibernate.default_batch_fetch_size")).isVisible();
+        assertThat(hibernateTableRow(page, "Session details", "hibernate.jdbc.batch_size")).isVisible();
+        assertThat(hibernateTableRow(page, "Session details", "hibernate.cache.use_minimal_puts")).isVisible();
+        openHibernateTab(page, "JDBC Data Source");
+        assertThat(hibernateCard(page, "JDBC Data Source")).containsText("Shows the JDBC connection");
+        assertThat(hibernateCard(page, "JDBC Data Source")).containsText("JDBC URL");
+        assertThat(hibernateCard(page, "JDBC Data Source")).containsText("Supports batch updates");
+        openHibernateTab(page, "Cache");
+        assertThat(page.locator("[data-tabs-panel=\"cache\"] > .cp-dashboard-stack > .card").first()).containsText("Shows Hibernate second-level and query cache regions");
+        assertThat(hibernateCard(page, "Elements in memory")).containsText("Provider-reported entries");
+        assertThat(hibernateCard(page, "Size in memory")).containsText("Provider-reported memory usage");
+        assertThat(hibernateCard(page, "Cache")).containsText("Shows Hibernate second-level and query cache regions");
+        assertThat(hibernateTableRow(page, "Cache", "example.HibernateBook")).containsText(Pattern.compile("example\\.HibernateBook\\s+[0-9]+\\s+[0-9]+\\s+[1-9][0-9]*"));
+        openHibernateTab(page, "Entity types");
+        assertThat(hibernateCard(page, "Entities")).containsText("Shows mapped Hibernate entity types");
+        assertThat(hibernateCard(page, "Collections")).containsText("Shows persistent association roles");
+        assertThat(body(page)).containsText("example.HibernateAuthor");
+        assertThat(body(page)).containsText("example.HibernateBook");
+        assertThat(body(page)).containsText("example.HibernateAuthor.books");
+        var bookEntityRow = hibernateTableRow(page, "Entities", "example.HibernateBook");
+        assertThat(bookEntityRow).containsText("java.lang.Long");
+        assertThat(bookEntityRow.locator(".cp-hibernate-field-count > .badge")).containsText("6");
+        assertThat(bookEntityRow.locator("td").nth(4)).containsText(Pattern.compile("[1-9][0-9]*"));
+        var authorBooksCollectionRow = hibernateTableRow(page, "Collections", "example.HibernateAuthor.books");
+        assertThat(authorBooksCollectionRow.locator("td").nth(1)).containsText(Pattern.compile("[1-9][0-9]*"));
+        var fieldDetails = bookEntityRow.locator(".cp-hibernate-field-count");
+        fieldDetails.hover();
+        assertThat(fieldDetails.locator(".cp-hover-card-content")).containsText("title");
+        assertThat(fieldDetails.locator(".cp-hover-card-content")).containsText("java.lang.String");
+        hibernateRowAction(page, "Entities", "example.HibernateBook", "Properties");
+        var propertiesModal = page.locator("[id^=\"hibernateEntityPropertiesModal\"].show");
+        assertThat(propertiesModal).isVisible();
+        assertThat(propertiesModal).containsText("Property definitions");
+        assertThat(propertiesModal).containsText("example.HibernateBook");
+        assertThat(propertiesModal).containsText("publishedYear");
+        assertThat(propertiesModal).containsText("java.lang.String");
+        assertThat(propertiesModal).containsText("MANY_TO_ONE");
+        propertiesModal.locator(".modal-footer [data-dismiss='modal']").click();
+        assertThat(propertiesModal).isHidden();
+        hibernateRowAction(page, "Entities", "example.HibernateBook", "Query");
+        assertHibernateTabSelected(page, "HQL Console");
+        assertThat(hibernateCard(page, "HQL results")).containsText("example.HibernateBook#");
+        openHibernateTab(page, "Entity types");
+        hibernateRowAction(page, "Collections", "example.HibernateAuthor.books", "Query");
+        assertHibernateTabSelected(page, "HQL Console");
+        assertThat(hibernateCard(page, "HQL results")).containsText("example.HibernateAuthor#");
+        openHibernateTab(page, "Entity types");
+        openHibernateTab(page, "Named queries");
+        assertThat(hibernateCard(page, "Named queries")).containsText("Shows named HQL");
+        assertThat(hibernateCard(page, "Named queries")).containsText("HibernateBook.listTitles");
+        assertThat(hibernateCard(page, "Named queries")).containsText("HibernateBook.recentBooks");
+        assertThat(hibernateCard(page, "Named queries")).containsText("HibernateBook.nativeBookSummary");
+        assertThat(hibernateTableRow(page, "Named queries", "HibernateBook.nativeBookSummary")).containsText("Native SQL");
+        assertThat(hibernateTableRow(page, "Named queries", "HibernateBook.nativeBookSummary")).containsText("select title, pages from hibernatebook order by title");
+        openHibernateTab(page, "HQL Console");
+        page.locator("#hqlQueryText").fill("select b.title, b.publishedYear from HibernateBook b order by b.title");
+        page.locator("#executeHqlQuery").click();
+        assertThat(hibernateCard(page, "HQL results")).containsText("Beloved Hibernate");
+        assertThat(hibernateCard(page, "HQL results")).containsText("Column 1");
+        assertThat(hibernateCard(page, "HQL results")).containsText("Column 2");
+        page.locator("#hqlQueryText").fill("from HibernateBook b order by b.title");
+        page.locator("#executeHqlQuery").click();
+        var entityCell = hibernateCard(page, "HQL results").locator("[data-hover-card]").first();
+        assertThat(entityCell).containsText("example.HibernateBook#");
+        entityCell.hover();
+        assertThat(entityCell.locator(".cp-hover-card-content")).isVisible();
+        assertThat(entityCell.locator(".cp-hover-card-content")).containsText("title");
+        assertThat(entityCell.locator(".cp-hover-card-content")).containsText("publishedYear");
+        openHibernateTab(page, "Query statistics");
+        assertThat(body(page)).containsText("select count(b) from HibernateBook b");
+        assertThat(body(page)).containsText("hibernatebook");
+        assertThat(body(page)).containsText("hibernateDemo.recentBooks");
+        assertThat(body(page)).containsText("hibernateDemo.countrySummary");
+        assertThat(hibernateCard(page, "Query statistics")).containsText("Shows recorded query statistics");
+        assertThat(hibernateCard(page, "Query statistics").locator("[data-filter-table-page]")).isVisible();
+        assertHibernateTableFitsPage(page, "Query statistics", true);
+        assertThat(hibernateTableRow(page, "Query statistics", "from HibernateBook b").first()).containsText(Pattern.compile("from HibernateBook b[\\s\\S]*[1-9][0-9]*"));
+        assertThat(hibernateTableRow(page, "Query statistics", "from HibernateBook b").first().locator("code.language-sql")).containsText("from HibernateBook b");
+        openHibernateTab(page, "Session statistics");
+        assertHibernateStatisticsToggle(page, true);
+
+        openHibernateTab(page, "Entity types");
+        hibernateRowAction(page, "Entities", "example.HibernateBook", "Evict");
+        assertThat(page.locator("#hibernateDeleteConfirmModal")).isVisible();
+        assertThat(page.locator("#hibernateDeleteConfirmModal")).containsText("Evict entity cache");
+        assertThat(page.locator("#hibernateDeleteConfirmModal")).containsText("It does not delete database rows.");
+        assertThat(page.locator("#hibernateDeleteConfirmModal")).containsText("example.HibernateBook");
+        page.locator("#hibernateDeleteConfirm").click();
+        assertGlobalAlert(page, "Entity cache evicted");
+        openHibernateTab(page, "Entity types");
+        assertThat(body(page)).containsText("example.HibernateBook");
+
+        hibernateRowAction(page, "Collections", "example.HibernateAuthor.books", "Evict");
+        assertThat(page.locator("#hibernateDeleteConfirmModal")).isVisible();
+        assertThat(page.locator("#hibernateDeleteConfirmModal")).containsText("Evict collection cache");
+        assertThat(page.locator("#hibernateDeleteConfirmModal")).containsText("It does not delete related entities or rows.");
+        assertThat(page.locator("#hibernateDeleteConfirmModal")).containsText("example.HibernateAuthor.books");
+        page.locator("#hibernateDeleteConfirm").click();
+        assertGlobalAlert(page, "Collection cache evicted");
+        openHibernateTab(page, "Entity types");
+        assertThat(body(page)).containsText("example.HibernateAuthor.books");
+
+        openHibernateTab(page, "Cache");
+        hibernateAction(page, "Cache", "Evict all regions");
+        assertThat(page.locator("#hibernateDeleteConfirmModal")).isVisible();
+        assertThat(page.locator("#hibernateDeleteConfirmModal")).containsText("Evict all cache regions");
+        page.locator("#hibernateDeleteConfirm").click();
+        assertGlobalAlert(page, "Cache evicted");
+        assertHibernateTabSelected(page, "Cache");
+
+        hibernateAction(page, "Cache", "Evict default query region");
+        assertThat(page.locator("#hibernateDeleteConfirmModal")).isVisible();
+        assertThat(page.locator("#hibernateDeleteConfirmModal")).containsText("Evict default query region");
+        page.locator("#hibernateDeleteConfirm").click();
+        assertGlobalAlert(page, "Default query region evicted");
+        assertHibernateTabSelected(page, "Cache");
+
+        hibernateAction(page, "Cache", "Evict query regions");
+        assertThat(page.locator("#hibernateDeleteConfirmModal")).isVisible();
+        assertThat(page.locator("#hibernateDeleteConfirmModal")).containsText("Evict query regions");
+        page.locator("#hibernateDeleteConfirm").click();
+        assertGlobalAlert(page, "Query regions evicted");
+        assertHibernateTabSelected(page, "Cache");
+
+        hibernateRowAction(page, "Cache", "example.HibernateBook", "Evict");
+        assertThat(page.locator("#hibernateDeleteConfirmModal")).isVisible();
+        assertThat(page.locator("#hibernateDeleteConfirmModal")).containsText("Evict cache region");
+        page.locator("#hibernateDeleteConfirm").click();
+        assertGlobalAlert(page, "Region evicted");
+        assertHibernateTabSelected(page, "Cache");
+
+        openHibernateTab(page, "Session statistics");
+        hibernateAction(page, "Session statistics", "Clear statistics");
+        assertThat(page.locator("#hibernateDeleteConfirmModal")).isVisible();
+        assertThat(page.locator("#hibernateDeleteConfirmModal")).containsText("Clear statistics");
+        page.locator("#hibernateDeleteConfirm").click();
+        assertGlobalAlert(page, "Statistics cleared");
+        openHibernateTab(page, "Query statistics");
+        assertThat(body(page)).containsText("No query statistics recorded.");
+
+        openHibernateTab(page, "Session statistics");
+        hibernateStatisticsToggle(page).click();
+        page.waitForFunction("() => document.querySelector('[data-hibernate-statistics-toggle]')?.getAttribute('aria-checked') === 'false'");
+        assertThat(page.locator("#globalAlert")).isHidden();
+        assertHibernateStatisticsToggle(page, false);
+        openHibernateTab(page, "Performance");
+        assertThat(hibernateCard(page, "Common performance metrics")).containsText("Enable statistics to display common performance metrics to monitor.");
+        openHibernateTab(page, "Session details");
+        assertThat(hibernateCard(page, "Session details")).containsText("Shows the selected Hibernate persistence unit");
+    }
+
+    @Test
+    @DisabledInNativeImage
+    void testHibernateReportingWithoutRecordedStatistics(Page page) {
+        page.navigate(baseUrl() + "/hibernate-hibernate-reporting");
+        page.waitForLoadState();
+
+        openHibernateTab(page, "Session statistics");
+        assertHibernateStatisticsToggle(page, false);
+        openHibernateTab(page, "Performance");
+        assertThat(hibernateCard(page, "Common performance metrics")).containsText("Enable statistics to display common performance metrics to monitor.");
+        openHibernateTab(page, "Session details");
+        assertThat(hibernateCard(page, "Session details")).containsText("Shows the selected Hibernate persistence unit");
+    }
+
+    private static Locator hibernateCard(Page page, String title) {
+        var cardId = hibernateCardId(title);
+        if (cardId != null) {
+            return page.locator("[data-hibernate-card=\"" + cardId + "\"]");
+        }
+        return page
+            .locator(".card")
+            .filter(
+                new Locator.FilterOptions()
+                    .setHas(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName(title).setExact(true)))
+            );
+    }
+
+    private static String hibernateCardId(String title) {
+        return switch (title) {
+            case "Session details" -> "session-details";
+            case "Statistics collection" -> "statistics-collection";
+            case "Common performance metrics" -> "performance";
+            case "Session statistics" -> "session-statistics";
+            case "Cache" -> "cache";
+            case "JDBC Data Source" -> "data-sources";
+            case "Entities" -> "entities";
+            case "Named queries" -> "named-queries";
+            case "HQL Console" -> "hql-console";
+            case "HQL results" -> "hql-results";
+            case "Query statistics" -> "query-statistics";
+            default -> null;
+        };
+    }
+
+    private static void openHibernateTab(Page page, String tabName) {
+        if (isHibernateStatisticsTab(tabName)) {
+            page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("Statistics").setExact(true)).click();
+        }
+        page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName(tabName).setExact(true)).click();
+    }
+
+    private static boolean isHibernateStatisticsTab(String tabName) {
+        return tabName.equals("Performance") || tabName.equals("Session statistics") || tabName.equals("Query statistics");
+    }
+
+    private static void assertHibernateTabSelected(Page page, String tabName) {
+        var tab = page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName(tabName).setExact(true));
+        assertEquals("true", tab.getAttribute("aria-selected"));
+    }
+
+    private static Locator hibernateTableRow(Page page, String cardTitle, String rowText) {
+        return hibernateCard(page, cardTitle)
+            .locator("tbody tr")
+            .filter(new Locator.FilterOptions().setHasText(rowText));
+    }
+
+    private static Locator hibernateSessionDetailRow(Page page, String label, String value) {
+        return hibernateCard(page, "Session details")
+            .getByRole(AriaRole.ROW, new Locator.GetByRoleOptions().setName(label + " " + value).setExact(true));
+    }
+
+    private static void openHibernateActions(Page page, String cardTitle) {
+        hibernateCard(page, cardTitle)
+            .locator(".card-header [data-actions-menu] > summary")
+            .click();
+    }
+
+    private static void hibernateAction(Page page, String cardTitle, String actionName) {
+        openHibernateActions(page, cardTitle);
+        button(page, actionName).click();
+    }
+
+    private static Locator hibernateStatisticsToggle(Page page) {
+        return hibernateCard(page, "Statistics collection").locator("[data-hibernate-statistics-toggle]");
+    }
+
+    private static void assertHibernateStatisticsToggle(Page page, boolean enabled) {
+        var toggle = hibernateStatisticsToggle(page);
+        assertThat(toggle).isVisible();
+        assertEquals(Boolean.toString(enabled), toggle.getAttribute("aria-checked"));
+    }
+
+    private static void assertHibernateTableFitsPage(Page page, String cardTitle, boolean requireInternalScroll) {
+        var fitsPage = (Boolean) hibernateCard(page, cardTitle).evaluate("""
+            (card, requireInternalScroll) => {
+                const tableContainer = card.querySelector(".cp-data-table-container");
+                if (!tableContainer) {
+                    return false;
+                }
+                const cardRect = card.getBoundingClientRect();
+                const tableRect = tableContainer.getBoundingClientRect();
+                const fits = cardRect.bottom <= window.innerHeight + 1
+                    && tableRect.bottom <= cardRect.bottom + 1;
+                return requireInternalScroll ? fits && tableContainer.clientHeight < tableContainer.scrollHeight : fits;
+            }
+            """, requireInternalScroll);
+        assertTrue(fitsPage, cardTitle + " table should fit inside the viewport");
+    }
+
+    private static void hibernateRowAction(Page page, String cardTitle, String rowText, String actionName) {
+        var row = hibernateTableRow(page, cardTitle, rowText);
+        row.locator("[data-actions-menu] > summary").click();
+        row.getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName(actionName).setExact(true)).click();
+    }
+
+    private static void assertMetricRecorded(Page page, String cardTitle, String metric) {
+        assertThat(hibernateTableRow(page, cardTitle, metric)).containsText(Pattern.compile(metric + "[\\s\\S]*[1-9][0-9]*"));
+    }
+
+    private static void assertGlobalAlert(Page page, String title) {
+        page.waitForFunction("expected => document.querySelector('#globalAlertTitle')?.textContent?.includes(expected)", title);
+        assertThat(page.locator("#globalAlertTitle")).containsText(title);
     }
 
     public static class HeadlessBrowserOptions implements OptionsFactory {

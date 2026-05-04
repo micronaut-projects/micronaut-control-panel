@@ -195,6 +195,46 @@
         $table.attr("data-filter-table-current-page", String(page));
     }
 
+    function getCurrentTabsItems($tabs, selector) {
+        return $tabs.find(selector).filter(function () {
+            return $(this).closest("[data-tabs]")[0] === $tabs[0];
+        });
+    }
+
+    function activateTabs($tabs, target, persist) {
+        var $triggers = getCurrentTabsItems($tabs, "[data-tabs-trigger]");
+        var $panels = getCurrentTabsItems($tabs, "[data-tabs-panel]");
+        var $targetTrigger = $triggers.filter(function () {
+            return this.getAttribute("data-tabs-trigger") === target;
+        }).first();
+        if (!$targetTrigger.length) {
+            return;
+        }
+
+        $triggers.each(function () {
+            var active = this.getAttribute("data-tabs-trigger") === target;
+            this.classList.toggle("active", active);
+            this.setAttribute("aria-selected", active ? "true" : "false");
+        });
+        $panels.each(function () {
+            var active = this.getAttribute("data-tabs-panel") === target;
+            this.hidden = !active;
+            if (active) {
+                $(this).find("[data-filter-table]").each(function () {
+                    updateFilterTable(this);
+                });
+            }
+        });
+        notifyLayoutChanged();
+
+        if (persist) {
+            var storageKey = $tabs.attr("data-tabs-storage-key");
+            if (storageKey) {
+                sessionStorage.setItem(storageKey, target);
+            }
+        }
+    }
+
     function closeActionMenus(except) {
         document.querySelectorAll("[data-actions-menu][open]").forEach(function (menu) {
             if (menu !== except) {
@@ -407,8 +447,15 @@
         $("#globalAlert").show();
     };
 
+    function clearGlobalAlertStorage() {
+        sessionStorage.removeItem("globalAlertTitle");
+        sessionStorage.removeItem("globalAlertMessage");
+        sessionStorage.removeItem("globalAlertClass");
+        sessionStorage.removeItem("globalAlertIconClass");
+    }
+
     window.globalAlertMessageClear = function () {
-        sessionStorage.clear();
+        clearGlobalAlertStorage();
         $("#globalAlertTitle").text("");
         $("#globalAlertMessage").text("");
         $("#globalAlert").removeClass();
@@ -427,7 +474,7 @@
                 sessionStorage.getItem("globalAlertClass"),
                 sessionStorage.getItem("globalAlertIconClass")
             );
-            sessionStorage.clear();
+            clearGlobalAlertStorage();
         }
 
         $(document).on("click", function (event) {
@@ -512,20 +559,19 @@
         $(document).on("click", "[data-tabs-trigger]", function () {
             var target = this.getAttribute("data-tabs-trigger");
             var $tabs = $(this).closest("[data-tabs]");
-            $tabs.find("[data-tabs-trigger]").each(function () {
-                var active = this.getAttribute("data-tabs-trigger") === target;
-                this.classList.toggle("active", active);
-                this.setAttribute("aria-selected", active ? "true" : "false");
-            });
-            $tabs.find("[data-tabs-panel]").each(function () {
-                var active = this.getAttribute("data-tabs-panel") === target;
-                this.hidden = !active;
-                if (active) {
-                    $(this).find("[data-filter-table]").each(function () {
-                        updateFilterTable(this);
-                    });
-                }
-            });
+            activateTabs($tabs, target, true);
+        });
+
+        $("[data-tabs]").each(function () {
+            var $tabs = $(this);
+            var storageKey = $tabs.attr("data-tabs-storage-key");
+            var target = storageKey ? sessionStorage.getItem(storageKey) : null;
+            if (!target) {
+                target = getCurrentTabsItems($tabs, "[data-tabs-trigger].active").first().attr("data-tabs-trigger");
+            }
+            if (target) {
+                activateTabs($tabs, target, false);
+            }
         });
 
         $("[data-filter-table]").each(function () {

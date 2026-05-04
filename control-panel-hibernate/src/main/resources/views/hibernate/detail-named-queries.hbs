@@ -1,0 +1,74 @@
+            <div class="tabs-panel" role="tabpanel" data-tabs-panel="named-queries" hidden>
+                <div class="card card-light" data-hibernate-card="named-queries">
+                    <div class="card-header">
+                        <div class="cp-card-heading">
+                            <div class="cp-card-header-text">
+                                <div class="card-description">Shows named HQL, native SQL, and callable queries registered with this Hibernate session factory.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {{#if namedQueries}}
+                            <div class="cp-data-table" data-filter-table data-filter-table-unpaged data-filter-table-label="named query" data-filter-table-label-plural="named queries">
+                                <div class="cp-data-table-toolbar">
+                                    <div class="cp-data-table-summary" data-filter-table-summary>{{ namedQueries.size }} named queries</div>
+                                    <div class="cp-data-table-search">
+                                        <input type="text" class="form-control" data-filter-table-search placeholder="Search named queries" aria-label="Search named queries">
+                                    </div>
+                                </div>
+                                <div class="cp-data-table-container">
+                                    <table class="table cp-data-table-table cp-data-table-fixed">
+                                        <colgroup>
+                                            <col class="cp-hibernate-named-query-name-column">
+                                            <col class="cp-hibernate-named-query-type-column">
+                                            <col class="cp-hibernate-query-column">
+                                            <col class="cp-hibernate-named-query-cacheable-column">
+                                            <col class="cp-hibernate-named-query-cache-region-column">
+                                            <col class="cp-hibernate-named-query-actions-column">
+                                        </colgroup>
+                                        <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Type</th>
+                                            <th>Query</th>
+                                            <th>Cacheable</th>
+                                            <th>Cache region</th>
+                                            <th class="cp-cache-entry-actions">Actions</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {{#each namedQueries}}
+                                            <tr data-filter-table-row>
+                                                <td><code class="cp-table-code">{{ name }}</code></td>
+                                                <td class="cp-hibernate-named-query-type"><span class="badge badge-secondary">{{ type }}</span></td>
+                                                <td><pre class="cp-query-code"><code class="language-sql">{{ query }}</code></pre></td>
+                                                <td><code class="cp-table-code">{{ cacheable }}</code></td>
+                                                <td>
+                                                    {{#if cacheRegion}}
+                                                        <code class="cp-table-code">{{ cacheRegion }}</code>
+                                                    {{else}}
+                                                        <span class="badge badge-secondary">default</span>
+                                                    {{/if}}
+                                                </td>
+                                                <td class="cp-cache-entry-actions">
+                                                    {{#eq type "HQL"}}
+                                                        <button type="button" class="btn btn-ghost btn-icon" data-hibernate-hql-template="{{ query }}" title="Use in HQL console" aria-label="Use {{ name }} in HQL console">
+                                                            <i class="fas fa-play"></i>
+                                                        </button>
+                                                    {{/eq}}
+                                                </td>
+                                            </tr>
+                                        {{/each}}
+                                        <tr data-filter-table-empty hidden>
+                                            <td class="cp-data-table-empty-cell" colspan="6">No named queries found.</td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        {{else}}
+                            <div class="cp-data-table-empty">No named queries registered.</div>
+                        {{/if}}
+                    </div>
+                </div>
+            </div>
