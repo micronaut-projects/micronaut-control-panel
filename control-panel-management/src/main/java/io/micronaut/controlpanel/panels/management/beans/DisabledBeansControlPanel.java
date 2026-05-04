@@ -48,16 +48,12 @@ public class DisabledBeansControlPanel extends AbstractControlPanel<DisabledBean
     public static final String NAME = "disabled-beans";
     public static final String ENABLED_PROPERTY = ControlPanelConfiguration.PREFIX + "." + NAME + ".enabled";
 
-    private static final Comparator<Object> COMPARATOR_BY_NAME = Comparator.comparing(bd -> bd.getClass().getName());
-
     private final Body body;
-    private final long beanDefinitionsCount;
 
     protected DisabledBeansControlPanel(@Named(NAME) ControlPanelConfiguration configuration, BeanContext beanContext) {
         super(NAME, configuration);
         var disabledBeans = beanContext.getDisabledBeans().stream().sorted(Comparator.comparing(BeanDefinition::getName)).toList();
         this.body = new Body(disabledBeans);
-        this.beanDefinitionsCount = disabledBeans.size();
     }
 
     @Override

@@ -75,8 +75,6 @@ public class RoutesControlPanel extends AbstractControlPanel<RoutesControlPanel.
 
     private final Body body;
 
-    private final String badge;
-
     public RoutesControlPanel(Router router,
 
                               @Named(NAME) ControlPanelConfiguration configuration,
@@ -93,7 +91,6 @@ public class RoutesControlPanel extends AbstractControlPanel<RoutesControlPanel.
             viewer == null ? null : viewer.uri(),
             viewer == null ? null : viewer.label(),
             totalAppRoutes + totalMicronautRoutes);
-        this.badge = String.valueOf(totalAppRoutes + totalMicronautRoutes);
     }
 
     private static Viewer resolveOpenApiViewer(Environment env) {
