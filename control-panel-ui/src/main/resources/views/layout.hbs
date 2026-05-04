@@ -105,12 +105,9 @@
 
             {{#if activeEnvironments}}
                 <div class="cp-sidebar-group-label cp-environment-label">Environments</div>
-                <div class="cp-nav cp-sidebar-section cp-environment-list" aria-label="Active environments">
+                <div class="cp-environments cp-sidebar-section cp-environment-list" aria-label="Active environments">
                     {{#each activeEnvironments }}
-                        <div class="cp-nav-link cp-nav-static" title="{{ this }}">
-                            <span class="cp-nav-icon"><i class="fas fa-circle"></i></span>
-                            <span class="cp-nav-label">{{ this }}</span>
-                        </div>
+                        <span class="badge cp-environment-tag" title="{{ this }}">{{ this }}</span>
                     {{/each}}
                 </div>
             {{/if}}
@@ -159,23 +156,23 @@
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb">
                             {{#if ext.controlPanel }}
-                                <li class="breadcrumb-item">
-                                    <a href="{{ext.controlPanelPath}}">
-                                        <img src="{{ext.appPath}}/micronaut-control-panel/img/micronaut-sally.svg" alt="" class="cp-dashboard-icon">
-                                        Dashboard
-                                    </a>
-                                </li>
                                 {{#eq ext.currentCategory.id "main"}}
-                                {{else}}
+                                    <li class="breadcrumb-item">
+                                        <a href="{{ext.controlPanelPath}}">
+                                            <img src="{{ext.appPath}}/micronaut-control-panel/img/micronaut-sally.svg" alt="" class="cp-dashboard-icon">
+                                            Dashboard
+                                        </a>
+                                    </li>
                                     <li class="breadcrumb-separator" aria-hidden="true">/</li>
+                                {{else}}
                                     <li class="breadcrumb-item">
                                         <a href="{{ext.controlPanelPath}}/categories/{{ ext.currentCategory.id }}">
                                             <i class="{{ ext.currentCategory.iconClass }}"></i>
                                             {{ ext.currentCategory.name }}
                                         </a>
                                     </li>
+                                    <li class="breadcrumb-separator" aria-hidden="true">/</li>
                                 {{/eq}}
-                                <li class="breadcrumb-separator" aria-hidden="true">/</li>
                                 <li class="breadcrumb-item active" aria-current="page">
                                     {{#if ext.controlPanel.icon}}
                                         <i class="fa {{ ext.controlPanel.icon }}"></i>
@@ -192,13 +189,6 @@
                                         {{ ext.currentCategory.name }}
                                     </li>
                                 {{else}}
-                                    <li class="breadcrumb-item">
-                                        <a href="{{ext.controlPanelPath}}">
-                                            <img src="{{ext.appPath}}/micronaut-control-panel/img/micronaut-sally.svg" alt="" class="cp-dashboard-icon">
-                                            Dashboard
-                                        </a>
-                                    </li>
-                                    <li class="breadcrumb-separator" aria-hidden="true">/</li>
                                     <li class="breadcrumb-item active" aria-current="page">
                                         <i class="{{ ext.currentCategory.iconClass }}"></i>
                                         {{ ext.currentCategory.name }}
