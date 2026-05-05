@@ -267,7 +267,7 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         assertThat(page.locator("[data-schema-tree]")).containsText("EMP");
 
         page.locator("#sql-console").getByRole(AriaRole.TEXTBOX).fill("SELECT * FROM DEPT");
-        id(page, "executeQuery").click();
+        executeQueryShortcut(page);
 
         assertThat(page.locator("tbody")).containsText("ACCOUNTING");
     }
@@ -405,7 +405,7 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         assertThat(hibernateTableRow(page, "Named queries", "HibernateBook.nativeBookSummary")).containsText("select title, pages from hibernatebook order by title");
         openHibernateTab(page, "HQL Console");
         page.locator("#hqlQueryText").fill("select b.title, b.publishedYear from HibernateBook b order by b.title");
-        page.locator("#executeHqlQuery").click();
+        executeQueryShortcut(page);
         assertThat(hibernateCard(page, "HQL results")).containsText("Beloved Hibernate");
         assertThat(hibernateCard(page, "HQL results")).containsText("Column 1");
         assertThat(hibernateCard(page, "HQL results")).containsText("Column 2");
@@ -553,6 +553,10 @@ class ControlPanelE2ETest extends AbstractE2ETest {
 
     private static boolean isHibernateStatisticsTab(String tabName) {
         return tabName.equals("Performance") || tabName.equals("Session statistics") || tabName.equals("Query statistics");
+    }
+
+    private static void executeQueryShortcut(Page page) {
+        page.keyboard().press("Control+Enter");
     }
 
     private static void assertHibernateTabSelected(Page page, String tabName) {

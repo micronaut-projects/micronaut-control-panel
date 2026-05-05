@@ -1,4 +1,4 @@
-import {EditorView, showPanel} from "@codemirror/view";
+import {EditorView, keymap, showPanel} from "@codemirror/view";
 import {EditorState} from "@codemirror/state";
 import {HighlightStyle, syntaxHighlighting} from "@codemirror/language";
 import {tags} from "@lezer/highlight";
@@ -18,7 +18,7 @@ const sqlHighlightStyle = HighlightStyle.define([
     { tag: tags.invalid, color: "var(--destructive)" }
 ]);
 
-function getSQLExtensions(databaseType, schemaConfig) {
+function getSQLExtensions(databaseType, schemaConfig, options) {
     let dbDialect;
     switch (databaseType.toUpperCase()) {
         case 'MYSQL':
@@ -43,7 +43,7 @@ function getSQLExtensions(databaseType, schemaConfig) {
     }
     const schema = (schemaConfig && schemaConfig.schema) ? schemaConfig.schema : undefined;
     const defaultSchema = (schemaConfig && schemaConfig.defaultSchema) ? schemaConfig.defaultSchema : undefined;
-    return [
+    const extensions = [
         basicSetup,
         sql({
             dialect: dbDialect,
@@ -67,6 +67,19 @@ function getSQLExtensions(databaseType, schemaConfig) {
             enableHover: false
         })
     ];
+    if (options && typeof options.executeQuery === "function") {
+        extensions.unshift(keymap.of([
+            {
+                key: "Mod-Enter",
+                run: options.executeQuery
+            },
+            {
+                key: "Ctrl-Enter",
+                run: options.executeQuery
+            }
+        ]));
+    }
+    return extensions;
 }
 
 window.codemirror = {
