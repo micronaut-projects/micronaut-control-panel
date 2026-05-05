@@ -1,0 +1,20 @@
+#tag::control-panel-authenticated[]
+micronaut:
+  security:
+    enabled: true
+    basic-auth:
+      enabled: true
+  control-panel:
+    enabled: true
+    security:
+      access: authenticated
+
+endpoints:
+  env:
+    enabled: true
+  health:
+    details-visible: AUTHENTICATED
+  loggers:
+    enabled: true
+    write-sensitive: false
+#end::control-panel-authenticated[]

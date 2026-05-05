@@ -173,7 +173,7 @@
         $('#invalidateConfirm').click(function(event) {
             var cacheKey = $(this).attr('data-key');
             $.ajax({
-                url: '{{ ext.appPath }}/cache-control-panel-controller/{{ cache.name }}/' + cacheKey,
+                url: '{{ ext.controlPanelPath }}/cache-control-panel-controller/{{ cache.name }}/' + cacheKey,
                 type: 'DELETE',
                 contentType: "application/json; charset=utf-8",
                 success: function(result) {
@@ -190,7 +190,7 @@
 
         $('#invalidateAllConfirm').click(function(event) {
             $.ajax({
-                url: '{{ ext.appPath }}/cache-control-panel-controller/{{ cache.name }}',
+                url: '{{ ext.controlPanelPath }}/cache-control-panel-controller/{{ cache.name }}',
                 type: 'DELETE',
                 contentType: "application/json; charset=utf-8",
                 success: function(result) {

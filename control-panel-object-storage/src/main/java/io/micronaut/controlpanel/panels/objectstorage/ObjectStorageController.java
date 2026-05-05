@@ -16,6 +16,7 @@
 package io.micronaut.controlpanel.panels.objectstorage;
 
 import io.micronaut.context.BeanLocator;
+import io.micronaut.controlpanel.core.security.ControlPanelSecurityPaths;
 import io.micronaut.core.annotation.Internal;
 import io.micronaut.core.type.Argument;
 import io.micronaut.http.HttpHeaders;
@@ -48,7 +49,7 @@ import java.util.Map;
  * @author Álvaro Sánchez-Mariscal
  * @since 1.10.0
  */
-@Controller("/object-storage-control-panel-controller")
+@Controller(ControlPanelSecurityPaths.OBJECT_STORAGE)
 @ExecuteOn(TaskExecutors.BLOCKING)
 @Internal
 public final class ObjectStorageController {

@@ -19,6 +19,7 @@ package io.micronaut.controlpanel.panels.cache;
 import io.micronaut.cache.SyncCache;
 import io.micronaut.context.exceptions.ConfigurationException;
 import io.micronaut.controlpanel.core.ControlPanelRepository;
+import io.micronaut.controlpanel.core.security.ControlPanelSecurityPaths;
 import io.micronaut.core.annotation.Internal;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.Controller;
@@ -35,7 +36,7 @@ import java.util.Optional;
  * @author Álvaro Sánchez-Mariscal
  * @since 2.0.0
  */
-@Controller("/cache-control-panel-controller")
+@Controller(ControlPanelSecurityPaths.CACHE)
 @ExecuteOn(TaskExecutors.BLOCKING)
 @Internal
 public final class CacheController {

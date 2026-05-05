@@ -19,11 +19,14 @@ import io.micronaut.context.annotation.Requires;
 import io.micronaut.controlpanel.core.AbstractControlPanel;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.core.util.StringUtils;
+import io.micronaut.http.context.ServerRequestContext;
 import io.micronaut.management.endpoint.health.HealthEndpoint;
 import io.micronaut.management.health.indicator.HealthResult;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import reactor.core.publisher.Mono;
+
+import java.security.Principal;
 
 /**
  * Control panel that displays information about the application health.
@@ -48,7 +51,10 @@ public class HealthControlPanel extends AbstractControlPanel<HealthResult> {
 
     @Override
     public HealthResult getBody() {
-        return Mono.from(endpoint.getHealth(null)).block();
+        Principal principal = ServerRequestContext.currentRequest()
+            .flatMap(request -> request.getUserPrincipal(Principal.class))
+            .orElse(null);
+        return Mono.from(endpoint.getHealth(principal)).block();
     }
 
 }

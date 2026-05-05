@@ -132,7 +132,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
-                        <form id="uploadForm" enctype="multipart/form-data" action="{{ ext.appPath }}/object-storage-control-panel-controller/{{ controlPanel.title }}">
+                        <form id="uploadForm" enctype="multipart/form-data" action="{{ ext.controlPanelPath }}/object-storage-control-panel-controller/{{ controlPanel.title }}">
                             <label for="fileUpload" class="col-form-label">File:</label>
                             <input id="fileUpload" type="file" name="fileUpload">
                         </form>
@@ -182,7 +182,7 @@
         $('#deleteConfirm').click(function(event) {
             var fileKey = $(this).attr('data-key');
             $.ajax({
-                url: '{{ ext.appPath }}/object-storage-control-panel-controller/{{ controlPanel.title }}/' + fileKey,
+                url: '{{ ext.controlPanelPath }}/object-storage-control-panel-controller/{{ controlPanel.title }}/' + fileKey,
                 type: 'DELETE',
                 contentType: "application/json; charset=utf-8",
                 success: function(result) {
@@ -207,7 +207,7 @@
 
         function download(objectStorageName, fileKey) {
             $.ajax({
-                url: '{{ ext.appPath }}/object-storage-control-panel-controller/' + objectStorageName + '/' + fileKey,
+                url: '{{ ext.controlPanelPath }}/object-storage-control-panel-controller/' + objectStorageName + '/' + fileKey,
                 type: 'GET',
                 contentType: "application/json; charset=utf-8",
                 xhrFields: {
