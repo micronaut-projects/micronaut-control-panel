@@ -47,7 +47,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class ControlPanelSecurityTest {
 
     @Test
-    void anonymousAccessIsAllowedByDefaultWhenSecurityIsEnabled() {
+    void authorizedAccessIsRequiredByDefaultWhenSecurityIsEnabled() {
         try (EmbeddedServer server = ApplicationContext.run(EmbeddedServer.class, Map.of(
             "spec.name", "ControlPanelSecurityTest",
             "micronaut.security.enabled", true,
@@ -55,9 +55,22 @@ class ControlPanelSecurityTest {
         ))) {
             HttpClient client = server.getApplicationContext().createBean(HttpClient.class, server.getURL());
 
-            assertEquals(HttpStatus.OK, client.toBlocking().exchange(ControlPanelModuleConfiguration.DEFAULT_PATH).status());
+            HttpClientResponseException anonymous = assertThrows(
+                HttpClientResponseException.class,
+                () -> client.toBlocking().exchange(ControlPanelModuleConfiguration.DEFAULT_PATH)
+            );
+            assertEquals(HttpStatus.UNAUTHORIZED, anonymous.getStatus());
+
+            HttpClientResponseException missingRole = assertThrows(
+                HttpClientResponseException.class,
+                () -> client.toBlocking().exchange(
+                    authenticatedRequest(HttpRequest.GET(ControlPanelModuleConfiguration.DEFAULT_PATH))
+                )
+            );
+            assertEquals(HttpStatus.FORBIDDEN, missingRole.getStatus());
+
             assertEquals(HttpStatus.OK, client.toBlocking().exchange(
-                authenticatedRequest(HttpRequest.GET(ControlPanelModuleConfiguration.DEFAULT_PATH))
+                authenticatedRequest(HttpRequest.GET(ControlPanelModuleConfiguration.DEFAULT_PATH), "controlpanel", "password")
             ).status());
 
             client.close();
@@ -98,6 +111,32 @@ class ControlPanelSecurityTest {
         ))) {
             HttpClient client = server.getApplicationContext().createBean(HttpClient.class, server.getURL());
             assertEquals(HttpStatus.OK, client.toBlocking().exchange(ControlPanelModuleConfiguration.DEFAULT_PATH).status());
+
+            client.close();
+        }
+    }
+
+    @Test
+    void authorizedAccessUsesTheConfiguredRoleWhenSecurityIsEnabled() {
+        try (EmbeddedServer server = ApplicationContext.run(EmbeddedServer.class, Map.of(
+            "spec.name", "ControlPanelSecurityTest",
+            "micronaut.security.enabled", true,
+            "micronaut.security.basic-auth.enabled", true,
+            ControlPanelSecurityConfiguration.PROPERTY_ROLE, "ROLE_ADMIN"
+        ))) {
+            HttpClient client = server.getApplicationContext().createBean(HttpClient.class, server.getURL());
+
+            HttpClientResponseException missingRole = assertThrows(
+                HttpClientResponseException.class,
+                () -> client.toBlocking().exchange(
+                    authenticatedRequest(HttpRequest.GET(ControlPanelModuleConfiguration.DEFAULT_PATH), "controlpanel", "password")
+                )
+            );
+            assertEquals(HttpStatus.FORBIDDEN, missingRole.getStatus());
+
+            assertEquals(HttpStatus.OK, client.toBlocking().exchange(
+                authenticatedRequest(HttpRequest.GET(ControlPanelModuleConfiguration.DEFAULT_PATH), "admin", "password")
+            ).status());
 
             client.close();
         }
@@ -265,6 +304,9 @@ class ControlPanelSecurityTest {
             if ("password".equals(authRequest.getSecret())) {
                 if ("admin".equals(authRequest.getIdentity())) {
                     return AuthenticationResponse.success("admin", List.of("ROLE_ADMIN"));
+                }
+                if ("controlpanel".equals(authRequest.getIdentity())) {
+                    return AuthenticationResponse.success("controlpanel", List.of(ControlPanelSecurityConfiguration.DEFAULT_ROLE));
                 }
                 if ("user".equals(authRequest.getIdentity())) {
                     return AuthenticationResponse.success("user", List.of("ROLE_USER"));

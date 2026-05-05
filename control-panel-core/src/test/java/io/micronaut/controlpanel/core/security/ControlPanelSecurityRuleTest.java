@@ -67,6 +67,40 @@ class ControlPanelSecurityRuleTest {
     }
 
     @Test
+    void authorizedModeRejectsAnonymousControlPanelRequests() {
+        ControlPanelSecurityRule rule = newRule(ControlPanelSecurityConfiguration.Access.AUTHORIZED, null);
+
+        assertEquals(SecurityRuleResult.REJECTED, check(rule, HttpRequest.GET("/control-panel"), null));
+        assertEquals(SecurityRuleResult.REJECTED, check(rule, HttpRequest.GET("/control-panel/routes"), null));
+    }
+
+    @Test
+    void authorizedModeRejectsAuthenticatedUsersWithoutTheConfiguredRole() {
+        ControlPanelSecurityRule rule = newRule(ControlPanelSecurityConfiguration.Access.AUTHORIZED, null);
+        Authentication authentication = Authentication.build("sherlock", Set.of("ROLE_USER"), Map.of());
+
+        assertEquals(SecurityRuleResult.REJECTED, check(rule, HttpRequest.GET("/control-panel"), authentication));
+        assertEquals(SecurityRuleResult.REJECTED, check(rule, HttpRequest.DELETE("/control-panel" + ControlPanelSecurityPaths.CACHE_PATH + "/demo"), authentication));
+    }
+
+    @Test
+    void authorizedModeAllowsAuthenticatedUsersWithTheDefaultRole() {
+        ControlPanelSecurityRule rule = newRule(ControlPanelSecurityConfiguration.Access.AUTHORIZED, null);
+        Authentication authentication = Authentication.build("sherlock", Set.of(ControlPanelSecurityConfiguration.DEFAULT_ROLE), Map.of());
+
+        assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.GET("/control-panel"), authentication));
+        assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.GET("/control-panel" + ControlPanelSecurityPaths.OBJECT_STORAGE_PATH + "/local/object"), authentication));
+    }
+
+    @Test
+    void authorizedModeAllowsAuthenticatedUsersWithTheCustomRole() {
+        ControlPanelSecurityRule rule = newRule(ControlPanelSecurityConfiguration.Access.AUTHORIZED, null, ControlPanelModuleConfiguration.DEFAULT_PATH, "ROLE_ADMIN");
+        Authentication authentication = Authentication.build("sherlock", Set.of("ROLE_ADMIN"), Map.of());
+
+        assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.GET("/control-panel"), authentication));
+    }
+
+    @Test
     void nonControlPanelRoutesRemainUnknown() {
         ControlPanelSecurityRule rule = newRule(ControlPanelSecurityConfiguration.Access.AUTHENTICATED, null);
 
@@ -92,7 +126,14 @@ class ControlPanelSecurityRuleTest {
     private static ControlPanelSecurityRule newRule(ControlPanelSecurityConfiguration.Access access,
                                                     String contextPath,
                                                     String controlPanelPath) {
-        ControlPanelSecurityConfiguration securityConfiguration = new ControlPanelSecurityConfiguration(access);
+        return newRule(access, contextPath, controlPanelPath, ControlPanelSecurityConfiguration.DEFAULT_ROLE);
+    }
+
+    private static ControlPanelSecurityRule newRule(ControlPanelSecurityConfiguration.Access access,
+                                                    String contextPath,
+                                                    String controlPanelPath,
+                                                    String role) {
+        ControlPanelSecurityConfiguration securityConfiguration = new ControlPanelSecurityConfiguration(access, role);
         ControlPanelModuleConfiguration moduleConfiguration = new ControlPanelModuleConfiguration() {
             @Override
             public boolean isEnabled() {
