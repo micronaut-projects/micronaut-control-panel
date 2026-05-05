@@ -46,7 +46,6 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
@@ -131,6 +130,9 @@ class HibernateRuntimeServiceTest {
         assertTrue(body.sessionFactory().queryCacheEnabled());
         assertEquals("PUBLIC", body.sessionFactory().defaultSchema());
         assertEquals("org.hibernate.dialect.H2Dialect", body.sessionFactory().properties().get("hibernate.dialect"));
+        assertEquals("example.NamingStrategy", body.sessionFactory().properties().get("hibernate.naming.physical_strategy"));
+        assertEquals("******", body.sessionFactory().properties().get("jakarta.persistence.jdbc.password"));
+        assertFalse(body.sessionFactory().properties().containsKey("micronaut.application.name"));
         assertEquals("25", body.sessionFactory().properties().get("hibernate.default_batch_fetch_size"));
         assertEquals("75", body.sessionFactory().properties().get("hibernate.jdbc.batch_size"));
         assertEquals(
@@ -241,7 +243,7 @@ class HibernateRuntimeServiceTest {
             List.of("Practical Hibernate")
         ), result.get("data"));
         assertFalse((Boolean) result.get("hasNextPage"));
-        assertNull(result.get("error"));
+        assertFalse(result.containsKey("error"));
 
         verify(session).setDefaultReadOnly(true);
         verify(session).close();
@@ -325,7 +327,10 @@ class HibernateRuntimeServiceTest {
         when(sessionFactory.isClosed()).thenReturn(false);
         when(sessionFactory.getProperties()).thenReturn(Map.of(
             "hibernate.dialect", "org.hibernate.dialect.H2Dialect",
-            "hibernate.connection.url", "jdbc:h2:mem:test"
+            "hibernate.connection.url", "jdbc:h2:mem:test",
+            "hibernate.naming.physical_strategy", "example.NamingStrategy",
+            "jakarta.persistence.jdbc.password", "secret",
+            "micronaut.application.name", "demo"
         ));
         when(sessionFactory.getMetamodel()).thenReturn(metamodel);
 

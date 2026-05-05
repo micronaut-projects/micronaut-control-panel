@@ -82,53 +82,9 @@ final class HibernateRuntimeService {
     private static final int MAX_HQL_LENGTH = 10_000;
     private static final int MAX_HQL_ENTITY_DETAILS = 12;
     private static final String UNSUPPORTED_CACHE_METRIC = "Not supported";
-    private static final List<String> DISPLAYED_PROPERTIES = List.of(
-        "hibernate.dialect",
-        "hibernate.connection.datasource",
-        "jakarta.persistence.jtaDataSource",
-        "jakarta.persistence.nonJtaDataSource",
-        "hibernate.connection.provider_class",
-        "hibernate.connection.driver_class",
-        "hibernate.connection.url",
-        "jakarta.persistence.jdbc.url",
-        "hibernate.connection.username",
-        "jakarta.persistence.jdbc.user",
-        "hibernate.connection.pool_size",
-        "hibernate.connection.isolation",
-        "hibernate.connection.autocommit",
-        "hibernate.connection.provider_disables_autocommit",
-        "hibernate.connection.handling_mode",
-        "hibernate.hbm2ddl.auto",
-        "jakarta.persistence.schema-generation.database.action",
-        "hibernate.show_sql",
-        "hibernate.format_sql",
-        "hibernate.highlight_sql",
-        "hibernate.use_sql_comments",
-        "hibernate.default_batch_fetch_size",
-        "hibernate.max_fetch_depth",
-        "hibernate.use_subselect_fetch",
-        "hibernate.jdbc.batch_size",
-        "hibernate.jdbc.fetch_size",
-        "hibernate.jdbc.time_zone",
-        "hibernate.order_inserts",
-        "hibernate.order_updates",
-        "hibernate.query.in_clause_parameter_padding",
-        "hibernate.query.plan_cache_enabled",
-        "hibernate.query.plan_cache_max_size",
-        "hibernate.statistics.query_max_size",
-        "hibernate.cache.region.factory_class",
-        "hibernate.cache.region_prefix",
-        "hibernate.cache.use_second_level_cache",
-        "hibernate.cache.use_query_cache",
-        "hibernate.cache.query_cache_layout",
-        "hibernate.cache.use_minimal_puts",
-        "hibernate.cache.use_structured_entries",
-        "hibernate.cache.use_reference_entries",
-        "hibernate.cache.auto_evict_collection_cache",
-        "hibernate.generate_statistics",
-        "hibernate.transaction.auto_close_session",
-        "hibernate.transaction.flush_before_completion",
-        "hibernate.allow_update_outside_transaction"
+    private static final List<String> DISPLAYED_PROPERTY_PREFIXES = List.of(
+        "hibernate.",
+        "jakarta.persistence."
     );
 
     private final String beanName;
@@ -183,7 +139,6 @@ final class HibernateRuntimeService {
             result.put("data", formattedRows);
             result.put("cols", columns);
             result.put("hasNextPage", total < 0 ? hasNextPage : first + rows.size() < total);
-            result.put("error", null);
             return result;
         }
     }
@@ -574,14 +529,15 @@ final class HibernateRuntimeService {
         if (properties == null || properties.isEmpty()) {
             return result;
         }
-        DISPLAYED_PROPERTIES.stream()
-            .forEach(key -> {
-                var value = properties.get(key);
-                if (value != null) {
-                    result.put(key, safePropertyValue(key, value));
-                }
-            });
+        properties.entrySet().stream()
+            .filter(entry -> shouldDisplayProperty(entry.getKey()))
+            .sorted(Map.Entry.comparingByKey())
+            .forEach(entry -> result.put(entry.getKey(), safePropertyValue(entry.getKey(), entry.getValue())));
         return result;
+    }
+
+    private static boolean shouldDisplayProperty(String key) {
+        return DISPLAYED_PROPERTY_PREFIXES.stream().anyMatch(key::startsWith);
     }
 
     private static Map<String, String> dataSourceProperties(Map<String, Object> properties) {

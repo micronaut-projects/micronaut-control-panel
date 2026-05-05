@@ -97,6 +97,16 @@ class HibernateControllerTest {
         assertEquals("HQL request body is required", response.body().get("error"));
     }
 
+    @Test
+    void returnsBadRequestWithErrorForInvalidHql() {
+        var controller = controller(Map.of("default", new HibernateRuntimeService("default", sessionFactory)));
+
+        var response = controller.executeHql("default", new HibernateController.HqlQueryRequest("delete from Book b", 0, 10, 1));
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatus());
+        assertEquals("Only read-only HQL select queries are allowed", response.body().get("error"));
+    }
+
     private HibernateController controller(Map<String, HibernateRuntimeService> services) {
         when(beanLocator.mapOfType(HibernateController.SERVICE_ARGUMENT)).thenReturn(services);
         return new HibernateController(beanLocator);
