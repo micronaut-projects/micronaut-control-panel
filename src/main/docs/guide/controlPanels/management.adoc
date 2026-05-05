@@ -16,55 +16,49 @@ The following panels are available:
 
 === Protecting The Control Panel
 
-By default, control panel routes remain anonymously accessible for development and test workflows. Only enable the
-control panel in trusted environments unless you also protect the control-panel-owned HTTP surface with Micronaut
-Security.
+When Micronaut Security is active, control panel routes are protected by default. The default access mode is
+`micronaut.control-panel.security.access=AUTHORIZED`, which requires an authenticated user with
+`ROLE_CONTROL_PANEL`.
 
-If your application already uses Micronaut Security, you can require authenticated access without turning the module
-into a separate OAuth client. Your existing Micronaut Security authentication mechanism authenticates the browser
-request.
+If your application already uses Micronaut Security, the control panel does not become a separate OAuth client. Your
+existing Micronaut Security authentication mechanism authenticates the browser request, and the control panel fallback
+rule authorizes the UI and helper-controller routes.
 
-The following example requires an authenticated user before the UI or helper controllers can be reached:
+The following example shows the default role-protected mode explicitly:
 
 [configuration]
 ----
-include::doc-examples/example-java/src/main/resources/application-secured.yml[tags=control-panel-authenticated]
+include::doc-examples/example-java/src/main/resources/application-secured.yml[tags=control-panel-authorized]
 ----
 
 This secures the control panel routes themselves with
-`micronaut.control-panel.security.access=AUTHENTICATED`. Management endpoint security remains under the normal
-Micronaut management configuration for your application.
+`micronaut.control-panel.security.access=AUTHORIZED` and
+`micronaut.control-panel.security.role=ROLE_CONTROL_PANEL`. You can change the role if your application uses a
+different administrative role:
 
-`AUTHENTICATED` requires a logged-in user, but it does not choose an application role for you. To restrict the control
-panel to administrators, configure role-based access with Micronaut Security in the host application. Host
-`intercept-url-map` rules run before the control-panel fallback rule, so they can require a role such as `ROLE_ADMIN`
-for the UI and helper controller routes:
-
-.Configuring role-based access for the control panel
 [configuration]
 ----
 micronaut:
-  security:
-    intercept-url-map:
-      - pattern: /control-panel/**
-        access:
-          - ROLE_ADMIN
-      - pattern: /control-panel/cache-control-panel-controller/**
-        access:
-          - ROLE_ADMIN
-      - pattern: /control-panel/datasource-control-panel-controller/**
-        access:
-          - ROLE_ADMIN
-      - pattern: /control-panel/object-storage-control-panel-controller/**
-        access:
-          - ROLE_ADMIN
+  control-panel:
+    security:
+      role: ROLE_ADMIN
 ----
 
-If you customize `micronaut.control-panel.path`, use that path instead of `/control-panel/**` in the UI rule.
+Management endpoint security remains under the normal Micronaut management configuration for your application.
 
-Applications that include Micronaut Security still default to
-`micronaut.control-panel.security.access=ANONYMOUS`. Keep that default only in trusted development or test
-environments.
+The `AUTHENTICATED` mode requires any logged-in user, but does not require a specific role. The `ANONYMOUS` mode keeps
+the UI and helper controllers anonymously reachable. Use these modes only for trusted development or test environments:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    security:
+      access: AUTHENTICATED
+----
+
+Host `intercept-url-map` rules run before the control-panel fallback rule, so host rules can still be stricter than the
+configured control panel access mode.
 
 === Application Health
 
@@ -83,8 +77,8 @@ endpoints:
     details-visible: AUTHENTICATED
 ----
 
-With the default `micronaut.control-panel.security.access=ANONYMOUS`, anonymous control-panel requests continue to see
-the anonymous health view.
+If you opt into `micronaut.control-panel.security.access=ANONYMOUS`, anonymous control-panel requests continue to see the
+anonymous health view.
 
 === Environment Properties
 
@@ -122,7 +116,7 @@ This will show all values apart from those that contain the words `password`, `c
 
 This panel displays all the beans, and their relationships, grouped by packages. It relies on the
 https://docs.micronaut.io/latest/guide/#beansEndpoint[Beans Endpoint] to display all the bean definitions. Keep the
-authenticated control-panel access when you do not want to expose that information to anonymous users.
+role-protected control-panel access when you do not want to expose that information to anonymous users.
 
 === Disabled Beans
 

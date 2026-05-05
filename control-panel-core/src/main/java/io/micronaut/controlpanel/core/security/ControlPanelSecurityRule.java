@@ -50,12 +50,14 @@ public final class ControlPanelSecurityRule implements SecurityRule<HttpRequest<
     static final int ORDER = ConfigurationInterceptUrlMapRule.ORDER + 50;
 
     private final ControlPanelSecurityConfiguration.Access access;
+    private final String role;
     private final List<String> protectedRoutePrefixes;
 
     public ControlPanelSecurityRule(ControlPanelSecurityConfiguration securityConfiguration,
                                     ControlPanelModuleConfiguration moduleConfiguration,
                                     HttpServerConfiguration serverConfiguration) {
         this.access = securityConfiguration.access();
+        this.role = securityConfiguration.role();
         String applicationPath = Optional.ofNullable(serverConfiguration.getContextPath()).orElse("");
         String controlPanelPath = computeControlPanelPath(applicationPath, moduleConfiguration.getPath());
         List<String> prefixes = new ArrayList<>();
@@ -72,7 +74,15 @@ public final class ControlPanelSecurityRule implements SecurityRule<HttpRequest<
         if (request == null || !matches(request.getPath())) {
             return Publishers.just(SecurityRuleResult.UNKNOWN);
         }
-        if (access == ControlPanelSecurityConfiguration.Access.ANONYMOUS || authentication != null) {
+        if (access == ControlPanelSecurityConfiguration.Access.ANONYMOUS) {
+            return Publishers.just(SecurityRuleResult.ALLOWED);
+        }
+        if (access == ControlPanelSecurityConfiguration.Access.AUTHENTICATED && authentication != null) {
+            return Publishers.just(SecurityRuleResult.ALLOWED);
+        }
+        if (access == ControlPanelSecurityConfiguration.Access.AUTHORIZED
+            && authentication != null
+            && authentication.getRoles().contains(role)) {
             return Publishers.just(SecurityRuleResult.ALLOWED);
         }
         return Publishers.just(SecurityRuleResult.REJECTED);

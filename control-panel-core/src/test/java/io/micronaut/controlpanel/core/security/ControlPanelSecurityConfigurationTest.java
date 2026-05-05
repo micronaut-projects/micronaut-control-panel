@@ -21,12 +21,25 @@ import org.junit.jupiter.api.Test;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ControlPanelSecurityConfigurationTest {
 
     @Test
-    void defaultsToAnonymousAccess() {
+    void defaultsToAuthorizedAccessWithDefaultRole() {
         try (ApplicationContext context = ApplicationContext.run()) {
+            ControlPanelSecurityConfiguration configuration = context.getBean(ControlPanelSecurityConfiguration.class);
+
+            assertEquals(ControlPanelSecurityConfiguration.Access.AUTHORIZED, configuration.access());
+            assertEquals(ControlPanelSecurityConfiguration.DEFAULT_ROLE, configuration.role());
+        }
+    }
+
+    @Test
+    void bindsAnonymousAccess() {
+        try (ApplicationContext context = ApplicationContext.run(Map.of(
+            ControlPanelSecurityConfiguration.PROPERTY_ACCESS, "ANONYMOUS"
+        ))) {
             ControlPanelSecurityConfiguration configuration = context.getBean(ControlPanelSecurityConfiguration.class);
 
             assertEquals(ControlPanelSecurityConfiguration.Access.ANONYMOUS, configuration.access());
@@ -42,5 +55,26 @@ class ControlPanelSecurityConfigurationTest {
 
             assertEquals(ControlPanelSecurityConfiguration.Access.AUTHENTICATED, configuration.access());
         }
+    }
+
+    @Test
+    void bindsAuthorizedAccessAndCustomRole() {
+        try (ApplicationContext context = ApplicationContext.run(Map.of(
+            ControlPanelSecurityConfiguration.PROPERTY_ACCESS, "AUTHORIZED",
+            ControlPanelSecurityConfiguration.PROPERTY_ROLE, "ROLE_ADMIN"
+        ))) {
+            ControlPanelSecurityConfiguration configuration = context.getBean(ControlPanelSecurityConfiguration.class);
+
+            assertEquals(ControlPanelSecurityConfiguration.Access.AUTHORIZED, configuration.access());
+            assertEquals("ROLE_ADMIN", configuration.role());
+        }
+    }
+
+    @Test
+    void rejectsBlankRoleWhenAuthorizedAccessIsEnabled() {
+        assertThrows(IllegalArgumentException.class, () -> new ControlPanelSecurityConfiguration(
+            ControlPanelSecurityConfiguration.Access.AUTHORIZED,
+            " "
+        ));
     }
 }

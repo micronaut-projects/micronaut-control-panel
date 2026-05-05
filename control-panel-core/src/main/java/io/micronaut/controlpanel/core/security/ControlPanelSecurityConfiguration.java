@@ -22,6 +22,8 @@ import io.micronaut.core.bind.annotation.Bindable;
 /**
  * Security configuration for the control panel HTTP surface.
  *
+ * @param access the configured access mode
+ * @param role role required when authorized access is enabled
  * @author Álvaro Sánchez-Mariscal
  * @since 2.0.0
  */
@@ -32,19 +34,47 @@ public record ControlPanelSecurityConfiguration(
      *
      * @return the configured access mode
      */
-    @Bindable(defaultValue = "ANONYMOUS")
-    Access access
+    @Bindable(defaultValue = DEFAULT_ACCESS)
+    Access access,
+
+    /**
+     * Role required when {@link Access#AUTHORIZED} mode is active.
+     *
+     * @return the configured role
+     */
+    @Bindable(defaultValue = DEFAULT_ROLE)
+    String role
 ) {
 
     public static final String PREFIX = ControlPanelModuleConfiguration.PREFIX + ".security";
     public static final String PROPERTY_ACCESS = PREFIX + ".access";
-    public static final String DEFAULT_ACCESS = "ANONYMOUS";
+    public static final String PROPERTY_ROLE = PREFIX + ".role";
+    public static final String DEFAULT_ACCESS = "AUTHORIZED";
+    public static final String DEFAULT_ROLE = "ROLE_CONTROL_PANEL";
+
+    /**
+     * Creates configuration with the default control panel role.
+     *
+     * @param access the configured access mode
+     */
+    public ControlPanelSecurityConfiguration(Access access) {
+        this(access, DEFAULT_ROLE);
+    }
+
+    public ControlPanelSecurityConfiguration {
+        if (access == Access.AUTHORIZED && role.isBlank()) {
+            throw new IllegalArgumentException(
+                "Control panel security role cannot be blank when authorized access is enabled"
+            );
+        }
+    }
 
     /**
      * Available access modes for the control panel HTTP surface.
      */
     enum Access {
         ANONYMOUS,
-        AUTHENTICATED
+        AUTHENTICATED,
+        AUTHORIZED
     }
 }

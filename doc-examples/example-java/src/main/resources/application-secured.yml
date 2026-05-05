@@ -1,4 +1,4 @@
-#tag::control-panel-authenticated[]
+#tag::control-panel-authorized[]
 micronaut:
   security:
     enabled: true
@@ -7,7 +7,8 @@ micronaut:
   control-panel:
     enabled: true
     security:
-      access: authenticated
+      access: authorized
+      role: ROLE_CONTROL_PANEL
 
 endpoints:
   env:
@@ -17,4 +18,4 @@ endpoints:
   loggers:
     enabled: true
     write-sensitive: false
-#end::control-panel-authenticated[]
+#end::control-panel-authorized[]
