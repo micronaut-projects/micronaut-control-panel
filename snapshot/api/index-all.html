@@ -79,6 +79,10 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Constructor.</div>
 </dd>
+<dt><a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityConfiguration.html#access()" class="member-name-link">access()</a> - Method in record class io.micronaut.controlpanel.core.security.<a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityConfiguration.html" title="class in io.micronaut.controlpanel.core.security">ControlPanelSecurityConfiguration</a></dt>
+<dd>
+<div class="block">Returns the value of the <code>access</code> record component.</div>
+</dd>
 <dt><a href="io/micronaut/controlpanel/ui/Model.html#activeEnvironments()" class="member-name-link">activeEnvironments()</a> - Method in record class io.micronaut.controlpanel.ui.<a href="io/micronaut/controlpanel/ui/Model.html" title="class in io.micronaut.controlpanel.ui">Model</a></dt>
 <dd>
 <div class="block">Returns the value of the <a href="./io/micronaut/controlpanel/ui/Model.html#param-activeEnvironments"><code>activeEnvironments</code></a> record component.</div>
@@ -172,6 +176,10 @@ actual configuration values with legacy masking (masking only sensitive keys lik
 <dd>
 <div class="block">Returns the value of the <a href="./io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.Body.html#param-cache"><code>cache</code></a> record component.</div>
 </dd>
+<dt><a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityPaths.html#CACHE" class="member-name-link">CACHE</a> - Static variable in class io.micronaut.controlpanel.core.security.<a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityPaths.html" title="class in io.micronaut.controlpanel.core.security">ControlPanelSecurityPaths</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityPaths.html#CACHE_PATH" class="member-name-link">CACHE_PATH</a> - Static variable in class io.micronaut.controlpanel.core.security.<a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityPaths.html" title="class in io.micronaut.controlpanel.core.security">ControlPanelSecurityPaths</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.Body.html#cacheAsMap()" class="member-name-link">cacheAsMap()</a> - Method in record class io.micronaut.controlpanel.panels.cache.<a href="io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.Body.html" title="class in io.micronaut.controlpanel.panels.cache">AbstractCacheControlPanel.Body</a></dt>
 <dd>
 <div class="block">Returns the value of the <a href="./io/micronaut/controlpanel/panels/cache/AbstractCacheControlPanel.Body.html#param-cacheAsMap"><code>cacheAsMap</code></a> record component.</div>
@@ -228,6 +236,8 @@ actual configuration values with legacy masking (masking only sensitive keys lik
 </dd>
 <dt><a href="io/micronaut/controlpanel/panels/kafka/KafkaStreamsControlPanel.html#CATEGORY" class="member-name-link">CATEGORY</a> - Static variable in class io.micronaut.controlpanel.panels.kafka.<a href="io/micronaut/controlpanel/panels/kafka/KafkaStreamsControlPanel.html" title="class in io.micronaut.controlpanel.panels.kafka">KafkaStreamsControlPanel</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityRule.html#check(io.micronaut.http.HttpRequest,io.micronaut.security.authentication.Authentication)" class="member-name-link">check(HttpRequest, Authentication)</a> - Method in class io.micronaut.controlpanel.core.security.<a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityRule.html" title="class in io.micronaut.controlpanel.core.security">ControlPanelSecurityRule</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/panels/datasource/DataSourceController.QueryResponse.html#cols()" class="member-name-link">cols()</a> - Method in record class io.micronaut.controlpanel.panels.datasource.<a href="io/micronaut/controlpanel/panels/datasource/DataSourceController.QueryResponse.html" title="class in io.micronaut.controlpanel.panels.datasource">DataSourceController.QueryResponse</a></dt>
 <dd>
 <div class="block">Returns the value of the <a href="./io/micronaut/controlpanel/panels/datasource/DataSourceController.QueryResponse.html#param-cols"><code>cols</code></a> record component.</div>
@@ -273,6 +283,8 @@ and control panel path.</div>
 <dd>
 <div class="block">Returns the value of the <a href="./io/micronaut/controlpanel/ui/Model.html#param-contentView"><code>contentView</code></a> record component.</div>
 </dd>
+<dt><a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityPaths.html#CONTROL_PANEL" class="member-name-link">CONTROL_PANEL</a> - Static variable in class io.micronaut.controlpanel.core.security.<a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityPaths.html" title="class in io.micronaut.controlpanel.core.security">ControlPanelSecurityPaths</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/core/config/ControlPanelContextConfigurer.html#CONTROL_PANEL_PROPERTIES" class="member-name-link">CONTROL_PANEL_PROPERTIES</a> - Static variable in class io.micronaut.controlpanel.core.config.<a href="io/micronaut/controlpanel/core/config/ControlPanelContextConfigurer.html" title="class in io.micronaut.controlpanel.core.config">ControlPanelContextConfigurer</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/core/ControlPanel.html" class="type-name-link" title="interface in io.micronaut.controlpanel.core">ControlPanel&lt;B&gt;</a> - Interface in <a href="io/micronaut/controlpanel/core/package-summary.html">io.micronaut.controlpanel.core</a></dt>
@@ -330,6 +342,24 @@ to the application context with all the control panel configuration properties.<
 <dd>
 <div class="block">It provides the ability to retrieve <a href="io/micronaut/controlpanel/core/ControlPanel.html" title="interface in io.micronaut.controlpanel.core"><code>ControlPanel</code></a> instances.</div>
 </dd>
+<dt><a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityConfiguration.html" class="type-name-link" title="class in io.micronaut.controlpanel.core.security">ControlPanelSecurityConfiguration</a> - Record Class in <a href="io/micronaut/controlpanel/core/security/package-summary.html">io.micronaut.controlpanel.core.security</a></dt>
+<dd>
+<div class="block">Security configuration for the control panel HTTP surface.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityConfiguration.html#%3Cinit%3E(io.micronaut.controlpanel.core.security.ControlPanelSecurityConfiguration.Access)" class="member-name-link">ControlPanelSecurityConfiguration(ControlPanelSecurityConfiguration.Access)</a> - Constructor for record class io.micronaut.controlpanel.core.security.<a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityConfiguration.html" title="class in io.micronaut.controlpanel.core.security">ControlPanelSecurityConfiguration</a></dt>
+<dd>
+<div class="block">Creates an instance of a <code>ControlPanelSecurityConfiguration</code> record class.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityPaths.html" class="type-name-link" title="class in io.micronaut.controlpanel.core.security">ControlPanelSecurityPaths</a> - Class in <a href="io/micronaut/controlpanel/core/security/package-summary.html">io.micronaut.controlpanel.core.security</a></dt>
+<dd>
+<div class="block">Shared route prefixes owned by the control panel itself.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityRule.html" class="type-name-link" title="class in io.micronaut.controlpanel.core.security">ControlPanelSecurityRule</a> - Class in <a href="io/micronaut/controlpanel/core/security/package-summary.html">io.micronaut.controlpanel.core.security</a></dt>
+<dd>
+<div class="block">Applies the configured access mode to the control-panel-owned HTTP routes when Micronaut Security is active.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityRule.html#%3Cinit%3E(io.micronaut.controlpanel.core.security.ControlPanelSecurityConfiguration,io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration,io.micronaut.http.server.HttpServerConfiguration)" class="member-name-link">ControlPanelSecurityRule(ControlPanelSecurityConfiguration, ControlPanelModuleConfiguration, HttpServerConfiguration)</a> - Constructor for class io.micronaut.controlpanel.core.security.<a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityRule.html" title="class in io.micronaut.controlpanel.core.security">ControlPanelSecurityRule</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/core/ControlPanelUrlLogger.html" class="type-name-link" title="class in io.micronaut.controlpanel.core">ControlPanelUrlLogger</a> - Class in <a href="io/micronaut/controlpanel/core/package-summary.html">io.micronaut.controlpanel.core</a></dt>
 <dd>
 <div class="block">Logs the Control Panel URL when the application is ready.</div>
@@ -360,6 +390,10 @@ to the application context with all the control panel configuration properties.<
 <div class="block">Represents the database type, which can be inferred from either the Micronaut Data's configured
 dialect, or the Micronaut Test Resources' configured db type.</div>
 </dd>
+<dt><a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityPaths.html#DATASOURCE" class="member-name-link">DATASOURCE</a> - Static variable in class io.micronaut.controlpanel.core.security.<a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityPaths.html" title="class in io.micronaut.controlpanel.core.security">ControlPanelSecurityPaths</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityPaths.html#DATASOURCE_PATH" class="member-name-link">DATASOURCE_PATH</a> - Static variable in class io.micronaut.controlpanel.core.security.<a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityPaths.html" title="class in io.micronaut.controlpanel.core.security">ControlPanelSecurityPaths</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/panels/datasource/DataSourceController.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.datasource">DataSourceController</a> - Class in <a href="io/micronaut/controlpanel/panels/datasource/package-summary.html">io.micronaut.controlpanel.panels.datasource</a></dt>
 <dd>
 <div class="block">REST controller to execute SQL queries against a specific DataSource for the Control Panel.</div>
@@ -405,6 +439,8 @@ dialect, or the Micronaut Test Resources' configured db type.</div>
 <div class="block">Result of executing a SQL query.</div>
 </dd>
 <dt><a href="io/micronaut/controlpanel/panels/datasource/model/ColumnType.html#DATE" class="member-name-link">DATE</a> - Enum constant in enum class io.micronaut.controlpanel.panels.datasource.model.<a href="io/micronaut/controlpanel/panels/datasource/model/ColumnType.html" title="enum class in io.micronaut.controlpanel.panels.datasource.model">ColumnType</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityConfiguration.html#DEFAULT_ACCESS" class="member-name-link">DEFAULT_ACCESS</a> - Static variable in record class io.micronaut.controlpanel.core.security.<a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityConfiguration.html" title="class in io.micronaut.controlpanel.core.security">ControlPanelSecurityConfiguration</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/core/config/ControlPanelModuleConfiguration.html#DEFAULT_ALLOWED_ENVIRONMENTS" class="member-name-link">DEFAULT_ALLOWED_ENVIRONMENTS</a> - Static variable in interface io.micronaut.controlpanel.core.config.<a href="io/micronaut/controlpanel/core/config/ControlPanelModuleConfiguration.html" title="interface in io.micronaut.controlpanel.core.config">ControlPanelModuleConfiguration</a></dt>
 <dd>&nbsp;</dd>
@@ -545,6 +581,10 @@ throws an <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/
 <div class="block">Indicates whether some other object is "equal to" this one.</div>
 </dd>
 <dt><a href="io/micronaut/controlpanel/core/panels/RoutesControlPanel.TargetMethod.html#equals(java.lang.Object)" class="member-name-link">equals(Object)</a> - Method in record class io.micronaut.controlpanel.core.panels.<a href="io/micronaut/controlpanel/core/panels/RoutesControlPanel.TargetMethod.html" title="class in io.micronaut.controlpanel.core.panels">RoutesControlPanel.TargetMethod</a></dt>
+<dd>
+<div class="block">Indicates whether some other object is "equal to" this one.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityConfiguration.html#equals(java.lang.Object)" class="member-name-link">equals(Object)</a> - Method in record class io.micronaut.controlpanel.core.security.<a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityConfiguration.html" title="class in io.micronaut.controlpanel.core.security">ControlPanelSecurityConfiguration</a></dt>
 <dd>
 <div class="block">Indicates whether some other object is "equal to" this one.</div>
 </dd>
@@ -881,6 +921,8 @@ selected.</div>
 <dd>
 <div class="block">Sets the order of this control panel, since they will be displayed sorted by order.</div>
 </dd>
+<dt><a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityRule.html#getOrder()" class="member-name-link">getOrder()</a> - Method in class io.micronaut.controlpanel.core.security.<a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityRule.html" title="class in io.micronaut.controlpanel.core.security">ControlPanelSecurityRule</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/core/AbstractEachBeanControlPanel.html#getPanelName()" class="member-name-link">getPanelName()</a> - Method in class io.micronaut.controlpanel.core.<a href="io/micronaut/controlpanel/core/AbstractEachBeanControlPanel.html" title="class in io.micronaut.controlpanel.core">AbstractEachBeanControlPanel</a></dt>
 <dd>
 <div class="block">Returns the name of the panel category.</div>
@@ -945,6 +987,10 @@ selected.</div>
 <div class="block">Returns a hash code value for this object.</div>
 </dd>
 <dt><a href="io/micronaut/controlpanel/core/panels/RoutesControlPanel.TargetMethod.html#hashCode()" class="member-name-link">hashCode()</a> - Method in record class io.micronaut.controlpanel.core.panels.<a href="io/micronaut/controlpanel/core/panels/RoutesControlPanel.TargetMethod.html" title="class in io.micronaut.controlpanel.core.panels">RoutesControlPanel.TargetMethod</a></dt>
+<dd>
+<div class="block">Returns a hash code value for this object.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityConfiguration.html#hashCode()" class="member-name-link">hashCode()</a> - Method in record class io.micronaut.controlpanel.core.security.<a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityConfiguration.html" title="class in io.micronaut.controlpanel.core.security">ControlPanelSecurityConfiguration</a></dt>
 <dd>
 <div class="block">Returns a hash code value for this object.</div>
 </dd>
@@ -1034,6 +1080,8 @@ selected.</div>
 </dd>
 <dt><a href="io/micronaut/controlpanel/panels/management/HealthControlPanel.html#%3Cinit%3E(io.micronaut.management.endpoint.health.HealthEndpoint,io.micronaut.controlpanel.core.config.ControlPanelConfiguration)" class="member-name-link">HealthControlPanel(HealthEndpoint, ControlPanelConfiguration)</a> - Constructor for class io.micronaut.controlpanel.panels.management.<a href="io/micronaut/controlpanel/panels/management/HealthControlPanel.html" title="class in io.micronaut.controlpanel.panels.management">HealthControlPanel</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityPaths.html#helperPaths()" class="member-name-link">helperPaths()</a> - Static method in class io.micronaut.controlpanel.core.security.<a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityPaths.html" title="class in io.micronaut.controlpanel.core.security">ControlPanelSecurityPaths</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/core/panels/RoutesControlPanel.RouteRow.html#httpMethodName()" class="member-name-link">httpMethodName()</a> - Method in record class io.micronaut.controlpanel.core.panels.<a href="io/micronaut/controlpanel/core/panels/RoutesControlPanel.RouteRow.html" title="class in io.micronaut.controlpanel.core.panels">RoutesControlPanel.RouteRow</a></dt>
 <dd>
 <div class="block">Returns the value of the <a href="./io/micronaut/controlpanel/core/panels/RoutesControlPanel.RouteRow.html#param-httpMethodName"><code>httpMethodName</code></a> record component.</div>
@@ -1084,6 +1132,8 @@ selected.</div>
 <dt><a href="io/micronaut/controlpanel/core/config/package-summary.html">io.micronaut.controlpanel.core.config</a> - package io.micronaut.controlpanel.core.config</dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/core/panels/package-summary.html">io.micronaut.controlpanel.core.panels</a> - package io.micronaut.controlpanel.core.panels</dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/core/security/package-summary.html">io.micronaut.controlpanel.core.security</a> - package io.micronaut.controlpanel.core.security</dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/panels/cache/package-summary.html">io.micronaut.controlpanel.panels.cache</a> - package io.micronaut.controlpanel.panels.cache</dt>
 <dd>
@@ -1303,6 +1353,10 @@ selected.</div>
 </dl>
 <h2 class="title" id="I:O">O</h2>
 <dl class="index">
+<dt><a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityPaths.html#OBJECT_STORAGE" class="member-name-link">OBJECT_STORAGE</a> - Static variable in class io.micronaut.controlpanel.core.security.<a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityPaths.html" title="class in io.micronaut.controlpanel.core.security">ControlPanelSecurityPaths</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityPaths.html#OBJECT_STORAGE_PATH" class="member-name-link">OBJECT_STORAGE_PATH</a> - Static variable in class io.micronaut.controlpanel.core.security.<a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityPaths.html" title="class in io.micronaut.controlpanel.core.security">ControlPanelSecurityPaths</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/panels/objectstorage/ObjectStorageController.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.objectstorage">ObjectStorageController</a> - Class in <a href="io/micronaut/controlpanel/panels/objectstorage/package-summary.html">io.micronaut.controlpanel.panels.objectstorage</a></dt>
 <dd>
 <div class="block">Controller class for managing object storage operations.</div>
@@ -1358,12 +1412,16 @@ selected.</div>
 <dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/core/config/ControlPanelModuleConfiguration.html#PREFIX" class="member-name-link">PREFIX</a> - Static variable in interface io.micronaut.controlpanel.core.config.<a href="io/micronaut/controlpanel/core/config/ControlPanelModuleConfiguration.html" title="interface in io.micronaut.controlpanel.core.config">ControlPanelModuleConfiguration</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityConfiguration.html#PREFIX" class="member-name-link">PREFIX</a> - Static variable in record class io.micronaut.controlpanel.core.security.<a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityConfiguration.html" title="class in io.micronaut.controlpanel.core.security">ControlPanelSecurityConfiguration</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/panels/datasource/model/JdbcInfo.html#present()" class="member-name-link">present()</a> - Method in record class io.micronaut.controlpanel.panels.datasource.model.<a href="io/micronaut/controlpanel/panels/datasource/model/JdbcInfo.html" title="class in io.micronaut.controlpanel.panels.datasource.model">JdbcInfo</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/core/panels/RoutesControlPanel.RouteRow.html#produces()" class="member-name-link">produces()</a> - Method in record class io.micronaut.controlpanel.core.panels.<a href="io/micronaut/controlpanel/core/panels/RoutesControlPanel.RouteRow.html" title="class in io.micronaut.controlpanel.core.panels">RoutesControlPanel.RouteRow</a></dt>
 <dd>
 <div class="block">Returns the value of the <a href="./io/micronaut/controlpanel/core/panels/RoutesControlPanel.RouteRow.html#param-produces"><code>produces</code></a> record component.</div>
 </dd>
+<dt><a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityConfiguration.html#PROPERTY_ACCESS" class="member-name-link">PROPERTY_ACCESS</a> - Static variable in record class io.micronaut.controlpanel.core.security.<a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityConfiguration.html" title="class in io.micronaut.controlpanel.core.security">ControlPanelSecurityConfiguration</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/core/config/ControlPanelModuleConfiguration.html#PROPERTY_ALLOWED_ENVIRONMENTS" class="member-name-link">PROPERTY_ALLOWED_ENVIRONMENTS</a> - Static variable in interface io.micronaut.controlpanel.core.config.<a href="io/micronaut/controlpanel/core/config/ControlPanelModuleConfiguration.html" title="interface in io.micronaut.controlpanel.core.config">ControlPanelModuleConfiguration</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/core/config/ControlPanelModuleConfiguration.html#PROPERTY_ENABLED" class="member-name-link">PROPERTY_ENABLED</a> - Static variable in interface io.micronaut.controlpanel.core.config.<a href="io/micronaut/controlpanel/core/config/ControlPanelModuleConfiguration.html" title="interface in io.micronaut.controlpanel.core.config">ControlPanelModuleConfiguration</a></dt>
@@ -1525,6 +1583,10 @@ selected.</div>
 <div class="block">Returns a string representation of this record class.</div>
 </dd>
 <dt><a href="io/micronaut/controlpanel/core/panels/RoutesControlPanel.TargetMethod.html#toString()" class="member-name-link">toString()</a> - Method in record class io.micronaut.controlpanel.core.panels.<a href="io/micronaut/controlpanel/core/panels/RoutesControlPanel.TargetMethod.html" title="class in io.micronaut.controlpanel.core.panels">RoutesControlPanel.TargetMethod</a></dt>
+<dd>
+<div class="block">Returns a string representation of this record class.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityConfiguration.html#toString()" class="member-name-link">toString()</a> - Method in record class io.micronaut.controlpanel.core.security.<a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityConfiguration.html" title="class in io.micronaut.controlpanel.core.security">ControlPanelSecurityConfiguration</a></dt>
 <dd>
 <div class="block">Returns a string representation of this record class.</div>
 </dd>
