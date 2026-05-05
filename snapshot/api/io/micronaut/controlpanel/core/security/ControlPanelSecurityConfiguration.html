@@ -61,12 +61,15 @@ loadScripts(document, 'script');</script>
 <ol class="toc-list">
 <li><a href="#PREFIX" tabindex="0">PREFIX</a></li>
 <li><a href="#PROPERTY_ACCESS" tabindex="0">PROPERTY_ACCESS</a></li>
+<li><a href="#PROPERTY_ROLE" tabindex="0">PROPERTY_ROLE</a></li>
 <li><a href="#DEFAULT_ACCESS" tabindex="0">DEFAULT_ACCESS</a></li>
+<li><a href="#DEFAULT_ROLE" tabindex="0">DEFAULT_ROLE</a></li>
 </ol>
 </li>
 <li><a href="#constructor-detail" tabindex="0">Constructor Details</a>
 <ol class="toc-list">
 <li><a href="#%3Cinit%3E(io.micronaut.controlpanel.core.security.ControlPanelSecurityConfiguration.Access)" tabindex="0">ControlPanelSecurityConfiguration(ControlPanelSecurityConfiguration.Access)</a></li>
+<li><a href="#%3Cinit%3E(io.micronaut.controlpanel.core.security.ControlPanelSecurityConfiguration.Access,java.lang.String)" tabindex="0">ControlPanelSecurityConfiguration(ControlPanelSecurityConfiguration.Access, String)</a></li>
 </ol>
 </li>
 <li><a href="#method-detail" tabindex="0">Method Details</a>
@@ -75,6 +78,7 @@ loadScripts(document, 'script');</script>
 <li><a href="#hashCode()" tabindex="0">hashCode()</a></li>
 <li><a href="#equals(java.lang.Object)" tabindex="0">equals(Object)</a></li>
 <li><a href="#access()" tabindex="0">access()</a></li>
+<li><a href="#role()" tabindex="0">role()</a></li>
 </ol>
 </li>
 </ol>
@@ -90,10 +94,15 @@ loadScripts(document, 'script');</script>
 </div>
 </div>
 <section class="class-description" id="class-description">
+<dl class="notes">
+<dt>Record Components:</dt>
+<dd><code><span id="param-access">access</span></code> - the configured access mode</dd>
+<dd><code><span id="param-role">role</span></code> - role required when authorized access is enabled</dd>
+</dl>
 <hr>
 <div class="horizontal-scroll">
 <div class="type-signature"><span class="annotations">@ConfigurationProperties("micronaut.control-panel.security")
-</span><span class="modifiers">public record </span><span class="element-name type-name-label">ControlPanelSecurityConfiguration</span>(io.micronaut.controlpanel.core.security.ControlPanelSecurityConfiguration.Access&nbsp;access)
+</span><span class="modifiers">public record </span><span class="element-name type-name-label">ControlPanelSecurityConfiguration</span>(io.micronaut.controlpanel.core.security.ControlPanelSecurityConfiguration.Access&nbsp;access, <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;role)
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Record.html" title="class or interface in java.lang" class="external-link">Record</a></span></div>
 <div class="block">Security configuration for the control panel HTTP surface.</div>
 <dl class="notes">
@@ -119,10 +128,16 @@ loadScripts(document, 'script');</script>
 <div class="col-second even-row-color"><code><a href="#DEFAULT_ACCESS" class="member-name-link">DEFAULT_ACCESS</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
 <div class="col-first odd-row-color"><code>static final <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
-<div class="col-second odd-row-color"><code><a href="#PREFIX" class="member-name-link">PREFIX</a></code></div>
+<div class="col-second odd-row-color"><code><a href="#DEFAULT_ROLE" class="member-name-link">DEFAULT_ROLE</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
 <div class="col-first even-row-color"><code>static final <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
-<div class="col-second even-row-color"><code><a href="#PROPERTY_ACCESS" class="member-name-link">PROPERTY_ACCESS</a></code></div>
+<div class="col-second even-row-color"><code><a href="#PREFIX" class="member-name-link">PREFIX</a></code></div>
+<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><code>static final <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second odd-row-color"><code><a href="#PROPERTY_ACCESS" class="member-name-link">PROPERTY_ACCESS</a></code></div>
+<div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-first even-row-color"><code>static final <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color"><code><a href="#PROPERTY_ROLE" class="member-name-link">PROPERTY_ROLE</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
 </div>
 </section>
@@ -137,6 +152,11 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-last">Description</div>
 <div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(io.micronaut.controlpanel.core.security.ControlPanelSecurityConfiguration.Access)" class="member-name-link">ControlPanelSecurityConfiguration</a><wbr>(io.micronaut.controlpanel.core.security.ControlPanelSecurityConfiguration.Access&nbsp;access)</code></div>
 <div class="col-last even-row-color">
+<div class="block">Creates configuration with the default control panel role.</div>
+</div>
+<div class="col-constructor-name odd-row-color"><code><a href="#%3Cinit%3E(io.micronaut.controlpanel.core.security.ControlPanelSecurityConfiguration.Access,java.lang.String)" class="member-name-link">ControlPanelSecurityConfiguration</a><wbr>(io.micronaut.controlpanel.core.security.ControlPanelSecurityConfiguration.Access&nbsp;access,
+ <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;role)</code></div>
+<div class="col-last odd-row-color">
 <div class="block">Creates an instance of a <code>ControlPanelSecurityConfiguration</code> record class.</div>
 </div>
 </div>
@@ -156,7 +176,7 @@ loadScripts(document, 'script');</script>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>io.micronaut.controlpanel.core.security.ControlPanelSecurityConfiguration.Access</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#access()" class="member-name-link">access</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Returns the value of the <code>access</code> record component.</div>
+<div class="block">Returns the value of the <a href="#param-access"><code>access</code></a> record component.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final boolean</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#equals(java.lang.Object)" class="member-name-link">equals</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&nbsp;o)</code></div>
@@ -168,9 +188,14 @@ loadScripts(document, 'script');</script>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns a hash code value for this object.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#toString()" class="member-name-link">toString</a>()</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#role()" class="member-name-link">role</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Returns the value of the <a href="#param-role"><code>role</code></a> record component.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#toString()" class="member-name-link">toString</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns a string representation of this record class.</div>
 </div>
 </div>
@@ -223,6 +248,22 @@ loadScripts(document, 'script');</script>
 </section>
 </li>
 <li>
+<section class="detail" id="PROPERTY_ROLE">
+<h3>PROPERTY_ROLE</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">PROPERTY_ROLE</span></div>
+<dl class="notes">
+<dt>See Also:</dt>
+<dd>
+<ul class="tag-list">
+<li><a href="../../../../../constant-values.html#io.micronaut.controlpanel.core.security.ControlPanelSecurityConfiguration.PROPERTY_ROLE">Constant Field Values</a></li>
+</ul>
+</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
 <section class="detail" id="DEFAULT_ACCESS">
 <h3>DEFAULT_ACCESS</h3>
 <div class="horizontal-scroll">
@@ -232,6 +273,22 @@ loadScripts(document, 'script');</script>
 <dd>
 <ul class="tag-list">
 <li><a href="../../../../../constant-values.html#io.micronaut.controlpanel.core.security.ControlPanelSecurityConfiguration.DEFAULT_ACCESS">Constant Field Values</a></li>
+</ul>
+</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="DEFAULT_ROLE">
+<h3>DEFAULT_ROLE</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">DEFAULT_ROLE</span></div>
+<dl class="notes">
+<dt>See Also:</dt>
+<dd>
+<ul class="tag-list">
+<li><a href="../../../../../constant-values.html#io.micronaut.controlpanel.core.security.ControlPanelSecurityConfiguration.DEFAULT_ROLE">Constant Field Values</a></li>
 </ul>
 </dd>
 </dl>
@@ -250,12 +307,28 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="&lt;init&gt;(io.micronaut.controlpanel.core.security.ControlPanelSecurityConfiguration.Access)">
 <h3>ControlPanelSecurityConfiguration</h3>
 <div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">ControlPanelSecurityConfiguration</span><wbr><span class="parameters">(@Bindable(defaultValue="ANONYMOUS")
- io.micronaut.controlpanel.core.security.ControlPanelSecurityConfiguration.Access&nbsp;access)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">ControlPanelSecurityConfiguration</span><wbr><span class="parameters">(io.micronaut.controlpanel.core.security.ControlPanelSecurityConfiguration.Access&nbsp;access)</span></div>
+<div class="block">Creates configuration with the default control panel role.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>access</code> - the configured access mode</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="&lt;init&gt;(io.micronaut.controlpanel.core.security.ControlPanelSecurityConfiguration.Access,java.lang.String)">
+<h3>ControlPanelSecurityConfiguration</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">ControlPanelSecurityConfiguration</span><wbr><span class="parameters">(@Bindable(defaultValue="AUTHORIZED")
+ io.micronaut.controlpanel.core.security.ControlPanelSecurityConfiguration.Access&nbsp;access,
+ @Bindable(defaultValue="ROLE_CONTROL_PANEL")
+ <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;role)</span></div>
 <div class="block">Creates an instance of a <code>ControlPanelSecurityConfiguration</code> record class.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
-<dd><code>access</code> - the value for the <code>access</code> record component</dd>
+<dd><code>access</code> - the value for the <a href="#param-access"><code>access</code></a> record component</dd>
+<dd><code>role</code> - the value for the <a href="#param-role"><code>role</code></a> record component</dd>
 </dl>
 </div>
 </section>
@@ -319,12 +392,26 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="access()">
 <h3>access</h3>
 <div class="horizontal-scroll">
-<div class="member-signature"><span class="annotations">@Bindable(defaultValue="ANONYMOUS")
+<div class="member-signature"><span class="annotations">@Bindable(defaultValue="AUTHORIZED")
 </span><span class="modifiers">public</span>&nbsp;<span class="return-type">io.micronaut.controlpanel.core.security.ControlPanelSecurityConfiguration.Access</span>&nbsp;<span class="element-name">access</span>()</div>
-<div class="block">Returns the value of the <code>access</code> record component.</div>
+<div class="block">Returns the value of the <a href="#param-access"><code>access</code></a> record component.</div>
 <dl class="notes">
 <dt>Returns:</dt>
-<dd>the value of the <code>access</code> record component</dd>
+<dd>the value of the <a href="#param-access"><code>access</code></a> record component</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="role()">
+<h3>role</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="annotations">@Bindable(defaultValue="ROLE_CONTROL_PANEL")
+</span><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">role</span>()</div>
+<div class="block">Returns the value of the <a href="#param-role"><code>role</code></a> record component.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the value of the <a href="#param-role"><code>role</code></a> record component</dd>
 </dl>
 </div>
 </section>

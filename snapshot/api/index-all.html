@@ -81,7 +81,7 @@ loadScripts(document, 'script');</script>
 </dd>
 <dt><a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityConfiguration.html#access()" class="member-name-link">access()</a> - Method in record class io.micronaut.controlpanel.core.security.<a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityConfiguration.html" title="class in io.micronaut.controlpanel.core.security">ControlPanelSecurityConfiguration</a></dt>
 <dd>
-<div class="block">Returns the value of the <code>access</code> record component.</div>
+<div class="block">Returns the value of the <a href="./io/micronaut/controlpanel/core/security/ControlPanelSecurityConfiguration.html#param-access"><code>access</code></a> record component.</div>
 </dd>
 <dt><a href="io/micronaut/controlpanel/ui/Model.html#activeEnvironments()" class="member-name-link">activeEnvironments()</a> - Method in record class io.micronaut.controlpanel.ui.<a href="io/micronaut/controlpanel/ui/Model.html" title="class in io.micronaut.controlpanel.ui">Model</a></dt>
 <dd>
@@ -348,6 +348,10 @@ to the application context with all the control panel configuration properties.<
 </dd>
 <dt><a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityConfiguration.html#%3Cinit%3E(io.micronaut.controlpanel.core.security.ControlPanelSecurityConfiguration.Access)" class="member-name-link">ControlPanelSecurityConfiguration(ControlPanelSecurityConfiguration.Access)</a> - Constructor for record class io.micronaut.controlpanel.core.security.<a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityConfiguration.html" title="class in io.micronaut.controlpanel.core.security">ControlPanelSecurityConfiguration</a></dt>
 <dd>
+<div class="block">Creates configuration with the default control panel role.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityConfiguration.html#%3Cinit%3E(io.micronaut.controlpanel.core.security.ControlPanelSecurityConfiguration.Access,java.lang.String)" class="member-name-link">ControlPanelSecurityConfiguration(ControlPanelSecurityConfiguration.Access, String)</a> - Constructor for record class io.micronaut.controlpanel.core.security.<a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityConfiguration.html" title="class in io.micronaut.controlpanel.core.security">ControlPanelSecurityConfiguration</a></dt>
+<dd>
 <div class="block">Creates an instance of a <code>ControlPanelSecurityConfiguration</code> record class.</div>
 </dd>
 <dt><a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityPaths.html" class="type-name-link" title="class in io.micronaut.controlpanel.core.security">ControlPanelSecurityPaths</a> - Class in <a href="io/micronaut/controlpanel/core/security/package-summary.html">io.micronaut.controlpanel.core.security</a></dt>
@@ -457,6 +461,8 @@ dialect, or the Micronaut Test Resources' configured db type.</div>
 <dt><a href="io/micronaut/controlpanel/core/config/ControlPanelModuleConfiguration.html#DEFAULT_LOG_URL" class="member-name-link">DEFAULT_LOG_URL</a> - Static variable in interface io.micronaut.controlpanel.core.config.<a href="io/micronaut/controlpanel/core/config/ControlPanelModuleConfiguration.html" title="interface in io.micronaut.controlpanel.core.config">ControlPanelModuleConfiguration</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/core/config/ControlPanelModuleConfiguration.html#DEFAULT_PATH" class="member-name-link">DEFAULT_PATH</a> - Static variable in interface io.micronaut.controlpanel.core.config.<a href="io/micronaut/controlpanel/core/config/ControlPanelModuleConfiguration.html" title="interface in io.micronaut.controlpanel.core.config">ControlPanelModuleConfiguration</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityConfiguration.html#DEFAULT_ROLE" class="member-name-link">DEFAULT_ROLE</a> - Static variable in record class io.micronaut.controlpanel.core.security.<a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityConfiguration.html" title="class in io.micronaut.controlpanel.core.security">ControlPanelSecurityConfiguration</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/core/DefaultControlPanelRepository.html" class="type-name-link" title="class in io.micronaut.controlpanel.core">DefaultControlPanelRepository</a> - Class in <a href="io/micronaut/controlpanel/core/package-summary.html">io.micronaut.controlpanel.core</a></dt>
 <dd>
@@ -1428,6 +1434,8 @@ selected.</div>
 <dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/core/config/ControlPanelModuleConfiguration.html#PROPERTY_PATH" class="member-name-link">PROPERTY_PATH</a> - Static variable in interface io.micronaut.controlpanel.core.config.<a href="io/micronaut/controlpanel/core/config/ControlPanelModuleConfiguration.html" title="interface in io.micronaut.controlpanel.core.config">ControlPanelModuleConfiguration</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityConfiguration.html#PROPERTY_ROLE" class="member-name-link">PROPERTY_ROLE</a> - Static variable in record class io.micronaut.controlpanel.core.security.<a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityConfiguration.html" title="class in io.micronaut.controlpanel.core.security">ControlPanelSecurityConfiguration</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/micronaut/controlpanel/core/config/ControlPanelContextConfigurer.html#PROPERTY_SOURCE_NAME" class="member-name-link">PROPERTY_SOURCE_NAME</a> - Static variable in class io.micronaut.controlpanel.core.config.<a href="io/micronaut/controlpanel/core/config/ControlPanelContextConfigurer.html" title="class in io.micronaut.controlpanel.core.config">ControlPanelContextConfigurer</a></dt>
 <dd>&nbsp;</dd>
 </dl>
@@ -1459,6 +1467,10 @@ selected.</div>
 <dt><a href="io/micronaut/controlpanel/panels/datasource/DataSourceController.QueryResponse.html#recordsTotal()" class="member-name-link">recordsTotal()</a> - Method in record class io.micronaut.controlpanel.panels.datasource.<a href="io/micronaut/controlpanel/panels/datasource/DataSourceController.QueryResponse.html" title="class in io.micronaut.controlpanel.panels.datasource">DataSourceController.QueryResponse</a></dt>
 <dd>
 <div class="block">Returns the value of the <a href="./io/micronaut/controlpanel/panels/datasource/DataSourceController.QueryResponse.html#param-recordsTotal"><code>recordsTotal</code></a> record component.</div>
+</dd>
+<dt><a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityConfiguration.html#role()" class="member-name-link">role()</a> - Method in record class io.micronaut.controlpanel.core.security.<a href="io/micronaut/controlpanel/core/security/ControlPanelSecurityConfiguration.html" title="class in io.micronaut.controlpanel.core.security">ControlPanelSecurityConfiguration</a></dt>
+<dd>
+<div class="block">Returns the value of the <a href="./io/micronaut/controlpanel/core/security/ControlPanelSecurityConfiguration.html#param-role"><code>role</code></a> record component.</div>
 </dd>
 <dt><a href="io/micronaut/controlpanel/core/panels/RoutesControlPanel.RouteRow.html#%3Cinit%3E(java.lang.String,io.micronaut.http.uri.UriMatchTemplate,java.util.List,java.util.List,io.micronaut.controlpanel.core.panels.RoutesControlPanel.TargetMethod)" class="member-name-link">RouteRow(String, UriMatchTemplate, List, List, RoutesControlPanel.TargetMethod)</a> - Constructor for record class io.micronaut.controlpanel.core.panels.<a href="io/micronaut/controlpanel/core/panels/RoutesControlPanel.RouteRow.html" title="class in io.micronaut.controlpanel.core.panels">RoutesControlPanel.RouteRow</a></dt>
 <dd>

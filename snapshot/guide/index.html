@@ -767,17 +767,17 @@ Micronaut Endpoints require having the <code>io.micronaut:micronaut-management</
 <div class="sect2">
 <h3 id="_protecting_the_control_panel">Protecting The Control Panel</h3>
 <div class="paragraph">
-<p>By default, control panel routes remain anonymously accessible for development and test workflows. Only enable the
-control panel in trusted environments unless you also protect the control-panel-owned HTTP surface with Micronaut
-Security.</p>
+<p>When Micronaut Security is active, control panel routes are protected by default. The default access mode is
+<code>micronaut.control-panel.security.access=AUTHORIZED</code>, which requires an authenticated user with
+<code>ROLE_CONTROL_PANEL</code>.</p>
 </div>
 <div class="paragraph">
-<p>If your application already uses Micronaut Security, you can require authenticated access without turning the module
-into a separate OAuth client. Your existing Micronaut Security authentication mechanism authenticates the browser
-request.</p>
+<p>If your application already uses Micronaut Security, the control panel does not become a separate OAuth client. Your
+existing Micronaut Security authentication mechanism authenticates the browser request, and the control panel fallback
+rule authorizes the UI and helper-controller routes.</p>
 </div>
 <div class="paragraph">
-<p>The following example requires an authenticated user before the UI or helper controllers can be reached:</p>
+<p>The following example shows the default role-protected mode explicitly:</p>
 </div>
 <div class="openblock">
 <div class="content">
@@ -786,7 +786,8 @@ request.</p>
 <pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">micronaut.security.enabled=true
 micronaut.security.basic-auth.enabled=true
 micronaut.control-panel.enabled=true
-micronaut.control-panel.security.access=authenticated
+micronaut.control-panel.security.access=authorized
+micronaut.control-panel.security.role=ROLE_CONTROL_PANEL
 endpoints.env.enabled=true
 endpoints.health.details-visible=AUTHENTICATED
 endpoints.loggers.enabled=true
@@ -803,7 +804,8 @@ endpoints.loggers.write-sensitive=false</code></pre>
   control-panel:
     enabled: true
     security:
-      access: authenticated
+      access: authorized
+      role: ROLE_CONTROL_PANEL
 
 endpoints:
   env:
@@ -825,7 +827,8 @@ endpoints:
   [micronaut.control-panel]
     enabled=true
     [micronaut.control-panel.security]
-      access="authenticated"
+      access="authorized"
+      role="ROLE_CONTROL_PANEL"
 [endpoints]
   [endpoints.env]
     enabled=true
@@ -848,7 +851,8 @@ endpoints:
   controlPanel {
     enabled = true
     security {
-      access = "authenticated"
+      access = "authorized"
+      role = "ROLE_CONTROL_PANEL"
     }
   }
 }
@@ -879,7 +883,8 @@ endpoints {
     control-panel {
       enabled = true
       security {
-        access = "authenticated"
+        access = "authorized"
+        role = "ROLE_CONTROL_PANEL"
       }
     }
   }
@@ -911,7 +916,8 @@ endpoints {
     "control-panel": {
       "enabled": true,
       "security": {
-        "access": "authenticated"
+        "access": "authorized",
+        "role": "ROLE_CONTROL_PANEL"
       }
     }
   },
@@ -934,92 +940,40 @@ endpoints {
 </div>
 <div class="paragraph">
 <p>This secures the control panel routes themselves with
-<code>micronaut.control-panel.security.access=AUTHENTICATED</code>. Management endpoint security remains under the normal
-Micronaut management configuration for your application.</p>
-</div>
-<div class="paragraph">
-<p><code>AUTHENTICATED</code> requires a logged-in user, but it does not choose an application role for you. To restrict the control
-panel to administrators, configure role-based access with Micronaut Security in the host application. Host
-<code>intercept-url-map</code> rules run before the control-panel fallback rule, so they can require a role such as <code>ROLE_ADMIN</code>
-for the UI and helper controller routes:</p>
+<code>micronaut.control-panel.security.access=AUTHORIZED</code> and
+<code>micronaut.control-panel.security.role=ROLE_CONTROL_PANEL</code>. You can change the role if your application uses a
+different administrative role:</p>
 </div>
 <div class="openblock">
-<div class="title">Configuring role-based access for the control panel</div>
 <div class="content">
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">micronaut.security.intercept-url-map[0].pattern=/control-panel/**
-micronaut.security.intercept-url-map[0].access[0]=ROLE_ADMIN
-micronaut.security.intercept-url-map[1].pattern=/control-panel/cache-control-panel-controller/**
-micronaut.security.intercept-url-map[1].access[0]=ROLE_ADMIN
-micronaut.security.intercept-url-map[2].pattern=/control-panel/datasource-control-panel-controller/**
-micronaut.security.intercept-url-map[2].access[0]=ROLE_ADMIN
-micronaut.security.intercept-url-map[3].pattern=/control-panel/object-storage-control-panel-controller/**
-micronaut.security.intercept-url-map[3].access[0]=ROLE_ADMIN</code></pre>
+<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">micronaut.control-panel.security.role=ROLE_ADMIN</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">micronaut:
-  security:
-    intercept-url-map:
-      - pattern: /control-panel/**
-        access:
-          - ROLE_ADMIN
-      - pattern: /control-panel/cache-control-panel-controller/**
-        access:
-          - ROLE_ADMIN
-      - pattern: /control-panel/datasource-control-panel-controller/**
-        access:
-          - ROLE_ADMIN
-      - pattern: /control-panel/object-storage-control-panel-controller/**
-        access:
-          - ROLE_ADMIN</code></pre>
+  control-panel:
+    security:
+      role: ROLE_ADMIN</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[micronaut]
-  [micronaut.security]
-    [[micronaut.security.intercept-url-map]]
-      pattern="/control-panel/**"
-      access=[
-        "ROLE_ADMIN"
-      ]
-    [[micronaut.security.intercept-url-map]]
-      pattern="/control-panel/cache-control-panel-controller/**"
-      access=[
-        "ROLE_ADMIN"
-      ]
-    [[micronaut.security.intercept-url-map]]
-      pattern="/control-panel/datasource-control-panel-controller/**"
-      access=[
-        "ROLE_ADMIN"
-      ]
-    [[micronaut.security.intercept-url-map]]
-      pattern="/control-panel/object-storage-control-panel-controller/**"
-      access=[
-        "ROLE_ADMIN"
-      ]</code></pre>
+  [micronaut.control-panel]
+    [micronaut.control-panel.security]
+      role="ROLE_ADMIN"</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-groovy-config hljs" data-lang="groovy-config">micronaut {
-  security {
-    interceptUrlMap = [{
-        pattern = "/control-panel/**"
-        access = ["ROLE_ADMIN"]
-      }, {
-        pattern = "/control-panel/cache-control-panel-controller/**"
-        access = ["ROLE_ADMIN"]
-      }, {
-        pattern = "/control-panel/datasource-control-panel-controller/**"
-        access = ["ROLE_ADMIN"]
-      }, {
-        pattern = "/control-panel/object-storage-control-panel-controller/**"
-        access = ["ROLE_ADMIN"]
-      }]
+  controlPanel {
+    security {
+      role = "ROLE_ADMIN"
+    }
   }
 }</code></pre>
 </div>
@@ -1028,20 +982,10 @@ micronaut.security.intercept-url-map[3].access[0]=ROLE_ADMIN</code></pre>
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-hocon hljs" data-lang="hocon">{
   micronaut {
-    security {
-      intercept-url-map = [{
-          pattern = "/control-panel/**"
-          access = ["ROLE_ADMIN"]
-        }, {
-          pattern = "/control-panel/cache-control-panel-controller/**"
-          access = ["ROLE_ADMIN"]
-        }, {
-          pattern = "/control-panel/datasource-control-panel-controller/**"
-          access = ["ROLE_ADMIN"]
-        }, {
-          pattern = "/control-panel/object-storage-control-panel-controller/**"
-          access = ["ROLE_ADMIN"]
-        }]
+    control-panel {
+      security {
+        role = "ROLE_ADMIN"
+      }
     }
   }
 }</code></pre>
@@ -1051,20 +995,10 @@ micronaut.security.intercept-url-map[3].access[0]=ROLE_ADMIN</code></pre>
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-json-config hljs" data-lang="json-config">{
   "micronaut": {
-    "security": {
-      "intercept-url-map": [{
-          "pattern": "/control-panel/**",
-          "access": ["ROLE_ADMIN"]
-        }, {
-          "pattern": "/control-panel/cache-control-panel-controller/**",
-          "access": ["ROLE_ADMIN"]
-        }, {
-          "pattern": "/control-panel/datasource-control-panel-controller/**",
-          "access": ["ROLE_ADMIN"]
-        }, {
-          "pattern": "/control-panel/object-storage-control-panel-controller/**",
-          "access": ["ROLE_ADMIN"]
-        }]
+    "control-panel": {
+      "security": {
+        "role": "ROLE_ADMIN"
+      }
     }
   }
 }</code></pre>
@@ -1073,12 +1007,77 @@ micronaut.security.intercept-url-map[3].access[0]=ROLE_ADMIN</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>If you customize <code>micronaut.control-panel.path</code>, use that path instead of <code>/control-panel/**</code> in the UI rule.</p>
+<p>Management endpoint security remains under the normal Micronaut management configuration for your application.</p>
 </div>
 <div class="paragraph">
-<p>Applications that include Micronaut Security still default to
-<code>micronaut.control-panel.security.access=ANONYMOUS</code>. Keep that default only in trusted development or test
-environments.</p>
+<p>The <code>AUTHENTICATED</code> mode requires any logged-in user, but does not require a specific role. The <code>ANONYMOUS</code> mode keeps
+the UI and helper controllers anonymously reachable. Use these modes only for trusted development or test environments:</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">micronaut.control-panel.security.access=AUTHENTICATED</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">micronaut:
+  control-panel:
+    security:
+      access: AUTHENTICATED</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[micronaut]
+  [micronaut.control-panel]
+    [micronaut.control-panel.security]
+      access="AUTHENTICATED"</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-groovy-config hljs" data-lang="groovy-config">micronaut {
+  controlPanel {
+    security {
+      access = "AUTHENTICATED"
+    }
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-hocon hljs" data-lang="hocon">{
+  micronaut {
+    control-panel {
+      security {
+        access = "AUTHENTICATED"
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json-config hljs" data-lang="json-config">{
+  "micronaut": {
+    "control-panel": {
+      "security": {
+        "access": "AUTHENTICATED"
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>Host <code>intercept-url-map</code> rules run before the control-panel fallback rule, so host rules can still be stricter than the
+configured control panel access mode.</p>
 </div>
 </div>
 <div class="sect2">
@@ -1157,8 +1156,8 @@ Make sure this is done in an environment-specific configuration file, for exampl
 </div>
 </div>
 <div class="paragraph">
-<p>With the default <code>micronaut.control-panel.security.access=ANONYMOUS</code>, anonymous control-panel requests continue to see
-the anonymous health view.</p>
+<p>If you opt into <code>micronaut.control-panel.security.access=ANONYMOUS</code>, anonymous control-panel requests continue to see the
+anonymous health view.</p>
 </div>
 </div>
 <div class="sect2">
@@ -1313,7 +1312,7 @@ you can enable the built-in filter by setting the following configuration proper
 <div class="paragraph">
 <p>This panel displays all the beans, and their relationships, grouped by packages. It relies on the
 <a href="https://docs.micronaut.io/latest/guide/#beansEndpoint">Beans Endpoint</a> to display all the bean definitions. Keep the
-authenticated control-panel access when you do not want to expose that information to anonymous users.</p>
+role-protected control-panel access when you do not want to expose that information to anonymous users.</p>
 </div>
 </div>
 <div class="sect2">
