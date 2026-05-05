@@ -82,6 +82,7 @@ graalvmNative {
 }
 
 tasks.named("internalStartTestResourcesService") {
+    setProperty("clientTimeout", 180)
     setProperty("useClassDataSharing", false)
 //    setProperty("debugServer", true)
 }
