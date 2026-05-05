@@ -16,6 +16,7 @@
 package io.micronaut.controlpanel.panels.hibernate;
 
 import io.micronaut.context.BeanLocator;
+import io.micronaut.controlpanel.core.security.ControlPanelSecurityPaths;
 import io.micronaut.core.annotation.Internal;
 import io.micronaut.core.annotation.Introspected;
 import io.micronaut.core.type.Argument;
@@ -40,7 +41,7 @@ import java.util.function.Consumer;
  * @author Denis Stepanov
  * @since 2.0.0
  */
-@Controller("/hibernate-control-panel-controller")
+@Controller(ControlPanelSecurityPaths.HIBERNATE)
 @ExecuteOn(TaskExecutors.BLOCKING)
 @Internal
 public final class HibernateController {

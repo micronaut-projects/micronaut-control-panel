@@ -161,7 +161,7 @@ class ControlPanelSecurityTest {
             Map.entry("micronaut.object-storage.local.default.path", tempDir.toString())
         ))) {
             HttpClient client = server.getApplicationContext().createBean(HttpClient.class, server.getURL());
-            for (String helperPath : helperPaths()) {
+            for (String helperPath : routedHelperPaths()) {
                 HttpClientResponseException anonymous = assertThrows(
                     HttpClientResponseException.class,
                     () -> client.toBlocking().exchange(HttpRequest.GET(helperPath))
@@ -264,7 +264,7 @@ class ControlPanelSecurityTest {
         }
     }
 
-    private static List<String> helperPaths() {
+    private static List<String> routedHelperPaths() {
         return List.of(
             helperPath(ControlPanelSecurityPaths.CACHE_PATH, "/demo"),
             helperPath(ControlPanelSecurityPaths.DATASOURCE_PATH, "/default/schema.js"),

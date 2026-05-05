@@ -16,6 +16,8 @@
 package io.micronaut.controlpanel.panels.hibernate;
 
 import io.micronaut.context.BeanLocator;
+import io.micronaut.controlpanel.core.security.ControlPanelSecurityPaths;
+import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.HttpStatus;
 import org.hibernate.Cache;
 import org.hibernate.SessionFactory;
@@ -45,6 +47,11 @@ class HibernateControllerTest {
 
     @Mock
     private Cache cache;
+
+    @Test
+    void usesSharedControlPanelSecurityPath() {
+        assertEquals(ControlPanelSecurityPaths.HIBERNATE, HibernateController.class.getAnnotation(Controller.class).value());
+    }
 
     @Test
     void delegatesStatisticsOperationsToNamedSessionFactoryService() {
@@ -105,6 +112,18 @@ class HibernateControllerTest {
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatus());
         assertEquals("Only read-only HQL select queries are allowed", response.body().get("error"));
+    }
+
+    @Test
+    void returnsServerErrorWithErrorForHqlRuntimeFailures() {
+        when(sessionFactory.openSession()).thenThrow(new RuntimeException("Database unavailable"));
+        var controller = controller(Map.of("default", new HibernateRuntimeService("default", sessionFactory)));
+
+        var response = controller.executeHql("default", new HibernateController.HqlQueryRequest("from Book b", 0, 10, 3));
+
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatus());
+        assertEquals(3, response.body().get("draw"));
+        assertEquals("Database unavailable", response.body().get("error"));
     }
 
     private HibernateController controller(Map<String, HibernateRuntimeService> services) {

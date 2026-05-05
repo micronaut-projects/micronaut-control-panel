@@ -29,7 +29,9 @@ image::hibernate-session-details.png[Hibernate session details]
 The Session details tab shows the selected persistence unit and a curated set of safe runtime configuration values. This
 includes the session factory name, the datasource name, whether statistics are enabled, cache capabilities, default
 catalog and schema, JDBC behavior, fetch settings, batch settings, query settings, transaction options, and selected
-Hibernate properties. Sensitive values such as passwords are masked.
+Hibernate properties. Sensitive values are masked when the property name contains `password`, `credential`,
+`certificate`, `key`, `secret`, or `token`, matching the same legacy masking terms used by the Environment panel when
+plain values are enabled.
 
 The JDBC Data Source tab shows the datasource that backs the selected session factory. It includes connection metadata
 such as the bean name, JDBC URL, username, driver, database product, schema or catalog values, transaction isolation,

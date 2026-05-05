@@ -86,6 +86,14 @@ final class HibernateRuntimeService {
         "hibernate.",
         "jakarta.persistence."
     );
+    private static final List<String> SENSITIVE_PROPERTY_NAME_PARTS = List.of(
+        "password",
+        "credential",
+        "certificate",
+        "key",
+        "secret",
+        "token"
+    );
 
     private final String beanName;
     private final SessionFactory sessionFactory;
@@ -582,7 +590,8 @@ final class HibernateRuntimeService {
     }
 
     private static String safePropertyValue(String key, Object value) {
-        if (key.toLowerCase().contains("password")) {
+        var normalizedKey = key.toLowerCase(Locale.ROOT);
+        if (SENSITIVE_PROPERTY_NAME_PARTS.stream().anyMatch(normalizedKey::contains)) {
             return "******";
         }
         var stringValue = valueOrEmpty(value);

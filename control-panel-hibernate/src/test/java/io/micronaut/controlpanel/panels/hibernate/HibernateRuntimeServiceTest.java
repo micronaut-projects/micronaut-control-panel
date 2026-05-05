@@ -132,6 +132,8 @@ class HibernateRuntimeServiceTest {
         assertEquals("org.hibernate.dialect.H2Dialect", body.sessionFactory().properties().get("hibernate.dialect"));
         assertEquals("example.NamingStrategy", body.sessionFactory().properties().get("hibernate.naming.physical_strategy"));
         assertEquals("******", body.sessionFactory().properties().get("jakarta.persistence.jdbc.password"));
+        assertEquals("******", body.sessionFactory().properties().get("hibernate.connection.token"));
+        assertEquals("******", body.sessionFactory().properties().get("hibernate.connection.secret"));
         assertFalse(body.sessionFactory().properties().containsKey("micronaut.application.name"));
         assertEquals("25", body.sessionFactory().properties().get("hibernate.default_batch_fetch_size"));
         assertEquals("75", body.sessionFactory().properties().get("hibernate.jdbc.batch_size"));
@@ -328,6 +330,8 @@ class HibernateRuntimeServiceTest {
         when(sessionFactory.getProperties()).thenReturn(Map.of(
             "hibernate.dialect", "org.hibernate.dialect.H2Dialect",
             "hibernate.connection.url", "jdbc:h2:mem:test",
+            "hibernate.connection.secret", "secret-value",
+            "hibernate.connection.token", "token-value",
             "hibernate.naming.physical_strategy", "example.NamingStrategy",
             "jakarta.persistence.jdbc.password", "secret",
             "micronaut.application.name", "demo"

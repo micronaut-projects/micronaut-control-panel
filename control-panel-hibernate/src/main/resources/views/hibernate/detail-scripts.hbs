@@ -1,6 +1,6 @@
     <script>
         $(function() {
-            var baseUrl = '{{ ext.appPath }}/hibernate-control-panel-controller/' + encodeURIComponent('{{ sessionFactory.beanName }}');
+            var baseUrl = '{{ ext.controlPanelPath }}/hibernate-control-panel-controller/' + encodeURIComponent('{{ sessionFactory.beanName }}');
             var sessionFactoryName = '{{ sessionFactory.beanName }}';
 
             function escapeHtml(value) {
