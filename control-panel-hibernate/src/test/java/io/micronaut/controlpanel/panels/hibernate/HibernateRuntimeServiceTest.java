@@ -15,19 +15,31 @@
  */
 package io.micronaut.controlpanel.panels.hibernate;
 
+import io.micronaut.controlpanel.panels.hibernate.model.HibernateBody;
 import jakarta.persistence.metamodel.Attribute;
 import jakarta.persistence.metamodel.Metamodel;
 import org.hibernate.annotations.CacheLayout;
 import org.hibernate.boot.spi.SessionFactoryOptions;
 import org.hibernate.cache.spi.CacheImplementor;
+import org.hibernate.dialect.H2Dialect;
+import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
+import org.hibernate.engine.jdbc.connections.spi.DatabaseConnectionInfo;
+import org.hibernate.engine.jdbc.env.spi.ExtractedDatabaseMetaData;
+import org.hibernate.engine.jdbc.spi.JdbcServices;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.metamodel.model.domain.EntityDomainType;
 import org.hibernate.metamodel.model.domain.SimpleDomainType;
 import org.hibernate.metamodel.spi.MappingMetamodelImplementor;
 import org.hibernate.persister.entity.EntityPersister;
+import org.hibernate.procedure.spi.NamedCallableQueryMemento;
+import org.hibernate.query.named.NamedObjectRepository;
+import org.hibernate.query.spi.QueryEngine;
+import org.hibernate.query.sql.spi.NamedNativeQueryMemento;
+import org.hibernate.query.sqm.spi.NamedSqmQueryMemento;
 import org.hibernate.query.spi.QueryImplementor;
 import org.hibernate.resource.jdbc.spi.PhysicalConnectionHandlingMode;
+import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.stat.CacheRegionStatistics;
 import org.hibernate.stat.CollectionStatistics;
 import org.hibernate.stat.EntityStatistics;
@@ -43,11 +55,14 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -70,6 +85,36 @@ class HibernateRuntimeServiceTest {
 
     @Mock
     private SessionFactoryOptions options;
+
+    @Mock
+    private QueryEngine queryEngine;
+
+    @Mock
+    private NamedObjectRepository namedObjectRepository;
+
+    @Mock
+    private NamedSqmQueryMemento<Object> sqmNamedQuery;
+
+    @Mock
+    private NamedNativeQueryMemento<Object> nativeNamedQuery;
+
+    @Mock
+    private NamedCallableQueryMemento callableNamedQuery;
+
+    @Mock
+    private JdbcServices jdbcServices;
+
+    @Mock
+    private ExtractedDatabaseMetaData jdbcMetadata;
+
+    @Mock
+    private ServiceRegistryImplementor serviceRegistry;
+
+    @Mock
+    private ConnectionProvider connectionProvider;
+
+    @Mock
+    private DatabaseConnectionInfo connectionInfo;
 
     @Mock
     private StatisticsImplementor statistics;
@@ -108,6 +153,7 @@ class HibernateRuntimeServiceTest {
     private QueryImplementor<Object> hqlQuery;
 
     private HibernateRuntimeService service;
+    private final H2Dialect dialect = new H2Dialect();
 
     @BeforeEach
     void setUp() {
@@ -118,10 +164,23 @@ class HibernateRuntimeServiceTest {
     void buildsBodyFromSessionFactoryMetadataAndStatistics() {
         mockSessionFactory();
         mockEntityMetadata();
+        mockNamedQueries();
+        mockJdbcMetadata();
         mockStatistics();
 
         var body = service.getBody();
 
+        assertSessionFactoryInfo(body);
+        assertStatisticsInfo(body);
+        assertEntityInfo(body);
+        assertCollectionInfo(body);
+        assertQueryInfo(body);
+        assertCacheRegionInfo(body);
+        assertNamedQueryInfo(body);
+        assertDataSourceInfo(body);
+    }
+
+    private static void assertSessionFactoryInfo(HibernateBody body) {
         assertEquals("default", body.sessionFactory().beanName());
         assertEquals("main-session-factory", body.sessionFactory().sessionFactoryName());
         assertFalse(body.sessionFactory().closed());
@@ -143,11 +202,15 @@ class HibernateRuntimeServiceTest {
         );
         assertEquals("true", body.sessionFactory().properties().get("hibernate.cache.use_minimal_puts"));
         assertEquals("512", body.sessionFactory().properties().get("hibernate.statistics.query_max_size"));
+    }
 
+    private static void assertStatisticsInfo(HibernateBody body) {
         assertEquals(5, body.statistics().entityLoadCount());
         assertEquals(3, body.statistics().queryExecutionCount());
         assertEquals("select b from Book b", body.statistics().queryExecutionMaxTimeQueryString());
+    }
 
+    private static void assertEntityInfo(HibernateBody body) {
         assertEquals(1, body.entities().size());
         var entityInfo = body.entities().getFirst();
         assertEquals("Book", entityInfo.name());
@@ -158,27 +221,56 @@ class HibernateRuntimeServiceTest {
         assertEquals("title", entityInfo.attributes().getFirst().name());
         assertEquals(7, entityInfo.statistics().loadCount());
         assertEquals("books", entityInfo.statistics().cacheRegionName());
+    }
 
+    private static void assertCollectionInfo(HibernateBody body) {
         assertEquals("example.Book.chapters", body.collections().getFirst().role());
         assertEquals("example.Book", body.collections().getFirst().ownerEntityName());
         assertEquals("chapters", body.collections().getFirst().attributeName());
         assertEquals(11, body.collections().getFirst().statistics().loadCount());
+    }
 
+    private static void assertQueryInfo(HibernateBody body) {
         assertEquals("select b from Book b", body.queries().getFirst().query());
         assertEquals(13, body.queries().getFirst().executionCount());
         assertEquals(44, body.queries().getFirst().slowTime());
+    }
 
+    private static void assertCacheRegionInfo(HibernateBody body) {
         assertEquals("books", body.cacheRegions().getFirst().name());
         assertEquals(17, body.cacheRegions().getFirst().hitCount());
         assertEquals("23", body.cacheRegions().getFirst().elementCountInMemory());
         assertEquals("Not supported", body.cacheRegions().getFirst().elementCountOnDisk());
         assertEquals("Not supported", body.cacheRegions().getFirst().sizeInMemory());
+    }
 
-        assertTrue(body.namedQueries().isEmpty());
+    private static void assertNamedQueryInfo(HibernateBody body) {
+        assertEquals(3, body.namedQueries().size());
+        assertEquals("HibernateBook.callableReport", body.namedQueries().getFirst().name());
+        assertEquals("Callable", body.namedQueries().getFirst().type());
+        assertEquals("book_report", body.namedQueries().getFirst().query());
+        assertEquals("false", body.namedQueries().getFirst().cacheable());
+        assertEquals("HibernateBook.listTitles", body.namedQueries().get(1).name());
+        assertEquals("HQL", body.namedQueries().get(1).type());
+        assertEquals("select b.title from Book b", body.namedQueries().get(1).query());
+        assertEquals("HibernateBook.nativeSummary", body.namedQueries().get(2).name());
+        assertEquals("Native SQL", body.namedQueries().get(2).type());
+        assertEquals("select title from book", body.namedQueries().get(2).query());
+    }
+
+    private static void assertDataSourceInfo(HibernateBody body) {
         assertEquals(1, body.dataSources().size());
         assertEquals("default", body.dataSources().getFirst().name());
-        assertEquals("jdbc:h2:mem:test", body.dataSources().getFirst().jdbcUrl());
+        assertEquals("jdbc:postgresql://***@localhost:5432/test", body.dataSources().getFirst().jdbcUrl());
+        assertEquals("org.postgresql.Driver", body.dataSources().getFirst().jdbcDriver());
         assertEquals("org.hibernate.dialect.H2Dialect", body.dataSources().getFirst().dialect());
+        assertEquals("PUBLIC", body.dataSources().getFirst().schema());
+        assertEquals("READ_COMMITTED", body.dataSources().getFirst().isolationLevel());
+        assertEquals("5", body.dataSources().getFirst().poolMinSize());
+        assertEquals("50", body.dataSources().getFirst().poolMaxSize());
+        assertTrue(body.dataSources().getFirst().supportsSchemas());
+        assertTrue(body.dataSources().getFirst().supportsBatchUpdates());
+        assertTrue(body.dataSources().getFirst().supportsGetGeneratedKeys());
     }
 
     @Test
@@ -366,6 +458,60 @@ class HibernateRuntimeServiceTest {
         when(options.isAutoCloseSessionEnabled()).thenReturn(false);
         when(options.isFlushBeforeCompletionEnabled()).thenReturn(false);
         when(options.isAllowOutOfTransactionUpdateOperations()).thenReturn(false);
+    }
+
+    private void mockNamedQueries() {
+        when(sessionFactory.getQueryEngine()).thenReturn(queryEngine);
+        when(queryEngine.getNamedObjectRepository()).thenReturn(namedObjectRepository);
+        doAnswer(invocation -> {
+            Consumer<NamedSqmQueryMemento<?>> consumer = invocation.getArgument(0);
+            consumer.accept(sqmNamedQuery);
+            return null;
+        }).when(namedObjectRepository).visitSqmQueryMementos(any());
+        doAnswer(invocation -> {
+            Consumer<NamedNativeQueryMemento<?>> consumer = invocation.getArgument(0);
+            consumer.accept(nativeNamedQuery);
+            return null;
+        }).when(namedObjectRepository).visitNativeQueryMementos(any());
+        doAnswer(invocation -> {
+            Consumer<NamedCallableQueryMemento> consumer = invocation.getArgument(0);
+            consumer.accept(callableNamedQuery);
+            return null;
+        }).when(namedObjectRepository).visitCallableQueryMementos(any());
+
+        when(sqmNamedQuery.getRegistrationName()).thenReturn("HibernateBook.listTitles");
+        when(sqmNamedQuery.getHqlString()).thenReturn("select b.title from Book b");
+        when(sqmNamedQuery.getCacheable()).thenReturn(true);
+        when(sqmNamedQuery.getCacheRegion()).thenReturn("bookQueries");
+        when(sqmNamedQuery.getReadOnly()).thenReturn(true);
+        when(sqmNamedQuery.getTimeout()).thenReturn(30);
+        when(sqmNamedQuery.getFetchSize()).thenReturn(25);
+        when(sqmNamedQuery.getComment()).thenReturn("List book titles");
+
+        when(nativeNamedQuery.getRegistrationName()).thenReturn("HibernateBook.nativeSummary");
+        when(nativeNamedQuery.getSqlString()).thenReturn("select title from book");
+
+        when(callableNamedQuery.getRegistrationName()).thenReturn("HibernateBook.callableReport");
+        when(callableNamedQuery.getCallableName()).thenReturn("book_report");
+        when(callableNamedQuery.getCacheable()).thenReturn(false);
+    }
+
+    private void mockJdbcMetadata() {
+        when(sessionFactory.getJdbcServices()).thenReturn(jdbcServices);
+        when(sessionFactory.getServiceRegistry()).thenReturn(serviceRegistry);
+        when(jdbcServices.getDialect()).thenReturn(dialect);
+        when(jdbcServices.getExtractedMetaDataSupport()).thenReturn(jdbcMetadata);
+        when(serviceRegistry.getService(ConnectionProvider.class)).thenReturn(connectionProvider);
+        when(connectionProvider.getDatabaseConnectionInfo(dialect, jdbcMetadata)).thenReturn(connectionInfo);
+        when(connectionInfo.getJdbcUrl()).thenReturn("jdbc:postgresql://user:secret@localhost:5432/test");
+        when(connectionInfo.getJdbcDriver()).thenReturn("org.postgresql.Driver");
+        when(connectionInfo.getSchema()).thenReturn("PUBLIC");
+        when(connectionInfo.getIsolationLevel()).thenReturn("READ_COMMITTED");
+        when(connectionInfo.getPoolMinSize()).thenReturn(5);
+        when(connectionInfo.getPoolMaxSize()).thenReturn(50);
+        when(jdbcMetadata.supportsSchemas()).thenReturn(true);
+        when(jdbcMetadata.supportsBatchUpdates()).thenReturn(true);
+        when(jdbcMetadata.supportsGetGeneratedKeys()).thenReturn(true);
     }
 
     private void mockEntityMetadata() {

@@ -38,6 +38,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.boot.spi.SessionFactoryOptions;
 import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
 import org.hibernate.engine.jdbc.connections.spi.DatabaseConnectionInfo;
+import org.hibernate.engine.jdbc.env.spi.ExtractedDatabaseMetaData;
 import org.hibernate.engine.jdbc.spi.JdbcServices;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.metamodel.model.domain.EntityDomainType;
@@ -67,6 +68,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -120,34 +122,18 @@ final class HibernateRuntimeService {
     Map<String, Object> executeHqlQuery(String hql, Integer start, Integer length, Integer draw) {
         var queryText = hql == null ? "" : hql.trim();
         validateHqlQuery(queryText);
-        var first = Math.max(0, start == null ? 0 : start);
-        var pageSize = Math.max(1, Math.min(MAX_HQL_PAGE_SIZE, length == null ? DEFAULT_HQL_PAGE_SIZE : length));
+        var pagination = hqlPagination(start, length);
 
         try (var session = sessionFactory.openSession()) {
             session.setDefaultReadOnly(true);
             var query = session.createQuery(queryText, Object.class)
                 .setReadOnly(true);
             var total = resultCount(query);
-            var fetchSize = total < 0 ? pageSize + 1 : pageSize;
             var fetchedRows = query
-                .setFirstResult(first)
-                .setMaxResults(fetchSize)
+                .setFirstResult(pagination.first())
+                .setMaxResults(fetchSize(total, pagination.pageSize()))
                 .getResultList();
-            var hasNextPage = total < 0 && fetchedRows.size() > pageSize;
-            var rows = hasNextPage ? fetchedRows.subList(0, pageSize) : fetchedRows;
-            var columns = hqlColumns(rows);
-            var formattedRows = rows.stream()
-                .map(this::hqlRow)
-                .toList();
-            var records = total < 0 ? first + rows.size() + (hasNextPage ? 1 : 0) : total;
-            var result = new LinkedHashMap<String, Object>();
-            result.put("draw", draw == null ? 1 : draw);
-            result.put("recordsTotal", records);
-            result.put("recordsFiltered", records);
-            result.put("data", formattedRows);
-            result.put("cols", columns);
-            result.put("hasNextPage", total < 0 ? hasNextPage : first + rows.size() < total);
-            return result;
+            return hqlResult(draw, pagination, total, fetchedRows);
         }
     }
 
@@ -302,6 +288,7 @@ final class HibernateRuntimeService {
                 .sorted()
                 .collect(Collectors.joining(", "));
         } catch (IllegalArgumentException | IllegalStateException e) {
+            LOG.trace("Cannot resolve Hibernate entity identifier type", e);
             return "";
         }
     }
@@ -438,33 +425,73 @@ final class HibernateRuntimeService {
         try {
             var properties = dataSourceProperties(sessionFactory.getProperties());
             var jdbcServices = jdbcServices();
-            var metadata = jdbcServices.map(JdbcServices::getExtractedMetaDataSupport).orElse(null);
-            var connectionInfo = jdbcServices.flatMap(this::databaseConnectionInfo).orElse(null);
-            return List.of(new HibernateDataSourceInfo(
-                beanName,
-                connectionInfo == null ? property(properties, "hibernate.connection.url", "jakarta.persistence.jdbc.url") : safeUrl(valueOrEmpty(connectionInfo.getJdbcUrl())),
-                connectionInfo == null ? property(properties, "hibernate.connection.driver_class") : valueOrEmpty(connectionInfo.getJdbcDriver()),
-                jdbcServices.map(services -> services.getDialect().getClass().getName()).orElse(property(properties, "hibernate.dialect")),
-                connectionInfo == null ? "" : valueOrEmpty(connectionInfo.getDialectVersion()),
-                connectionInfo == null ? "" : valueOrEmpty(connectionInfo.getCatalog()),
-                connectionInfo == null ? "" : valueOrEmpty(connectionInfo.getSchema()),
-                connectionInfo == null ? "" : valueOrEmpty(connectionInfo.getAutoCommitMode()),
-                connectionInfo == null ? "" : valueOrEmpty(connectionInfo.getIsolationLevel()),
-                connectionInfo == null ? "" : valueOrEmpty(connectionInfo.getPoolMinSize()),
-                connectionInfo == null ? "" : valueOrEmpty(connectionInfo.getPoolMaxSize()),
-                connectionInfo == null ? "" : valueOrEmpty(connectionInfo.getJdbcFetchSize()),
-                metadata != null && metadata.supportsSchemas(),
-                metadata != null && metadata.supportsCatalogs(),
-                metadata != null && metadata.supportsNamedParameters(),
-                metadata != null && metadata.supportsScrollableResults(),
-                metadata != null && metadata.supportsBatchUpdates(),
-                metadata != null && metadata.supportsGetGeneratedKeys(),
-                properties
-            ));
+            var connectionInfo = jdbcServices.flatMap(this::databaseConnectionInfo);
+            return List.of(dataSourceInfo(properties, jdbcServices, connectionInfo));
         } catch (RuntimeException e) {
-            LOG.debug("Cannot read Hibernate datasource metadata for bean '{}': {}", beanName, e.getMessage());
+            LOG.debug("Cannot read Hibernate datasource metadata for bean '{}'", beanName, e);
             return List.of();
         }
+    }
+
+    private HibernateDataSourceInfo dataSourceInfo(Map<String, String> properties,
+                                                   Optional<JdbcServices> jdbcServices,
+                                                   Optional<DatabaseConnectionInfo> connectionInfo) {
+        return new HibernateDataSourceInfo(
+            beanName,
+            dataSourceJdbcUrl(properties, connectionInfo),
+            dataSourceJdbcDriver(properties, connectionInfo),
+            dataSourceDialect(properties, jdbcServices),
+            connectionValue(connectionInfo, DatabaseConnectionInfo::getDialectVersion),
+            connectionValue(connectionInfo, DatabaseConnectionInfo::getCatalog),
+            connectionValue(connectionInfo, DatabaseConnectionInfo::getSchema),
+            connectionValue(connectionInfo, DatabaseConnectionInfo::getAutoCommitMode),
+            connectionValue(connectionInfo, DatabaseConnectionInfo::getIsolationLevel),
+            connectionValue(connectionInfo, DatabaseConnectionInfo::getPoolMinSize),
+            connectionValue(connectionInfo, DatabaseConnectionInfo::getPoolMaxSize),
+            connectionValue(connectionInfo, DatabaseConnectionInfo::getJdbcFetchSize),
+            databaseSupports(jdbcServices, ExtractedDatabaseMetaData::supportsSchemas),
+            databaseSupports(jdbcServices, ExtractedDatabaseMetaData::supportsCatalogs),
+            databaseSupports(jdbcServices, ExtractedDatabaseMetaData::supportsNamedParameters),
+            databaseSupports(jdbcServices, ExtractedDatabaseMetaData::supportsScrollableResults),
+            databaseSupports(jdbcServices, ExtractedDatabaseMetaData::supportsBatchUpdates),
+            databaseSupports(jdbcServices, ExtractedDatabaseMetaData::supportsGetGeneratedKeys),
+            properties
+        );
+    }
+
+    private static String dataSourceJdbcUrl(Map<String, String> properties, Optional<DatabaseConnectionInfo> connectionInfo) {
+        return connectionInfo
+            .map(DatabaseConnectionInfo::getJdbcUrl)
+            .map(HibernateRuntimeService::valueOrEmpty)
+            .map(HibernateRuntimeService::safeUrl)
+            .orElseGet(() -> property(properties, "hibernate.connection.url", "jakarta.persistence.jdbc.url"));
+    }
+
+    private static String dataSourceJdbcDriver(Map<String, String> properties, Optional<DatabaseConnectionInfo> connectionInfo) {
+        return connectionInfo
+            .map(DatabaseConnectionInfo::getJdbcDriver)
+            .map(HibernateRuntimeService::valueOrEmpty)
+            .orElseGet(() -> property(properties, "hibernate.connection.driver_class"));
+    }
+
+    private static String dataSourceDialect(Map<String, String> properties, Optional<JdbcServices> jdbcServices) {
+        return jdbcServices
+            .map(services -> services.getDialect().getClass().getName())
+            .orElseGet(() -> property(properties, "hibernate.dialect"));
+    }
+
+    private static String connectionValue(Optional<DatabaseConnectionInfo> connectionInfo, Function<DatabaseConnectionInfo, Object> value) {
+        return connectionInfo
+            .map(value)
+            .map(HibernateRuntimeService::valueOrEmpty)
+            .orElse("");
+    }
+
+    private static boolean databaseSupports(Optional<JdbcServices> jdbcServices, Function<ExtractedDatabaseMetaData, Boolean> support) {
+        return jdbcServices
+            .map(JdbcServices::getExtractedMetaDataSupport)
+            .map(support)
+            .orElse(false);
     }
 
     private Optional<JdbcServices> jdbcServices() {
@@ -482,7 +509,7 @@ final class HibernateRuntimeService {
             var provider = sessionFactoryImplementor.getServiceRegistry().getService(ConnectionProvider.class);
             return Optional.ofNullable(provider.getDatabaseConnectionInfo(jdbcServices.getDialect(), jdbcServices.getExtractedMetaDataSupport()));
         } catch (RuntimeException e) {
-            LOG.debug("Cannot read Hibernate connection info for bean '{}': {}", beanName, e.getMessage());
+            LOG.debug("Cannot read Hibernate connection info for bean '{}'", beanName, e);
             return Optional.empty();
         }
     }
@@ -642,8 +669,64 @@ final class HibernateRuntimeService {
         try {
             return query.getResultCount();
         } catch (RuntimeException e) {
+            LOG.trace("Cannot calculate HQL result count", e);
             return -1;
         }
+    }
+
+    private Map<String, Object> hqlResult(Integer draw, HqlPagination pagination, long total, List<?> fetchedRows) {
+        var hasNextPage = hasNextPage(total, pagination, fetchedRows);
+        var rows = visibleRows(pagination.pageSize(), hasNextPage, fetchedRows);
+        var formattedRows = rows.stream()
+            .map(this::hqlRow)
+            .toList();
+        var records = recordCount(total, pagination.first(), rows.size(), hasNextPage);
+        var result = new LinkedHashMap<String, Object>();
+        result.put("draw", draw == null ? 1 : draw);
+        result.put("recordsTotal", records);
+        result.put("recordsFiltered", records);
+        result.put("data", formattedRows);
+        result.put("cols", hqlColumns(rows));
+        result.put("hasNextPage", hasNextPage);
+        return result;
+    }
+
+    private static HqlPagination hqlPagination(Integer start, Integer length) {
+        var first = Math.clamp(start == null ? 0L : start.longValue(), 0, Integer.MAX_VALUE);
+        var pageSize = Math.clamp(length == null ? DEFAULT_HQL_PAGE_SIZE : length.longValue(), 1, MAX_HQL_PAGE_SIZE);
+        return new HqlPagination(first, pageSize);
+    }
+
+    private static int fetchSize(long total, int pageSize) {
+        if (total < 0) {
+            return pageSize + 1;
+        }
+        return pageSize;
+    }
+
+    private static boolean hasNextPage(long total, HqlPagination pagination, List<?> fetchedRows) {
+        if (total < 0) {
+            return fetchedRows.size() > pagination.pageSize();
+        }
+        return pagination.first() + fetchedRows.size() < total;
+    }
+
+    private static List<?> visibleRows(int pageSize, boolean hasNextPage, List<?> fetchedRows) {
+        if (hasNextPage && fetchedRows.size() > pageSize) {
+            return fetchedRows.subList(0, pageSize);
+        }
+        return fetchedRows;
+    }
+
+    private static long recordCount(long total, int first, int rowCount, boolean hasNextPage) {
+        if (total >= 0) {
+            return total;
+        }
+        var recordCount = first + rowCount;
+        if (hasNextPage) {
+            return recordCount + 1L;
+        }
+        return recordCount;
     }
 
     private static List<String> hqlColumns(List<?> rows) {
@@ -709,7 +792,7 @@ final class HibernateRuntimeService {
         try {
             return Optional.ofNullable(sessionFactoryImplementor.getMappingMetamodel().findEntityDescriptor(Hibernate.getClassLazy(value)));
         } catch (RuntimeException e) {
-            LOG.trace("Cannot resolve Hibernate entity persister for value of type '{}'", value.getClass().getName());
+            LOG.trace("Cannot resolve Hibernate entity persister for value of type '{}'", value.getClass().getName(), e);
             return Optional.empty();
         }
     }
@@ -725,7 +808,7 @@ final class HibernateRuntimeService {
         try {
             return entityPersister.getIdentifier(value);
         } catch (RuntimeException e) {
-            LOG.trace("Cannot resolve Hibernate entity identifier for value of type '{}'", value.getClass().getName());
+            LOG.trace("Cannot resolve Hibernate entity identifier for value of type '{}'", value.getClass().getName(), e);
             return null;
         }
     }
@@ -742,7 +825,7 @@ final class HibernateRuntimeService {
                 details.add(hqlCellDetail(propertyNames[i], detailValue(propertyValues[i])));
             }
         } catch (RuntimeException e) {
-            LOG.trace("Cannot resolve Hibernate entity property values for value of type '{}'", value.getClass().getName());
+            LOG.trace("Cannot resolve Hibernate entity property values for value of type '{}'", value.getClass().getName(), e);
         }
         return details;
     }
@@ -785,9 +868,9 @@ final class HibernateRuntimeService {
         if (value == null) {
             return "";
         }
-        if (isSimpleValue(value)) {
-            return String.valueOf(value);
-        }
         return String.valueOf(value);
+    }
+
+    private record HqlPagination(int first, int pageSize) {
     }
 }

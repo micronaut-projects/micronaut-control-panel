@@ -42,32 +42,22 @@ class HibernateDemoControllerTest {
         sessionFactory.getSchemaManager().dropMappedObjects(false);
 
         var cachedSessionFactory = fillStatistics(client, "my-postgres");
-        assertEquals("my-postgres", cachedSessionFactory.get("sessionFactory"));
-        assertEquals(Boolean.TRUE, cachedSessionFactory.get("statisticsEnabled"));
-        assertTrue(((Number) cachedSessionFactory.get("rowsRead")).intValue() > 0);
-        assertTrue(((Number) cachedSessionFactory.get("cacheWarmupAuthors")).intValue() >= 6);
-        assertTrue(((Number) cachedSessionFactory.get("cacheWarmupBooks")).intValue() >= 18);
-        assertTrue(((Number) cachedSessionFactory.get("cacheWarmupCollectionItems")).intValue() >= 18);
-        assertTrue(((Number) cachedSessionFactory.get("nativeRowsRead")).intValue() > 0);
-        assertNativeSqlQueryTypes(cachedSessionFactory);
+        assertFilledStatistics(cachedSessionFactory, "my-postgres");
 
         var uncachedSessionFactory = fillStatistics(client, "hibernate-reporting");
-        assertEquals("hibernate-reporting", uncachedSessionFactory.get("sessionFactory"));
-        assertEquals(Boolean.TRUE, uncachedSessionFactory.get("statisticsEnabled"));
-        assertTrue(((Number) uncachedSessionFactory.get("rowsRead")).intValue() > 0);
-        assertTrue(((Number) uncachedSessionFactory.get("cacheWarmupAuthors")).intValue() >= 6);
-        assertTrue(((Number) uncachedSessionFactory.get("cacheWarmupBooks")).intValue() >= 18);
-        assertTrue(((Number) uncachedSessionFactory.get("cacheWarmupCollectionItems")).intValue() >= 18);
-        assertTrue(((Number) uncachedSessionFactory.get("nativeRowsRead")).intValue() > 0);
-        assertNativeSqlQueryTypes(uncachedSessionFactory);
+        assertFilledStatistics(uncachedSessionFactory, "hibernate-reporting");
     }
 
     @Test
     void returnsNotFoundForUnknownSessionFactory(@Client("/") HttpClient client) {
         var exception = assertThrows(HttpClientResponseException.class, () ->
-            client.toBlocking().exchange(HttpRequest.GET("/hibernate-demo/missing/statistics/fill"))
+            requestMissingSessionFactory(client)
         );
         assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
+    }
+
+    private static void requestMissingSessionFactory(HttpClient client) {
+        client.toBlocking().exchange(HttpRequest.GET("/hibernate-demo/missing/statistics/fill"));
     }
 
     private static Map<String, Object> fillStatistics(HttpClient client, String sessionFactory) {
@@ -75,6 +65,17 @@ class HibernateDemoControllerTest {
             HttpRequest.GET("/hibernate-demo/" + sessionFactory + "/statistics/fill?runs=1"),
             Argument.mapOf(String.class, Object.class)
         );
+    }
+
+    private static void assertFilledStatistics(Map<String, Object> result, String sessionFactory) {
+        assertEquals(sessionFactory, result.get("sessionFactory"));
+        assertEquals(Boolean.TRUE, result.get("statisticsEnabled"));
+        assertTrue(((Number) result.get("rowsRead")).intValue() > 0);
+        assertTrue(((Number) result.get("cacheWarmupAuthors")).intValue() >= 6);
+        assertTrue(((Number) result.get("cacheWarmupBooks")).intValue() >= 18);
+        assertTrue(((Number) result.get("cacheWarmupCollectionItems")).intValue() >= 18);
+        assertTrue(((Number) result.get("nativeRowsRead")).intValue() > 0);
+        assertNativeSqlQueryTypes(result);
     }
 
     private static void assertNativeSqlQueryTypes(Map<String, Object> result) {

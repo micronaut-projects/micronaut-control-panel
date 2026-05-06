@@ -285,17 +285,46 @@ class ControlPanelE2ETest extends AbstractE2ETest {
     @Test
     @DisabledInNativeImage
     void testHibernate(Page page) {
+        openHibernateCategory(page);
+        assertHibernateOverview(page);
+        openPostgresHibernateDetail(page);
+        assertHibernateStatisticsDisabledState(page);
+
+        fillPostgresHibernateStatistics(page);
+        openHibernateCategory(page);
+        openPostgresHibernateDetail(page);
+
+        assertHibernatePerformanceTab(page);
+        assertHibernateSessionDetailsTab(page);
+        assertHibernateDataSourceTab(page);
+        assertHibernateCacheTab(page);
+        assertHibernateEntityTypesTab(page);
+        assertHibernateNamedQueriesTab(page);
+        assertHibernateHqlConsole(page);
+        assertHibernateQueryStatisticsTab(page);
+        assertHibernateEntityEvictionActions(page);
+        assertHibernateCacheEvictionActions(page);
+        assertHibernateStatisticsClearAndDisable(page);
+    }
+
+    private void openHibernateCategory(Page page) {
         page.navigate(baseUrl());
         categoryLink(page, "Hibernate").click();
+    }
 
+    private static void openPostgresHibernateDetail(Page page) {
+        controlPanelDetails(page, "my-postgres").click();
+        page.waitForLoadState();
+    }
+
+    private static void assertHibernateOverview(Page page) {
         assertThat(body(page)).containsText("my-postgres");
         assertThat(body(page)).containsText("hibernate-reporting");
         assertThat(body(page)).containsText("2 entities");
         assertThat(body(page)).containsText("1 collection roles");
+    }
 
-        controlPanelDetails(page, "my-postgres").click();
-        page.waitForLoadState();
-
+    private static void assertHibernateStatisticsDisabledState(Page page) {
         openHibernateTab(page, "Session statistics");
         assertHibernateStatisticsToggle(page, false);
         assertThat(hibernateCard(page, "Session statistics")).containsText("No runtime statistics recorded while statistics collection is disabled.");
@@ -310,7 +339,9 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         assertThat(hibernateCard(page, "Session details")).containsText("Shows the selected Hibernate persistence unit");
         assertThat(hibernateTableRow(page, "Session details", "Second-level cache")).containsText("true");
         assertThat(hibernateSessionDetailRow(page, "Statistics", "false")).isVisible();
+    }
 
+    private void fillPostgresHibernateStatistics(Page page) {
         page.navigate(server.getURL() + "/hibernate-demo/my-postgres/statistics/fill?runs=100");
         assertThat(body(page)).containsText("hibernateSessionFactory");
         assertThat(body(page)).containsText("datasource");
@@ -326,12 +357,9 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         assertThat(body(page)).containsText("nativeRowsRead");
         assertThat(body(page)).containsText("Native SQL");
         assertThat(body(page)).containsText("rowsUpdated");
+    }
 
-        page.navigate(baseUrl());
-        categoryLink(page, "Hibernate").click();
-        controlPanelDetails(page, "my-postgres").click();
-        page.waitForLoadState();
-
+    private static void assertHibernatePerformanceTab(Page page) {
         openHibernateTab(page, "Performance");
         assertThat(hibernateCard(page, "Common performance metrics")).containsText("Query executions");
         assertThat(hibernateCard(page, "Common performance metrics")).containsText("Second-level cache hits / misses");
@@ -344,6 +372,9 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         assertMetricRecorded(page, "Session statistics", "Query cache hits");
         assertMetricRecorded(page, "Session statistics", "Second-level cache hits");
         assertHibernateTableFitsPage(page, "Session statistics", false);
+    }
+
+    private static void assertHibernateSessionDetailsTab(Page page) {
         openHibernateTab(page, "Session details");
         assertThat(hibernateCard(page, "Session details")).containsText("Shows the selected Hibernate persistence unit");
         assertThat(hibernateTableRow(page, "Session details", "Second-level cache")).containsText("true");
@@ -352,16 +383,25 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         assertThat(hibernateTableRow(page, "Session details", "hibernate.default_batch_fetch_size")).isVisible();
         assertThat(hibernateTableRow(page, "Session details", "hibernate.jdbc.batch_size")).isVisible();
         assertThat(hibernateTableRow(page, "Session details", "hibernate.cache.use_minimal_puts")).isVisible();
+    }
+
+    private static void assertHibernateDataSourceTab(Page page) {
         openHibernateTab(page, "JDBC Data Source");
         assertThat(hibernateCard(page, "JDBC Data Source")).containsText("Shows the JDBC connection");
         assertThat(hibernateCard(page, "JDBC Data Source")).containsText("JDBC URL");
         assertThat(hibernateCard(page, "JDBC Data Source")).containsText("Supports batch updates");
+    }
+
+    private static void assertHibernateCacheTab(Page page) {
         openHibernateTab(page, "Cache");
         assertThat(page.locator("[data-tabs-panel=\"cache\"] > .cp-dashboard-stack > .card").first()).containsText("Shows Hibernate second-level and query cache regions");
         assertThat(hibernateCard(page, "Elements in memory")).containsText("Provider-reported entries");
         assertThat(hibernateCard(page, "Size in memory")).containsText("Provider-reported memory usage");
         assertThat(hibernateCard(page, "Cache")).containsText("Shows Hibernate second-level and query cache regions");
         assertThat(hibernateTableRow(page, "Cache", "example.HibernateBook")).containsText(Pattern.compile("example\\.HibernateBook\\s+[0-9]+\\s+[0-9]+\\s+[1-9][0-9]*"));
+    }
+
+    private static void assertHibernateEntityTypesTab(Page page) {
         openHibernateTab(page, "Entity types");
         assertThat(hibernateCard(page, "Entities")).containsText("Shows mapped Hibernate entity types");
         assertThat(hibernateCard(page, "Collections")).containsText("Shows persistent association roles");
@@ -374,10 +414,19 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         assertThat(bookEntityRow.locator("td").nth(4)).containsText(Pattern.compile("[1-9][0-9]*"));
         var authorBooksCollectionRow = hibernateTableRow(page, "Collections", "example.HibernateAuthor.books");
         assertThat(authorBooksCollectionRow.locator("td").nth(1)).containsText(Pattern.compile("[1-9][0-9]*"));
+        assertHibernateEntityFieldHover(bookEntityRow);
+        assertHibernateEntityProperties(page);
+        assertHibernateEntityQueryActions(page);
+    }
+
+    private static void assertHibernateEntityFieldHover(Locator bookEntityRow) {
         var fieldDetails = bookEntityRow.locator(".cp-hibernate-field-count");
         fieldDetails.hover();
         assertThat(fieldDetails.locator(".cp-hover-card-content")).containsText("title");
         assertThat(fieldDetails.locator(".cp-hover-card-content")).containsText("java.lang.String");
+    }
+
+    private static void assertHibernateEntityProperties(Page page) {
         hibernateRowAction(page, "Entities", "example.HibernateBook", "Properties");
         var propertiesModal = page.locator("[id^=\"hibernateEntityPropertiesModal\"].show");
         assertThat(propertiesModal).isVisible();
@@ -388,6 +437,9 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         assertThat(propertiesModal).containsText("MANY_TO_ONE");
         propertiesModal.locator(".modal-footer [data-dismiss='modal']").click();
         assertThat(propertiesModal).isHidden();
+    }
+
+    private static void assertHibernateEntityQueryActions(Page page) {
         hibernateRowAction(page, "Entities", "example.HibernateBook", "Query");
         assertHibernateTabSelected(page, "HQL Console");
         assertThat(hibernateCard(page, "HQL results")).containsText("example.HibernateBook#");
@@ -396,6 +448,9 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         assertHibernateTabSelected(page, "HQL Console");
         assertThat(hibernateCard(page, "HQL results")).containsText("example.HibernateAuthor#");
         openHibernateTab(page, "Entity types");
+    }
+
+    private static void assertHibernateNamedQueriesTab(Page page) {
         openHibernateTab(page, "Named queries");
         assertThat(hibernateCard(page, "Named queries")).containsText("Shows named HQL");
         assertThat(hibernateCard(page, "Named queries")).containsText("HibernateBook.listTitles");
@@ -403,6 +458,9 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         assertThat(hibernateCard(page, "Named queries")).containsText("HibernateBook.nativeBookSummary");
         assertThat(hibernateTableRow(page, "Named queries", "HibernateBook.nativeBookSummary")).containsText("Native SQL");
         assertThat(hibernateTableRow(page, "Named queries", "HibernateBook.nativeBookSummary")).containsText("select title, pages from hibernatebook order by title");
+    }
+
+    private static void assertHibernateHqlConsole(Page page) {
         openHibernateTab(page, "HQL Console");
         page.locator("#hqlQueryText").fill("select b.title, b.publishedYear from HibernateBook b order by b.title");
         executeQueryShortcut(page);
@@ -417,6 +475,9 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         assertThat(entityCell.locator(".cp-hover-card-content")).isVisible();
         assertThat(entityCell.locator(".cp-hover-card-content")).containsText("title");
         assertThat(entityCell.locator(".cp-hover-card-content")).containsText("publishedYear");
+    }
+
+    private static void assertHibernateQueryStatisticsTab(Page page) {
         openHibernateTab(page, "Query statistics");
         assertThat(body(page)).containsText("select count(b) from HibernateBook b");
         assertThat(body(page)).containsText("hibernatebook");
@@ -429,7 +490,9 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         assertThat(hibernateTableRow(page, "Query statistics", "from HibernateBook b").first().locator("code.language-sql")).containsText("from HibernateBook b");
         openHibernateTab(page, "Session statistics");
         assertHibernateStatisticsToggle(page, true);
+    }
 
+    private static void assertHibernateEntityEvictionActions(Page page) {
         openHibernateTab(page, "Entity types");
         hibernateRowAction(page, "Entities", "example.HibernateBook", "Evict");
         assertThat(page.locator("#hibernateDeleteConfirmModal")).isVisible();
@@ -450,28 +513,13 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         assertGlobalAlert(page, "Collection cache evicted");
         openHibernateTab(page, "Entity types");
         assertThat(body(page)).containsText("example.HibernateAuthor.books");
+    }
 
+    private static void assertHibernateCacheEvictionActions(Page page) {
         openHibernateTab(page, "Cache");
-        hibernateAction(page, "Cache", "Evict all regions");
-        assertThat(page.locator("#hibernateDeleteConfirmModal")).isVisible();
-        assertThat(page.locator("#hibernateDeleteConfirmModal")).containsText("Evict all cache regions");
-        page.locator("#hibernateDeleteConfirm").click();
-        assertGlobalAlert(page, "Cache evicted");
-        assertHibernateTabSelected(page, "Cache");
-
-        hibernateAction(page, "Cache", "Evict default query region");
-        assertThat(page.locator("#hibernateDeleteConfirmModal")).isVisible();
-        assertThat(page.locator("#hibernateDeleteConfirmModal")).containsText("Evict default query region");
-        page.locator("#hibernateDeleteConfirm").click();
-        assertGlobalAlert(page, "Default query region evicted");
-        assertHibernateTabSelected(page, "Cache");
-
-        hibernateAction(page, "Cache", "Evict query regions");
-        assertThat(page.locator("#hibernateDeleteConfirmModal")).isVisible();
-        assertThat(page.locator("#hibernateDeleteConfirmModal")).containsText("Evict query regions");
-        page.locator("#hibernateDeleteConfirm").click();
-        assertGlobalAlert(page, "Query regions evicted");
-        assertHibernateTabSelected(page, "Cache");
+        assertHibernateCacheAction(page, "Evict all regions", "Evict all cache regions", "Cache evicted");
+        assertHibernateCacheAction(page, "Evict default query region", "Evict default query region", "Default query region evicted");
+        assertHibernateCacheAction(page, "Evict query regions", "Evict query regions", "Query regions evicted");
 
         hibernateRowAction(page, "Cache", "example.HibernateBook", "Evict");
         assertThat(page.locator("#hibernateDeleteConfirmModal")).isVisible();
@@ -479,7 +527,18 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         page.locator("#hibernateDeleteConfirm").click();
         assertGlobalAlert(page, "Region evicted");
         assertHibernateTabSelected(page, "Cache");
+    }
 
+    private static void assertHibernateCacheAction(Page page, String action, String modalText, String alertText) {
+        hibernateAction(page, "Cache", action);
+        assertThat(page.locator("#hibernateDeleteConfirmModal")).isVisible();
+        assertThat(page.locator("#hibernateDeleteConfirmModal")).containsText(modalText);
+        page.locator("#hibernateDeleteConfirm").click();
+        assertGlobalAlert(page, alertText);
+        assertHibernateTabSelected(page, "Cache");
+    }
+
+    private static void assertHibernateStatisticsClearAndDisable(Page page) {
         openHibernateTab(page, "Session statistics");
         hibernateAction(page, "Session statistics", "Clear statistics");
         assertThat(page.locator("#hibernateDeleteConfirmModal")).isVisible();
