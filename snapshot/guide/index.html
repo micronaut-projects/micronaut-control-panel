@@ -105,7 +105,9 @@
         
         <div class="toc-item" style="margin-left:10px" id="toc-item-datasource"><a href="#datasource"><strong>4.5</strong><span>Datasource</span></a></div>
         
-        <div class="toc-item" style="margin-left:10px" id="toc-item-kafka"><a href="#kafka"><strong>4.6</strong><span>Kafka Streams</span></a></div>
+        <div class="toc-item" style="margin-left:10px" id="toc-item-hibernate"><a href="#hibernate"><strong>4.6</strong><span>Hibernate</span></a></div>
+        
+        <div class="toc-item" style="margin-left:10px" id="toc-item-kafka"><a href="#kafka"><strong>4.7</strong><span>Kafka Streams</span></a></div>
         
         <div class="toc-item" style="margin-left:0px" id="toc-item-custom"><a href="#custom"><strong>5</strong><span>Creating Custom Control Panels</span></a></div>
         
@@ -1588,6 +1590,15 @@ endpoints.loggers.write-sensitive=false</code></pre>
 </ul>
 </div>
 <div class="paragraph">
+<p>The SQL console can execute ad hoc queries and displays the result set in a paginated table:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../img/datasource-query.png" alt="Datasource SQL query browser">
+</div>
+<div class="title">Figure 1. Datasource SQL query browser</div>
+</div>
+<div class="paragraph">
 <p>To get started, add the following module as a development-time dependency:</p>
 </div>
 <div class="paragraph">
@@ -1703,7 +1714,335 @@ You can disable it by setting:</p>
 </div>
 </div>
 
-<h2 id="kafka"><a class="anchor" href="#kafka"></a>4.6 Kafka Streams</h2>
+<h2 id="hibernate"><a class="anchor" href="#hibernate"></a>4.6 Hibernate</h2>
+
+<div class='contribute-btn'>
+    <button type='button' class='btn btn-default' onclick='window.location.href="https://github.com/micronaut-projects/micronaut-control-panel/edit/2.0.x/src/main/docs/guide/controlPanels/hibernate.adoc"'>
+        <i class='fa fa-pencil-square-o'></i> Improve this doc
+    </button>
+</div>
+
+
+<div class="paragraph">
+<p>The Hibernate Control Panel provides a runtime view into Hibernate ORM session factories in Micronaut applications. It is
+intended for development-time inspection of session configuration, mapped entity metadata, datasource information,
+Hibernate statistics, cache regions, named queries, and read-only HQL query results.</p>
+</div>
+<div class="paragraph">
+<p>To add the Hibernate control panels, add the following dependency:</p>
+</div>
+<div class="paragraph">
+<p>        <div class="listingblock multi-language-sample">
+<div class="title"></div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="gradle">developmentOnly(<span class="hljs-string">"io.micronaut.controlpanel:micronaut-control-panel-hibernate")</span></code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="maven">&lt;dependency&gt;
+    &lt;groupId&gt;io.micronaut.controlpanel&lt;/groupId&gt;
+    &lt;artifactId&gt;micronaut-control-panel-hibernate&lt;/artifactId&gt;
+    &lt;scope&gt;provided&lt;/scope&gt;
+&lt;/dependency&gt;</code></pre>
+</div>
+</div>
+</p>
+</div>
+<div class="paragraph">
+<p>This module automatically creates a panel for each configured <code>org.hibernate.SessionFactory</code>. The category page lists the
+available session factories and summarizes how many entity types and collection roles are mapped by each one.</p>
+</div>
+<div class="paragraph">
+<p>Each detail page is organized into tabs:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Session details</p>
+</li>
+<li>
+<p>JDBC Data Source</p>
+</li>
+<li>
+<p>Entity types</p>
+</li>
+<li>
+<p>Named queries</p>
+</li>
+<li>
+<p>HQL Console</p>
+</li>
+<li>
+<p>Statistics</p>
+</li>
+<li>
+<p>Cache</p>
+</li>
+</ul>
+</div>
+<div class="sect2">
+<h3 id="_detail_view">Detail View</h3>
+<div class="paragraph">
+<p>The detail view keeps static metadata separate from runtime counters and operational actions.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../img/hibernate-session-details.png" alt="Hibernate session details">
+</div>
+<div class="title">Figure 1. Hibernate session details</div>
+</div>
+<div class="paragraph">
+<p>The Session details tab shows the selected persistence unit and a curated set of safe runtime configuration values. This
+includes the session factory name, the datasource name, whether statistics are enabled, cache capabilities, default
+catalog and schema, JDBC behavior, fetch settings, batch settings, query settings, transaction options, and selected
+Hibernate properties. Sensitive values are masked when the property name contains <code>password</code>, <code>credential</code>,
+<code>certificate</code>, <code>key</code>, <code>secret</code>, or <code>token</code>, matching the same legacy masking terms used by the Environment panel when
+plain values are enabled.</p>
+</div>
+<div class="paragraph">
+<p>The JDBC Data Source tab shows the datasource that backs the selected session factory. It includes connection metadata
+such as the bean name, JDBC URL, username, driver, database product, schema or catalog values, transaction isolation,
+autocommit, read-only state, and driver capability flags. This information is static datasource metadata and does not
+require Hibernate statistics to be enabled.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_entity_types">Entity Types</h3>
+<div class="paragraph">
+<p>The Entity types tab shows mapped entity classes and persistent collection roles.</p>
+</div>
+<div class="paragraph">
+<p>The entity table includes the Hibernate entity name, Java type, identifier type, attribute count, cache region, and
+runtime load/update counters when statistics are enabled. The attribute count opens a hover card with the mapped property
+names, Java types, mapping kind, and association or collection flags. The Properties action opens a dialog with all
+property definitions for the selected entity.</p>
+</div>
+<div class="paragraph">
+<p>Entity and collection rows include an Actions menu. The Query action opens the HQL Console with a generated query for the
+selected entity type or collection role. The Evict action opens a confirmation dialog before removing matching entries
+from the second-level cache. Entity and collection eviction only removes cached Hibernate data; it does not delete
+database rows or related entities.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_named_queries">Named Queries</h3>
+<div class="paragraph">
+<p>The Named queries tab lists named HQL and native SQL queries discovered from the selected session factory. The table shows
+the query name, query type, query text, cacheable flag, cache region, and available actions. Native SQL queries are
+identified separately from HQL so the original SQL text remains visible in the UI.</p>
+</div>
+<div class="paragraph">
+<p>Named query actions can open the HQL Console for supported HQL queries. Native SQL entries are displayed for inspection,
+but the HQL Console remains a Hibernate query console and does not execute arbitrary SQL.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_hql_console">HQL Console</h3>
+<div class="paragraph">
+<p>The HQL Console executes read-only Hibernate queries against the selected session factory. It is useful for checking
+entity mappings and inspecting a small result set without leaving the control panel.</p>
+</div>
+<div class="paragraph">
+<p>The console displays scalar results in a table with generated column names. When a result value is a Hibernate entity, the
+cell displays the entity type and identifier, and a hover card shows the loaded property values. Paginated navigation is
+available when more results exist.</p>
+</div>
+<div class="paragraph">
+<p>Mutation statements are rejected by the control panel. Use the Datasource Control Panel SQL console when you need to
+inspect JDBC tables directly.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_statistics">Statistics</h3>
+<div class="paragraph">
+<p>The Statistics tab contains the statistics switch and the runtime views that depend on Hibernate statistics. When
+statistics are disabled, the panel still shows static session details, datasource metadata, entity mappings, named queries,
+and cache regions, but runtime counters and query statistics are empty until statistics collection is enabled.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../img/hibernate-query-statistics.png" alt="Hibernate query statistics">
+</div>
+<div class="title">Figure 2. Hibernate query statistics</div>
+</div>
+<div class="paragraph">
+<p>Statistics are split into nested tabs:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Performance shows a compact set of counters to check first, including query volume, slowest query time, entity loads
+and fetches, query cache hits and misses, second-level cache hits and misses, connection usage, prepared statements, and
+flushes.</p>
+</li>
+<li>
+<p>Session statistics shows a searchable data table of Hibernate <code>Statistics</code> counters for the selected session factory.</p>
+</li>
+<li>
+<p>Query statistics shows a searchable and paginated data table of recorded query statistics. Query text is highlighted
+when possible, and the slowest recorded query is shown as a compact note above the table.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The Clear statistics action resets the accumulated statistics for the selected session factory after confirmation.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_cache">Cache</h3>
+<div class="paragraph">
+<p>The Cache tab shows Hibernate second-level and query cache regions. The region list is visible even when statistics are
+disabled, so cache eviction is still available without enabling statistics.</p>
+</div>
+<div class="paragraph">
+<p>When statistics are enabled, the cache tab also displays cache counters and provider-reported memory information. The
+summary cards split provider-reported element count and memory size into separate views. Some cache providers do not
+support extended region statistics; when Hibernate reports that extended statistics are unavailable, the panel displays
+the metric as unsupported instead of showing a misleading value.</p>
+</div>
+<div class="paragraph">
+<p>Cache actions always use a confirmation dialog. The available actions include:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Evict all second-level cache regions.</p>
+</li>
+<li>
+<p>Evict a specific cache region.</p>
+</li>
+<li>
+<p>Evict cached entity data.</p>
+</li>
+<li>
+<p>Evict cached collection data.</p>
+</li>
+<li>
+<p>Evict the default query cache region.</p>
+</li>
+<li>
+<p>Evict all query cache regions.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Cache eviction affects Hibernate cache entries only. It does not remove database rows.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_runtime_operations">Runtime Operations</h3>
+<div class="paragraph">
+<p>The detail view exposes the following runtime operations:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Enable or disable Hibernate statistics collection.</p>
+</li>
+<li>
+<p>Clear accumulated Hibernate statistics.</p>
+</li>
+<li>
+<p>Evict all second-level cache regions.</p>
+</li>
+<li>
+<p>Evict a specific cache region.</p>
+</li>
+<li>
+<p>Evict cached entity or collection data.</p>
+</li>
+<li>
+<p>Evict the default query cache region or all query cache regions.</p>
+</li>
+<li>
+<p>Open generated HQL queries for mapped entities and collection roles.</p>
+</li>
+<li>
+<p>Inspect all property definitions for a mapped entity.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_configuration">Configuration</h3>
+<div class="paragraph">
+<p>The Hibernate control panel is automatically enabled when you include the <code>micronaut-control-panel-hibernate</code> module in your project.
+You can disable it by setting:</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">micronaut.control-panel.panels.hibernate.enabled=false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">micronaut:
+  control-panel:
+    panels:
+      hibernate:
+        enabled: false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[micronaut]
+  [micronaut.control-panel]
+    [micronaut.control-panel.panels]
+      [micronaut.control-panel.panels.hibernate]
+        enabled=false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-groovy-config hljs" data-lang="groovy-config">micronaut {
+  controlPanel {
+    panels {
+      hibernate {
+        enabled = false
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-hocon hljs" data-lang="hocon">{
+  micronaut {
+    control-panel {
+      panels {
+        hibernate {
+          enabled = false
+        }
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json-config hljs" data-lang="json-config">{
+  "micronaut": {
+    "control-panel": {
+      "panels": {
+        "hibernate": {
+          "enabled": false
+        }
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<h2 id="kafka"><a class="anchor" href="#kafka"></a>4.7 Kafka Streams</h2>
 
 <div class='contribute-btn'>
     <button type='button' class='btn btn-default' onclick='window.location.href="https://github.com/micronaut-projects/micronaut-control-panel/edit/2.0.x/src/main/docs/guide/controlPanels/kafka.adoc"'>
