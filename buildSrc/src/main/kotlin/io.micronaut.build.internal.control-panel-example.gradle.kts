@@ -45,6 +45,10 @@ configurations.named("nativeImageTestClasspath") {
         exclude(group = "com.oracle.database.jdbc")
         exclude(group = "io.micronaut.sql")
         exclude(group = "org.postgresql")
+        exclude(group = "io.micronaut.objectstorage", module = "micronaut-object-storage-aws")
+        exclude(group = "io.micronaut.objectstorage", module = "micronaut-object-storage-azure")
+        exclude(group = "io.micronaut.objectstorage", module = "micronaut-object-storage-gcp")
+        exclude(group = "io.micronaut.objectstorage", module = "micronaut-object-storage-oracle-cloud")
     }
 }
 
