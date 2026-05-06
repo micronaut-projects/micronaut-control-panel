@@ -64,7 +64,7 @@ public class Application {
     }
 
     @Singleton
-    @Requires(classes = HazelcastCacheManager.class)
+    @Requires(classes = HazelcastCacheManager.class, beans = HazelcastCacheManager.class)
     static class HazelcastCacheInitializer {
 
         private final HazelcastCacheManager hazelcastCacheManager;
@@ -82,7 +82,7 @@ public class Application {
     }
 
     @Singleton
-    @Requires(classes = InfinispanCacheManager.class)
+    @Requires(classes = InfinispanCacheManager.class, beans = InfinispanCacheManager.class)
     static class InfinispanCacheInitializer {
 
         private final InfinispanCacheManager infinispanCacheManager;
