@@ -8,6 +8,11 @@ Features include:
 * Visualize relationships in an E/R diagram.
 * SQL console with schema autocompletion and client-side SQL linting.
 
+The SQL console can execute ad hoc queries and displays the result set in a paginated table:
+
+.Datasource SQL query browser
+image::datasource-query.png[Datasource SQL query browser]
+
 To get started, add the following module as a development-time dependency:
 
 dependency:io.micronaut.controlpanel:micronaut-control-panel-datasource[scope=developmentOnly]

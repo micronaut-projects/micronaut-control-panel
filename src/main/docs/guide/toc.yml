@@ -8,6 +8,7 @@ controlPanels:
   management: Management
   objectStorage: Object Storage
   datasource: Datasource
+  hibernate: Hibernate
   kafka: Kafka Streams
 
 custom: Creating Custom Control Panels

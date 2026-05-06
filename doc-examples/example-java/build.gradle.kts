@@ -37,6 +37,11 @@ dependencies {
     runtimeOnly(mnSql.ojdbc11)
     runtimeOnly(mnSql.postgresql)
 
+    // Hibernate
+    implementation(projects.micronautControlPanelHibernate)
+    implementation(mnSql.micronaut.hibernate.jpa)
+    implementation(mnSql.hibernate.jcache)
+
     // Kafka
     implementation(projects.micronautControlPanelKafka)
     implementation(mnKafka.micronaut.kafka)

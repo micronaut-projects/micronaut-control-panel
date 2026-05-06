@@ -1,0 +1,255 @@
+            <div class="tabs-panel" role="tabpanel" data-tabs-panel="entity-types" hidden>
+                <div class="cp-dashboard-stack">
+                    <div class="card card-light" data-hibernate-card="entities">
+                        <div class="card-header">
+                            <div class="cp-card-heading">
+                                <div class="cp-card-header-text">
+                                    <div class="card-description">Shows mapped Hibernate entity types, identifiers, attributes, and their second-level cache regions. Evict removes cached instances; it does not delete database rows.</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            {{#if entities}}
+                                <div class="cp-data-table" data-filter-table data-filter-table-label="entity" data-filter-table-label-plural="entities">
+                                    <div class="cp-data-table-toolbar">
+                                        <div class="cp-data-table-summary" data-filter-table-summary>{{ entities.size }} entities</div>
+                                        <div class="cp-data-table-search">
+                                            <input type="text" class="form-control" data-filter-table-search placeholder="Search entities" aria-label="Search entities">
+                                        </div>
+                                    </div>
+                                    <div class="cp-data-table-container">
+                                        <table class="table cp-data-table-table cp-data-table-fixed">
+                                            <colgroup>
+                                                <col class="cp-hibernate-entity-name-column">
+                                                <col class="cp-hibernate-entity-type-column">
+                                                <col class="cp-hibernate-entity-id-column">
+                                                <col class="cp-hibernate-metric-column">
+                                                {{#if statistics.statisticsEnabled}}
+                                                    <col class="cp-hibernate-metric-column">
+                                                    <col class="cp-hibernate-metric-column">
+                                                {{/if}}
+                                                <col>
+                                                <col class="cp-hibernate-actions-column">
+                                            </colgroup>
+                                            <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Java type</th>
+                                                <th>ID</th>
+                                                <th>Attributes</th>
+                                                {{#if statistics.statisticsEnabled}}
+                                                    <th>Loads</th>
+                                                    <th>Updates</th>
+                                                {{/if}}
+                                                <th>Cache</th>
+                                                <th class="cp-cache-entry-actions">Actions</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            {{#each entities}}
+                                                <tr data-filter-table-row>
+                                                    <td><code class="cp-table-code">{{ hibernateEntityName }}</code></td>
+                                                    <td><code class="cp-table-code">{{ javaType }}</code></td>
+                                                    <td><code class="cp-table-code">{{ idType }}</code></td>
+                                                    <td>
+                                                        <span class="cp-hover-card cp-hibernate-field-count" tabindex="0" data-hover-card>
+                                                            <span class="badge badge-secondary">{{ attributeCount }}</span>
+                                                            <span class="cp-hover-card-content cp-hql-entity-card" role="tooltip">
+                                                                {{#each attributes}}
+                                                                    <span class="cp-hql-entity-card-row">
+                                                                        <span class="cp-hover-card-label">{{ name }}</span>
+                                                                        <span class="cp-hover-card-value">
+                                                                            <code class="cp-table-code">{{ javaType }}</code>
+                                                                            <span class="badge badge-secondary">{{ kind }}</span>
+                                                                            {{#if association}}<span class="badge badge-secondary">association</span>{{/if}}
+                                                                            {{#if collection}}<span class="badge badge-secondary">collection</span>{{/if}}
+                                                                        </span>
+                                                                    </span>
+                                                                {{/each}}
+                                                            </span>
+                                                        </span>
+                                                    </td>
+                                                    {{#if ../statistics.statisticsEnabled}}
+                                                        <td>{{ statistics.loadCount }}</td>
+                                                        <td>{{ statistics.updateCount }}</td>
+                                                    {{/if}}
+                                                    <td>
+                                                        {{#if statistics.cacheRegionName}}
+                                                            <code class="cp-table-code">{{ statistics.cacheRegionName }}</code>
+                                                        {{else}}
+                                                            <span class="badge badge-secondary">not cached</span>
+                                                        {{/if}}
+                                                    </td>
+                                                    <td class="cp-cache-entry-actions">
+                                                        <details class="cp-actions-menu cp-actions-menu-end" data-actions-menu>
+                                                            <summary class="btn btn-ghost btn-icon" aria-label="Open actions menu for {{ hibernateEntityName }}" title="Actions">
+                                                                <i class="fas fa-ellipsis"></i>
+                                                            </summary>
+                                                            <div class="cp-actions-menu-content">
+                                                                <button type="button" class="cp-actions-menu-item" data-hibernate-hql-template="from {{ hibernateEntityName }} e" data-hibernate-hql-execute="true">
+                                                                    <i class="fas fa-terminal"></i>
+                                                                    Query
+                                                                </button>
+                                                                <button type="button" class="cp-actions-menu-item" data-toggle="modal" data-target="#hibernateEntityPropertiesModal-{{ @index }}">
+                                                                    <i class="fas fa-list"></i>
+                                                                    Properties
+                                                                </button>
+                                                                {{#if statistics.cacheRegionName}}
+                                                                    <button type="button" class="cp-actions-menu-item cp-actions-menu-item-danger" data-toggle="modal" data-target="#hibernateDeleteConfirmModal" data-hibernate-delete-action="entity" data-hibernate-action-value="{{ hibernateEntityName }}">
+                                                                        <i class="fas fa-trash"></i>
+                                                                        Evict
+                                                                    </button>
+                                                                {{/if}}
+                                                            </div>
+                                                        </details>
+                                                    </td>
+                                                </tr>
+                                            {{/each}}
+                                            <tr data-filter-table-empty hidden>
+                                                <td class="cp-data-table-empty-cell" colspan="{{#if statistics.statisticsEnabled}}8{{else}}6{{/if}}">No entities found.</td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                {{#each entities}}
+                                    <div class="modal fade cp-dialog" id="hibernateEntityPropertiesModal-{{ @index }}" tabindex="-1" role="dialog" aria-labelledby="hibernateEntityPropertiesModalLabel-{{ @index }}" aria-hidden="true">
+                                        <div class="modal-dialog modal-xl" role="document">
+                                            <div class="modal-content cp-dialog-content">
+                                                <div class="modal-header cp-dialog-header">
+                                                    <div class="cp-dialog-heading">
+                                                        <h5 class="modal-title cp-dialog-title" id="hibernateEntityPropertiesModalLabel-{{ @index }}">Property definitions</h5>
+                                                        <p class="cp-dialog-description"><code class="cp-table-code">{{ hibernateEntityName }}</code></p>
+                                                    </div>
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" title="Close">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                                            <path d="M18 6 6 18"></path>
+                                                            <path d="m6 6 12 12"></path>
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div class="cp-data-table-container">
+                                                        <table class="table cp-data-table-table cp-data-table-fixed">
+                                                            <thead>
+                                                            <tr>
+                                                                <th>Property</th>
+                                                                <th>Java type</th>
+                                                                <th>Kind</th>
+                                                                <th>Association</th>
+                                                                <th>Collection</th>
+                                                            </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                            {{#each attributes}}
+                                                                <tr>
+                                                                    <td><code class="cp-table-code">{{ name }}</code></td>
+                                                                    <td><code class="cp-table-code">{{ javaType }}</code></td>
+                                                                    <td><span class="badge badge-secondary">{{ kind }}</span></td>
+                                                                    <td><span class="badge badge-secondary">{{ association }}</span></td>
+                                                                    <td><span class="badge badge-secondary">{{ collection }}</span></td>
+                                                                </tr>
+                                                            {{/each}}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {{/each}}
+                            {{else}}
+                                <div class="cp-data-table-empty">No entities found.</div>
+                            {{/if}}
+                        </div>
+                    </div>
+
+                    <div class="card card-light">
+                        <div class="card-header">
+                            <div class="cp-card-heading">
+                                <div class="cp-card-header-text">
+                                    <h3 class="card-title">Collections</h3>
+                                    <div class="card-description">Shows persistent association roles and their cache regions. Evict removes cached association data; it does not delete related entities or rows.</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            {{#if collections}}
+                                <div class="cp-data-table-container">
+                                    <table class="table cp-data-table-table cp-data-table-fixed">
+                                        <colgroup>
+                                            <col class="cp-hibernate-collection-role-column">
+                                            {{#if statistics.statisticsEnabled}}
+                                                <col class="cp-hibernate-metric-column">
+                                                <col class="cp-hibernate-metric-column">
+                                                <col class="cp-hibernate-metric-column">
+                                            {{/if}}
+                                            <col class="cp-hibernate-collection-cache-column">
+                                            <col class="cp-hibernate-actions-column">
+                                        </colgroup>
+                                        <thead>
+                                        <tr>
+                                            <th>Role</th>
+                                            {{#if statistics.statisticsEnabled}}
+                                                <th>Loads</th>
+                                                <th>Fetches</th>
+                                                <th>Updates</th>
+                                            {{/if}}
+                                            <th>Cache</th>
+                                            <th class="cp-cache-entry-actions">Actions</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {{#each collections}}
+                                            <tr>
+                                                <td><code class="cp-table-code">{{ role }}</code></td>
+                                                {{#if ../statistics.statisticsEnabled}}
+                                                    <td>{{ statistics.loadCount }}</td>
+                                                    <td>{{ statistics.fetchCount }}</td>
+                                                    <td>{{ statistics.updateCount }}</td>
+                                                {{/if}}
+                                                <td>
+                                                    {{#if statistics.cacheRegionName}}
+                                                        <code class="cp-table-code">{{ statistics.cacheRegionName }}</code>
+                                                    {{else}}
+                                                        <span class="badge badge-secondary">not cached</span>
+                                                    {{/if}}
+                                                </td>
+                                                <td class="cp-cache-entry-actions">
+                                                    <details class="cp-actions-menu cp-actions-menu-end" data-actions-menu>
+                                                        <summary class="btn btn-ghost btn-icon" aria-label="Open actions menu for {{ role }}" title="Actions">
+                                                            <i class="fas fa-ellipsis"></i>
+                                                        </summary>
+                                                        <div class="cp-actions-menu-content">
+                                                            {{#if ownerEntityName}}
+                                                                {{#if attributeName}}
+                                                                    <button type="button" class="cp-actions-menu-item" data-hibernate-hql-template="select owner, item from {{ ownerEntityName }} owner join owner.{{ attributeName }} item" data-hibernate-hql-execute="true">
+                                                                        <i class="fas fa-terminal"></i>
+                                                                        Query
+                                                                    </button>
+                                                                {{/if}}
+                                                            {{/if}}
+                                                            {{#if statistics.cacheRegionName}}
+                                                                <button type="button" class="cp-actions-menu-item cp-actions-menu-item-danger" data-toggle="modal" data-target="#hibernateDeleteConfirmModal" data-hibernate-delete-action="collection" data-hibernate-action-value="{{ role }}">
+                                                                    <i class="fas fa-trash"></i>
+                                                                    Evict
+                                                                </button>
+                                                            {{/if}}
+                                                        </div>
+                                                    </details>
+                                                </td>
+                                            </tr>
+                                        {{/each}}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {{else}}
+                                <div class="cp-data-table-empty">No collection roles found.</div>
+                            {{/if}}
+                        </div>
+                    </div>
+                </div>
+            </div>

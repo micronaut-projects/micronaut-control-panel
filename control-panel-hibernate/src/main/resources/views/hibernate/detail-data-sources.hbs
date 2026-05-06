@@ -1,0 +1,135 @@
+            <div class="tabs-panel" role="tabpanel" data-tabs-panel="data-sources" hidden>
+                <div class="cp-dashboard-stack">
+                    {{#if dataSources}}
+                        {{#each dataSources}}
+                            <div class="card card-light" data-hibernate-card="data-sources">
+                                <div class="card-header">
+                                    <div class="cp-card-heading">
+                                        <div class="cp-card-header-text">
+                                            <h3 class="card-title">{{ name }}</h3>
+                                            <div class="card-description">Shows the JDBC connection, dialect, pool, and database capabilities used by this Hibernate session factory.</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="cp-data-table-container cp-vertical-table">
+                                        <table class="table cp-data-table-table">
+                                            <tbody>
+                                            {{#if jdbcUrl}}
+                                                <tr>
+                                                    <th scope="row">JDBC URL</th>
+                                                    <td><code class="cp-table-code">{{ jdbcUrl }}</code></td>
+                                                </tr>
+                                            {{/if}}
+                                            {{#if jdbcDriver}}
+                                                <tr>
+                                                    <th scope="row">JDBC driver</th>
+                                                    <td><code class="cp-table-code">{{ jdbcDriver }}</code></td>
+                                                </tr>
+                                            {{/if}}
+                                            {{#if dialect}}
+                                                <tr>
+                                                    <th scope="row">Dialect</th>
+                                                    <td><code class="cp-table-code">{{ dialect }}</code></td>
+                                                </tr>
+                                            {{/if}}
+                                            {{#if dialectVersion}}
+                                                <tr>
+                                                    <th scope="row">Dialect version</th>
+                                                    <td><code class="cp-table-code">{{ dialectVersion }}</code></td>
+                                                </tr>
+                                            {{/if}}
+                                            {{#if catalog}}
+                                                <tr>
+                                                    <th scope="row">Catalog</th>
+                                                    <td><code class="cp-table-code">{{ catalog }}</code></td>
+                                                </tr>
+                                            {{/if}}
+                                            {{#if schema}}
+                                                <tr>
+                                                    <th scope="row">Schema</th>
+                                                    <td><code class="cp-table-code">{{ schema }}</code></td>
+                                                </tr>
+                                            {{/if}}
+                                            {{#if autoCommitMode}}
+                                                <tr>
+                                                    <th scope="row">Autocommit</th>
+                                                    <td><code class="cp-table-code">{{ autoCommitMode }}</code></td>
+                                                </tr>
+                                            {{/if}}
+                                            {{#if isolationLevel}}
+                                                <tr>
+                                                    <th scope="row">Isolation</th>
+                                                    <td><code class="cp-table-code">{{ isolationLevel }}</code></td>
+                                                </tr>
+                                            {{/if}}
+                                            {{#if poolMinSize}}
+                                                <tr>
+                                                    <th scope="row">Pool min size</th>
+                                                    <td><code class="cp-table-code">{{ poolMinSize }}</code></td>
+                                                </tr>
+                                            {{/if}}
+                                            {{#if poolMaxSize}}
+                                                <tr>
+                                                    <th scope="row">Pool max size</th>
+                                                    <td><code class="cp-table-code">{{ poolMaxSize }}</code></td>
+                                                </tr>
+                                            {{/if}}
+                                            {{#if jdbcFetchSize}}
+                                                <tr>
+                                                    <th scope="row">JDBC fetch size</th>
+                                                    <td><code class="cp-table-code">{{ jdbcFetchSize }}</code></td>
+                                                </tr>
+                                            {{/if}}
+                                            <tr>
+                                                <th scope="row">Supports schemas</th>
+                                                <td><code class="cp-table-code">{{ supportsSchemas }}</code></td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">Supports catalogs</th>
+                                                <td><code class="cp-table-code">{{ supportsCatalogs }}</code></td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">Supports named parameters</th>
+                                                <td><code class="cp-table-code">{{ supportsNamedParameters }}</code></td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">Supports scrollable results</th>
+                                                <td><code class="cp-table-code">{{ supportsScrollableResults }}</code></td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">Supports batch updates</th>
+                                                <td><code class="cp-table-code">{{ supportsBatchUpdates }}</code></td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">Supports generated keys</th>
+                                                <td><code class="cp-table-code">{{ supportsGetGeneratedKeys }}</code></td>
+                                            </tr>
+                                            {{#each properties}}
+                                                <tr>
+                                                    <th scope="row">{{ @key }}</th>
+                                                    <td><code class="cp-table-code">{{ this }}</code></td>
+                                                </tr>
+                                            {{/each}}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        {{/each}}
+                    {{else}}
+                        <div class="card card-light" data-hibernate-card="data-sources">
+                            <div class="card-header">
+                                <div class="cp-card-heading">
+                                    <div class="cp-card-header-text">
+                                        <div class="card-description">No datasource metadata is exposed by this Hibernate session factory.</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="cp-data-table-empty">No datasource metadata found.</div>
+                            </div>
+                        </div>
+                    {{/if}}
+                </div>
+            </div>

@@ -1,0 +1,367 @@
+    <script>
+        $(function() {
+            var baseUrl = '{{ ext.controlPanelPath }}/hibernate-control-panel-controller/' + encodeURIComponent('{{ sessionFactory.beanName }}');
+            var sessionFactoryName = '{{ sessionFactory.beanName }}';
+
+            function escapeHtml(value) {
+                return $('<div>').text(value == null ? '' : String(value)).html();
+            }
+
+            function mutate(method, url, title, message, modalSelector) {
+                $.ajax({
+                    url: url,
+                    type: method,
+                    contentType: 'application/json; charset=utf-8',
+                    success: function() {
+                        if (modalSelector) {
+                            $(modalSelector).modal('hide');
+                        }
+                        globalAlertMessageReload(title, message, 'alert-success', 'fa-check');
+                    },
+                    error: function(xhr, status, error) {
+                        if (modalSelector) {
+                            $(modalSelector).modal('hide');
+                        }
+                        globalAlertMessageDisplay('Error', error, 'alert-danger', 'fa-circle-exclamation');
+                    }
+                });
+            }
+
+            var hqlQueryTableState = {
+                hql: '',
+                page: 0,
+                pageSize: 10,
+                draw: 0
+            };
+
+            function resolveHqlTotal(resp, rows) {
+                if (resp && typeof resp.recordsFiltered === 'number') {
+                    return resp.recordsFiltered;
+                }
+                if (resp && typeof resp.recordsTotal === 'number') {
+                    return resp.recordsTotal;
+                }
+                return rows.length;
+            }
+
+            function renderHqlQueryState(title, message, variant) {
+                var icon = variant === 'error' ? 'fa-circle-exclamation' : 'fa-table-list';
+                var extraClass = variant === 'error' ? ' cp-query-state-error' : '';
+                var description = message ? '<p>' + escapeHtml(message) + '</p>' : '';
+                $('#hqlQueryResultsContainer').html(
+                    '<div class="cp-query-state' + extraClass + '">' +
+                    '<i class="fas ' + icon + '" aria-hidden="true"></i>' +
+                    '<strong>' + escapeHtml(title) + '</strong>' +
+                    description +
+                    '</div>'
+                );
+            }
+
+            function renderHqlCellDetails(details) {
+                return details.map(function(detail) {
+                    return '<span class="cp-hql-entity-card-row">' +
+                    '<span class="cp-hover-card-label">' + escapeHtml(detail.label) + '</span>' +
+                    '<span class="cp-hover-card-value">' + escapeHtml(detail.value) + '</span>' +
+                    '</span>';
+                }).join('');
+            }
+
+            function renderHqlCell(cell) {
+                if (cell && typeof cell === 'object' && !Array.isArray(cell)) {
+                    var details = Array.isArray(cell.details) ? cell.details : [];
+                    var value = escapeHtml(cell.value);
+                    if (details.length === 0) {
+                        return value;
+                    }
+                    return '<span class="cp-hover-card cp-hql-entity-cell" tabindex="0" data-hover-card>' +
+                    '<code class="cp-table-code">' + value + '</code>' +
+                    '<span class="cp-hover-card-content cp-hql-entity-card" role="tooltip">' +
+                    renderHqlCellDetails(details) +
+                    '</span>' +
+                    '</span>';
+                }
+                return escapeHtml(cell);
+            }
+
+            function renderHqlQueryTable(resp) {
+                var cols = resp && resp.cols ? resp.cols : [];
+                var rows = resp && resp.data ? resp.data : [];
+                var total = resolveHqlTotal(resp, rows);
+                var pageSize = hqlQueryTableState.pageSize;
+                var pageCount = Math.max(1, Math.ceil(total / pageSize));
+                var page = Math.min(hqlQueryTableState.page, pageCount - 1);
+                hqlQueryTableState.page = page;
+
+                if (cols.length === 0) {
+                    renderHqlQueryState('No columns returned.', '', 'empty');
+                    return;
+                }
+
+                var start = total === 0 ? 0 : page * pageSize + 1;
+                var end = Math.min(total, page * pageSize + rows.length);
+                var previousDisabled = page <= 0 ? ' disabled' : '';
+                var nextDisabled = page >= pageCount - 1 ? ' disabled' : '';
+                var thead = '<thead><tr>' + cols.map(function(col) {
+                    return '<th>' + escapeHtml(col) + '</th>';
+                }).join('') + '</tr></thead>';
+                var tbody = rows.length === 0
+                    ? '<tbody><tr><td class="cp-data-table-empty-cell" colspan="' + cols.length + '">No results.</td></tr></tbody>'
+                    : '<tbody>' + rows.map(function(row) {
+                        return '<tr>' + cols.map(function(_, index) {
+                            return '<td>' + renderHqlCell(row[index]) + '</td>';
+                        }).join('') + '</tr>';
+                    }).join('') + '</tbody>';
+
+                $('#hqlQueryResultsContainer').html(
+                    '<div class="cp-data-table-toolbar">' +
+                    '<div class="cp-data-table-summary">' + escapeHtml(total) + ' row' + (total === 1 ? '' : 's') + '</div>' +
+                    '<label class="cp-data-table-page-size">Rows per page ' +
+                    '<select data-hql-query-page-size>' +
+                    '<option value="10"' + (pageSize === 10 ? ' selected' : '') + '>10</option>' +
+                    '<option value="25"' + (pageSize === 25 ? ' selected' : '') + '>25</option>' +
+                    '<option value="50"' + (pageSize === 50 ? ' selected' : '') + '>50</option>' +
+                    '</select></label>' +
+                    '</div>' +
+                    '<div class="cp-data-table-container">' +
+                    '<table class="table cp-data-table-table">' + thead + tbody + '</table>' +
+                    '</div>' +
+                    '<div class="cp-data-table-footer">' +
+                    '<div class="cp-data-table-summary">Showing ' + escapeHtml(start) + '-' + escapeHtml(end) + ' of ' + escapeHtml(total) + '</div>' +
+                    '<div class="cp-data-table-pagination">' +
+                    '<span class="cp-data-table-page">Page ' + escapeHtml(page + 1) + ' of ' + escapeHtml(pageCount) + '</span>' +
+                    '<button type="button" class="btn btn-outline btn-sm" data-hql-query-page="previous"' + previousDisabled + '>Previous</button>' +
+                    '<button type="button" class="btn btn-outline btn-sm" data-hql-query-page="next"' + nextDisabled + '>Next</button>' +
+                    '</div>' +
+                    '</div>'
+                );
+            }
+
+            function loadHqlQueryPage() {
+                globalAlertMessageClear();
+                $.ajax({
+                    url: baseUrl + '/hql',
+                    type: 'POST',
+                    dataType: 'json',
+                    contentType: 'application/json; charset=utf-8',
+                    data: JSON.stringify({
+                        hql: hqlQueryTableState.hql,
+                        start: hqlQueryTableState.page * hqlQueryTableState.pageSize,
+                        length: hqlQueryTableState.pageSize,
+                        draw: ++hqlQueryTableState.draw
+                    })
+                }).done(function(resp) {
+                    if (resp && resp.error) {
+                        renderHqlQueryState('Query failed', resp.error, 'error');
+                        return;
+                    }
+                    renderHqlQueryTable(resp);
+                }).fail(function(xhr) {
+                    var error = xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : 'HQL query failed';
+                    renderHqlQueryState('Query failed', error, 'error');
+                });
+            }
+
+            function initHqlQueryTable(hql) {
+                hqlQueryTableState.hql = hql;
+                hqlQueryTableState.page = 0;
+                hqlQueryTableState.draw = 0;
+                loadHqlQueryPage();
+            }
+
+            function isHqlQueryExecuteShortcut(event) {
+                return (event.metaKey || event.ctrlKey) && event.key === 'Enter' && !event.shiftKey && !event.altKey;
+            }
+
+            function executeHqlQuery() {
+                var hql = String($('#hqlQueryText').val() || '').trim();
+                if (!hql) {
+                    renderHqlQueryState('HQL must not be empty', 'Type a read-only HQL query before running it.', 'error');
+                    return;
+                }
+                initHqlQueryTable(hql);
+            }
+
+            function deleteRequest(action, value) {
+                var escapedValue = escapeHtml(value || '');
+                var escapedSessionFactory = escapeHtml(sessionFactoryName);
+
+                if (action === 'statistics') {
+                    return {
+                        url: baseUrl + '/statistics',
+                        title: 'Clear statistics',
+                        description: 'This clears Hibernate runtime counters for the selected session factory.',
+                        body: 'Clear Hibernate statistics for <code>' + escapedSessionFactory + '</code>?',
+                        button: 'Clear',
+                        successTitle: 'Statistics cleared',
+                        successMessage: 'Hibernate statistics were cleared.'
+                    };
+                }
+                if (action === 'all-cache') {
+                    return {
+                        url: baseUrl + '/cache',
+                        title: 'Evict all cache regions',
+                        description: 'This evicts every Hibernate cache region for the selected session factory.',
+                        body: 'Evict all Hibernate cache regions for <code>' + escapedSessionFactory + '</code>?',
+                        button: 'Evict',
+                        successTitle: 'Cache evicted',
+                        successMessage: 'All Hibernate cache regions were evicted.'
+                    };
+                }
+                if (action === 'default-query-region') {
+                    return {
+                        url: baseUrl + '/cache/default-query-region',
+                        title: 'Evict default query region',
+                        description: 'This evicts Hibernate cached query results stored in the default query region.',
+                        body: 'Evict the default query cache region for <code>' + escapedSessionFactory + '</code>?',
+                        button: 'Evict',
+                        successTitle: 'Default query region evicted',
+                        successMessage: 'Hibernate default query cache region was evicted.'
+                    };
+                }
+                if (action === 'query-regions') {
+                    return {
+                        url: baseUrl + '/cache/query-regions',
+                        title: 'Evict query regions',
+                        description: 'This evicts every Hibernate query cache region for the selected session factory.',
+                        body: 'Evict all Hibernate query cache regions for <code>' + escapedSessionFactory + '</code>?',
+                        button: 'Evict',
+                        successTitle: 'Query regions evicted',
+                        successMessage: 'Hibernate query cache regions were evicted.'
+                    };
+                }
+                if (action === 'region') {
+                    return {
+                        url: baseUrl + '/cache/region?region=' + encodeURIComponent(value),
+                        title: 'Evict cache region',
+                        description: 'This evicts one Hibernate cache region.',
+                        body: 'Evict the cache region <code>' + escapedValue + '</code>?',
+                        button: 'Evict',
+                        successTitle: 'Region evicted',
+                        successMessage: 'Hibernate cache region ' + value + ' was evicted.'
+                    };
+                }
+                if (action === 'entity') {
+                    return {
+                        url: baseUrl + '/cache/entity?entity=' + encodeURIComponent(value),
+                        title: 'Evict entity cache',
+                        description: 'This removes cached instances for one Hibernate entity type. It does not delete database rows.',
+                        body: 'Evict cached entity data for <code>' + escapedValue + '</code>?',
+                        button: 'Evict',
+                        successTitle: 'Entity cache evicted',
+                        successMessage: 'Hibernate entity cache ' + value + ' was evicted.'
+                    };
+                }
+                if (action === 'collection') {
+                    return {
+                        url: baseUrl + '/cache/collection?role=' + encodeURIComponent(value),
+                        title: 'Evict collection cache',
+                        description: 'This removes cached association data for one Hibernate collection role. It does not delete related entities or rows.',
+                        body: 'Evict cached collection data for <code>' + escapedValue + '</code>?',
+                        button: 'Evict',
+                        successTitle: 'Collection cache evicted',
+                        successMessage: 'Hibernate collection cache ' + value + ' was evicted.'
+                    };
+                }
+                return null;
+            }
+
+            $('[data-hibernate-statistics-toggle]').click(function() {
+                var toggle = $(this);
+                var enabled = $(this).attr('data-hibernate-statistics-enabled');
+                toggle.prop('disabled', true);
+                $.ajax({
+                    url: baseUrl + '/statistics/enabled/' + enabled,
+                    type: 'POST',
+                    contentType: 'application/json; charset=utf-8',
+                    success: function() {
+                        location.reload();
+                    },
+                    error: function(xhr, status, error) {
+                        toggle.prop('disabled', false);
+                        globalAlertMessageDisplay('Error', error, 'alert-danger', 'fa-circle-exclamation');
+                    }
+                });
+            });
+
+            $(document).on('show.bs.modal', '.modal', function (event) {
+                $(event.relatedTarget).closest('[data-actions-menu]').removeAttr('open');
+            });
+
+            $('#hibernateDeleteConfirmModal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget);
+                var request = deleteRequest(button.attr('data-hibernate-delete-action'), button.attr('data-hibernate-action-value'));
+                if (!request) {
+                    event.preventDefault();
+                    return;
+                }
+
+                var modal = $(this);
+                modal.find('[data-hibernate-confirm-title]').text(request.title);
+                modal.find('[data-hibernate-confirm-description]').text(request.description);
+                modal.find('[data-hibernate-confirm-body]').html('<p class="card-text">' + request.body + '</p>');
+                $('#hibernateDeleteConfirm').text(request.button).data('hibernateRequest', request);
+            });
+
+            $('#hibernateDeleteConfirmModal').on('hidden.bs.modal', function () {
+                $('#hibernateDeleteConfirm').removeData('hibernateRequest').text('Confirm');
+            });
+
+            $('#hibernateDeleteConfirm').click(function() {
+                var request = $(this).data('hibernateRequest');
+                if (!request) {
+                    return;
+                }
+                mutate('DELETE', request.url, request.successTitle, request.successMessage, '#hibernateDeleteConfirmModal');
+            });
+
+            $('#executeHqlQuery').click(function() {
+                executeHqlQuery();
+            });
+
+            $('#hqlQueryText').on('keydown', function(event) {
+                if (isHqlQueryExecuteShortcut(event)) {
+                    event.preventDefault();
+                    executeHqlQuery();
+                }
+            });
+
+            $('#hqlQueryResultsContainer').on('click', '[data-hql-query-page]', function() {
+                var direction = $(this).data('hql-query-page');
+                hqlQueryTableState.page += direction === 'next' ? 1 : -1;
+                hqlQueryTableState.page = Math.max(0, hqlQueryTableState.page);
+                loadHqlQueryPage();
+            }).on('change', '[data-hql-query-page-size]', function() {
+                hqlQueryTableState.pageSize = Number($(this).val());
+                hqlQueryTableState.page = 0;
+                loadHqlQueryPage();
+            });
+
+            $('[data-hibernate-hql-template]').click(function() {
+                $('#hqlQueryText').val($(this).attr('data-hibernate-hql-template') || '');
+                $(this).closest('[data-actions-menu]').removeAttr('open');
+                $('[data-tabs-trigger="hql-console"]').click();
+                $('#hqlQueryText').trigger('focus');
+                if ($(this).attr('data-hibernate-hql-execute') === 'true') {
+                    $('#executeHqlQuery').trigger('click');
+                }
+            });
+
+            $('[data-hibernate-cache-chart]').each(function() {
+                var rows = Array.from(this.querySelectorAll('[data-hibernate-cache-value]'));
+                var values = rows.map(function(row) {
+                    var raw = row.getAttribute('data-hibernate-cache-value') || '';
+                    var parsed = Number(raw.replace(/[^0-9.-]/g, ''));
+                    return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+                });
+                var max = Math.max.apply(Math, values);
+                rows.forEach(function(row, index) {
+                    var bar = row.querySelector('.cp-chart-bar');
+                    if (!bar || max <= 0) {
+                        return;
+                    }
+                    var width = Math.max(4, Math.round((values[index] / max) * 100));
+                    bar.style.width = width + '%';
+                });
+            });
+        });
+    </script>

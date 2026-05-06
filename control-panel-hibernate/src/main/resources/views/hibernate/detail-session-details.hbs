@@ -1,0 +1,66 @@
+            <div class="tabs-panel" role="tabpanel" data-tabs-panel="session-details">
+                <div class="card card-light" data-hibernate-card="session-details">
+                    <div class="card-header">
+                        <div class="cp-card-heading">
+                            <div class="cp-card-header-text">
+                                <div class="card-description">Shows the selected Hibernate persistence unit, cache capabilities, statistics setting, and runtime configuration values.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="cp-data-table-container cp-vertical-table">
+                            <table class="table cp-data-table-table">
+                                <tbody>
+                                {{#if sessionFactory.sessionFactoryName}}
+                                    <tr>
+                                        <th scope="row" title="Optional Hibernate SessionFactory name configured for this persistence unit.">Name</th>
+                                        <td><code class="cp-table-code">{{ sessionFactory.sessionFactoryName }}</code></td>
+                                    </tr>
+                                {{/if}}
+                                <tr>
+                                    <th scope="row" title="Whether Hibernate reports the SessionFactory as closed.">Closed</th>
+                                    <td><code class="cp-table-code">{{ sessionFactory.closed }}</code></td>
+                                </tr>
+                                <tr>
+                                    <th scope="row" title="Whether entity and collection data can be stored in Hibernate's shared second-level cache.">Second-level cache</th>
+                                    <td><code class="cp-table-code">{{ sessionFactory.secondLevelCacheEnabled }}</code></td>
+                                </tr>
+                                <tr>
+                                    <th scope="row" title="Whether Hibernate can cache query result identifiers for cacheable queries.">Query cache</th>
+                                    <td><code class="cp-table-code">{{ sessionFactory.queryCacheEnabled }}</code></td>
+                                </tr>
+                                <tr>
+                                    <th scope="row" title="Whether Hibernate is collecting runtime counters for sessions, entities, collections, queries, and caches.">Statistics</th>
+                                    <td><code class="cp-table-code">{{ sessionFactory.statisticsEnabled }}</code></td>
+                                </tr>
+                                {{#if sessionFactory.defaultCatalog}}
+                                    <tr>
+                                        <th scope="row" title="Default database catalog Hibernate uses when mapping tables without an explicit catalog.">Default catalog</th>
+                                        <td><code class="cp-table-code">{{ sessionFactory.defaultCatalog }}</code></td>
+                                    </tr>
+                                {{/if}}
+                                {{#if sessionFactory.defaultSchema}}
+                                    <tr>
+                                        <th scope="row" title="Default database schema Hibernate uses when mapping tables without an explicit schema.">Default schema</th>
+                                        <td><code class="cp-table-code">{{ sessionFactory.defaultSchema }}</code></td>
+                                    </tr>
+                                {{/if}}
+                                {{#if sessionFactory.cacheRegionPrefix}}
+                                    <tr>
+                                        <th scope="row" title="Prefix Hibernate applies to second-level cache region names.">Cache region prefix</th>
+                                        <td><code class="cp-table-code">{{ sessionFactory.cacheRegionPrefix }}</code></td>
+                                    </tr>
+                                {{/if}}
+                                {{#each sessionFactory.properties}}
+                                    <tr>
+                                        <th scope="row" title="Selected Hibernate configuration property exposed by the SessionFactory; sensitive values are masked.">{{ @key }}</th>
+                                        <td><code class="cp-table-code">{{ this }}</code></td>
+                                    </tr>
+                                {{/each}}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </div>

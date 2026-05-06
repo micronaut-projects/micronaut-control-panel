@@ -1,0 +1,39 @@
+            <div class="tabs-panel" role="tabpanel" data-tabs-panel="hql-console" hidden>
+                <div class="cp-datasource-content">
+                    <div class="card card-light cp-sql-card" data-hibernate-card="hql-console">
+                        <div class="card-header">
+                            <div class="cp-card-heading">
+                                <div class="cp-card-header-text">
+                                    <div class="card-description">Run read-only HQL queries against the selected Hibernate session factory.</div>
+                                </div>
+                            </div>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-success btn-sm" id="executeHqlQuery" title="Execute HQL query (Cmd+Enter / Ctrl+Enter)">
+                                    <i class="fas fa-play"></i>
+                                    Run
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <textarea id="hqlQueryText" class="form-control" rows="7" spellcheck="false">{{#each entities}}{{#if @first}}from {{ hibernateEntityName }} e{{/if}}{{/each}}</textarea>
+                        </div>
+                    </div>
+                    <div class="card card-light cp-query-results-card" data-hibernate-card="hql-results">
+                        <div class="card-header">
+                            <div class="cp-card-heading">
+                                <div class="cp-card-header-text">
+                                    <h3 class="card-title">Query results</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="hqlQueryResultsContainer" class="cp-data-table">
+                                <div class="cp-query-state">
+                                    <i class="fas fa-table-list" aria-hidden="true"></i>
+                                    <strong>Run an HQL query to see results.</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>

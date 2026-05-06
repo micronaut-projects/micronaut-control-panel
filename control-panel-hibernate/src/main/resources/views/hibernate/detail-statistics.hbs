@@ -1,0 +1,332 @@
+            <div class="tabs-panel" role="tabpanel" data-tabs-panel="statistics" hidden>
+                <div class="tabs cp-hibernate-statistics-tabs" data-tabs data-tabs-storage-key="hibernate-statistics-tabs-{{ sessionFactory.beanName }}">
+                    <div class="cp-hibernate-tabs-header">
+                        <div class="tabs-list" role="tablist" aria-label="Hibernate statistics">
+                            <button type="button" class="tabs-trigger active" role="tab" aria-selected="true" data-tabs-trigger="performance">
+                                <i class="fas fa-gauge-high"></i>
+                                Performance
+                            </button>
+                            <button type="button" class="tabs-trigger" role="tab" aria-selected="false" data-tabs-trigger="session-statistics">
+                                <i class="fas fa-chart-line"></i>
+                                Session statistics
+                            </button>
+                            <button type="button" class="tabs-trigger" role="tab" aria-selected="false" data-tabs-trigger="query-statistics">
+                                <i class="fas fa-magnifying-glass-chart"></i>
+                                Query statistics
+                            </button>
+                        </div>
+                        <div class="cp-hibernate-statistics-control" data-hibernate-card="statistics-collection">
+                            <div class="cp-hibernate-statistics-copy">
+                                <span class="cp-hibernate-statistics-label">Statistics</span>
+                                {{#if statistics.statisticsEnabled}}
+                                    <span class="cp-hibernate-statistics-description">Runtime counters enabled</span>
+                                {{else}}
+                                    <span class="cp-hibernate-statistics-description">No counters recorded</span>
+                                {{/if}}
+                            </div>
+                            {{#if statistics.statisticsEnabled}}
+                                <button type="button" class="cp-switch cp-switch-checked" role="switch" aria-checked="true" aria-label="Statistics collection" data-hibernate-statistics-toggle data-hibernate-statistics-enabled="false">
+                                    <span class="cp-switch-thumb"></span>
+                                </button>
+                            {{else}}
+                                <button type="button" class="cp-switch" role="switch" aria-checked="false" aria-label="Statistics collection" data-hibernate-statistics-toggle data-hibernate-statistics-enabled="true">
+                                    <span class="cp-switch-thumb"></span>
+                                </button>
+                            {{/if}}
+                        </div>
+                    </div>
+
+                    <div class="tabs-panel" role="tabpanel" data-tabs-panel="performance">
+                        <div class="cp-dashboard-stack">
+                            <div class="card card-light" data-hibernate-card="performance">
+                                <div class="card-header">
+                                    <div class="cp-card-heading">
+                                        <div class="cp-card-header-text">
+                                            <div class="card-description">Common performance metrics to monitor before drilling into session details, cache, entities, or queries.</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    {{#if statistics.statisticsEnabled}}
+                                        <div class="cp-data-table-container">
+                                            <table class="table cp-data-table-table">
+                                                <thead>
+                                                <tr>
+                                                    <th>Metric</th>
+                                                    <th>Value</th>
+                                                    <th>Watch for</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                <tr>
+                                                    <td>Query executions</td>
+                                                    <td><code>{{ statistics.queryExecutionCount }}</code></td>
+                                                    <td>Unexpected query volume from one request or workflow.</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Slowest query time</td>
+                                                    <td><code>{{ statistics.queryExecutionMaxTime }} ms</code></td>
+                                                    <td>Queries that dominate page or endpoint latency.</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Entity loads / fetches</td>
+                                                    <td><code>{{ statistics.entityLoadCount }} / {{ statistics.entityFetchCount }}</code></td>
+                                                    <td>Excess fetches can point to lazy loading or N+1 patterns.</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Query cache hits / misses</td>
+                                                    <td><code>{{ statistics.queryCacheHitCount }} / {{ statistics.queryCacheMissCount }}</code></td>
+                                                    <td>Low hits with high misses can mean query caching is not helping.</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Second-level cache hits / misses</td>
+                                                    <td><code>{{ statistics.secondLevelCacheHitCount }} / {{ statistics.secondLevelCacheMissCount }}</code></td>
+                                                    <td>Low hits can indicate cold, underused, or frequently evicted regions.</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Connections / statements</td>
+                                                    <td><code>{{ statistics.connectCount }} / {{ statistics.prepareStatementCount }}</code></td>
+                                                    <td>High counts can point to chatty persistence behavior.</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Flushes</td>
+                                                    <td><code>{{ statistics.flushCount }}</code></td>
+                                                    <td>Unexpected flushes can add write overhead during read flows.</td>
+                                                </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    {{else}}
+                                        <div class="cp-data-table-empty">Enable statistics to display common performance metrics to monitor.</div>
+                                    {{/if}}
+                                </div>
+                            </div>
+
+                            {{#if statistics.statisticsEnabled}}
+                                {{#if statistics.queryExecutionMaxTimeQueryString}}
+                                    <div class="card card-light">
+                                        <div class="card-header">
+                                            <div class="cp-card-heading">
+                                                <div class="cp-card-header-text">
+                                                    <div class="card-description">Shows the query with the longest execution time recorded by Hibernate statistics for this session factory.</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <pre class="cp-query-code"><code class="language-sql">{{ statistics.queryExecutionMaxTimeQueryString }}</code></pre>
+                                        </div>
+                                    </div>
+                                {{/if}}
+                            {{/if}}
+                        </div>
+                    </div>
+
+                    <div class="tabs-panel" role="tabpanel" data-tabs-panel="session-statistics" hidden>
+                {{#if statistics.statisticsEnabled}}
+                    <div class="card card-light cp-hibernate-statistics-card" data-hibernate-card="session-statistics">
+                        <div class="card-header">
+                            <div class="cp-card-heading">
+                                <div class="cp-card-header-text">
+                                    <div class="card-description">Shows runtime counters Hibernate records for sessions, transactions, statements, entities, queries, and caches while statistics are enabled.</div>
+                                </div>
+                            </div>
+                            <div class="card-tools">
+                                <details class="cp-actions-menu" data-actions-menu>
+                                    <summary class="btn btn-secondary btn-sm">
+                                        Actions
+                                        <i class="fas fa-chevron-down"></i>
+                                    </summary>
+                                    <div class="cp-actions-menu-content">
+                                        <button type="button" class="cp-actions-menu-item cp-actions-menu-item-danger" data-toggle="modal" data-target="#hibernateDeleteConfirmModal" data-hibernate-delete-action="statistics" title="Clear statistics">
+                                            <i class="fas fa-eraser"></i>
+                                            Clear statistics
+                                        </button>
+                                    </div>
+                                </details>
+                            </div>
+                        </div>
+                        <div class="card-body cp-hibernate-statistics-card-body">
+                            <div class="cp-data-table-container">
+                                <table class="table cp-data-table-table">
+                                    <thead>
+                                    <tr>
+                                        <th>Metric</th>
+                                        <th>Value</th>
+                                        <th>Metric</th>
+                                        <th>Value</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr>
+                                        <td title="Number of Hibernate sessions opened since statistics started.">Sessions opened</td>
+                                        <td><code>{{ statistics.sessionOpenCount }}</code></td>
+                                        <td title="Number of Hibernate sessions closed since statistics started.">Sessions closed</td>
+                                        <td><code>{{ statistics.sessionCloseCount }}</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td title="Total transactions observed by Hibernate.">Transactions</td>
+                                        <td><code>{{ statistics.transactionCount }}</code></td>
+                                        <td title="Transactions that completed successfully.">Successful transactions</td>
+                                        <td><code>{{ statistics.successfulTransactionCount }}</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td title="Database connections requested by Hibernate.">Connections</td>
+                                        <td><code>{{ statistics.connectCount }}</code></td>
+                                        <td title="Session flush operations that synchronized pending changes with the database.">Flushes</td>
+                                        <td><code>{{ statistics.flushCount }}</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td title="Prepared statements created by Hibernate.">Prepared statements</td>
+                                        <td><code>{{ statistics.prepareStatementCount }}</code></td>
+                                        <td title="Prepared statements closed by Hibernate.">Closed statements</td>
+                                        <td><code>{{ statistics.closeStatementCount }}</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td title="Entities loaded from result sets or the second-level cache.">Entity loads</td>
+                                        <td><code>{{ statistics.entityLoadCount }}</code></td>
+                                        <td title="Additional entity fetches triggered to initialize associations.">Entity fetches</td>
+                                        <td><code>{{ statistics.entityFetchCount }}</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td title="Entity insert operations executed by Hibernate.">Entity inserts</td>
+                                        <td><code>{{ statistics.entityInsertCount }}</code></td>
+                                        <td title="Entity update operations executed by Hibernate.">Entity updates</td>
+                                        <td><code>{{ statistics.entityUpdateCount }}</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td title="Entity delete operations executed by Hibernate.">Entity deletes</td>
+                                        <td><code>{{ statistics.entityDeleteCount }}</code></td>
+                                        <td title="Optimistic locking failures detected during flush or update operations.">Optimistic failures</td>
+                                        <td><code>{{ statistics.optimisticFailureCount }}</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td title="HQL, JPQL, criteria, and native query executions tracked by Hibernate.">Query executions</td>
+                                        <td><code>{{ statistics.queryExecutionCount }}</code></td>
+                                        <td title="Longest query execution time recorded by Hibernate, in milliseconds.">Query max time</td>
+                                        <td><code>{{ statistics.queryExecutionMaxTime }}</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td title="Cacheable query lookups served from the query cache.">Query cache hits</td>
+                                        <td><code>{{ statistics.queryCacheHitCount }}</code></td>
+                                        <td title="Cacheable query lookups not found in the query cache.">Query cache misses</td>
+                                        <td><code>{{ statistics.queryCacheMissCount }}</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td title="Entity or collection cache lookups served from the second-level cache.">Second-level cache hits</td>
+                                        <td><code>{{ statistics.secondLevelCacheHitCount }}</code></td>
+                                        <td title="Entity or collection cache lookups not found in the second-level cache.">Second-level cache misses</td>
+                                        <td><code>{{ statistics.secondLevelCacheMissCount }}</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td title="Query plans reused from Hibernate's query plan cache.">Query plan cache hits</td>
+                                        <td><code>{{ statistics.queryPlanCacheHitCount }}</code></td>
+                                        <td title="Query plans compiled because no cached plan was available.">Query plan cache misses</td>
+                                        <td><code>{{ statistics.queryPlanCacheMissCount }}</code></td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                {{else}}
+                    <div class="card card-light cp-hibernate-statistics-card" data-hibernate-card="session-statistics">
+                        <div class="card-header">
+                            <div class="cp-card-heading">
+                                <div class="cp-card-header-text">
+                                    <div class="card-description">Enable statistics to collect session, query, entity, and cache counters.</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="cp-data-table-empty">No runtime statistics recorded while statistics collection is disabled.</div>
+                        </div>
+                    </div>
+                {{/if}}
+                    </div>
+
+                    <div class="tabs-panel" role="tabpanel" data-tabs-panel="query-statistics" hidden>
+                        <div class="card card-light cp-hibernate-query-card" data-hibernate-card="query-statistics">
+                            <div class="card-header">
+                                <div class="cp-card-heading">
+                                    <div class="cp-card-header-text">
+                                        <div class="card-description">Shows recorded query statistics with compact execution, row, timing, and query-cache counters; the highest Max value is the slowest recorded row.</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body cp-hibernate-query-card-body">
+                                {{#if statistics.statisticsEnabled}}
+                                    {{#if queries}}
+                                        <div class="cp-data-table cp-data-table-paged" data-filter-table data-filter-table-page-size="16" data-filter-table-label="query" data-filter-table-label-plural="queries">
+                                            <div class="cp-data-table-toolbar">
+                                                <div class="cp-data-table-summary" data-filter-table-summary>{{ queries.size }} queries</div>
+                                                <div class="cp-data-table-search">
+                                                    <input type="text" class="form-control" data-filter-table-search placeholder="Search queries" aria-label="Search queries">
+                                                </div>
+                                            </div>
+                                            <div class="cp-data-table-container">
+                                                <table class="table cp-data-table-table cp-data-table-fixed cp-hibernate-query-table">
+                                                    <colgroup>
+                                                        <col class="cp-hibernate-query-column">
+                                                        <col class="cp-hibernate-query-metric-column">
+                                                        <col class="cp-hibernate-query-metric-column">
+                                                        <col class="cp-hibernate-query-metric-column">
+                                                        <col class="cp-hibernate-query-metric-column">
+                                                        <col class="cp-hibernate-query-metric-column">
+                                                        <col class="cp-hibernate-query-metric-column">
+                                                    </colgroup>
+                                                    <thead>
+                                                    <tr>
+                                                        <th>Query</th>
+                                                        <th class="cp-hibernate-query-metric" title="Executions">Execs</th>
+                                                        <th class="cp-hibernate-query-metric">Rows</th>
+                                                        <th class="cp-hibernate-query-metric" title="Average execution time">Avg</th>
+                                                        <th class="cp-hibernate-query-metric" title="Maximum execution time">Max</th>
+                                                        <th class="cp-hibernate-query-metric" title="Query cache hits">Hits</th>
+                                                        <th class="cp-hibernate-query-metric" title="Query cache misses">Misses</th>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    {{#each queries}}
+                                                        <tr data-filter-table-row>
+                                                            <td><pre class="cp-query-code"><code class="language-sql">{{ query }}</code></pre></td>
+                                                            <td class="cp-hibernate-query-metric">{{ executionCount }}</td>
+                                                            <td class="cp-hibernate-query-metric">{{ executionRowCount }}</td>
+                                                            <td class="cp-hibernate-query-metric">{{ executionAvgTime }}</td>
+                                                            <td class="cp-hibernate-query-metric">{{ executionMaxTime }}</td>
+                                                            <td class="cp-hibernate-query-metric">{{ cacheHitCount }}</td>
+                                                            <td class="cp-hibernate-query-metric">{{ cacheMissCount }}</td>
+                                                        </tr>
+                                                    {{/each}}
+                                                    <tr data-filter-table-empty hidden>
+                                                        <td class="cp-data-table-empty-cell" colspan="7">No queries found.</td>
+                                                    </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div class="cp-data-table-footer">
+                                                <label class="cp-data-table-page-size">
+                                                    Rows per page
+                                                    <select class="form-control" data-filter-table-page-size-select aria-label="Queries per page">
+                                                        <option value="8">8</option>
+                                                        <option value="16" selected>16</option>
+                                                        <option value="32">32</option>
+                                                    </select>
+                                                </label>
+                                                <div class="cp-data-table-pagination">
+                                                    <span class="cp-data-table-page" data-filter-table-page>Page 1 of 1</span>
+                                                    <button type="button" class="btn btn-secondary btn-sm" data-filter-table-prev>Previous</button>
+                                                    <button type="button" class="btn btn-secondary btn-sm" data-filter-table-next>Next</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {{else}}
+                                        <div class="cp-data-table-empty">No query statistics recorded.</div>
+                                    {{/if}}
+                                {{else}}
+                                    <div class="cp-data-table-empty">Enable statistics to record Hibernate query executions.</div>
+                                {{/if}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>

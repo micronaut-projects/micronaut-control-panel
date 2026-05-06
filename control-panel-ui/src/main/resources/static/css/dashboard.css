@@ -194,6 +194,39 @@ pre code {
 
 .hljs {
     background: transparent;
+    color: var(--foreground);
+}
+
+code.language-sql.hljs {
+    color: var(--sql-name);
+}
+
+code.language-sql.hljs .hljs-keyword,
+code.language-sql.hljs .hljs-built_in {
+    color: var(--sql-keyword);
+}
+
+code.language-sql.hljs .hljs-string {
+    color: var(--sql-string);
+}
+
+code.language-sql.hljs .hljs-number,
+code.language-sql.hljs .hljs-literal {
+    color: var(--sql-number);
+}
+
+code.language-sql.hljs .hljs-type,
+code.language-sql.hljs .hljs-symbol {
+    color: var(--sql-atom);
+}
+
+code.language-sql.hljs .hljs-title,
+code.language-sql.hljs .hljs-function {
+    color: var(--sql-function);
+}
+
+code.language-sql.hljs .hljs-comment {
+    color: var(--sql-comment);
 }
 
 .cp-dashboard-provider {
@@ -775,9 +808,15 @@ html[data-sidebar="collapsed"] .cp-sidebar-actions .btn {
 
 .cp-card-heading {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     min-width: 0;
     gap: 0.75rem;
+}
+
+.cp-card-header-text {
+    display: grid;
+    min-width: 0;
+    gap: 0.25rem;
 }
 
 .cp-card-icon {
@@ -989,11 +1028,75 @@ dl.row dt {
     line-height: 1.25;
 }
 
+.card-description {
+    margin: 0;
+    color: var(--muted-foreground);
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
 .card-tools {
     display: flex;
     align-items: center;
     justify-content: flex-end;
     gap: 0.45rem;
+}
+
+.cp-switch-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--muted-foreground);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.cp-switch {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    width: 2.25rem;
+    height: 1.25rem;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background: var(--input);
+    padding: 0;
+    cursor: pointer;
+    transition: background-color 150ms ease;
+}
+
+.cp-switch:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+}
+
+.cp-switch:disabled {
+    cursor: default;
+    opacity: 0.7;
+}
+
+.cp-switch-checked {
+    background: var(--primary);
+}
+
+.cp-switch-thumb {
+    display: block;
+    width: 1rem;
+    height: 1rem;
+    margin-left: 0.125rem;
+    border-radius: 999px;
+    background: var(--background);
+    box-shadow: var(--shadow-sm);
+    transition: transform 150ms ease;
+}
+
+.cp-switch-checked .cp-switch-thumb {
+    transform: translateX(1rem);
+}
+
+.cp-switch-status {
+    color: var(--foreground);
 }
 
 .card-body {
@@ -1377,6 +1480,40 @@ dl.row dt {
     font-weight: 650;
 }
 
+.cp-hql-entity-cell {
+    display: inline-flex;
+    max-width: 100%;
+}
+
+.cp-hibernate-field-count {
+    display: inline-flex;
+}
+
+.cp-hql-entity-cell > .cp-table-code {
+    cursor: help;
+}
+
+.cp-hql-entity-card {
+    gap: 0.45rem;
+    width: max-content;
+    max-width: min(32rem, calc(100vw - 1rem));
+}
+
+.cp-hql-entity-card-row {
+    display: grid;
+    grid-template-columns: minmax(6rem, auto) minmax(0, 1fr);
+    gap: 0.75rem;
+}
+
+.cp-hql-entity-card-row .cp-hover-card-value {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+    font-weight: 400;
+    overflow-wrap: anywhere;
+}
+
 .cp-data-table {
     display: grid;
     gap: 0.75rem;
@@ -1720,6 +1857,273 @@ dl.row dt {
 .cp-object-storage-actions {
     justify-content: flex-end;
     white-space: nowrap;
+}
+
+.cp-chart-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.cp-chart-panel {
+    display: grid;
+    gap: 0.75rem;
+    min-width: 0;
+}
+
+.cp-chart-header {
+    display: grid;
+    gap: 0.25rem;
+}
+
+.cp-chart-title {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 650;
+    line-height: 1.25;
+}
+
+.cp-chart-container {
+    display: grid;
+    gap: 0.6rem;
+    min-width: 0;
+}
+
+.cp-chart-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(8rem, 2fr) auto;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+}
+
+.cp-chart-label {
+    min-width: 0;
+}
+
+.cp-chart-track {
+    height: 0.6rem;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--muted);
+}
+
+.cp-chart-bar {
+    display: block;
+    width: 0;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--primary);
+    transition: width 180ms ease;
+}
+
+.cp-chart-value {
+    color: var(--muted-foreground);
+    font-size: 0.8rem;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.cp-hibernate-detail {
+    display: flex;
+    flex-direction: column;
+    height: calc(100svh - var(--header-height) - 3.5rem);
+    min-height: 0;
+}
+
+.cp-hibernate-tabs {
+    flex: 1;
+    grid-template-rows: auto minmax(0, 1fr);
+    min-height: 0;
+}
+
+.cp-hibernate-tabs-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-width: 0;
+}
+
+.cp-hibernate-statistics-control {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    min-width: min(100%, 18rem);
+    margin-left: auto;
+    color: var(--foreground);
+}
+
+.cp-hibernate-statistics-copy {
+    display: grid;
+    gap: 0.05rem;
+    min-width: 0;
+    text-align: right;
+}
+
+.cp-hibernate-statistics-label {
+    color: var(--foreground);
+    font-size: 0.875rem;
+    font-weight: 650;
+    line-height: 1.2;
+}
+
+.cp-hibernate-statistics-description {
+    overflow: hidden;
+    color: var(--muted-foreground);
+    font-size: 0.75rem;
+    line-height: 1.2;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cp-hibernate-tabs > .tabs-panel {
+    min-height: 0;
+    overflow: auto;
+}
+
+.cp-hibernate-tabs > [data-tabs-panel="statistics"] {
+    overflow: hidden;
+}
+
+.cp-hibernate-statistics-tabs {
+    grid-template-rows: auto minmax(0, 1fr);
+    height: 100%;
+    min-height: 0;
+}
+
+.cp-hibernate-statistics-tabs > .tabs-panel {
+    min-height: 0;
+    overflow: auto;
+}
+
+.cp-hibernate-statistics-tabs > [data-tabs-panel="query-statistics"],
+.cp-hibernate-statistics-tabs > [data-tabs-panel="session-statistics"] {
+    overflow: hidden;
+}
+
+.cp-hibernate-query-card,
+.cp-hibernate-statistics-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    margin-bottom: 0;
+}
+
+.cp-hibernate-query-card-body,
+.cp-hibernate-statistics-card-body {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.cp-hibernate-query-card .cp-data-table {
+    flex: 1;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    min-height: 0;
+}
+
+.cp-hibernate-query-card .cp-data-table-container {
+    display: flex;
+    max-height: none;
+    min-height: 0;
+}
+
+.cp-hibernate-query-card-body > .cp-data-table-empty {
+    display: grid;
+    flex: 1;
+    place-content: center;
+}
+
+.cp-hibernate-statistics-card .cp-data-table-container {
+    display: flex;
+    flex: 1;
+    max-height: none;
+    min-height: 0;
+}
+
+.cp-hibernate-query-card .cp-data-table-table,
+.cp-hibernate-statistics-card .cp-data-table-table {
+    min-height: 100%;
+}
+
+.cp-hibernate-query-metric-column {
+    width: 5rem;
+}
+
+.cp-hibernate-named-query-name-column {
+    width: 16rem;
+}
+
+.cp-hibernate-named-query-type-column {
+    width: 6.75rem;
+}
+
+.cp-hibernate-named-query-cacheable-column {
+    width: 5.5rem;
+}
+
+.cp-hibernate-named-query-cache-region-column {
+    width: 6.5rem;
+}
+
+.cp-hibernate-named-query-actions-column {
+    width: 4.5rem;
+}
+
+.cp-hibernate-named-query-type {
+    white-space: nowrap;
+}
+
+.cp-hibernate-long-column {
+    width: auto;
+}
+
+.cp-hibernate-entity-name-column {
+    width: 32%;
+}
+
+.cp-hibernate-entity-type-column {
+    width: 12rem;
+}
+
+.cp-hibernate-entity-id-column {
+    width: 7rem;
+}
+
+.cp-hibernate-metric-column {
+    width: 5rem;
+}
+
+.cp-hibernate-actions-column {
+    width: 10rem;
+}
+
+.cp-hibernate-collection-role-column {
+    width: 42%;
+}
+
+.cp-hibernate-collection-cache-column {
+    width: auto;
+}
+
+.cp-hibernate-query-metric {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.cp-query-code {
+    margin: 0;
+    padding: 0.55rem;
+}
+
+.cp-query-code code {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
 }
 
 .cp-bean-count {
