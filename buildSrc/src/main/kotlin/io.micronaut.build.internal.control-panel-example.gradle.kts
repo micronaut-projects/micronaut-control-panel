@@ -39,16 +39,29 @@ tasks.withType<Test> {
 
 configurations.named("nativeImageTestClasspath") {
     resolutionStrategy {
+        // Kafka and datasource - tests are @DisabledInNativeImage
         exclude(group = "io.micronaut.kafka")
         exclude(group = "org.apache.kafka")
         exclude(group = "io.confluent")
         exclude(group = "com.oracle.database.jdbc")
         exclude(group = "io.micronaut.sql")
         exclude(group = "org.postgresql")
+        // Cloud object storage providers - only local storage is tested in native image
         exclude(group = "io.micronaut.objectstorage", module = "micronaut-object-storage-aws")
+        exclude(group = "software.amazon.awssdk")
         exclude(group = "io.micronaut.objectstorage", module = "micronaut-object-storage-azure")
+        exclude(group = "com.azure")
         exclude(group = "io.micronaut.objectstorage", module = "micronaut-object-storage-gcp")
+        exclude(group = "com.google.cloud")
+        exclude(group = "com.google.api.grpc")
+        exclude(group = "io.grpc")
         exclude(group = "io.micronaut.objectstorage", module = "micronaut-object-storage-oracle-cloud")
+        exclude(group = "com.oracle.oci.sdk")
+        // Heavy cache providers - only caffeine and ehcache are tested in native image
+        exclude(group = "io.micronaut.cache", module = "micronaut-cache-hazelcast")
+        exclude(group = "com.hazelcast")
+        exclude(group = "io.micronaut.cache", module = "micronaut-cache-infinispan")
+        exclude(group = "org.infinispan")
     }
 }
 
