@@ -56,7 +56,7 @@ public class Application {
             }
         }
 
-        static void initCache(final SyncCache<?> cache) {
+        private static void initCache(final SyncCache<?> cache) {
             LOG.info("Initializing cache {}", cache.getName());
             cache.put("foo", "bar");
             cache.put("counter", 1);
