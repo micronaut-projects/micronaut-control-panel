@@ -19,7 +19,7 @@ The control panel supports all object storage systems provided by Micronaut Obje
 * **Google Cloud Storage** - Google Cloud Platform
 * **Oracle Cloud Storage** - Oracle Cloud Infrastructure
 
-The control panel is automatically enabled when you include the `control-panel-object-storage` module in your project. You can disable it by setting:
+The control panel is automatically enabled when you include the `micronaut-control-panel-object-storage` module in your project. You can disable it by setting:
 
 [configuration]
 ----
