@@ -127,9 +127,10 @@ the reasons why the bean was not loaded.
 === Logging Configuration
 
 This panel allows you to view and re-configure the logging levels without restarting the application. It relies on the
-https://docs.micronaut.io/latest/guide/#loggersEndpoint[Loggers Endpoint] to display and update the logging levels. This
-endpoint is disabled by default, so if you want to manage the logging configuration in the control panel, you need to
-enable the endpoint. Also, by default, the endpoint is read-only, so you need to configure it to be writable:
+https://docs.micronaut.io/latest/guide/#loggersEndpoint[Loggers Endpoint] to display the logging levels. The control
+panel updates logger levels through a control-panel route, so the raw management endpoint can keep its default write
+sensitivity when you only need writes from the control panel. The endpoint is disabled by default, so enable it in the
+environments where the control panel should manage logging:
 
 IMPORTANT: Make sure this is done in an environment-specific configuration file, for example, `application-dev.yml`.
 
@@ -139,5 +140,10 @@ IMPORTANT: Make sure this is done in an environment-specific configuration file,
 endpoints:
   loggers:
     enabled: true
-    write-sensitive: false
 ----
+
+When Micronaut Security is active and `micronaut.control-panel.security.access=AUTHORIZED`, only users with the
+configured control-panel role can re-configure loggers through the control panel. Direct HTTP calls to
+`/loggers/{logger}` still follow Micronaut Management endpoint sensitivity rules. Set
+`endpoints.loggers.write-sensitive=false` only when you intentionally want to expose direct writable management endpoint
+access outside the control panel.

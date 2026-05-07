@@ -17,8 +17,10 @@ package io.micronaut.controlpanel.panels.management;
 
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
+import io.micronaut.http.HttpStatus;
 import io.micronaut.inject.qualifiers.Qualifiers;
 import io.micronaut.logging.LogLevel;
+import io.micronaut.management.endpoint.loggers.ManagedLoggingSystem;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -45,6 +47,32 @@ class LoggersControlPanelTest {
             ControlPanelConfiguration cfg = ctx.getBean(ControlPanelConfiguration.class, Qualifiers.byName(LoggersControlPanel.NAME));
             assertFalse(cfg.isEnabled());
             assertFalse(ctx.containsBean(LoggersControlPanel.class));
+        }
+    }
+
+    @Test
+    void controllerConfiguresLoggerLevel() {
+        try (ApplicationContext ctx = ApplicationContext.run(java.util.Map.of("endpoints.loggers.enabled", true))) {
+            LoggersController controller = ctx.getBean(LoggersController.class);
+            ManagedLoggingSystem loggingSystem = ctx.getBean(ManagedLoggingSystem.class);
+
+            try {
+                assertEquals(HttpStatus.NO_CONTENT, controller.configure("io.micronaut.controlpanel", new LoggersController.ConfigureLoggerRequest("TRACE")).status());
+                assertEquals(LogLevel.TRACE, loggingSystem.getLogger("io.micronaut.controlpanel").configuredLevel());
+            } finally {
+                controller.configure("io.micronaut.controlpanel", new LoggersController.ConfigureLoggerRequest("DEBUG"));
+            }
+        }
+    }
+
+    @Test
+    void controllerRejectsInvalidLoggerLevel() {
+        try (ApplicationContext ctx = ApplicationContext.run(java.util.Map.of("endpoints.loggers.enabled", true))) {
+            LoggersController controller = ctx.getBean(LoggersController.class);
+            ManagedLoggingSystem loggingSystem = ctx.getBean(ManagedLoggingSystem.class);
+
+            assertEquals(HttpStatus.BAD_REQUEST, controller.configure("io.micronaut.controlpanel", new LoggersController.ConfigureLoggerRequest("loud")).status());
+            assertEquals(LogLevel.DEBUG, loggingSystem.getLogger("io.micronaut.controlpanel").configuredLevel());
         }
     }
 }

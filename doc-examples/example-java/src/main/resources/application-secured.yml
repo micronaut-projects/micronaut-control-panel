@@ -17,5 +17,4 @@ endpoints:
     details-visible: AUTHENTICATED
   loggers:
     enabled: true
-    write-sensitive: false
 #end::control-panel-authorized[]

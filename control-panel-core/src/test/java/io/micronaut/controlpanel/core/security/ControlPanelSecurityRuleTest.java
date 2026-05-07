@@ -46,6 +46,7 @@ class ControlPanelSecurityRuleTest {
         assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.DELETE("/control-panel" + ControlPanelSecurityPaths.CACHE_PATH + "/demo"), null));
         assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.POST("/control-panel" + ControlPanelSecurityPaths.DATASOURCE_PATH + "/default/query", "{}"), null));
         assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.POST("/control-panel" + ControlPanelSecurityPaths.HIBERNATE_PATH + "/default/hql", "{}"), null));
+        assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.POST("/control-panel" + ControlPanelSecurityPaths.LOGGERS_PATH + "/ROOT", "{}"), null));
         assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.GET("/control-panel" + ControlPanelSecurityPaths.OBJECT_STORAGE_PATH + "/local/object"), null));
     }
 
@@ -57,6 +58,7 @@ class ControlPanelSecurityRuleTest {
         assertEquals(SecurityRuleResult.REJECTED, check(rule, HttpRequest.GET("/control-panel/routes"), null));
         assertEquals(SecurityRuleResult.REJECTED, check(rule, HttpRequest.DELETE("/control-panel" + ControlPanelSecurityPaths.CACHE_PATH + "/demo"), null));
         assertEquals(SecurityRuleResult.REJECTED, check(rule, HttpRequest.POST("/control-panel" + ControlPanelSecurityPaths.HIBERNATE_PATH + "/default/hql", "{}"), null));
+        assertEquals(SecurityRuleResult.REJECTED, check(rule, HttpRequest.POST("/control-panel" + ControlPanelSecurityPaths.LOGGERS_PATH + "/ROOT", "{}"), null));
     }
 
     @Test
@@ -66,6 +68,7 @@ class ControlPanelSecurityRuleTest {
 
         assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.GET("/app/control-panel"), authentication));
         assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.POST("/app/control-panel" + ControlPanelSecurityPaths.HIBERNATE_PATH + "/default/hql", "{}"), authentication));
+        assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.POST("/app/control-panel" + ControlPanelSecurityPaths.LOGGERS_PATH + "/ROOT", "{}"), authentication));
         assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.GET("/app/control-panel" + ControlPanelSecurityPaths.OBJECT_STORAGE_PATH + "/local/object"), authentication));
     }
 
@@ -84,6 +87,7 @@ class ControlPanelSecurityRuleTest {
 
         assertEquals(SecurityRuleResult.REJECTED, check(rule, HttpRequest.GET("/control-panel"), authentication));
         assertEquals(SecurityRuleResult.REJECTED, check(rule, HttpRequest.DELETE("/control-panel" + ControlPanelSecurityPaths.CACHE_PATH + "/demo"), authentication));
+        assertEquals(SecurityRuleResult.REJECTED, check(rule, HttpRequest.POST("/control-panel" + ControlPanelSecurityPaths.LOGGERS_PATH + "/ROOT", "{}"), authentication));
     }
 
     @Test
@@ -92,6 +96,7 @@ class ControlPanelSecurityRuleTest {
         Authentication authentication = Authentication.build("sherlock", Set.of(ControlPanelSecurityConfiguration.DEFAULT_ROLE), Map.of());
 
         assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.GET("/control-panel"), authentication));
+        assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.POST("/control-panel" + ControlPanelSecurityPaths.LOGGERS_PATH + "/ROOT", "{}"), authentication));
         assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.GET("/control-panel" + ControlPanelSecurityPaths.OBJECT_STORAGE_PATH + "/local/object"), authentication));
     }
 
@@ -120,6 +125,7 @@ class ControlPanelSecurityRuleTest {
         assertEquals(SecurityRuleResult.REJECTED, check(rule, HttpRequest.GET("/app/admin/panel/routes"), null));
         assertEquals(SecurityRuleResult.REJECTED, check(rule, HttpRequest.GET("/app/admin/panel" + ControlPanelSecurityPaths.CACHE_PATH + "/demo"), null));
         assertEquals(SecurityRuleResult.REJECTED, check(rule, HttpRequest.POST("/app/admin/panel" + ControlPanelSecurityPaths.HIBERNATE_PATH + "/default/hql", "{}"), null));
+        assertEquals(SecurityRuleResult.REJECTED, check(rule, HttpRequest.POST("/app/admin/panel" + ControlPanelSecurityPaths.LOGGERS_PATH + "/ROOT", "{}"), null));
         assertEquals(SecurityRuleResult.UNKNOWN, check(rule, HttpRequest.GET("/app/control-panel"), null));
     }
 

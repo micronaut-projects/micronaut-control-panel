@@ -143,6 +143,64 @@ class ControlPanelSecurityTest {
     }
 
     @Test
+    void authorizedLoggersHelperCanWriteWithoutOpeningDirectManagementWrites() {
+        try (EmbeddedServer server = ApplicationContext.run(EmbeddedServer.class, Map.of(
+            "spec.name", "ControlPanelSecurityTest",
+            "micronaut.security.enabled", true,
+            "micronaut.security.basic-auth.enabled", true,
+            "endpoints.loggers.enabled", true,
+            "endpoints.loggers.write-sensitive", true
+        ))) {
+            HttpClient client = server.getApplicationContext().createBean(HttpClient.class, server.getURL());
+            String body = "{\"configuredLevel\":\"TRACE\"}";
+
+            HttpClientResponseException directAnonymous = assertThrows(
+                HttpClientResponseException.class,
+                () -> client.toBlocking().exchange(HttpRequest.POST("/loggers/io.micronaut.controlpanel", body))
+            );
+            assertEquals(HttpStatus.UNAUTHORIZED, directAnonymous.getStatus());
+
+            HttpClientResponseException missingRole = assertThrows(
+                HttpClientResponseException.class,
+                () -> client.toBlocking().exchange(authenticatedRequest(
+                    HttpRequest.POST(helperPath(ControlPanelSecurityPaths.LOGGERS_PATH, "/io.micronaut.controlpanel"), body)
+                ))
+            );
+            assertEquals(HttpStatus.FORBIDDEN, missingRole.getStatus());
+
+            assertEquals(HttpStatus.NO_CONTENT, client.toBlocking().exchange(
+                authenticatedRequest(
+                    HttpRequest.POST(helperPath(ControlPanelSecurityPaths.LOGGERS_PATH, "/io.micronaut.controlpanel"), body),
+                    "controlpanel",
+                    "password"
+                )
+            ).status());
+
+            client.close();
+        }
+    }
+
+    @Test
+    void anonymousAccessCanUseLoggersHelperWhenConfigured() {
+        try (EmbeddedServer server = ApplicationContext.run(EmbeddedServer.class, Map.of(
+            "spec.name", "ControlPanelSecurityTest",
+            "micronaut.security.enabled", true,
+            "micronaut.security.basic-auth.enabled", true,
+            ControlPanelSecurityConfiguration.PROPERTY_ACCESS, "ANONYMOUS",
+            "endpoints.loggers.enabled", true,
+            "endpoints.loggers.write-sensitive", true
+        ))) {
+            HttpClient client = server.getApplicationContext().createBean(HttpClient.class, server.getURL());
+
+            assertEquals(HttpStatus.NO_CONTENT, client.toBlocking().exchange(
+                HttpRequest.POST(helperPath(ControlPanelSecurityPaths.LOGGERS_PATH, "/io.micronaut.controlpanel"), "{\"configuredLevel\":\"DEBUG\"}")
+            ).status());
+
+            client.close();
+        }
+    }
+
+    @Test
     void authenticatedAccessProtectsHelperControllersAtHttpLevel(@TempDir Path tempDir) throws IOException {
         Files.writeString(tempDir.resolve("hello.txt"), "hello");
 
