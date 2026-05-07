@@ -733,13 +733,13 @@ Micronaut Endpoints require having the <code>io.micronaut:micronaut-management</
 <p>        <div class="listingblock multi-language-sample">
 <div class="title"></div>
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="gradle">runtimeOnly(<span class="hljs-string">"io.micronaut.:micronaut-management")</span></code></pre>
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="gradle">runtimeOnly(<span class="hljs-string">"io.micronaut:micronaut-management")</span></code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="maven">&lt;dependency&gt;
-    &lt;groupId&gt;io.micronaut.&lt;/groupId&gt;
+    &lt;groupId&gt;io.micronaut&lt;/groupId&gt;
     &lt;artifactId&gt;micronaut-management&lt;/artifactId&gt;
     &lt;scope&gt;runtime&lt;/scope&gt;
 &lt;/dependency&gt;</code></pre>
@@ -1483,7 +1483,7 @@ endpoints.loggers.write-sensitive=false</code></pre>
 </ul>
 </div>
 <div class="paragraph">
-<p>The control panel is automatically enabled when you include the <code>control-panel-object-storage</code> module in your project. You can disable it by setting:</p>
+<p>The control panel is automatically enabled when you include the <code>micronaut-control-panel-object-storage</code> module in your project. You can disable it by setting:</p>
 </div>
 <div class="openblock">
 <div class="content">
@@ -2118,31 +2118,35 @@ You can disable it by setting:</p>
 <div class="content">
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">micronaut.control-panel.kafka-streams.enabled=false</code></pre>
+<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">micronaut.control-panel.panels.kafka-streams.enabled=false</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">micronaut:
   control-panel:
-    kafka-streams:
-      enabled: false</code></pre>
+    panels:
+      kafka-streams:
+        enabled: false</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[micronaut]
   [micronaut.control-panel]
-    [micronaut.control-panel.kafka-streams]
-      enabled=false</code></pre>
+    [micronaut.control-panel.panels]
+      [micronaut.control-panel.panels.kafka-streams]
+        enabled=false</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-groovy-config hljs" data-lang="groovy-config">micronaut {
   controlPanel {
-    kafkaStreams {
-      enabled = false
+    panels {
+      kafkaStreams {
+        enabled = false
+      }
     }
   }
 }</code></pre>
@@ -2153,8 +2157,10 @@ You can disable it by setting:</p>
 <pre class="highlightjs highlight"><code class="language-hocon hljs" data-lang="hocon">{
   micronaut {
     control-panel {
-      kafka-streams {
-        enabled = false
+      panels {
+        kafka-streams {
+          enabled = false
+        }
       }
     }
   }
@@ -2166,8 +2172,10 @@ You can disable it by setting:</p>
 <pre class="highlightjs highlight"><code class="language-json-config hljs" data-lang="json-config">{
   "micronaut": {
     "control-panel": {
-      "kafka-streams": {
-        "enabled": false
+      "panels": {
+        "kafka-streams": {
+          "enabled": false
+        }
       }
     }
   }
@@ -2395,7 +2403,7 @@ micronaut.control-panel.panels.my-application.order=10</code></pre>
 <table>
 <tr>
 <td><i class="conum" data-value="1"></i><b>1</b></td>
-<td>Title to be displayed in the control panel headeer.</td>
+<td>Title to be displayed in the control panel header.</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="2"></i><b>2</b></td>
@@ -2417,8 +2425,8 @@ micronaut.control-panel.panels.my-application.order=10</code></pre>
 </div>
 <div class="paragraph">
 <p>Each control panel needs to provide 2 views: one for the control panel list, that can contain a summary of the
-information to be displayed, and another one for the detailed view. The must be placed in a <code>views/&lt;panel-name&gt;</code> directory
-on the classpath, and names <code>body.hbs</code> and <code>detail.hbs</code>, respectively. For example, in the above example:</p>
+information to be displayed, and another one for the detailed view. They must be placed in a <code>views/&lt;panel-name&gt;</code> directory
+on the classpath, and named <code>body.hbs</code> and <code>detail.hbs</code>, respectively. For example, in the above example:</p>
 </div>
 <div class="listingblock">
 <div class="title"><code>src/main/resources/views/my-application/body.hbs</code>.</div>
