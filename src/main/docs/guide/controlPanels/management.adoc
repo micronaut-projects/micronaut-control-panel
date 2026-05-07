@@ -5,7 +5,7 @@ dependency:io.micronaut.controlpanel:micronaut-control-panel-management[scope=de
 Note that you also need the
 https://docs.micronaut.io/latest/guide/#management[Management] module:
 
-dependency:io.micronaut.:micronaut-management[scope=runtimeOnly]
+dependency:io.micronaut:micronaut-management[scope=runtimeOnly]
 
 The following panels are available:
 
