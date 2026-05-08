@@ -36,6 +36,9 @@ import java.util.Map;
 
 /**
  * Control-panel-owned helper controller for logger mutations.
+ *
+ * @author Álvaro Sánchez-Mariscal
+ * @since 2.0.0
  */
 @Controller(ControlPanelSecurityPaths.LOGGERS)
 @ExecuteOn(TaskExecutors.BLOCKING)
@@ -63,7 +66,7 @@ public final class LoggersController {
      * @return HTTP 204 No Content if successful, HTTP 400 Bad Request for invalid input
      */
     @Post(value = "/{logger}", consumes = MediaType.APPLICATION_JSON)
-    public HttpResponse<?> configure(String logger, @Body ConfigureLoggerRequest request) {
+    public HttpResponse<Map<String, String>> configure(String logger, @Body ConfigureLoggerRequest request) {
         if (isBlank(logger)) {
             return badRequest("Logger name must not be blank");
         }

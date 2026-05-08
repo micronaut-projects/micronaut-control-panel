@@ -75,4 +75,16 @@ class LoggersControlPanelTest {
             assertEquals(LogLevel.DEBUG, loggingSystem.getLogger("io.micronaut.controlpanel").configuredLevel());
         }
     }
+
+    @Test
+    void controllerRejectsBlankInput() {
+        try (ApplicationContext ctx = ApplicationContext.run(java.util.Map.of("endpoints.loggers.enabled", true))) {
+            LoggersController controller = ctx.getBean(LoggersController.class);
+            ManagedLoggingSystem loggingSystem = ctx.getBean(ManagedLoggingSystem.class);
+
+            assertEquals(HttpStatus.BAD_REQUEST, controller.configure(" ", new LoggersController.ConfigureLoggerRequest("TRACE")).status());
+            assertEquals(HttpStatus.BAD_REQUEST, controller.configure("io.micronaut.controlpanel", new LoggersController.ConfigureLoggerRequest(" ")).status());
+            assertEquals(LogLevel.DEBUG, loggingSystem.getLogger("io.micronaut.controlpanel").configuredLevel());
+        }
+    }
 }
