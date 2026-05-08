@@ -6,7 +6,7 @@
         <p class="card-text">
             {{#each names}}
                 {{#lt @index 8}}
-                    <code>{{this}}</code>{{#unless @last}}, {{/unless}}
+                    <code>{{this}}</code>{{#unless @last}}{{#lt @index 7}}, {{/lt}}{{/unless}}
                 {{/lt}}
             {{/each}}
             {{#gt names.size 8}}
