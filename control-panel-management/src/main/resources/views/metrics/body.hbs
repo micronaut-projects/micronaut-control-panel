@@ -1,0 +1,19 @@
+{{#with controlPanel.body }}
+    {{#if names}}
+        <p class="card-text">
+            <strong>{{../controlPanel.badge}}</strong> metrics available.
+        </p>
+        <p class="card-text">
+            {{#each names}}
+                {{#lt @index 8}}
+                    <code>{{this}}</code>{{#unless @last}}, {{/unless}}
+                {{/lt}}
+            {{/each}}
+            {{#gt names.size 8}}
+                and {{minus names.size 8}} more.
+            {{/gt}}
+        </p>
+    {{else}}
+        <p class="card-text">No Micrometer metrics are available.</p>
+    {{/if}}
+{{/with}}

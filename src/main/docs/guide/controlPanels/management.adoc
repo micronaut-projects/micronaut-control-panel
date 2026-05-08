@@ -7,10 +7,15 @@ https://docs.micronaut.io/latest/guide/#management[Management] module:
 
 dependency:io.micronaut:micronaut-management[scope=runtimeOnly]
 
+The Metrics panel also needs Micrometer support:
+
+dependency:io.micronaut.micrometer:micronaut-micrometer-core[scope=runtimeOnly]
+
 The following panels are available:
 
 * `health`: Application Health
 * `env`: Environment Properties
+* `metrics`: Metrics
 * `beans`: Bean Definitions
 * `loggers`: Logging Configuration
 
@@ -111,6 +116,31 @@ micronaut:
 
 This will show all values apart from those that contain the words `password`, `credential`, `certificate`, `key`,
 `secret` or `token` anywhere in their name.
+
+=== Metrics
+
+This panel displays a searchable, read-only view of Micrometer metrics. It relies on the
+https://micronaut-projects.github.io/micronaut-micrometer/latest/guide/[Micronaut Micrometer] module and the Metrics
+Endpoint bean. The panel appears only when Micrometer metrics are enabled and the Metrics endpoint is available.
+
+The detail view shows the selected metric's description, base unit, measurements, and available tags. Tag filtering uses
+the same repeatable `tag` parameter shape as the Metrics endpoint, for example `tag=outcome:success`. Tag values that
+contain additional `:` characters are preserved.
+
+This panel is intended as a lightweight development-time inspector. It does not configure meter registries, expose
+exporters, mutate metrics, provide alerts, or replace production observability dashboards such as Grafana.
+
+You can disable only this panel with:
+
+.Disabling the Metrics panel
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      metrics:
+        enabled: false
+----
 
 === Bean Definitions
 

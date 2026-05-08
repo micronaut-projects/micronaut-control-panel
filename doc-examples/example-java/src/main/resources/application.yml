@@ -1,5 +1,7 @@
 #tag::control-panel[]
 micronaut:
+  metrics:
+    enabled: true
   control-panel:
     panels:
       my-application:

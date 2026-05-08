@@ -7,6 +7,11 @@ Then, add the control panel modules that you want. For example, if you already h
 
 dependency:io.micronaut.controlpanel:micronaut-control-panel-management[scope=developmentOnly]
 
+Some management panels require their backing Micronaut modules. For example, the Metrics panel appears only when
+Micrometer is present and metrics are enabled:
+
+dependency:io.micronaut.micrometer:micronaut-micrometer-core[scope=runtimeOnly]
+
 By default, the Control Panel is only enabled in the `dev` or `test` environments. You can change this and other settings
 in your configuration file:
 

@@ -40,7 +40,7 @@ class ControlPanelControllerTest {
         assertEquals(java.util.Set.of("test"), model.activeEnvironments());
         assertEquals(Model.ContentView.INDEX, model.contentView());
         assertEquals(ControlPanel.Category.MAIN, model.ext().get("currentCategory"));
-        assertEquals(4, ((java.util.Collection<?>) model.ext().get("controlPanels")).size());
+        assertEquals(5, ((java.util.Collection<?>) model.ext().get("controlPanels")).size());
     }
 
     @Test
@@ -52,7 +52,7 @@ class ControlPanelControllerTest {
         assertEquals(java.util.Set.of("test"), model.activeEnvironments());
         assertEquals(Model.ContentView.INDEX, model.contentView());
         assertEquals(categoryId, ((ControlPanel.Category) model.ext().get("currentCategory")).id());
-        assertEquals(4, ((java.util.Collection<?>) model.ext().get("controlPanels")).size());
+        assertEquals(5, ((java.util.Collection<?>) model.ext().get("controlPanels")).size());
 
         var model2 = (Model) controller.byCategory("application").body().getModel().get();
         assertEquals(1, ((java.util.Collection<?>) model2.ext().get("controlPanels")).size());
@@ -76,6 +76,9 @@ class ControlPanelControllerTest {
 
         var modelHealth = (Model) controller.detail("health").body().getModel().get();
         assertEquals(ControlPanel.Category.MAIN.id(), ((ControlPanel.Category) modelHealth.ext().get("currentCategory")).id());
+
+        var modelMetrics = (Model) controller.detail("metrics").body().getModel().get();
+        assertEquals(ControlPanel.Category.MAIN.id(), ((ControlPanel.Category) modelMetrics.ext().get("currentCategory")).id());
 
         var modelTest = (Model) controller.detail("test").body().getModel().get();
         assertEquals("application", ((ControlPanel.Category) modelTest.ext().get("currentCategory")).id());

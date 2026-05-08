@@ -36,6 +36,7 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         assertThat(body).containsText("my-application");
         assertThat(body).containsText("Application Health");
         assertThat(body).containsText("Environment Properties");
+        assertThat(body).containsText("Metrics");
         assertThat(body).containsText("HTTP Routes");
         assertThat(body).containsText("Loggers");
 
@@ -146,6 +147,22 @@ class ControlPanelE2ETest extends AbstractE2ETest {
             .click();
         page.locator("#actionsModal").getByLabel("Level:").selectOption("INFO");
         id(page, "submit").click();
+    }
+
+    @Test
+    void testMetrics(Page page) {
+        page.navigate(baseUrl());
+        controlPanelDetails(page, "Metrics").click();
+
+        assertThat(body(page)).containsText("control.panel.demo.requests");
+        page.getByLabel("Search metrics").fill("control.panel.demo.requests");
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("control.panel.demo.requests")).click();
+        assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("control.panel.demo.requests"))).isVisible();
+        assertThat(body(page)).containsText("Deterministic demo requests");
+        assertThat(body(page)).containsText("success:demo");
+
+        page.getByLabel("outcome").selectOption("outcome:success:demo");
+        assertThat(page.locator("tbody")).containsText("COUNT");
     }
 
     @Test

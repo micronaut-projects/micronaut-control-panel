@@ -1,0 +1,191 @@
+{{#with controlPanel.body }}
+    {{#if names}}
+        <div id="metrics-panel" data-metrics-api="{{../ext.controlPanelPath}}/api/metrics">
+            <div class="form-group">
+                <label for="metricSearch">Search metrics</label>
+                <input type="search" id="metricSearch" class="form-control" placeholder="Filter metric names">
+            </div>
+
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="list-group" id="metricList">
+                        {{#each names}}
+                            <button type="button" class="list-group-item list-group-item-action" data-metric-name="{{this}}">
+                                <code>{{this}}</code>
+                            </button>
+                        {{/each}}
+                    </div>
+                </div>
+                <div class="col-lg-8">
+                    <div id="metricAlert" class="alert alert-danger d-none" role="alert"></div>
+                    <div id="metricEmpty" class="text-muted">Select a metric to view its measurements and tags.</div>
+                    <div id="metricDetail" class="d-none">
+                        <h4 id="metricName"></h4>
+                        <dl class="row">
+                            <dt class="col-sm-3">Description</dt>
+                            <dd class="col-sm-9" id="metricDescription"></dd>
+                            <dt class="col-sm-3">Base unit</dt>
+                            <dd class="col-sm-9" id="metricBaseUnit"></dd>
+                        </dl>
+                        <div id="metricTags"></div>
+                        <h5>Measurements</h5>
+                        <table class="table table-sm">
+                            <thead>
+                            <tr>
+                                <th>Statistic</th>
+                                <th>Value</th>
+                            </tr>
+                            </thead>
+                            <tbody id="metricMeasurements"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            (function () {
+                const panel = document.getElementById('metrics-panel');
+                const api = panel.dataset.metricsApi;
+                const list = document.getElementById('metricList');
+                const search = document.getElementById('metricSearch');
+                const detail = document.getElementById('metricDetail');
+                const empty = document.getElementById('metricEmpty');
+                const alert = document.getElementById('metricAlert');
+                const tags = document.getElementById('metricTags');
+                const measurements = document.getElementById('metricMeasurements');
+
+                function setText(id, value) {
+                    document.getElementById(id).textContent = value || '(none)';
+                }
+
+                function clear(element) {
+                    while (element.firstChild) {
+                        element.removeChild(element.firstChild);
+                    }
+                }
+
+                function loadMetric(name, selectedTags) {
+                    const params = new URLSearchParams();
+                    params.append('name', name);
+                    selectedTags.forEach(function (tag) {
+                        params.append('tag', tag);
+                    });
+
+                    fetch(api + '?' + params.toString(), {headers: {'Accept': 'application/json'}})
+                        .then(function (response) {
+                            if (!response.ok) {
+                                throw new Error('Metric details are not available.');
+                            }
+                            return response.json();
+                        })
+                        .then(function (metric) {
+                            alert.classList.add('d-none');
+                            empty.classList.add('d-none');
+                            detail.classList.remove('d-none');
+                            setText('metricName', metric.name);
+                            setText('metricDescription', metric.description);
+                            setText('metricBaseUnit', metric.baseUnit);
+                            renderTags(name, metric.availableTags || [], selectedTags);
+                            renderMeasurements(metric.measurements || []);
+                        })
+                        .catch(function (error) {
+                            detail.classList.add('d-none');
+                            empty.classList.add('d-none');
+                            alert.textContent = error.message;
+                            alert.classList.remove('d-none');
+                        });
+                }
+
+                function renderTags(metricName, availableTags, selectedTags) {
+                    clear(tags);
+                    if (availableTags.length === 0) {
+                        return;
+                    }
+
+                    const heading = document.createElement('h5');
+                    heading.textContent = 'Tags';
+                    tags.appendChild(heading);
+
+                    availableTags.forEach(function (tag, index) {
+                        const wrapper = document.createElement('div');
+                        wrapper.className = 'form-group';
+
+                        const label = document.createElement('label');
+                        label.setAttribute('for', 'metricTag' + index);
+                        label.textContent = tag.tag;
+                        wrapper.appendChild(label);
+
+                        const select = document.createElement('select');
+                        select.id = 'metricTag' + index;
+                        select.className = 'form-control';
+                        select.dataset.tag = tag.tag;
+
+                        const emptyOption = document.createElement('option');
+                        emptyOption.value = '';
+                        emptyOption.textContent = '(any)';
+                        select.appendChild(emptyOption);
+
+                        tag.values.forEach(function (value) {
+                            const option = document.createElement('option');
+                            option.value = tag.tag + ':' + value;
+                            option.textContent = value;
+                            option.selected = selectedTags.indexOf(option.value) >= 0;
+                            select.appendChild(option);
+                        });
+                        select.addEventListener('change', function () {
+                            const filters = Array.from(tags.querySelectorAll('select'))
+                                .map(function (input) {
+                                    return input.value;
+                                })
+                                .filter(Boolean);
+                            loadMetric(metricName, filters);
+                        });
+                        wrapper.appendChild(select);
+                        tags.appendChild(wrapper);
+                    });
+                }
+
+                function renderMeasurements(items) {
+                    clear(measurements);
+                    items.forEach(function (item) {
+                        const row = document.createElement('tr');
+                        const statistic = document.createElement('td');
+                        const value = document.createElement('td');
+                        statistic.textContent = item.statistic;
+                        value.textContent = item.value;
+                        row.appendChild(statistic);
+                        row.appendChild(value);
+                        measurements.appendChild(row);
+                    });
+                }
+
+                list.addEventListener('click', function (event) {
+                    const button = event.target.closest('button[data-metric-name]');
+                    if (!button) {
+                        return;
+                    }
+                    list.querySelectorAll('.active').forEach(function (active) {
+                        active.classList.remove('active');
+                    });
+                    button.classList.add('active');
+                    loadMetric(button.dataset.metricName, []);
+                });
+
+                search.addEventListener('input', function () {
+                    const value = search.value.toLowerCase();
+                    list.querySelectorAll('button[data-metric-name]').forEach(function (button) {
+                        button.classList.toggle('d-none', button.dataset.metricName.toLowerCase().indexOf(value) < 0);
+                    });
+                });
+
+                const first = list.querySelector('button[data-metric-name]');
+                if (first) {
+                    first.click();
+                }
+            }());
+        </script>
+    {{else}}
+        <p>No Micrometer metrics are available.</p>
+    {{/if}}
+{{/with}}
