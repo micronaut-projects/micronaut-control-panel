@@ -57,6 +57,11 @@ public class MetricsControlPanel extends AbstractControlPanel<MetricsControlPane
         return String.valueOf(endpoint.listNames().getNames().size());
     }
 
+    /**
+     * Body model for the metrics panel summary.
+     *
+     * @param names sorted metric names
+     */
     @ReflectiveAccess
     public record MetricsBody(SortedSet<String> names) {
     }

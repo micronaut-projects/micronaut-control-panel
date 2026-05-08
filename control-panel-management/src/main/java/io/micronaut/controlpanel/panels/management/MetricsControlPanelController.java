@@ -57,6 +57,8 @@ import org.jspecify.annotations.Nullable;
 @Requires(property = MetricsControlPanel.ENABLED_PROPERTY, notEquals = StringUtils.FALSE)
 public final class MetricsControlPanelController {
 
+    private static final String MESSAGE = "message";
+
     private final MetricsEndpoint endpoint;
     private final MeterRegistry meterRegistry;
 
@@ -68,23 +70,24 @@ public final class MetricsControlPanelController {
     @Get(produces = MediaType.APPLICATION_JSON)
     public HttpResponse<Map<String, Object>> detail(@Nullable @QueryValue String name,
                                                     @Nullable @QueryValue("tag") List<String> tag) {
-        if (StringUtils.isEmpty(name)) {
-            return HttpResponse.badRequest(Map.of("message", "Metric name is required"));
+        if (name == null || name.isEmpty()) {
+            return HttpResponse.badRequest(Map.of(MESSAGE, "Metric name is required"));
         }
-        if (!endpoint.listNames().getNames().contains(name)) {
-            return HttpResponse.notFound(Map.of("message", "Metric not found"));
+        String metricName = name;
+        if (!endpoint.listNames().getNames().contains(metricName)) {
+            return HttpResponse.notFound(Map.of(MESSAGE, "Metric not found"));
         }
         var parsedTags = parseTags(tag == null ? List.of() : tag);
         if (parsedTags == null) {
-            return HttpResponse.badRequest(Map.of("message", "Tags must be in the form key:value"));
+            return HttpResponse.badRequest(Map.of(MESSAGE, "Tags must be in the form key:value"));
         }
-        Collection<Meter> meters = meterRegistry.find(name).tags(parsedTags).meters();
+        Collection<Meter> meters = meterRegistry.find(metricName).tags(parsedTags).meters();
         if (meters.isEmpty()) {
-            return HttpResponse.notFound(Map.of("message", "Metric not found for the supplied tags"));
+            return HttpResponse.notFound(Map.of(MESSAGE, "Metric not found for the supplied tags"));
         }
         Meter.Id id = meters.iterator().next().getId();
         return HttpResponse.ok(Map.of(
-            "name", name,
+            "name", metricName,
             "description", nullable(id.getDescription()),
             "baseUnit", nullable(id.getBaseUnit()),
             "measurements", measurements(meters),
