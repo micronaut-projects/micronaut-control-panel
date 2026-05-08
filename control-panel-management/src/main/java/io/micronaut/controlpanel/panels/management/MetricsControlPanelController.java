@@ -22,7 +22,6 @@ import io.micrometer.core.instrument.Tag;
 import io.micronaut.configuration.metrics.management.endpoint.MetricsEndpoint;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.core.annotation.Internal;
-import io.micronaut.core.annotation.Nullable;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
@@ -42,6 +41,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
+
+import org.jspecify.annotations.Nullable;
 
 /**
  * Internal API used by the Metrics control panel detail view.
@@ -65,8 +66,8 @@ public final class MetricsControlPanelController {
     }
 
     @Get(produces = MediaType.APPLICATION_JSON)
-    HttpResponse<Map<String, Object>> detail(@Nullable @QueryValue String name,
-                                             @Nullable @QueryValue("tag") List<String> tag) {
+    public HttpResponse<Map<String, Object>> detail(@Nullable @QueryValue String name,
+                                                    @Nullable @QueryValue("tag") List<String> tag) {
         if (StringUtils.isEmpty(name)) {
             return HttpResponse.badRequest(Map.of("message", "Metric name is required"));
         }

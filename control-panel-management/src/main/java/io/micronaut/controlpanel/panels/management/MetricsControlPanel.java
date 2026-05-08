@@ -19,7 +19,7 @@ import io.micronaut.configuration.metrics.management.endpoint.MetricsEndpoint;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.controlpanel.core.AbstractControlPanel;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
-import io.micronaut.core.annotation.Introspected;
+import io.micronaut.core.annotation.ReflectiveAccess;
 import io.micronaut.core.util.StringUtils;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
@@ -57,7 +57,7 @@ public class MetricsControlPanel extends AbstractControlPanel<MetricsControlPane
         return String.valueOf(endpoint.listNames().getNames().size());
     }
 
-    @Introspected
+    @ReflectiveAccess
     public record MetricsBody(SortedSet<String> names) {
     }
 }
