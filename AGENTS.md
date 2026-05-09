@@ -34,7 +34,7 @@ This repository builds the Micronaut Control Panel libraries and example applica
 ## Contributing Guidelines
 
 - Before opening or updating a pull request, read this repository's `CONTRIBUTING.md` and follow every repo-specific PR requirement it names.
-- Treat contributor-checklist items as handoff requirements. If a requirement is not applicable, state that explicitly in the PR description or handoff note.
+- Treat requirements in `CONTRIBUTING.md` and any PR template checklist items, if present, as handoff requirements. If a requirement is not applicable, state that explicitly in the PR description or handoff note.
 - For UI-visible changes, include screenshots in the PR description as required by `CONTRIBUTING.md`; if screenshots cannot be provided, explain why and describe the browser or visual verification that was performed.
 
 ## UI Design System
