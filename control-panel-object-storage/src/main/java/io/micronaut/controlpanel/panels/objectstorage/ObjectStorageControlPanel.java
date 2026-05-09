@@ -50,21 +50,20 @@ public class ObjectStorageControlPanel extends AbstractEachBeanControlPanel<Obje
     public static final String ENABLED_PROPERTY = ControlPanelConfiguration.PREFIX + "." + NAME + ".enabled";
     public static final String DEFAULT_ICON_CLASS = "fas fa-cloud-arrow-down";
     public static final String BUCKET = "bucket";
-    private static final String AWS_S3_CONFIGURATION = "io.micronaut.objectstorage.aws.AwsS3Configuration";
-    private static final String AZURE_BLOB_STORAGE_CONFIGURATION = "io.micronaut.objectstorage.azure.AzureBlobStorageConfiguration";
-    private static final String GOOGLE_CLOUD_STORAGE_CONFIGURATION = "io.micronaut.objectstorage.googlecloud.GoogleCloudStorageConfiguration";
-    private static final String LOCAL_STORAGE_CONFIGURATION = "io.micronaut.objectstorage.local.LocalStorageConfiguration";
-    private static final String ORACLE_CLOUD_STORAGE_CONFIGURATION = "io.micronaut.objectstorage.oraclecloud.OracleCloudStorageConfiguration";
+    private static final String AWS_PACKAGE = ".aws";
+    private static final String AWS_S3_CONFIGURATION = "AwsS3Configuration";
+    private static final String AZURE_PACKAGE = ".azure";
+    private static final String AZURE_BLOB_STORAGE_CONFIGURATION = "AzureBlobStorageConfiguration";
+    private static final String GOOGLE_CLOUD_PACKAGE = ".googlecloud";
+    private static final String GOOGLE_CLOUD_STORAGE_CONFIGURATION = "GoogleCloudStorageConfiguration";
+    private static final String LOCAL_PACKAGE = ".local";
+    private static final String LOCAL_STORAGE_CONFIGURATION = "LocalStorageConfiguration";
+    private static final String ORACLE_CLOUD_PACKAGE = ".oraclecloud";
+    private static final String ORACLE_CLOUD_STORAGE_CONFIGURATION = "OracleCloudStorageConfiguration";
     private static final String CONTAINER = "container";
     private static final String ENDPOINT = "endpoint";
     private static final String NAMESPACE = "namespace";
     private static final String PATH = "path";
-    private static final Map<String, String> PROVIDER_ICONS = Map.of(
-        AWS_S3_CONFIGURATION, "fa-brands fa-aws",
-        AZURE_BLOB_STORAGE_CONFIGURATION, "fa-brands fa-microsoft",
-        GOOGLE_CLOUD_STORAGE_CONFIGURATION, "fa-brands fa-google",
-        LOCAL_STORAGE_CONFIGURATION, "fa-hard-drive"
-    );
 
     private final ObjectStorageOperations<?, ?, ?> operations;
     private final AbstractObjectStorageConfiguration objectStorageConfiguration;
@@ -109,12 +108,19 @@ public class ObjectStorageControlPanel extends AbstractEachBeanControlPanel<Obje
     @Override
     public String getIcon() {
         var configurationType = objectStorageConfiguration.getClass();
-        return PROVIDER_ICONS.entrySet()
-            .stream()
-            .filter(entry -> isConfiguration(configurationType, entry.getKey()))
-            .map(Map.Entry::getValue)
-            .findFirst()
-            .orElse(DEFAULT_ICON_CLASS);
+        if (isConfiguration(configurationType, AWS_PACKAGE, AWS_S3_CONFIGURATION)) {
+            return "fa-brands fa-aws";
+        }
+        if (isConfiguration(configurationType, AZURE_PACKAGE, AZURE_BLOB_STORAGE_CONFIGURATION)) {
+            return "fa-brands fa-microsoft";
+        }
+        if (isConfiguration(configurationType, GOOGLE_CLOUD_PACKAGE, GOOGLE_CLOUD_STORAGE_CONFIGURATION)) {
+            return "fa-brands fa-google";
+        }
+        if (isConfiguration(configurationType, LOCAL_PACKAGE, LOCAL_STORAGE_CONFIGURATION)) {
+            return "fa-hard-drive";
+        }
+        return DEFAULT_ICON_CLASS;
     }
 
     /**
@@ -125,16 +131,16 @@ public class ObjectStorageControlPanel extends AbstractEachBeanControlPanel<Obje
     Map<String, Object> computeMetadata() {
         var metadata = new HashMap<String, Object>();
         var configurationType = objectStorageConfiguration.getClass();
-        if (isConfiguration(configurationType, LOCAL_STORAGE_CONFIGURATION)) {
+        if (isConfiguration(configurationType, LOCAL_PACKAGE, LOCAL_STORAGE_CONFIGURATION)) {
             putMetadata(metadata, PATH);
-        } else if (isConfiguration(configurationType, AWS_S3_CONFIGURATION)) {
+        } else if (isConfiguration(configurationType, AWS_PACKAGE, AWS_S3_CONFIGURATION)) {
             putMetadata(metadata, BUCKET);
-        } else if (isConfiguration(configurationType, AZURE_BLOB_STORAGE_CONFIGURATION)) {
+        } else if (isConfiguration(configurationType, AZURE_PACKAGE, AZURE_BLOB_STORAGE_CONFIGURATION)) {
             putMetadata(metadata, CONTAINER);
             putMetadata(metadata, ENDPOINT);
-        } else if (isConfiguration(configurationType, GOOGLE_CLOUD_STORAGE_CONFIGURATION)) {
+        } else if (isConfiguration(configurationType, GOOGLE_CLOUD_PACKAGE, GOOGLE_CLOUD_STORAGE_CONFIGURATION)) {
             putMetadata(metadata, BUCKET);
-        } else if (isConfiguration(configurationType, ORACLE_CLOUD_STORAGE_CONFIGURATION)) {
+        } else if (isConfiguration(configurationType, ORACLE_CLOUD_PACKAGE, ORACLE_CLOUD_STORAGE_CONFIGURATION)) {
             putMetadata(metadata, BUCKET);
             putMetadata(metadata, NAMESPACE);
         }
@@ -166,10 +172,11 @@ public class ObjectStorageControlPanel extends AbstractEachBeanControlPanel<Obje
         return new Entry(entry.getKey(), entry.getContentType());
     }
 
-    private static boolean isConfiguration(Class<?> type, String configurationClassName) {
+    private static boolean isConfiguration(Class<?> type, String packageSuffix, String simpleName) {
         var currentType = type;
         while (currentType != null) {
-            if (configurationClassName.equals(currentType.getName())) {
+            var packageName = currentType.getPackageName();
+            if (simpleName.equals(currentType.getSimpleName()) && packageName.endsWith(packageSuffix)) {
                 return true;
             }
             currentType = currentType.getSuperclass();
