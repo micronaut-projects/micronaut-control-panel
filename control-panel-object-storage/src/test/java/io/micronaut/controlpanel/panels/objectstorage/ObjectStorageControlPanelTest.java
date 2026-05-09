@@ -66,6 +66,20 @@ class ObjectStorageControlPanelTest {
     }
 
     @Test
+    void getIconReturnsAwsIconForAwsStorageConfiguration() {
+        AwsS3Configuration awsConfig = new AwsS3Configuration("test-storage");
+        ObjectStorageControlPanel panel = createPanel(Mockito.mock(ObjectStorageOperations.class), awsConfig, Mockito.mock(ControlPanelConfiguration.class));
+        assertEquals("fa-brands fa-aws", panel.getIcon());
+    }
+
+    @Test
+    void getIconReturnsLocalIconForLocalStorageConfiguration() {
+        LocalStorageConfiguration localConfig = new LocalStorageConfiguration("test-storage");
+        ObjectStorageControlPanel panel = createPanel(Mockito.mock(ObjectStorageOperations.class), localConfig, Mockito.mock(ControlPanelConfiguration.class));
+        assertEquals("fa-hard-drive", panel.getIcon());
+    }
+
+    @Test
     void itHasCorrectBodyView() {
         ObjectStorageControlPanel panel = createPanel(Mockito.mock(ObjectStorageOperations.class), Mockito.mock(AbstractObjectStorageConfiguration.class), Mockito.mock(ControlPanelConfiguration.class));
         assertEquals("/views/object-storage/body", panel.getBodyView().file());

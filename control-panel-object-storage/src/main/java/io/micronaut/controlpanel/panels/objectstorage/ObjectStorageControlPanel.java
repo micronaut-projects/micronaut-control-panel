@@ -108,6 +108,9 @@ public class ObjectStorageControlPanel extends AbstractEachBeanControlPanel<Obje
     @Override
     public String getIcon() {
         var configurationType = objectStorageConfiguration.getClass();
+        if (isConfiguration(configurationType, LOCAL_PACKAGE, LOCAL_STORAGE_CONFIGURATION)) {
+            return "fa-hard-drive";
+        }
         if (isConfiguration(configurationType, AWS_PACKAGE, AWS_S3_CONFIGURATION)) {
             return "fa-brands fa-aws";
         }
@@ -116,9 +119,6 @@ public class ObjectStorageControlPanel extends AbstractEachBeanControlPanel<Obje
         }
         if (isConfiguration(configurationType, GOOGLE_CLOUD_PACKAGE, GOOGLE_CLOUD_STORAGE_CONFIGURATION)) {
             return "fa-brands fa-google";
-        }
-        if (isConfiguration(configurationType, LOCAL_PACKAGE, LOCAL_STORAGE_CONFIGURATION)) {
-            return "fa-hard-drive";
         }
         return DEFAULT_ICON_CLASS;
     }
