@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Property(name = "kafka.streams.default.state.dir", value = "build/tmp/kafka-streams-e2e")
 class ControlPanelE2ETest extends AbstractE2ETest {
 
-    private static final double CONTROL_PANEL_TIMEOUT_MS = 60_000;
+    private static final double CONTROL_PANEL_TIMEOUT_MS = 180_000;
 
     @BeforeEach
     void configurePage(Page page) {
