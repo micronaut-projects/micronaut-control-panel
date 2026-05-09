@@ -1,0 +1,11 @@
+[
+  {
+    "name": "io.micronaut.objectstorage.local.LocalStorageConfiguration",
+    "methods": [
+      {
+        "name": "getPath",
+        "parameterTypes": []
+      }
+    ]
+  }
+]

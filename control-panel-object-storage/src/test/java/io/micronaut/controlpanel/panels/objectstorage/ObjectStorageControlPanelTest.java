@@ -97,8 +97,8 @@ class ObjectStorageControlPanelTest {
         ObjectStorageControlPanel panel = createPanel(operations, Mockito.mock(AbstractObjectStorageConfiguration.class), Mockito.mock(ControlPanelConfiguration.class));
         var body = panel.getBody();
         assertEquals(2, body.entries().size());
-        assertTrue(body.entries().contains(entry1));
-        assertTrue(body.entries().contains(entry2));
+        assertTrue(body.entries().stream().anyMatch(entry -> entry.key().equals(entry1.getKey())));
+        assertTrue(body.entries().stream().anyMatch(entry -> entry.key().equals(entry2.getKey())));
     }
 
     @Test
@@ -113,8 +113,8 @@ class ObjectStorageControlPanelTest {
         ObjectStorageControlPanel panel = createPanel(operations, Mockito.mock(AbstractObjectStorageConfiguration.class), Mockito.mock(ControlPanelConfiguration.class));
         var body = panel.getBody();
         assertEquals(1, body.entries().size());
-        assertTrue(body.entries().contains(entry1));
-        assertFalse(body.entries().contains(entry2));
+        assertTrue(body.entries().stream().anyMatch(entry -> entry.key().equals(entry1.getKey())));
+        assertFalse(body.entries().stream().anyMatch(entry -> entry.key().equals(entry2.getKey())));
     }
 
     @Test

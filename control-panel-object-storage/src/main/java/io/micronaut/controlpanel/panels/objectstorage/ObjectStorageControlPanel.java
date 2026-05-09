@@ -44,16 +44,6 @@ import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
  * @since 1.10.0
  */
 @EachBean(AbstractObjectStorageConfiguration.class)
-@TypeHint(
-    typeNames = {
-        "io.micronaut.objectstorage.aws.AwsS3Configuration",
-        "io.micronaut.objectstorage.azure.AzureBlobStorageConfiguration",
-        "io.micronaut.objectstorage.googlecloud.GoogleCloudStorageConfiguration",
-        "io.micronaut.objectstorage.local.LocalStorageConfiguration",
-        "io.micronaut.objectstorage.oraclecloud.OracleCloudStorageConfiguration"
-    },
-    accessType = TypeHint.AccessType.ALL_PUBLIC_METHODS
-)
 public class ObjectStorageControlPanel extends AbstractEachBeanControlPanel<ObjectStorageControlPanel.Body> {
 
     public static final String NAME = "object-storage";
@@ -104,6 +94,7 @@ public class ObjectStorageControlPanel extends AbstractEachBeanControlPanel<Obje
             .map(operations::retrieve)
             .filter(Optional::isPresent)
             .map(Optional::get)
+            .map(ObjectStorageControlPanel::entry)
             .toList();
         var metadata = computeMetadata();
 
@@ -171,6 +162,10 @@ public class ObjectStorageControlPanel extends AbstractEachBeanControlPanel<Obje
         return "get" + Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1);
     }
 
+    private static Entry entry(ObjectStorageEntry<?> entry) {
+        return new Entry(entry.getKey(), entry.getContentType());
+    }
+
     private static boolean isConfiguration(Class<?> type, String configurationClassName) {
         var currentType = type;
         while (currentType != null) {
@@ -194,15 +189,15 @@ public class ObjectStorageControlPanel extends AbstractEachBeanControlPanel<Obje
      * @param metadata the metadata for this control panel
      */
     @ReflectiveAccess
-    @TypeHint(
-        typeNames = {
-            "io.micronaut.objectstorage.aws.AwsS3ObjectStorageEntry",
-            "io.micronaut.objectstorage.azure.AzureBlobStorageEntry",
-            "io.micronaut.objectstorage.googlecloud.GoogleCloudStorageEntry",
-            "io.micronaut.objectstorage.local.LocalStorageEntry",
-            "io.micronaut.objectstorage.oraclecloud.OracleCloudStorageEntry"
-        },
-        accessType = TypeHint.AccessType.ALL_PUBLIC
-    )
-    public record Body(List<? extends ObjectStorageEntry<?>> entries, Map<String, Object> metadata) { }
+    @TypeHint(value = { Entry.class }, accessType = TypeHint.AccessType.ALL_PUBLIC)
+    public record Body(List<Entry> entries, Map<String, Object> metadata) { }
+
+    /**
+     * Render-safe object storage entry metadata.
+     *
+     * @param key the object key
+     * @param contentType the optional content type
+     */
+    @ReflectiveAccess
+    public record Entry(String key, Optional<String> contentType) { }
 }
