@@ -135,8 +135,8 @@ class ObjectStorageControlPanelTest {
 
     @Test
     void computeMetadataReturnsBucketForAws() {
-        AwsS3Configuration awsConfig = Mockito.mock(AwsS3Configuration.class);
-        Mockito.when(awsConfig.getBucket()).thenReturn("mybucket");
+        AwsS3Configuration awsConfig = new AwsS3Configuration("test-storage");
+        awsConfig.setBucket("mybucket");
         ObjectStorageControlPanel panel = new ObjectStorageControlPanel(Mockito.mock(ObjectStorageOperations.class), awsConfig, Mockito.mock(ControlPanelConfiguration.class));
         var metadata = panel.computeMetadata();
         assertEquals(1, metadata.size());
@@ -145,8 +145,8 @@ class ObjectStorageControlPanelTest {
 
     @Test
     void computeMetadataIncludesPathForLocalStorageConfiguration() {
-        LocalStorageConfiguration localConfig = Mockito.mock(LocalStorageConfiguration.class);
-        Mockito.when(localConfig.getPath()).thenReturn(Path.of("/tmp/test-storage"));
+        LocalStorageConfiguration localConfig = new LocalStorageConfiguration("test-storage");
+        localConfig.setPath(Path.of("/tmp/test-storage"));
         ObjectStorageControlPanel panel = new ObjectStorageControlPanel(Mockito.mock(ObjectStorageOperations.class), localConfig, Mockito.mock(ControlPanelConfiguration.class));
         var metadata = panel.computeMetadata();
         assertEquals(1, metadata.size());
