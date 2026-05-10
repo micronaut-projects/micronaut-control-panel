@@ -55,14 +55,7 @@ class AbstractE2ETest {
     }
 
     static Locator controlPanelDetails(final Page page, final String name) {
-        return page
-            .locator(".cp-panel-card")
-            .filter(
-                new Locator.FilterOptions()
-                    .setHas(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName(nameRegex(name))))
-            )
-            .locator(".cp-card-footer")
-            .getByRole(AriaRole.BUTTON);
+        return page.locator(".cp-card-footer .btn[href$='/" + controlPanelName(name) + "']").first();
     }
 
     static Locator categoryLink(final Page page, final String name) {
@@ -71,6 +64,21 @@ class AbstractE2ETest {
 
     static Pattern nameRegex(final String name) {
         return Pattern.compile("^.*" + name + ".*$");
+    }
+
+    private static String controlPanelName(final String title) {
+        return switch (title) {
+            case "Application Health" -> "health";
+            case "Environment Properties" -> "env";
+            case "HTTP Routes" -> "routes";
+            case "Bean Definitions" -> "beans";
+            case "Disabled Beans" -> "disabled-beans";
+            case "Loggers" -> "loggers";
+            case "my-oracle" -> "datasource-my-oracle";
+            case "Kafka" -> "kafka-streams-default";
+            case "my-postgres" -> "hibernate-my-postgres";
+            default -> title;
+        };
     }
 
     String baseUrl() {
