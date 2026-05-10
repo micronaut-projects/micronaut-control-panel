@@ -66,10 +66,10 @@ class ObjectStorageControlPanelTest {
     }
 
     @Test
-    void getIconReturnsAwsIconForAwsStorageConfiguration() {
+    void getIconReturnsDefaultIconForAwsStorageConfiguration() {
         AwsS3Configuration awsConfig = new AwsS3Configuration("test-storage");
         ObjectStorageControlPanel panel = createPanel(Mockito.mock(ObjectStorageOperations.class), awsConfig, Mockito.mock(ControlPanelConfiguration.class));
-        assertEquals("fa-brands fa-aws", panel.getIcon());
+        assertEquals(ObjectStorageControlPanel.DEFAULT_ICON_CLASS, panel.getIcon());
     }
 
     @Test
