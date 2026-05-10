@@ -73,10 +73,10 @@ class ObjectStorageControlPanelTest {
     }
 
     @Test
-    void getIconReturnsLocalIconForLocalStorageConfiguration() {
+    void getIconReturnsDefaultIconForLocalStorageConfiguration() {
         LocalStorageConfiguration localConfig = new LocalStorageConfiguration("test-storage");
         ObjectStorageControlPanel panel = createPanel(Mockito.mock(ObjectStorageOperations.class), localConfig, Mockito.mock(ControlPanelConfiguration.class));
-        assertEquals("fa-hard-drive", panel.getIcon());
+        assertEquals(ObjectStorageControlPanel.DEFAULT_ICON_CLASS, panel.getIcon());
     }
 
     @Test

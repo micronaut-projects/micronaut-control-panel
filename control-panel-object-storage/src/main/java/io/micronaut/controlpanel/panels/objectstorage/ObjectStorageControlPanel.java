@@ -54,7 +54,6 @@ public class ObjectStorageControlPanel extends AbstractEachBeanControlPanel<Obje
     private static final String ENDPOINT = "endpoint";
     private static final String NAMESPACE = "namespace";
     private static final String PATH = "path";
-    private static final String LOCAL_STORAGE_CONFIGURATION = "io.micronaut.objectstorage.local.LocalStorageConfiguration";
 
     private final ObjectStorageOperations<?, ?, ?> operations;
     private final AbstractObjectStorageConfiguration objectStorageConfiguration;
@@ -98,7 +97,7 @@ public class ObjectStorageControlPanel extends AbstractEachBeanControlPanel<Obje
 
     @Override
     public String getIcon() {
-        return isLocalStorageConfiguration() ? "fa-hard-drive" : DEFAULT_ICON_CLASS;
+        return DEFAULT_ICON_CLASS;
     }
 
     /**
@@ -143,14 +142,6 @@ public class ObjectStorageControlPanel extends AbstractEachBeanControlPanel<Obje
 
     private static Entry entry(ObjectStorageEntry<?> entry) {
         return new Entry(entry.getKey(), entry.getContentType());
-    }
-
-    private boolean isLocalStorageConfiguration() {
-        try {
-            return LOCAL_STORAGE_CONFIGURATION.equals(objectStorageConfiguration.getClass().getName());
-        } catch (LinkageError e) {
-            return false;
-        }
     }
 
     @Override
