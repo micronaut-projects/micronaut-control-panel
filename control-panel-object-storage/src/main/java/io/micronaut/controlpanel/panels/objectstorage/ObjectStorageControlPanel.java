@@ -107,7 +107,7 @@ public class ObjectStorageControlPanel extends AbstractEachBeanControlPanel<Obje
 
     @Override
     public String getIcon() {
-        var configurationType = objectStorageConfiguration.getClass();
+        var configurationType = configurationType();
         if (isConfiguration(configurationType, LOCAL_PACKAGE, LOCAL_STORAGE_CONFIGURATION)) {
             return "fa-hard-drive";
         }
@@ -130,7 +130,7 @@ public class ObjectStorageControlPanel extends AbstractEachBeanControlPanel<Obje
      */
     Map<String, Object> computeMetadata() {
         var metadata = new HashMap<String, Object>();
-        var configurationType = objectStorageConfiguration.getClass();
+        var configurationType = configurationType();
         if (isConfiguration(configurationType, LOCAL_PACKAGE, LOCAL_STORAGE_CONFIGURATION)) {
             putMetadata(metadata, PATH);
         } else if (isConfiguration(configurationType, AWS_PACKAGE, AWS_S3_CONFIGURATION)) {
@@ -148,18 +148,22 @@ public class ObjectStorageControlPanel extends AbstractEachBeanControlPanel<Obje
     }
 
     private void putMetadata(Map<String, Object> metadata, String propertyName) {
-        BeanWrapper.findWrapper(objectStorageConfiguration)
-            .flatMap(wrapper -> wrapper.getIntrospection().getReadProperty(propertyName))
-            .map(property -> property.get(objectStorageConfiguration))
-            .or(() -> readProperty(propertyName))
-            .ifPresent(value -> metadata.put(propertyName, value));
+        try {
+            BeanWrapper.findWrapper(objectStorageConfiguration)
+                .flatMap(wrapper -> wrapper.getIntrospection().getReadProperty(propertyName))
+                .map(property -> property.get(objectStorageConfiguration))
+                .or(() -> readProperty(propertyName))
+                .ifPresent(value -> metadata.put(propertyName, value));
+        } catch (LinkageError e) {
+            readProperty(propertyName).ifPresent(value -> metadata.put(propertyName, value));
+        }
     }
 
     private Optional<Object> readProperty(String propertyName) {
         try {
             var method = objectStorageConfiguration.getClass().getMethod(getterName(propertyName));
             return Optional.ofNullable(method.invoke(objectStorageConfiguration));
-        } catch (ReflectiveOperationException | SecurityException e) {
+        } catch (ReflectiveOperationException | SecurityException | LinkageError e) {
             return Optional.empty();
         }
     }
@@ -172,14 +176,26 @@ public class ObjectStorageControlPanel extends AbstractEachBeanControlPanel<Obje
         return new Entry(entry.getKey(), entry.getContentType());
     }
 
+    private Class<?> configurationType() {
+        try {
+            return objectStorageConfiguration.getClass();
+        } catch (LinkageError e) {
+            return null;
+        }
+    }
+
     private static boolean isConfiguration(Class<?> type, String packageSuffix, String simpleName) {
         var currentType = type;
         while (currentType != null) {
-            var packageName = currentType.getPackageName();
-            if (simpleName.equals(currentType.getSimpleName()) && packageName.endsWith(packageSuffix)) {
-                return true;
+            try {
+                var packageName = currentType.getPackageName();
+                if (simpleName.equals(currentType.getSimpleName()) && packageName.endsWith(packageSuffix)) {
+                    return true;
+                }
+                currentType = currentType.getSuperclass();
+            } catch (LinkageError e) {
+                return false;
             }
-            currentType = currentType.getSuperclass();
         }
         return false;
     }
