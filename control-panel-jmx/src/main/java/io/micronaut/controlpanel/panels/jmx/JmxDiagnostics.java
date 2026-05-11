@@ -22,6 +22,22 @@ import java.util.List;
 
 /**
  * Read-only JMX diagnostics rendered by the JMX Control Panel.
+ *
+ * @param serverAvailable whether an MBean server bean is available
+ * @param serverClassName MBean server implementation class name
+ * @param defaultDomain server default domain
+ * @param endpointDomain Micronaut endpoint MBean domain
+ * @param totalMBeanCount total MBean count reported by the server
+ * @param domainCount number of readable domains
+ * @param endpointMBeanCount number of Micronaut endpoint MBeans
+ * @param metadataFailureCount number of endpoint MBeans with metadata warnings
+ * @param settings visible JMX settings
+ * @param domainSummaries MBean counts grouped by domain
+ * @param endpointMBeans Micronaut endpoint MBean metadata
+ * @param warnings panel-level warnings
+ * @param hasDomainSummaries whether domain summaries are available
+ * @param hasEndpointMBeans whether endpoint MBeans are available
+ * @param hasWarnings whether panel warnings are available
  */
 @Internal
 @ReflectiveAccess
@@ -57,6 +73,15 @@ public record JmxDiagnostics(boolean serverAvailable,
 
     /**
      * JMX configuration values visible to the panel.
+     *
+     * @param configurationClassPresent whether Micronaut JMX configuration is on the classpath
+     * @param hasExplicitProperties whether any JMX setting is explicitly configured
+     * @param agentId configured agent id setting
+     * @param domain configured domain setting
+     * @param addToFactory configured add-to-factory setting
+     * @param ignoreAgentNotFound configured ignore-agent-not-found setting
+     * @param registerEndpoints configured register-endpoints setting
+     * @param registerEndpointsDisabled whether endpoint registration is disabled
      */
     @ReflectiveAccess
     public record JmxSettings(boolean configurationClassPresent,
@@ -84,6 +109,11 @@ public record JmxDiagnostics(boolean serverAvailable,
 
     /**
      * One configuration setting.
+     *
+     * @param name property name
+     * @param value rendered property value
+     * @param source rendered value source
+     * @param configured whether the value was explicitly configured
      */
     @ReflectiveAccess
     public record Setting(String name, String value, String source, boolean configured) {
@@ -102,6 +132,9 @@ public record JmxDiagnostics(boolean serverAvailable,
 
     /**
      * Count of MBeans grouped by domain.
+     *
+     * @param domain JMX domain
+     * @param mBeanCount number of MBeans in the domain
      */
     @ReflectiveAccess
     public record DomainSummary(String domain, int mBeanCount) {
@@ -109,6 +142,23 @@ public record JmxDiagnostics(boolean serverAvailable,
 
     /**
      * One Micronaut endpoint MBean and the metadata that could be read safely.
+     *
+     * @param objectName redacted ObjectName
+     * @param endpointType endpoint type property
+     * @param registered whether the MBean is currently registered
+     * @param status rendered registration or metadata status
+     * @param warning row-level metadata warning
+     * @param operationCount number of operations
+     * @param infoImpactCount number of INFO operations
+     * @param actionImpactCount number of ACTION operations
+     * @param actionInfoImpactCount number of ACTION_INFO operations
+     * @param unknownImpactCount number of operations with unknown impact
+     * @param attributeCount number of attributes
+     * @param operations operation metadata
+     * @param attributes attribute metadata
+     * @param hasWarning whether the row has a warning
+     * @param hasOperations whether operations are available
+     * @param hasAttributes whether attributes are available
      */
     @ReflectiveAccess
     public record EndpointMBean(String objectName,
@@ -142,6 +192,13 @@ public record JmxDiagnostics(boolean serverAvailable,
 
     /**
      * JMX operation metadata. This does not include invocation support.
+     *
+     * @param name operation name
+     * @param returnType operation return type
+     * @param impact JMX operation impact
+     * @param parameterCount number of parameters
+     * @param parameters parameter metadata
+     * @param hasParameters whether parameters are available
      */
     @ReflectiveAccess
     public record Operation(String name,
@@ -160,6 +217,9 @@ public record JmxDiagnostics(boolean serverAvailable,
 
     /**
      * JMX operation parameter metadata.
+     *
+     * @param name parameter name
+     * @param type parameter type
      */
     @ReflectiveAccess
     public record Parameter(String name, String type) {
@@ -167,6 +227,11 @@ public record JmxDiagnostics(boolean serverAvailable,
 
     /**
      * JMX attribute metadata. Attribute values are intentionally not read.
+     *
+     * @param name attribute name
+     * @param type attribute type
+     * @param readable whether the attribute is readable
+     * @param writable whether the attribute is writable
      */
     @ReflectiveAccess
     public record Attribute(String name, String type, boolean readable, boolean writable) {
@@ -174,6 +239,9 @@ public record JmxDiagnostics(boolean serverAvailable,
 
     /**
      * Panel-level warning.
+     *
+     * @param level warning level
+     * @param message warning message
      */
     @ReflectiveAccess
     public record Warning(String level, String message) {
