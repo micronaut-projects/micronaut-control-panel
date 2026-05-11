@@ -230,7 +230,7 @@ public final class TracingDiagnosticsService {
         List<TracingProviderInfo> providers = new ArrayList<>();
         for (ClassCheck provider : PROVIDERS) {
             if (classPresence.isPresent(provider.className()) || containsBean(provider.className())) {
-                providers.add(new TracingProviderInfo(provider.name(), "present", provider.detail()));
+                providers.add(new TracingProviderInfo(provider.name(), PRESENT, provider.detail()));
             }
         }
         return providers;

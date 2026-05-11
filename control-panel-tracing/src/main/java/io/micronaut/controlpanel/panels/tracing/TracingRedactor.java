@@ -92,8 +92,11 @@ final class TracingRedactor {
         return redacted.substring(0, queryStart + 1) + redactQuery(query) + fragment;
     }
 
-    private String redactQuery(@Nullable String query) {
-        if (query == null || query.isBlank()) {
+    private @Nullable String redactQuery(@Nullable String query) {
+        if (query == null) {
+            return null;
+        }
+        if (query.isBlank()) {
             return query;
         }
         StringJoiner joiner = new StringJoiner("&");
