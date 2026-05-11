@@ -1,0 +1,226 @@
+{{#with controlPanel.body}}
+    <div class="cp-dashboard-stack">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card card-light">
+                    <div class="card-body">
+                        <div class="text-muted">XML routes</div>
+                        <div class="h3 mb-0">{{summary.xmlRoutes}}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card card-light">
+                    <div class="card-body">
+                        <div class="text-muted">Consumes XML</div>
+                        <div class="h3 mb-0">{{summary.consumesXml}}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card card-light">
+                    <div class="card-body">
+                        <div class="text-muted">Produces XML</div>
+                        <div class="h3 mb-0">{{summary.producesXml}}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card card-light">
+                    <div class="card-body">
+                        <div class="text-muted">Customizations</div>
+                        <div class="h3 mb-0">{{summary.customizations}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info" role="status">{{stateMessage}}</div>
+
+        <div class="card card-light">
+            <div class="card-header">
+                <h3 class="card-title">XML mapper</h3>
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-3">Dependency</dt>
+                    <dd class="col-sm-9">
+                        {{#if mapper.dependencyPresent}}
+                            <span class="badge badge-primary">Present</span>
+                        {{else}}
+                            <span class="badge badge-secondary">Missing</span>
+                        {{/if}}
+                    </dd>
+                    <dt class="col-sm-3">Named mapper</dt>
+                    <dd class="col-sm-9">
+                        {{#if mapper.namedMapperPresent}}
+                            <span class="badge badge-primary">xml</span>
+                        {{else}}
+                            <span class="badge badge-secondary">Unavailable</span>
+                        {{/if}}
+                    </dd>
+                    <dt class="col-sm-3">Implementation</dt>
+                    <dd class="col-sm-9"><code class="cp-table-code">{{defaultIfEmpty mapper.mapperClassName "Not available"}}</code></dd>
+                    <dt class="col-sm-3">defaultUseWrapper</dt>
+                    <dd class="col-sm-9"><code>{{mapper.defaultUseWrapperDisplay}}</code></dd>
+                </dl>
+
+                <div class="row">
+                    <div class="col-lg-6">
+                        <h4>Parser feature overrides</h4>
+                        {{#if mapper.hasParserFeatures}}
+                            <div class="cp-data-table-container">
+                                <table class="table cp-data-table-table">
+                                    <thead>
+                                    <tr>
+                                        <th>Feature</th>
+                                        <th>Enabled</th>
+                                        <th>Source</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {{#each mapper.parserFeatures as |feature|}}
+                                        <tr>
+                                            <td><code class="cp-table-code">{{feature.featureName}}</code></td>
+                                            <td><code>{{feature.enabled}}</code></td>
+                                            <td><code>{{feature.source}}</code></td>
+                                        </tr>
+                                    {{/each}}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {{else}}
+                            <div class="cp-data-table-empty">No parser feature overrides configured.</div>
+                        {{/if}}
+                    </div>
+                    <div class="col-lg-6">
+                        <h4>Generator feature overrides</h4>
+                        {{#if mapper.hasGeneratorFeatures}}
+                            <div class="cp-data-table-container">
+                                <table class="table cp-data-table-table">
+                                    <thead>
+                                    <tr>
+                                        <th>Feature</th>
+                                        <th>Enabled</th>
+                                        <th>Source</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {{#each mapper.generatorFeatures as |feature|}}
+                                        <tr>
+                                            <td><code class="cp-table-code">{{feature.featureName}}</code></td>
+                                            <td><code>{{feature.enabled}}</code></td>
+                                            <td><code>{{feature.source}}</code></td>
+                                        </tr>
+                                    {{/each}}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {{else}}
+                            <div class="cp-data-table-empty">No generator feature overrides configured.</div>
+                        {{/if}}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card card-light">
+            <div class="card-header">
+                <h3 class="card-title">XML routes</h3>
+            </div>
+            <div class="card-body">
+                {{#if hasRoutes}}
+                    <div class="cp-data-table cp-data-table-paged" data-filter-table data-filter-table-page-size="12" data-filter-table-label="route" data-filter-table-label-plural="routes">
+                        <div class="cp-data-table-toolbar">
+                            <div class="cp-data-table-summary" data-filter-table-summary>{{routes.size}} routes</div>
+                            <div class="cp-data-table-search">
+                                <input type="search" class="form-control" data-filter-table-search placeholder="Search XML routes" aria-label="Search XML routes">
+                            </div>
+                        </div>
+                        <div class="cp-data-table-container">
+                            <table class="table cp-data-table-table cp-data-table-fixed">
+                                <thead>
+                                <tr>
+                                    <th>Method</th>
+                                    <th>Path</th>
+                                    <th>Consumes</th>
+                                    <th>Produces</th>
+                                    <th>Handler</th>
+                                    <th>Source</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {{#each routes as |route|}}
+                                    <tr data-filter-table-row>
+                                        <td><code>{{route.httpMethod}}</code></td>
+                                        <td><code class="cp-table-code">{{route.path}}</code></td>
+                                        <td><code class="cp-table-code">{{join route.consumes ", "}}</code></td>
+                                        <td><code class="cp-table-code">{{join route.produces ", "}}</code></td>
+                                        <td><code class="cp-table-code">{{route.declaringType}}#{{route.methodName}}({{route.argumentSummary}})</code></td>
+                                        <td><span class="badge badge-secondary">{{route.source}}</span></td>
+                                    </tr>
+                                {{/each}}
+                                <tr data-filter-table-empty hidden>
+                                    <td class="cp-data-table-empty-cell" colspan="6">No XML routes found.</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="cp-data-table-footer">
+                            <label class="cp-data-table-page-size">
+                                Rows per page
+                                <select class="form-control" data-filter-table-page-size-select aria-label="XML routes per page">
+                                    <option value="8">8</option>
+                                    <option value="12" selected>12</option>
+                                    <option value="20">20</option>
+                                    <option value="50">50</option>
+                                </select>
+                            </label>
+                            <div class="cp-data-table-pagination">
+                                <span class="cp-data-table-page" data-filter-table-page>Page 1 of 1</span>
+                                <button type="button" class="btn btn-secondary btn-sm" data-filter-table-prev>Previous</button>
+                                <button type="button" class="btn btn-secondary btn-sm" data-filter-table-next>Next</button>
+                            </div>
+                        </div>
+                    </div>
+                {{else}}
+                    <div class="cp-data-table-empty">No application route declares XML consumes or produces metadata.</div>
+                {{/if}}
+            </div>
+        </div>
+
+        <div class="card card-light">
+            <div class="card-header">
+                <h3 class="card-title">Customization</h3>
+            </div>
+            <div class="card-body">
+                {{#if hasCustomizations}}
+                    <div class="cp-data-table-container">
+                        <table class="table cp-data-table-table cp-data-table-fixed">
+                            <thead>
+                            <tr>
+                                <th>Kind</th>
+                                <th>Bean</th>
+                                <th>Implementation</th>
+                                <th>Target types</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {{#each customizations as |customization|}}
+                                <tr>
+                                    <td><span class="badge badge-secondary">{{customization.kind}}</span></td>
+                                    <td><code class="cp-table-code">{{defaultIfEmpty customization.beanName "default"}}</code></td>
+                                    <td><code class="cp-table-code">{{customization.implementationClassName}}</code></td>
+                                    <td><code class="cp-table-code">{{join customization.targetTypeNames ", "}}</code></td>
+                                </tr>
+                            {{/each}}
+                            </tbody>
+                        </table>
+                    </div>
+                {{else}}
+                    <div class="cp-data-table-empty">No Jackson XML customization beans detected.</div>
+                {{/if}}
+            </div>
+        </div>
+    </div>
+{{/with}}

@@ -168,6 +168,20 @@ class ControlPanelE2ETest extends AbstractE2ETest {
     }
 
     @Test
+    void testJacksonXml(Page page) {
+        page.navigate(baseUrl());
+        categoryLink(page, "Serialization").click();
+        controlPanelDetails(page, "Jackson XML").click();
+
+        assertThat(body(page)).containsText("XML mapper");
+        assertThat(body(page)).containsText("defaultUseWrapper");
+        assertThat(body(page)).containsText("false");
+        assertThat(body(page)).containsText("Generator feature overrides");
+        assertThat(body(page)).containsText("/xml-demo/books");
+        assertThat(body(page)).containsText("application/vnd.example+xml");
+    }
+
+    @Test
     void testCustomCategory(Page page) {
         page.navigate(baseUrl());
         categoryLink(page, "My Application").click();

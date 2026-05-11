@@ -29,6 +29,14 @@ micronaut:
   application:
     name: myApplication
 
+jackson:
+  xml:
+    default-use-wrapper: false
+    parser:
+      auto-detect-xsi-type: true
+    generator:
+      write-xml-declaration: true
+
 ehcache:
   caches:
     my-ehcache:
