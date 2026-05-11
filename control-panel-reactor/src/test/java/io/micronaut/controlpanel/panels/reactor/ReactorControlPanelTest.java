@@ -49,6 +49,7 @@ class ReactorControlPanelTest {
             assertEquals("Reactor Diagnostics", panel.getTitle());
             assertEquals("fa-wave-square", panel.getIcon());
             assertEquals(25, panel.getOrder());
+            assertEquals(String.valueOf(panel.getBody().routes().size()), panel.getBadge());
             assertEquals("reactor", panel.getCategory().id());
         }
     }

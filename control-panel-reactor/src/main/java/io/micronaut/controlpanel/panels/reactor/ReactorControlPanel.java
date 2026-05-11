@@ -48,7 +48,7 @@ public class ReactorControlPanel extends AbstractControlPanel<ReactorDiagnostics
      * Configuration property used to enable or disable this panel.
      */
     public static final String ENABLED_PROPERTY = ControlPanelConfiguration.PREFIX + "." + NAME + ".enabled";
-    private static final ControlPanel.Category CATEGORY = new ControlPanel.Category("reactor", "Reactor", "fa-wave-square", 25);
+    private static final ControlPanel.Category CATEGORY = new ControlPanel.Category(NAME, "Reactor", "fa-wave-square", 25);
 
     private final ReactorRouteAnalyzer routeAnalyzer;
     private final ReactorClientInspector clientInspector;
@@ -86,7 +86,7 @@ public class ReactorControlPanel extends AbstractControlPanel<ReactorDiagnostics
     public String getBadge() {
         try {
             return String.valueOf(routeAnalyzer.routes().size());
-        } catch (RuntimeException e) {
+        } catch (RuntimeException _) {
             return "0";
         }
     }
@@ -99,7 +99,7 @@ public class ReactorControlPanel extends AbstractControlPanel<ReactorDiagnostics
     private List<ReactorDiagnosticsBody.ReactiveRoute> safeRoutes(List<ReactorDiagnosticsBody.SectionError> errors) {
         try {
             return routeAnalyzer.routes();
-        } catch (RuntimeException e) {
+        } catch (RuntimeException _) {
             errors.add(new ReactorDiagnosticsBody.SectionError("Routes", "Reactor route diagnostics are unavailable."));
             return List.of();
         }
@@ -108,7 +108,7 @@ public class ReactorControlPanel extends AbstractControlPanel<ReactorDiagnostics
     private List<ReactorDiagnosticsBody.ReactorClient> safeClients(List<ReactorDiagnosticsBody.SectionError> errors) {
         try {
             return clientInspector.clients();
-        } catch (RuntimeException e) {
+        } catch (RuntimeException _) {
             errors.add(new ReactorDiagnosticsBody.SectionError("HTTP clients", "Reactor HTTP client diagnostics are unavailable."));
             return List.of();
         }
@@ -117,7 +117,7 @@ public class ReactorControlPanel extends AbstractControlPanel<ReactorDiagnostics
     private List<ReactorDiagnosticsBody.ReadinessCheck> safeReadiness(List<ReactorDiagnosticsBody.SectionError> errors) {
         try {
             return readinessInspector.readiness();
-        } catch (RuntimeException e) {
+        } catch (RuntimeException _) {
             errors.add(new ReactorDiagnosticsBody.SectionError("Readiness", "Reactor readiness diagnostics are unavailable."));
             return List.of();
         }

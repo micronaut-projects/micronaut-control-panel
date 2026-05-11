@@ -24,6 +24,9 @@ import java.util.List;
 
 final class MeterRegistryReadiness {
 
+    private static final String STATUS_PRESENT = "present";
+    private static final String STATUS_NOT_PRESENT = "not present";
+
     private MeterRegistryReadiness() {
     }
 
@@ -38,13 +41,13 @@ final class MeterRegistryReadiness {
                 .sorted(Comparator.naturalOrder())
                 .toList();
             return List.of(
-                new ReactorDiagnosticsBody.ReadinessCheck("MeterRegistry bean", "present", "A Micrometer MeterRegistry bean is available."),
-                new ReactorDiagnosticsBody.ReadinessCheck("Reactor meter names", reactorNames.isEmpty() ? "not present" : "present", reactorNames.size() + " reactor.* meter name(s) are registered.")
+                new ReactorDiagnosticsBody.ReadinessCheck("MeterRegistry bean", STATUS_PRESENT, "A Micrometer MeterRegistry bean is available."),
+                new ReactorDiagnosticsBody.ReadinessCheck("Reactor meter names", reactorNames.isEmpty() ? STATUS_NOT_PRESENT : STATUS_PRESENT, reactorNames.size() + " reactor.* meter name(s) are registered.")
             );
-        } catch (NoSuchBeanException e) {
+        } catch (NoSuchBeanException _) {
             return List.of(
-                new ReactorDiagnosticsBody.ReadinessCheck("MeterRegistry bean", "not present", "No Micrometer MeterRegistry bean is available."),
-                new ReactorDiagnosticsBody.ReadinessCheck("Reactor meter names", "not present", "No MeterRegistry is available.")
+                new ReactorDiagnosticsBody.ReadinessCheck("MeterRegistry bean", STATUS_NOT_PRESENT, "No Micrometer MeterRegistry bean is available."),
+                new ReactorDiagnosticsBody.ReadinessCheck("Reactor meter names", STATUS_NOT_PRESENT, "No MeterRegistry is available.")
             );
         }
     }
