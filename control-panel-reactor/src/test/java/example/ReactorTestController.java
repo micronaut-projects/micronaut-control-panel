@@ -56,6 +56,12 @@ class ReactorTestController {
         return Flux.just("one", "two");
     }
 
+    @Get("/sse-with-parameters")
+    @Produces("text/event-stream;charset=UTF-8")
+    Flux<String> sseWithParameters() {
+        return Flux.just("one", "two");
+    }
+
     @Get("/stream")
     @Produces(MediaType.APPLICATION_JSON_STREAM)
     Flux<String> stream() {

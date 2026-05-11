@@ -28,6 +28,7 @@ import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import org.junit.jupiter.api.Test;
 
+import java.util.Locale;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -66,6 +67,8 @@ class ReactorControlPanelTest {
 
     @Test
     void listsOnlyReactorRoutesAndClassifiesModes() {
+        Locale defaultLocale = Locale.getDefault();
+        Locale.setDefault(Locale.forLanguageTag("tr-TR"));
         try (ApplicationContext ctx = ApplicationContext.run(Map.of("spec.name", SPEC_NAME))) {
             ReactorDiagnosticsBody body = ctx.getBean(ReactorControlPanel.class).getBody();
             assertFalse(ctx.getBean(Router.class).uriRoutes().toList().isEmpty(), () -> ctx.getBean(Router.class).uriRoutes().toList().toString());
@@ -81,7 +84,10 @@ class ReactorControlPanelTest {
             assertRoute(body, "/reactor/mono", "single", "reactor.core.publisher.Mono<java.lang.String>");
             assertRoute(body, "/reactor/flux", "multi", "reactor.core.publisher.Flux<java.lang.String>");
             assertRoute(body, "/reactor/sse", "sse", "reactor.core.publisher.Flux<java.lang.String>");
+            assertRoute(body, "/reactor/sse-with-parameters", "sse", "reactor.core.publisher.Flux<java.lang.String>");
             assertRoute(body, "/reactor/stream", "streaming", "reactor.core.publisher.Flux<java.lang.String>");
+        } finally {
+            Locale.setDefault(defaultLocale);
         }
     }
 

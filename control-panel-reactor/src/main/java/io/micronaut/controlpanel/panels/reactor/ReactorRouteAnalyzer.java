@@ -23,6 +23,7 @@ import jakarta.inject.Singleton;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Builds Reactor route diagnostics from route metadata without invoking routes.
@@ -112,13 +113,17 @@ final class ReactorRouteAnalyzer {
     }
 
     private static String fluxMode(List<MediaType> produces) {
-        if (produces.stream().anyMatch(mediaType -> MediaType.TEXT_EVENT_STREAM_TYPE.equals(mediaType))) {
+        if (produces.stream().map(ReactorRouteAnalyzer::mediaTypeName).anyMatch(MediaType.TEXT_EVENT_STREAM::equals)) {
             return MODE_SSE;
         }
-        if (produces.stream().map(MediaType::toString).map(String::toLowerCase).anyMatch(ReactorRouteAnalyzer::isStreamingMediaType)) {
+        if (produces.stream().map(ReactorRouteAnalyzer::mediaTypeName).anyMatch(ReactorRouteAnalyzer::isStreamingMediaType)) {
             return MODE_STREAMING;
         }
         return MODE_MULTI;
+    }
+
+    private static String mediaTypeName(MediaType mediaType) {
+        return mediaType.getName().toLowerCase(Locale.ROOT);
     }
 
     private static boolean isStreamingMediaType(String mediaType) {

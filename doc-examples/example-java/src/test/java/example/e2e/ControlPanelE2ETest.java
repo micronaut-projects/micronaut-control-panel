@@ -133,8 +133,16 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         var monoRoute = page.locator(".cp-reactor-route-card")
             .filter(new Locator.FilterOptions().setHasText("/demo/reactor/mono"))
             .first();
+        var sseRoute = page.locator(".cp-reactor-route-card")
+            .filter(new Locator.FilterOptions().setHasText("/demo/reactor/sse"))
+            .first();
         assertThat(monoRoute).containsText("DemoController.mono()");
         assertThat(monoRoute).containsText("reactor.core.publisher.Mono<java.lang.String>");
+        page.getByLabel("Search reactive routes").fill("mono");
+        assertThat(monoRoute).isVisible();
+        assertThat(sseRoute).isHidden();
+        page.getByLabel("Search reactive routes").fill("");
+        assertThat(sseRoute).isVisible();
         monoRoute.scrollIntoViewIfNeeded();
         page.screenshot(new Page.ScreenshotOptions()
             .setPath(screenshotDir.resolve("reactor-mobile.png")));

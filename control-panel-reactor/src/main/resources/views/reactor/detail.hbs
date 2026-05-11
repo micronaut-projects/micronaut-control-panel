@@ -59,7 +59,7 @@
                             </thead>
                             <tbody>
                             {{#each routes}}
-                                <tr data-filter-table-row>
+                                <tr data-filter-table-row data-filter-table-row-id="reactor-route-{{@index}}">
                                     <td><span class="badge badge-info">{{httpMethodName}}</span></td>
                                     <td><code class="cp-table-code">{{uri}}</code></td>
                                     <td><code class="cp-table-code">{{controllerMethod}}</code></td>
@@ -89,7 +89,7 @@
                     </div>
                     <div class="cp-reactor-route-cards" aria-label="Reactive routes">
                         {{#each routes}}
-                            <article class="card cp-reactor-route-card">
+                            <article class="card cp-reactor-route-card" data-filter-table-row-peer="reactor-route-{{@index}}">
                                 <div class="card-body">
                                     <div class="cp-reactor-route-card-header">
                                         <span class="badge badge-info">{{httpMethodName}}</span>
@@ -122,6 +122,7 @@
                                 </div>
                             </article>
                         {{/each}}
+                        <p class="cp-data-table-empty" data-filter-table-empty hidden>No reactive routes found.</p>
                     </div>
                     <div class="cp-data-table-footer">
                         <label class="cp-data-table-page-size">
