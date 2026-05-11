@@ -48,7 +48,7 @@ metrics backend, or alerting system.
 === Security and Redaction
 
 The Reactor panel does not subscribe to publishers, invoke controller routes, or call HTTP clients. Reactor HTTP client
-diagnostics expose only bean names, public Reactor client interface types, and qualifiers when available.
+diagnostics expose only sanitized bean labels and public Reactor client interface types.
 
 Endpoint URLs, headers, credentials, cookies, request bodies, response bodies, Reactor context values, MDC values,
 trace/span identifiers, metric tag values, measurements, and exporter configuration are hidden by design.
