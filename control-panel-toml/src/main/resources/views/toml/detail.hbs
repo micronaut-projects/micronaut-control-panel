@@ -60,8 +60,8 @@
                                 <input type="text" class="form-control" data-filter-table-search placeholder="Search TOML sources" aria-label="Search TOML sources">
                             </div>
                         </div>
-                        <div class="cp-data-table-container">
-                            <table class="table cp-data-table-table cp-data-table-fixed">
+                        <div class="cp-data-table-container cp-toml-table-container">
+                            <table class="table cp-data-table-table cp-data-table-fixed cp-toml-responsive-table">
                                 <thead>
                                 <tr>
                                     <th>Precedence</th>
@@ -77,14 +77,14 @@
                                 <tbody>
                                 {{#each sources as |source|}}
                                     <tr data-filter-table-row>
-                                        <td>{{source.precedence}}</td>
-                                        <td><code class="cp-table-code">{{source.name}}</code></td>
-                                        <td><code class="cp-table-code">{{source.origin}}</code></td>
-                                        <td>{{source.order}}</td>
-                                        <td>{{source.keyCount}}</td>
-                                        <td>{{source.effectiveCount}}</td>
-                                        <td>{{source.overriddenCount}}</td>
-                                        <td>{{source.unknownCount}}</td>
+                                        <td data-label="Precedence">{{source.precedence}}</td>
+                                        <td data-label="Source"><code class="cp-table-code">{{source.name}}</code></td>
+                                        <td data-label="Origin"><code class="cp-table-code">{{source.origin}}</code></td>
+                                        <td data-label="Order">{{source.order}}</td>
+                                        <td data-label="Keys">{{source.keyCount}}</td>
+                                        <td data-label="Effective">{{source.effectiveCount}}</td>
+                                        <td data-label="Overridden">{{source.overriddenCount}}</td>
+                                        <td data-label="Unknown">{{source.unknownCount}}</td>
                                     </tr>
                                 {{/each}}
                                 <tr data-filter-table-empty hidden>
@@ -113,8 +113,8 @@
                                 <input type="text" class="form-control" data-filter-table-search placeholder="Search TOML keys" aria-label="Search TOML keys">
                             </div>
                         </div>
-                        <div class="cp-data-table-container">
-                            <table class="table cp-data-table-table cp-data-table-fixed">
+                        <div class="cp-data-table-container cp-toml-table-container">
+                            <table class="table cp-data-table-table cp-data-table-fixed cp-toml-responsive-table">
                                 <thead>
                                 <tr>
                                     <th>Key</th>
@@ -127,15 +127,15 @@
                                 <tbody>
                                 {{#each keys as |key|}}
                                     <tr data-filter-table-row>
-                                        <td><code class="cp-table-code">{{key.key}}</code></td>
-                                        <td>{{key.type}}</td>
-                                        <td><code class="cp-table-code cp-property-value">{{key.displayValue}}</code></td>
-                                        <td>
+                                        <td data-label="Key"><code class="cp-table-code">{{key.key}}</code></td>
+                                        <td data-label="Type">{{key.type}}</td>
+                                        <td data-label="Value"><code class="cp-table-code cp-property-value">{{key.displayValue}}</code></td>
+                                        <td data-label="Source">
                                             <code class="cp-table-code">{{key.sourceName}}</code>
                                             <br>
                                             <code class="cp-table-code">{{key.sourceOrigin}}</code>
                                         </td>
-                                        <td>
+                                        <td data-label="Status">
                                             <span class="badge badge-secondary">{{key.statusLabel}}</span>
                                         </td>
                                     </tr>
