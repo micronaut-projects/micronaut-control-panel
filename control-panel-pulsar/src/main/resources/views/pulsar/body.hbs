@@ -9,13 +9,13 @@
     <dd class="col-sm-7">
         <span class="badge badge-primary">{{ body.summary.consumers }}</span>
         {{#if body.summary.pausedConsumers}}
-            <span class="badge badge-warning">{{ body.summary.pausedConsumers }} paused</span>
+            <span class="badge badge-outline">{{ body.summary.pausedConsumers }} paused</span>
         {{/if}}
     </dd>
     <dt class="col-sm-5">Readers</dt>
     <dd class="col-sm-7"><span class="badge badge-primary">{{ body.summary.readers }}</span></dd>
     <dt class="col-sm-5">Failures</dt>
-    <dd class="col-sm-7"><span class="badge badge-danger">{{ body.summary.failures }}</span></dd>
+    <dd class="col-sm-7"><span class="badge badge-destructive">{{ body.summary.failures }}</span></dd>
 </dl>
 {{#unless body.consumerRegistryPresent}}
     <p class="card-text text-muted mt-3">No Pulsar consumer registry bean is available.</p>
