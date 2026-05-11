@@ -20,6 +20,7 @@ import io.micronaut.controlpanel.core.AbstractControlPanel;
 import io.micronaut.controlpanel.core.ControlPanel;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.controlpanel.panels.flyway.model.FlywayBody;
+import io.micronaut.core.util.StringUtils;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import org.flywaydb.core.Flyway;
@@ -29,12 +30,17 @@ import org.flywaydb.core.Flyway;
  */
 @Singleton
 @Requires(classes = Flyway.class)
+@Requires(property = FlywayControlPanel.ENABLED_PROPERTY, notEquals = StringUtils.FALSE)
 public class FlywayControlPanel extends AbstractControlPanel<FlywayBody> {
 
     /**
      * Flyway panel name.
      */
     public static final String NAME = "flyway";
+    /**
+     * Flyway panel enabled property.
+     */
+    public static final String ENABLED_PROPERTY = ControlPanelConfiguration.PREFIX + "." + NAME + ".enabled";
     /**
      * Data Sources category used by the Flyway panel.
      */

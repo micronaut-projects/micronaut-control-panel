@@ -17,6 +17,9 @@ package io.micronaut.controlpanel.panels.flyway;
 
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.controlpanel.core.ControlPanel;
+import io.micronaut.controlpanel.core.ControlPanelRepository;
+import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
+import io.micronaut.inject.qualifiers.Qualifiers;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -42,11 +45,17 @@ class FlywayControlPanelTest {
     @Test
     void flywayPanelUsesConfiguredEnabledFlag() {
         try (ApplicationContext context = ApplicationContext.run(Map.of(
-            "micronaut.control-panel.panels.flyway.enabled", "false"
+            FlywayControlPanel.ENABLED_PROPERTY, "false"
         ))) {
-            ControlPanel<?> panel = context.getBean(FlywayControlPanel.class);
+            ControlPanelConfiguration configuration = context.getBean(
+                ControlPanelConfiguration.class,
+                Qualifiers.byName(FlywayControlPanel.NAME)
+            );
+            ControlPanelRepository repository = context.getBean(ControlPanelRepository.class);
 
-            assertFalse(panel.isEnabled());
+            assertFalse(configuration.isEnabled());
+            assertFalse(context.containsBean(FlywayControlPanel.class));
+            assertTrue(repository.findByName(FlywayControlPanel.NAME).isEmpty());
         }
     }
 
