@@ -40,7 +40,7 @@ import java.util.function.Supplier;
 /**
  * A control panel for registered Pulsar producers, consumers, readers, and in-process failure events.
  *
- * @author Sergio del Amo
+ * @author Álvaro Sánchez-Mariscal
  * @since 2.0.0
  */
 @Singleton
