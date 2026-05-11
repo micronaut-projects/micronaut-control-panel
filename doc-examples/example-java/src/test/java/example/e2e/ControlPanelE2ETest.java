@@ -128,24 +128,74 @@ class ControlPanelE2ETest extends AbstractE2ETest {
             """);
 
         assertFalse((Boolean) body(page).evaluate("body => body.classList.contains('cp-sidebar-open')"));
-        assertThat(page.locator(".cp-reactor-routes-table")).isHidden();
-        assertThat(page.locator(".cp-reactor-route-cards")).isVisible();
-        var monoRoute = page.locator(".cp-reactor-route-card")
-            .filter(new Locator.FilterOptions().setHasText("/demo/reactor/mono"))
-            .first();
-        var sseRoute = page.locator(".cp-reactor-route-card")
-            .filter(new Locator.FilterOptions().setHasText("/demo/reactor/sse"))
-            .first();
-        assertThat(monoRoute).containsText("DemoController.mono()");
-        assertThat(monoRoute).containsText("reactor.core.publisher.Mono<java.lang.String>");
+        assertFalse(isVisible(page, ".cp-reactor-routes-table"));
+        assertTrue(isVisible(page, ".cp-reactor-route-cards"));
+        String monoRoute = routeCardText(page, "/demo/reactor/mono");
+        assertTrue(monoRoute.contains("DemoController.mono()"));
+        assertTrue(monoRoute.contains("reactor.core.publisher.Mono<java.lang.String>"));
         page.getByLabel("Search reactive routes").fill("mono");
-        assertThat(monoRoute).isVisible();
-        assertThat(sseRoute).isHidden();
+        assertTrue(isRouteCardVisible(page, "/demo/reactor/mono"));
+        assertFalse(isRouteCardVisible(page, "/demo/reactor/sse"));
         page.getByLabel("Search reactive routes").fill("");
-        assertThat(sseRoute).isVisible();
-        monoRoute.scrollIntoViewIfNeeded();
+        assertTrue(isRouteCardVisible(page, "/demo/reactor/sse"));
+        scrollRouteCardIntoView(page, "/demo/reactor/mono");
         page.screenshot(new Page.ScreenshotOptions()
             .setPath(screenshotDir.resolve("reactor-mobile.png")));
+    }
+
+    private static boolean isVisible(Page page, String selector) {
+        return (Boolean) page.evaluate("""
+            selector => {
+                const element = document.querySelector(selector);
+                if (!element) {
+                    return false;
+                }
+                const style = window.getComputedStyle(element);
+                return !element.hidden
+                    && style.display !== "none"
+                    && style.visibility !== "hidden"
+                    && element.getClientRects().length > 0;
+            }
+            """, selector);
+    }
+
+    private static String routeCardText(Page page, String route) {
+        return String.valueOf(page.evaluate("""
+            route => {
+                const cards = Array.from(document.querySelectorAll(".cp-reactor-route-card"));
+                const card = cards.find(card => card.textContent.includes(route));
+                return card ? card.textContent : "";
+            }
+            """, route));
+    }
+
+    private static boolean isRouteCardVisible(Page page, String route) {
+        return (Boolean) page.evaluate("""
+            route => {
+                const cards = Array.from(document.querySelectorAll(".cp-reactor-route-card"));
+                const card = cards.find(card => card.textContent.includes(route));
+                if (!card) {
+                    return false;
+                }
+                const style = window.getComputedStyle(card);
+                return !card.hidden
+                    && style.display !== "none"
+                    && style.visibility !== "hidden"
+                    && card.getClientRects().length > 0;
+            }
+            """, route);
+    }
+
+    private static void scrollRouteCardIntoView(Page page, String route) {
+        page.evaluate("""
+            route => {
+                const cards = Array.from(document.querySelectorAll(".cp-reactor-route-card"));
+                const card = cards.find(card => card.textContent.includes(route));
+                if (card) {
+                    card.scrollIntoView({ block: "nearest" });
+                }
+            }
+            """, route);
     }
 
     @Test
