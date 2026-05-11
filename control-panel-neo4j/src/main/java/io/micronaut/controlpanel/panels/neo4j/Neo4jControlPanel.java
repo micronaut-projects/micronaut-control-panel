@@ -24,6 +24,8 @@ import io.micronaut.controlpanel.panels.neo4j.model.Neo4jBody;
 import jakarta.inject.Named;
 import org.neo4j.driver.Driver;
 
+import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
+
 /**
  * Control panel for Neo4j driver diagnostics and schema metadata.
  *
@@ -76,11 +78,7 @@ public class Neo4jControlPanel extends AbstractEachBeanControlPanel<Neo4jBody> {
 
     @Override
     public String getBadge() {
-        Neo4jBody body = getBody();
-        if (body.connected()) {
-            return "connected";
-        }
-        return body.status().label();
+        return EMPTY_STRING;
     }
 
     @Override

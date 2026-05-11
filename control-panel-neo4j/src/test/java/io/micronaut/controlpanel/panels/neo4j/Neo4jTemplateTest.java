@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class Neo4jTemplateTest {
 
@@ -31,13 +32,34 @@ class Neo4jTemplateTest {
         assertEscaped("/views/neo4j/detail.hbs");
     }
 
+    @Test
+    void detailTabsUseDashboardTabAttributes() throws IOException {
+        String template = template("/views/neo4j/detail.hbs");
+
+        assertFalse(template.contains("data-tab-target"));
+        assertContains(template, "data-tabs-trigger=\"neo4j-connection\"");
+        assertContains(template, "data-tabs-trigger=\"neo4j-schema\"");
+        assertContains(template, "data-tabs-trigger=\"neo4j-diagnostics\"");
+        assertContains(template, "data-tabs-panel=\"neo4j-connection\"");
+        assertContains(template, "data-tabs-panel=\"neo4j-schema\"");
+        assertContains(template, "data-tabs-panel=\"neo4j-diagnostics\"");
+    }
+
     private static void assertEscaped(String path) throws IOException {
+        String template = template(path);
+
+        assertFalse(template.contains("{{{"));
+        assertFalse(template.contains("&{"));
+    }
+
+    private static void assertContains(String template, String expected) {
+        assertTrue(template.contains(expected), expected);
+    }
+
+    private static String template(String path) throws IOException {
         try (var in = Neo4jTemplateTest.class.getResourceAsStream(path)) {
             assertNotNull(in);
-            String template = new String(in.readAllBytes(), StandardCharsets.UTF_8);
-
-            assertFalse(template.contains("{{{"));
-            assertFalse(template.contains("&{"));
+            return new String(in.readAllBytes(), StandardCharsets.UTF_8);
         }
     }
 }

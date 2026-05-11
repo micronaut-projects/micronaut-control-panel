@@ -2,12 +2,12 @@
     <div class="cp-dashboard-stack cp-neo4j-detail">
         <div class="tabs" data-tabs data-tabs-storage-key="neo4j-tabs-{{ connection.beanName }}">
             <div class="tabs-list" role="tablist" aria-label="Neo4j diagnostics sections">
-                <button type="button" class="tabs-trigger active" data-tab-target="neo4j-connection" role="tab" aria-selected="true">Connection</button>
-                <button type="button" class="tabs-trigger" data-tab-target="neo4j-schema" role="tab" aria-selected="false">Schema Inventory</button>
-                <button type="button" class="tabs-trigger" data-tab-target="neo4j-diagnostics" role="tab" aria-selected="false">Diagnostics</button>
+                <button type="button" class="tabs-trigger active" id="tab-neo4j-connection" data-tabs-trigger="neo4j-connection" role="tab" aria-selected="true" aria-controls="panel-neo4j-connection">Connection</button>
+                <button type="button" class="tabs-trigger" id="tab-neo4j-schema" data-tabs-trigger="neo4j-schema" role="tab" aria-selected="false" aria-controls="panel-neo4j-schema">Schema Inventory</button>
+                <button type="button" class="tabs-trigger" id="tab-neo4j-diagnostics" data-tabs-trigger="neo4j-diagnostics" role="tab" aria-selected="false" aria-controls="panel-neo4j-diagnostics">Diagnostics</button>
             </div>
 
-            <section id="neo4j-connection" class="tabs-panel active" role="tabpanel">
+            <section id="panel-neo4j-connection" class="tabs-panel active" role="tabpanel" aria-labelledby="tab-neo4j-connection" data-tabs-panel="neo4j-connection">
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">Connection</h2>
@@ -70,7 +70,7 @@
                 </div>
             </section>
 
-            <section id="neo4j-schema" class="tabs-panel" role="tabpanel" hidden>
+            <section id="panel-neo4j-schema" class="tabs-panel" role="tabpanel" aria-labelledby="tab-neo4j-schema" data-tabs-panel="neo4j-schema" hidden>
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">Schema Inventory</h2>
@@ -121,7 +121,7 @@
                 </div>
             </section>
 
-            <section id="neo4j-diagnostics" class="tabs-panel" role="tabpanel" hidden>
+            <section id="panel-neo4j-diagnostics" class="tabs-panel" role="tabpanel" aria-labelledby="tab-neo4j-diagnostics" data-tabs-panel="neo4j-diagnostics" hidden>
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">Diagnostics</h2>

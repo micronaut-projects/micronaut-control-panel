@@ -24,6 +24,7 @@ import org.neo4j.driver.Driver;
 import org.neo4j.driver.Record;
 import org.neo4j.driver.Result;
 import org.neo4j.driver.Session;
+import org.neo4j.driver.SessionConfig;
 import org.neo4j.driver.Value;
 import org.neo4j.driver.Values;
 import org.neo4j.driver.exceptions.AuthenticationException;
@@ -56,7 +57,7 @@ class Neo4jDiagnosticsServiceTest {
         Result labelResult = metadataResult("label", "Movie", "Person");
         Result relationshipTypeResult = metadataResult("relationshipType", "ACTED_IN");
         Result propertyKeyResult = metadataResult("propertyKey", "title", "released");
-        when(driver.session()).thenReturn(session);
+        when(driver.session(any(SessionConfig.class))).thenReturn(session);
         when(session.run("RETURN 1 AS ok")).thenReturn(serverResult);
         when(session.run(eq("CALL db.labels() YIELD label RETURN label ORDER BY label LIMIT $limit"), anyMap()))
             .thenReturn(labelResult);
@@ -98,7 +99,7 @@ class Neo4jDiagnosticsServiceTest {
         Result serverResult = serverResult();
         Result relationshipTypeResult = metadataResult("relationshipType", "ACTED_IN");
         Result propertyKeyResult = metadataResult("propertyKey", "name");
-        when(driver.session()).thenReturn(session);
+        when(driver.session(any(SessionConfig.class))).thenReturn(session);
         when(session.run("RETURN 1 AS ok")).thenReturn(serverResult);
         when(session.run(eq("CALL db.labels() YIELD label RETURN label ORDER BY label LIMIT $limit"), anyMap()))
             .thenThrow(new ClientException("Neo.ClientError.Security.AuthorizationExpired", "permission denied"));
@@ -177,5 +178,18 @@ class Neo4jDiagnosticsServiceTest {
             assertFalse(panel.hasDetails());
             assertTrue(panel.getBody().noDriverBeans());
         }
+    }
+
+    @Test
+    void metadataLimitsAreCapped() {
+        Neo4jPanelConfiguration configuration = new Neo4jPanelConfiguration();
+
+        configuration.setMaxLabels(Integer.MAX_VALUE);
+        configuration.setMaxRelationshipTypes(Integer.MAX_VALUE);
+        configuration.setMaxPropertyKeys(Integer.MAX_VALUE);
+
+        assertEquals(Neo4jPanelConfiguration.MAX_METADATA_LIMIT, configuration.getMaxLabels());
+        assertEquals(Neo4jPanelConfiguration.MAX_METADATA_LIMIT, configuration.getMaxRelationshipTypes());
+        assertEquals(Neo4jPanelConfiguration.MAX_METADATA_LIMIT, configuration.getMaxPropertyKeys());
     }
 }

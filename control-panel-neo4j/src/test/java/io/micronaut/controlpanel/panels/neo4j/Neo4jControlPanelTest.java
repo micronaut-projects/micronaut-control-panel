@@ -26,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 class Neo4jControlPanelTest {
 
@@ -61,5 +62,17 @@ class Neo4jControlPanelTest {
         assertEquals("neo4j-default", panel.getName());
         assertEquals("Neo4j", panel.getCategory().name());
         assertEquals("fas fa-circle-nodes", panel.getIcon());
+    }
+
+    @Test
+    void badgeDoesNotProbeNeo4j() {
+        Driver driver = mock(Driver.class);
+        Neo4jPanelConfiguration panelConfiguration = new Neo4jPanelConfiguration();
+        Neo4jConnectionSummaryResolver connectionSummaryResolver = mock(Neo4jConnectionSummaryResolver.class);
+        var configuration = mock(io.micronaut.controlpanel.core.config.ControlPanelConfiguration.class);
+        Neo4jControlPanel panel = new Neo4jControlPanel("default", driver, panelConfiguration, connectionSummaryResolver, configuration);
+
+        assertEquals("", panel.getBadge());
+        verifyNoInteractions(driver, connectionSummaryResolver);
     }
 }

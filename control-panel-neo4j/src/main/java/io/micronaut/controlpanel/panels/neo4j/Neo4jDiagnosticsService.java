@@ -21,10 +21,12 @@ import io.micronaut.controlpanel.panels.neo4j.model.Neo4jConnectionInfo;
 import io.micronaut.controlpanel.panels.neo4j.model.Neo4jDiagnostic;
 import io.micronaut.controlpanel.panels.neo4j.model.Neo4jServerInfo;
 import io.micronaut.controlpanel.panels.neo4j.model.Neo4jStatus;
+import org.neo4j.driver.AccessMode;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.Record;
 import org.neo4j.driver.Result;
 import org.neo4j.driver.Session;
+import org.neo4j.driver.SessionConfig;
 import org.neo4j.driver.exceptions.AuthenticationException;
 import org.neo4j.driver.exceptions.ClientException;
 import org.neo4j.driver.exceptions.Neo4jException;
@@ -52,6 +54,9 @@ public class Neo4jDiagnosticsService {
     private static final String LABELS_QUERY = "CALL db.labels() YIELD label RETURN label ORDER BY label LIMIT $limit";
     private static final String RELATIONSHIP_TYPES_QUERY = "CALL db.relationshipTypes() YIELD relationshipType RETURN relationshipType ORDER BY relationshipType LIMIT $limit";
     private static final String PROPERTY_KEYS_QUERY = "CALL db.propertyKeys() YIELD propertyKey RETURN propertyKey ORDER BY propertyKey LIMIT $limit";
+    private static final SessionConfig READ_SESSION = SessionConfig.builder()
+        .withDefaultAccessMode(AccessMode.READ)
+        .build();
 
     private final Driver driver;
     private final Neo4jPanelConfiguration configuration;
@@ -90,7 +95,7 @@ public class Neo4jDiagnosticsService {
 
         try {
             driver.verifyConnectivity();
-            try (Session session = driver.session()) {
+            try (Session session = driver.session(READ_SESSION)) {
                 serverInfo = serverInfo(session, diagnostics);
                 labels = metadata(session, LABELS_QUERY, "label", configuration.getMaxLabels(), "Labels", diagnostics);
                 relationshipTypes = metadata(session, RELATIONSHIP_TYPES_QUERY, "relationshipType", configuration.getMaxRelationshipTypes(), "Relationship types", diagnostics);

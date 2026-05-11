@@ -30,6 +30,7 @@ public class Neo4jPanelConfiguration {
     public static final int DEFAULT_MAX_LABELS = 100;
     public static final int DEFAULT_MAX_RELATIONSHIP_TYPES = 100;
     public static final int DEFAULT_MAX_PROPERTY_KEYS = 100;
+    public static final int MAX_METADATA_LIMIT = 500;
 
     private int maxLabels = DEFAULT_MAX_LABELS;
     private int maxRelationshipTypes = DEFAULT_MAX_RELATIONSHIP_TYPES;
@@ -84,6 +85,6 @@ public class Neo4jPanelConfiguration {
     }
 
     private static int bounded(int value) {
-        return Math.max(0, value);
+        return Math.min(MAX_METADATA_LIMIT, Math.max(0, value));
     }
 }

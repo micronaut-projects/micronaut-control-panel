@@ -45,6 +45,7 @@ micronaut:
 ----
 
 Set any metadata limit to `0` to skip that inventory query.
+Values above `500` are capped to keep the development-time panel responsive.
 
 === Diagnostics
 
