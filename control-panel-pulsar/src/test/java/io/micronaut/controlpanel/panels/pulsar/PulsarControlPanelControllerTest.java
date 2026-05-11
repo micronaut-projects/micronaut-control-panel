@@ -40,13 +40,12 @@ class PulsarControlPanelControllerTest {
 
     @Test
     void deniesPauseWhenActionsAreDisabled() {
-        var registry = mock(PulsarConsumerRegistry.class);
         var controller = new PulsarControlPanelController(beanLocator, configuration(false));
 
         HttpResponse<PulsarControlPanelController.ActionResponse> response = controller.pause(new PulsarControlPanelController.ConsumerActionRequest("orders"));
 
         assertEquals(403, response.getStatus().getCode());
-        verify(registry, never()).pause("orders");
+        verify(beanLocator, never()).findBean(Argument.of(PulsarConsumerRegistry.class));
     }
 
     @Test

@@ -54,6 +54,7 @@ public final class PulsarControlPanel extends AbstractControlPanel<PulsarControl
     private static final Argument<PulsarConsumerRegistry> CONSUMER_REGISTRY = Argument.of(PulsarConsumerRegistry.class);
     private static final Argument<PulsarProducerRegistry> PRODUCER_REGISTRY = Argument.of(PulsarProducerRegistry.class);
     private static final Argument<PulsarReaderRegistry> READER_REGISTRY = Argument.of(PulsarReaderRegistry.class);
+    private static final String UNKNOWN = "Unknown";
 
     private final BeanLocator beanLocator;
     private final PulsarControlPanelConfiguration pulsarConfiguration;
@@ -128,7 +129,7 @@ public final class PulsarControlPanel extends AbstractControlPanel<PulsarControl
 
     private static ProducerInfo producerInfo(String id, Producer<?> producer) {
         if (producer == null) {
-            return new ProducerInfo(id, "", "", "Unknown", false, "");
+            return new ProducerInfo(id, "", "", UNKNOWN, false, "");
         }
         return new ProducerInfo(
             id,
@@ -151,7 +152,7 @@ public final class PulsarControlPanel extends AbstractControlPanel<PulsarControl
     private static ConsumerInfo consumerInfo(String id, Consumer<?> consumer, PulsarConsumerRegistry registry) {
         boolean paused = safe(() -> registry.isPaused(id)).orElse(false);
         if (consumer == null) {
-            return new ConsumerInfo(id, "", "", "", "Unknown", paused, false, "");
+            return new ConsumerInfo(id, "", "", "", UNKNOWN, paused, false, "");
         }
         return new ConsumerInfo(
             id,
@@ -189,7 +190,7 @@ public final class PulsarControlPanel extends AbstractControlPanel<PulsarControl
 
     private static String connectionState(Boolean connected) {
         if (connected == null) {
-            return "Unknown";
+            return UNKNOWN;
         }
         return connected ? "Connected" : "Disconnected";
     }
