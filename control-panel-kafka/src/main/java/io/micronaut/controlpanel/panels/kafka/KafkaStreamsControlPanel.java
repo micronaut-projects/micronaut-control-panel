@@ -50,17 +50,22 @@ public class KafkaStreamsControlPanel extends AbstractEachBeanControlPanel<Kafka
     private static final String HTML_BREAK = "&lt;br/&gt;";
 
     private final String beanName;
-    private final Body body;
+    private final ConfiguredStreamBuilder builder;
+    private final KafkaStreamsRuntimeStateResolver runtimeStateResolver;
+    private final String mermaid;
+    private final int subTopologies;
 
     public KafkaStreamsControlPanel(@Parameter String beanName,
                                     ConfiguredStreamBuilder builder,
+                                    KafkaStreamsRuntimeStateResolver runtimeStateResolver,
                                     @Named(NAME) ControlPanelConfiguration configuration) {
         super(NAME, configuration);
         this.beanName = beanName;
+        this.builder = builder;
+        this.runtimeStateResolver = runtimeStateResolver;
         TopologyDescription description = builder.build(builder.getConfiguration()).describe();
-        String mermaid = generateMermaidFromDescription(description);
-        int subTopologies = computeSubTopologies(description);
-        this.body = new Body(mermaid, subTopologies);
+        this.mermaid = generateMermaidFromDescription(description);
+        this.subTopologies = computeSubTopologies(description);
     }
 
     @Override
@@ -75,7 +80,7 @@ public class KafkaStreamsControlPanel extends AbstractEachBeanControlPanel<Kafka
 
     @Override
     public Body getBody() {
-        return body;
+        return new Body(mermaid, subTopologies, runtimeStateResolver.resolve(beanName, builder));
     }
 
     @Override
@@ -90,7 +95,7 @@ public class KafkaStreamsControlPanel extends AbstractEachBeanControlPanel<Kafka
 
     @Override
     public String getBadge() {
-        return String.valueOf(body.subTopologies());
+        return String.valueOf(subTopologies);
     }
 
     static int computeSubTopologies(@Nullable TopologyDescription description) {
@@ -216,7 +221,8 @@ public class KafkaStreamsControlPanel extends AbstractEachBeanControlPanel<Kafka
      *
      * @param mermaid       Mermaid diagram for the topology
      * @param subTopologies count of sub-topologies
+     * @param runtimeState  Kafka Streams runtime state exposed through Micronaut Health
      */
     @ReflectiveAccess
-    public record Body(String mermaid, int subTopologies) { }
+    public record Body(String mermaid, int subTopologies, KafkaStreamsRuntimeState runtimeState) { }
 }
