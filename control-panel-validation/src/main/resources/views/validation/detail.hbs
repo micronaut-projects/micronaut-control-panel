@@ -68,7 +68,7 @@
                             </thead>
                             <tbody>
                             {{#each summary as |item|}}
-                                <tr>
+                                <tr data-filter-table-row>
                                     <td>{{item.label}}</td>
                                     <td><code class="cp-table-code">{{item.value}}</code></td>
                                     <td>{{item.source}}</td>
@@ -144,7 +144,7 @@
                                     </thead>
                                     <tbody>
                                     {{#each components as |component|}}
-                                        <tr>
+                                        <tr data-filter-table-row>
                                             <td>{{component.kind}}</td>
                                             <td><code class="cp-table-code">{{component.beanType}}</code></td>
                                             <td><code class="cp-table-code">{{component.qualifier}}</code></td>
