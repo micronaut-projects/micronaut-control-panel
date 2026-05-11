@@ -275,20 +275,96 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         assertThat(body(page)).containsText("my-postgres");
 
         controlPanelDetails(page, "my-oracle").click();
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Show ER diagram")).click();
-        assertThat(page.locator("#erDiagramDialog")).isVisible();
-        assertThat(page.locator("#erDiagramDialog")).containsText("Entity Relationship Diagram");
-        assertThat(page.locator("#mermaidErCode")).containsText("TEST_DEPT");
-        assertThat(page.locator("#mermaidErCode")).containsText("TEST_EMP");
+        assertThat(page.locator("#tablesPageContainer")).containsText("DEPT");
+        assertThat(page.locator("#tablesPageContainer")).containsText("EMP");
+        assertThat(page.locator("#tableDetailCard")).hasClass(Pattern.compile(".*collapsed-card.*"));
+        assertThat(page.locator("#tableDetailCard")).hasClass(Pattern.compile(".*detail-rail-collapsed.*"));
 
-        page.locator("#erDiagramDialog button[aria-label='Close']").click();
-        assertThat(page.locator("[data-schema-tree]")).containsText("DEPT");
-        assertThat(page.locator("[data-schema-tree]")).containsText("EMP");
+        String schema = page.locator("[data-table-schema-filter] option:not([value='__all__'])").first().getAttribute("value");
+        page.locator("[data-table-schema-filter]").selectOption(schema);
+        page.locator("[data-table-search]").fill("dept");
+        assertThat(page.locator("#tablesPageContainer")).containsText("DEPT");
+        assertThat(page.locator("#tablesPageContainer")).not().containsText("EMP");
+        page.locator("#tablesPageContainer [data-table-row][data-table-name='DEPT']").click();
+        assertThat(page.locator("#tableDetailCard")).not().hasClass(Pattern.compile(".*collapsed-card.*"));
+        String expectedTableDetailSubtitle = schema == null || schema.isBlank() ? "DEPT" : schema + ".DEPT";
+        assertThat(page.locator("#tableDetailSubtitle")).containsText(expectedTableDetailSubtitle);
+        assertThat(page.locator("#tableDetailContainer")).containsText("Entity Relationship Diagram");
+        assertThat(page.locator("#tableErDiagramCode")).containsText("TEST_DEPT");
+        assertThat(page.locator(".cp-datasource-table-browser")).not().hasClass(Pattern.compile(".*tables-collapsed.*"));
 
-        page.locator("#sql-console").getByRole(AriaRole.TEXTBOX).fill("SELECT * FROM DEPT");
+        page.locator("#tablesPageContainer [data-table-row][data-table-name='DEPT']").click();
+        assertThat(page.locator("#tableDetailCard")).hasClass(Pattern.compile(".*collapsed-card.*"));
+        assertThat(page.locator("#tableDetailCard")).hasClass(Pattern.compile(".*detail-rail-collapsed.*"));
+        page.locator("#tablesPageContainer [data-table-row][data-table-name='DEPT']").click();
+        assertThat(page.locator("#tableDetailCard")).not().hasClass(Pattern.compile(".*collapsed-card.*"));
+        assertThat(page.locator(".cp-datasource-table-browser")).not().hasClass(Pattern.compile(".*tables-collapsed.*"));
+
+        page.locator("#toggleTableDetail").click();
+        assertThat(page.locator("#tableDetailCard")).hasClass(Pattern.compile(".*collapsed-card.*"));
+        assertThat(page.locator("#tableDetailCard")).hasClass(Pattern.compile(".*detail-rail-collapsed.*"));
+        assertThat(page.locator(".cp-datasource-table-browser")).hasClass(Pattern.compile(".*detail-collapsed.*"));
+        page.locator("#toggleTableDetail").click();
+        assertThat(page.locator("#tableDetailCard")).not().hasClass(Pattern.compile(".*collapsed-card.*"));
+        assertThat(page.locator("#tableDetailCard")).not().hasClass(Pattern.compile(".*detail-rail-collapsed.*"));
+        assertThat(page.locator(".cp-datasource-table-browser")).not().hasClass(Pattern.compile(".*detail-collapsed.*"));
+
+        page.locator("#toggleTablesList").click();
+        assertThat(page.locator(".cp-datasource-table-browser")).not().hasClass(Pattern.compile(".*tables-collapsed.*"));
+
+        page.locator("[data-table-search]").fill("emp");
+        assertThat(page.locator("#tablesPageContainer")).containsText("EMP");
+        page.locator("#tablesPageContainer [data-table-row][data-table-name='EMP']").click();
+        assertThat(page.locator("#tableDetailSubtitle")).containsText(schema == null || schema.isBlank() ? "EMP" : schema + ".EMP");
+        page.locator("#tableDetailContainer [data-table-detail-link][data-table-name='DEPT']").first().click();
+        assertThat(page.locator("#tableDetailSubtitle")).containsText(expectedTableDetailSubtitle);
+
+        page.locator("#tableDetailActions > summary").click();
+        page.locator("#selectAllTableQuery").click();
+        assertThat(page.locator("#sql-console").getByRole(AriaRole.TEXTBOX)).isVisible();
         executeQueryShortcut(page);
 
-        assertThat(page.locator("tbody")).containsText("ACCOUNTING");
+        assertThat(page.locator("#queryResultsContainer tbody")).containsText("ACCOUNTING");
+
+        page.evaluate("history.back()");
+        assertThat(page.locator("#datasourceTablesTab")).isVisible();
+        assertThat(page.locator("#tablesPageContainer")).containsText("EMP");
+
+        page.locator("#tableDetailActions > summary").click();
+        page.locator("#displayTableAsJson").click();
+        assertThat(page.locator("#datasourceQueryTab")).isVisible();
+        assertThat(page.locator("#sql-console").getByRole(AriaRole.TEXTBOX)).containsText("JSON_OBJECT");
+        executeQueryShortcut(page);
+
+        var jsonCell = page.locator("#queryResultsContainer [data-query-json-cell]").first();
+        assertThat(jsonCell).isVisible();
+        assertThat(jsonCell.locator("[data-query-json-raw]")).containsText("ACCOUNTING");
+        jsonCell.click();
+        assertThat(jsonCell).hasClass(Pattern.compile(".*cp-query-json-cell-formatted.*"));
+        assertTrue(jsonCell.locator("code").textContent().contains("\n  \"DNAME\""));
+        jsonCell.click();
+        assertThat(jsonCell).not().hasClass(Pattern.compile(".*cp-query-json-cell-formatted.*"));
+        assertThat(jsonCell.locator("[data-query-json-raw]")).containsText("ACCOUNTING");
+
+        page.evaluate("history.back()");
+        assertThat(page.locator("#datasourceTablesTab")).isVisible();
+        assertThat(page.locator("#tablesPageContainer")).containsText("EMP");
+
+        page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("Pool").setExact(true)).click();
+        assertThat(page.locator("#datasourcePoolTab")).isVisible();
+        assertThat(page.locator("#poolStatusCardContainer")).containsText("HikariCP");
+        assertThat(page.locator("#poolStatusCardContainer")).containsText("example-oracle-pool");
+        assertThat(page.locator("#poolStatusCardContainer")).containsText("Connection status");
+        assertThat(page.locator("#poolStatusCardContainer")).containsText("Active");
+        assertThat(page.locator("#poolStatusCardContainer")).containsText("Idle");
+        assertThat(page.locator("#poolStatusCardContainer")).containsText("Waiting");
+        assertThat(page.locator("#datasourcePoolTab")).containsText("Pool options");
+        assertThat(page.locator("#datasourcePoolTab")).containsText("Maximum pool size");
+        assertThat(page.locator("#datasourcePoolTab")).containsText("5");
+        assertThat(page.locator("#datasourcePoolTab")).containsText("Connection test query");
+        assertThat(page.locator("#datasourcePoolTab")).containsText("SELECT 1 FROM DUAL");
+        page.locator("#poolStatusCardContainer [data-pool-status-refresh]").click();
+        assertThat(page.locator("#poolStatusCardContainer")).containsText("Connection status");
     }
 
     @Test
