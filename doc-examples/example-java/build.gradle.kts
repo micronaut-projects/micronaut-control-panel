@@ -22,6 +22,7 @@ dependencies {
     implementation(mnObjectStorage.micronaut.`object`.storage.azure)
     implementation(mnObjectStorage.micronaut.`object`.storage.gcp)
     implementation(mnObjectStorage.micronaut.`object`.storage.oracle.cloud)
+    implementation(projects.micronautControlPanelOracleCloud)
 
     // Cache
     implementation(projects.micronautControlPanelCache)
