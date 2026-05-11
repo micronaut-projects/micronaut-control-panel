@@ -19,7 +19,11 @@ import io.micronaut.controlpanel.core.security.ControlPanelSecurityPaths;
 import io.micronaut.core.annotation.Introspected;
 import io.micronaut.core.annotation.Internal;
 import io.micronaut.core.util.StringUtils;
+import io.micronaut.email.AsyncEmailSender;
+import io.micronaut.email.AsyncTransactionalEmailSender;
 import io.micronaut.email.Email;
+import io.micronaut.email.EmailSender;
+import io.micronaut.email.TransactionalEmailSender;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
@@ -66,13 +70,14 @@ public final class EmailController {
         if (!testSend.isEnabled()) {
             return HttpResponse.badRequest(TestSendResult.disabled("Test send is disabled.", elapsed(started)));
         }
-        String recipient = recipient(request);
-        if (StringUtils.isEmpty(recipient)) {
+        String configuredRecipient = testSend.getRecipient();
+        if (StringUtils.isEmpty(configuredRecipient)) {
             return HttpResponse.badRequest(TestSendResult.disabled("No safe test recipient is configured.", elapsed(started)));
         }
         if (request != null && StringUtils.isNotEmpty(request.recipient()) && !testSend.isAllowArbitraryRecipient()) {
             return HttpResponse.badRequest(TestSendResult.disabled("Arbitrary recipients are disabled for test send.", elapsed(started)));
         }
+        String recipient = recipient(request, configuredRecipient);
         var descriptor = registry.find(sender);
         if (descriptor.isEmpty()) {
             return HttpResponse.notFound(TestSendResult.failure("Unknown sender.", "NotFound", elapsed(started)));
@@ -88,14 +93,13 @@ public final class EmailController {
         }
     }
 
-    private String recipient(@Nullable TestSendRequest request) {
+    private String recipient(@Nullable TestSendRequest request, String configuredRecipient) {
         if (request != null && StringUtils.isNotEmpty(request.recipient()) && configuration.getTestSend().isAllowArbitraryRecipient()) {
             return request.recipient();
         }
-        return configuration.getTestSend().getRecipient();
+        return configuredRecipient;
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     private void send(EmailSenderDescriptor descriptor, String recipient, EmailDiagnosticModel diagnostics) {
         String subjectPrefix = configuration.getTestSend().getSubjectPrefix();
         if (StringUtils.isEmpty(subjectPrefix)) {
@@ -112,21 +116,25 @@ public final class EmailController {
             .to(recipient)
             .subject(subjectPrefix + " Email test")
             .body(body);
-        if (descriptor.emailSender().isPresent()) {
-            descriptor.emailSender().get().send(builder);
+        EmailSender<?, ?> emailSender = descriptor.emailSender().orElse(null);
+        if (emailSender != null) {
+            emailSender.send(builder);
             return;
         }
         Email email = builder.build();
-        if (descriptor.transactionalEmailSender().isPresent()) {
-            descriptor.transactionalEmailSender().get().send(email);
+        TransactionalEmailSender<?, ?> transactionalEmailSender = descriptor.transactionalEmailSender().orElse(null);
+        if (transactionalEmailSender != null) {
+            transactionalEmailSender.send(email);
             return;
         }
-        if (descriptor.asyncEmailSender().isPresent()) {
-            Mono.from(((io.micronaut.email.AsyncEmailSender) descriptor.asyncEmailSender().get()).sendAsync(builder)).block();
+        AsyncEmailSender<?, ?> asyncEmailSender = descriptor.asyncEmailSender().orElse(null);
+        if (asyncEmailSender != null) {
+            Mono.from(asyncEmailSender.sendAsync(builder)).block();
             return;
         }
-        if (descriptor.asyncTransactionalEmailSender().isPresent()) {
-            Mono.from(((io.micronaut.email.AsyncTransactionalEmailSender) descriptor.asyncTransactionalEmailSender().get()).sendAsync(email)).block();
+        AsyncTransactionalEmailSender<?, ?> asyncTransactionalEmailSender = descriptor.asyncTransactionalEmailSender().orElse(null);
+        if (asyncTransactionalEmailSender != null) {
+            Mono.from(asyncTransactionalEmailSender.sendAsync(email)).block();
             return;
         }
         throw new IllegalStateException("No supported send path is available.");

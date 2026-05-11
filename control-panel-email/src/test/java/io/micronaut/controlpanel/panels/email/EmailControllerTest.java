@@ -34,12 +34,11 @@ class EmailControllerTest {
 
     @Test
     void disabledTestSendDoesNotInvokeSender() {
-        EmailTestFactory.MOCK.invocations();
         try (EmbeddedServer server = ApplicationContext.run(EmbeddedServer.class, baseProperties(false, null, false));
              HttpClient client = server.getApplicationContext().createBean(HttpClient.class, server.getURL())) {
             int before = EmailTestFactory.MOCK.invocations();
             HttpClientResponseException exception = assertThrows(HttpClientResponseException.class, () ->
-                client.toBlocking().exchange(HttpRequest.POST("/control-panel/email-control-panel-controller/javamail/test-send", Map.of()), EmailController.TestSendResult.class));
+                post(client, "javamail", Map.of()));
 
             assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
             assertEquals(before, EmailTestFactory.MOCK.invocations());
@@ -65,9 +64,47 @@ class EmailControllerTest {
         try (EmbeddedServer server = ApplicationContext.run(EmbeddedServer.class, baseProperties(true, "safe@example.test", false));
              HttpClient client = server.getApplicationContext().createBean(HttpClient.class, server.getURL())) {
             HttpClientResponseException exception = assertThrows(HttpClientResponseException.class, () ->
-                client.toBlocking().exchange(HttpRequest.POST("/control-panel/email-control-panel-controller/javamail/test-send", Map.of("recipient", "other@example.test")), EmailController.TestSendResult.class));
+                post(client, "javamail", Map.of("recipient", "other@example.test")));
 
             assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        }
+    }
+
+    @Test
+    void arbitraryRecipientRequiresConfiguredSafeRecipient() {
+        try (EmbeddedServer server = ApplicationContext.run(EmbeddedServer.class, baseProperties(true, "", true));
+             HttpClient client = server.getApplicationContext().createBean(HttpClient.class, server.getURL())) {
+            int before = EmailTestFactory.MOCK.invocations();
+            HttpClientResponseException exception = assertThrows(HttpClientResponseException.class, () ->
+                post(client, "javamail", Map.of("recipient", "other@example.test")));
+
+            assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+            assertEquals(before, EmailTestFactory.MOCK.invocations());
+        }
+    }
+
+    @Test
+    void arbitraryRecipientIsAcceptedWhenSafeRecipientIsConfigured() {
+        try (EmbeddedServer server = ApplicationContext.run(EmbeddedServer.class, baseProperties(true, "safe@example.test", true));
+             HttpClient client = server.getApplicationContext().createBean(HttpClient.class, server.getURL())) {
+            EmailController.TestSendResult result = client.toBlocking().retrieve(
+                HttpRequest.POST("/control-panel/email-control-panel-controller/javamail/test-send", Map.of("recipient", "other@example.test")),
+                EmailController.TestSendResult.class
+            );
+
+            assertTrue(result.success());
+            assertEquals("sent", result.status());
+        }
+    }
+
+    @Test
+    void unknownSenderIsNotFound() {
+        try (EmbeddedServer server = ApplicationContext.run(EmbeddedServer.class, baseProperties(true, "safe@example.test", false));
+             HttpClient client = server.getApplicationContext().createBean(HttpClient.class, server.getURL())) {
+            HttpClientResponseException exception = assertThrows(HttpClientResponseException.class, () ->
+                post(client, "missing", Map.of()));
+
+            assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
         }
     }
 
@@ -76,7 +113,7 @@ class EmailControllerTest {
         try (EmbeddedServer server = ApplicationContext.run(EmbeddedServer.class, baseProperties(true, "safe@example.test", false));
              HttpClient client = server.getApplicationContext().createBean(HttpClient.class, server.getURL())) {
             HttpClientResponseException exception = assertThrows(HttpClientResponseException.class, () ->
-                client.toBlocking().exchange(HttpRequest.POST("/control-panel/email-control-panel-controller/failing/test-send", Map.of()), EmailController.TestSendResult.class));
+                post(client, "failing", Map.of()));
 
             EmailController.TestSendResult result = exception.getResponse().getBody(EmailController.TestSendResult.class).orElseThrow();
             assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, exception.getStatus());
@@ -94,6 +131,13 @@ class EmailControllerTest {
             "micronaut.control-panel.email.test-send.enabled", enabled,
             "micronaut.control-panel.email.test-send.recipient", recipient == null ? "" : recipient,
             "micronaut.control-panel.email.test-send.allow-arbitrary-recipient", arbitrary
+        );
+    }
+
+    private static void post(HttpClient client, String sender, Map<String, Object> body) {
+        client.toBlocking().exchange(
+            HttpRequest.POST("/control-panel/email-control-panel-controller/" + sender + "/test-send", body),
+            EmailController.TestSendResult.class
         );
     }
 }

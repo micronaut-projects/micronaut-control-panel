@@ -33,7 +33,6 @@ public final class EmailRedactor {
     private static final Pattern URI_USERINFO = Pattern.compile("(?i)([a-z][a-z0-9+.-]*://)[^\\s/@:]+:[^\\s/@]+@");
     private static final Pattern AUTH_HEADER = Pattern.compile("(?i)(authorization\\s*[:=]\\s*)(bearer|basic)\\s+[^\\s,;]+");
     private static final Pattern AUTH_TOKEN = Pattern.compile("(?i)\\b(bearer|basic)\\s+[^\\s,;]+");
-    private static final Pattern KEY_VALUE = Pattern.compile("(?i)\\b(password|secret|token|api[-_]?key|api[-_]?secret|api[-_]?token|access[-_]?key|secret[-_]?key|private[-_]?key|credential|authorization)\\b\\s*[:= ]\\s*[^\\s,;]+");
 
     boolean isSecretKey(String key) {
         String normalized = key.toLowerCase(Locale.ROOT);
@@ -73,7 +72,69 @@ public final class EmailRedactor {
         String redacted = URI_USERINFO.matcher(value).replaceAll("$1" + REDACTED + "@");
         redacted = AUTH_HEADER.matcher(redacted).replaceAll("$1" + REDACTED);
         redacted = AUTH_TOKEN.matcher(redacted).replaceAll("$1 " + REDACTED);
-        redacted = KEY_VALUE.matcher(redacted).replaceAll("$1=" + REDACTED);
-        return redacted;
+        return redactKeyValues(redacted);
+    }
+
+    private String redactKeyValues(String value) {
+        StringBuilder redacted = new StringBuilder(value.length());
+        int index = 0;
+        while (index < value.length()) {
+            char current = value.charAt(index);
+            if (!isKeyCharacter(current)) {
+                redacted.append(current);
+                index++;
+                continue;
+            }
+            int keyStart = index;
+            while (index < value.length() && isKeyCharacter(value.charAt(index))) {
+                index++;
+            }
+            String key = value.substring(keyStart, index);
+            if (isSecretMessageKey(key)) {
+                int valueStart = valueStart(value, index);
+                if (valueStart > index && valueStart < value.length() && !isValueDelimiter(value.charAt(valueStart))) {
+                    redacted.append(key).append('=').append(REDACTED);
+                    index = valueStart;
+                    while (index < value.length() && !isValueDelimiter(value.charAt(index))) {
+                        index++;
+                    }
+                    continue;
+                }
+            }
+            redacted.append(key);
+        }
+        return redacted.toString();
+    }
+
+    private boolean isSecretMessageKey(String key) {
+        String normalized = key.toLowerCase(Locale.ROOT);
+        return normalized.contains("password")
+            || normalized.contains("secret")
+            || normalized.contains("token")
+            || normalized.contains("credential")
+            || normalized.contains("authorization")
+            || normalized.contains("key");
+    }
+
+    private int valueStart(String value, int separatorStart) {
+        int index = separatorStart;
+        while (index < value.length() && Character.isWhitespace(value.charAt(index))) {
+            index++;
+        }
+        if (index < value.length() && (value.charAt(index) == ':' || value.charAt(index) == '=')) {
+            index++;
+            while (index < value.length() && Character.isWhitespace(value.charAt(index))) {
+                index++;
+            }
+        }
+        return index;
+    }
+
+    private boolean isKeyCharacter(char character) {
+        return Character.isLetterOrDigit(character) || character == '_' || character == '-' || character == '.';
+    }
+
+    private boolean isValueDelimiter(char character) {
+        return Character.isWhitespace(character) || character == ',' || character == ';';
     }
 }

@@ -33,6 +33,13 @@ import java.util.Optional;
 class EmailDiagnosticsAnalyzer {
 
     private static final String DEFAULT_FROM_PROPERTY = "micronaut.email.from.email";
+    private static final String AVAILABLE = "available";
+    private static final String CONFIGURED = "configured";
+    private static final String DISABLED = "disabled";
+    private static final String HIDDEN = "hidden";
+    private static final String MISSING = "missing";
+    private static final String NOT_AVAILABLE = "not available";
+    private static final String NOT_CONFIGURED = "not configured";
 
     private final Environment environment;
     private final BeanContext beanContext;
@@ -57,19 +64,19 @@ class EmailDiagnosticsAnalyzer {
         boolean templatePresent = classPresent("io.micronaut.email.template.TemplateBody");
         EmailDiagnosticModel.TestSendState testSend = testSendState();
         List<EmailDiagnosticModel.ChecklistItem> checklist = new ArrayList<>();
-        checklist.add(new EmailDiagnosticModel.ChecklistItem("Sender bean", "available", "Sender bean is active."));
-        checklist.add(new EmailDiagnosticModel.ChecklistItem("Default from", defaultFrom.configured() ? "configured" : "missing", defaultFrom.message()));
-        checklist.add(new EmailDiagnosticModel.ChecklistItem("Secrets", "hidden", "Secret-like settings are shown only as presence indicators."));
-        checklist.add(new EmailDiagnosticModel.ChecklistItem("Templates", templatePresent ? "available" : "not available", templatePresent ? "Micronaut Email template support is on the classpath." : "Template support is not on the classpath."));
-        checklist.add(new EmailDiagnosticModel.ChecklistItem("Test send", testSend.configured() ? "configured" : "disabled", testSend.message()));
+        checklist.add(new EmailDiagnosticModel.ChecklistItem("Sender bean", AVAILABLE, "Sender bean is active."));
+        checklist.add(new EmailDiagnosticModel.ChecklistItem("Default from", defaultFrom.configured() ? CONFIGURED : MISSING, defaultFrom.message()));
+        checklist.add(new EmailDiagnosticModel.ChecklistItem("Secrets", HIDDEN, "Secret-like settings are shown only as presence indicators."));
+        checklist.add(new EmailDiagnosticModel.ChecklistItem("Templates", templatePresent ? AVAILABLE : NOT_AVAILABLE, templatePresent ? "Micronaut Email template support is on the classpath." : "Template support is not on the classpath."));
+        checklist.add(new EmailDiagnosticModel.ChecklistItem("Test send", testSend.configured() ? CONFIGURED : DISABLED, testSend.message()));
         return new EmailDiagnosticModel(
             descriptor.name(),
             provider.label(),
             descriptor.supportedInterfaces().stream().toList(),
             descriptor.implementationTypes().stream().map(redactor::redact).sorted().toList(),
-            defaultFrom.configured() ? "configured" : "missing",
+            defaultFrom.configured() ? CONFIGURED : MISSING,
             defaultFrom.value(),
-            templatePresent ? "present" : "not available",
+            templatePresent ? "present" : NOT_AVAILABLE,
             entries,
             checklist,
             testSend,
@@ -83,14 +90,14 @@ class EmailDiagnosticsAnalyzer {
             "Custom/Unknown",
             List.of(),
             List.of(),
-            "missing",
-            "not configured",
-            classPresent("io.micronaut.email.template.TemplateBody") ? "present" : "not available",
+            MISSING,
+            NOT_CONFIGURED,
+            classPresent("io.micronaut.email.template.TemplateBody") ? "present" : NOT_AVAILABLE,
             List.of(),
             List.of(
-                new EmailDiagnosticModel.ChecklistItem("Sender beans", "missing", "No Micronaut Email sender beans were detected."),
-                new EmailDiagnosticModel.ChecklistItem("Micronaut Email", "available", "Micronaut Email API is on the classpath."),
-                new EmailDiagnosticModel.ChecklistItem("Provider module", "not configured", "Add and configure a Micronaut Email provider module.")
+                new EmailDiagnosticModel.ChecklistItem("Sender beans", MISSING, "No Micronaut Email sender beans were detected."),
+                new EmailDiagnosticModel.ChecklistItem("Micronaut Email", AVAILABLE, "Micronaut Email API is on the classpath."),
+                new EmailDiagnosticModel.ChecklistItem("Provider module", NOT_CONFIGURED, "Add and configure a Micronaut Email provider module.")
             ),
             testSendState(),
             true
@@ -152,6 +159,7 @@ class EmailDiagnosticsAnalyzer {
                 addHiddenPresence(entries, "Secret key", "aws.secret-access-key");
             }
             case CUSTOM -> {
+                // Custom senders have no provider-specific safe settings to display.
             }
             default -> throw new IllegalStateException("Unknown email provider: " + provider);
         }
@@ -165,7 +173,7 @@ class EmailDiagnosticsAnalyzer {
 
     private void addHiddenPresence(List<EmailDiagnosticModel.ConfigurationEntry> entries, String label, String key) {
         boolean configured = environment.containsProperty(key);
-        entries.add(new EmailDiagnosticModel.ConfigurationEntry(label, configured ? "present (hidden)" : "not configured", configured ? "hidden" : "missing"));
+        entries.add(new EmailDiagnosticModel.ConfigurationEntry(label, configured ? "present (hidden)" : NOT_CONFIGURED, configured ? HIDDEN : MISSING));
     }
 
     private DefaultFrom defaultFrom() {
@@ -175,17 +183,17 @@ class EmailDiagnosticsAnalyzer {
             return new DefaultFrom(true, redactor.redact(property.get()), "Default from is configured.");
         }
         Optional<FromConfiguration> fromConfiguration = beanContext.findBean(FromConfiguration.class);
-        if (fromConfiguration.isPresent() && fromConfiguration.get().getFrom() != null) {
+        if (fromConfiguration.isPresent()) {
             return new DefaultFrom(true, redactor.redact(fromConfiguration.get().getFrom().getEmail()), "Default from configuration bean is available.");
         }
-        return new DefaultFrom(false, "not configured", "No default from address was detected.");
+        return new DefaultFrom(false, NOT_CONFIGURED, "No default from address was detected.");
     }
 
     private EmailDiagnosticModel.TestSendState testSendState() {
         var testSend = configuration.getTestSend();
         boolean hasRecipient = StringUtils.isNotEmpty(testSend.getRecipient());
         boolean configured = testSend.isEnabled() && hasRecipient;
-        String status = configured ? "available" : "disabled";
+        String status = configured ? AVAILABLE : DISABLED;
         String message;
         if (!testSend.isEnabled()) {
             message = "Test send is disabled.";
@@ -201,7 +209,7 @@ class EmailDiagnosticsAnalyzer {
         try {
             Class.forName(className, false, beanContext.getClassLoader());
             return true;
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException _) {
             return false;
         }
     }

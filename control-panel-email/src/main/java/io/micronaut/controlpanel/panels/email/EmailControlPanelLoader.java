@@ -46,15 +46,15 @@ public class EmailControlPanelLoader implements ControlPanelLoader {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <CP extends ControlPanel<?>> List<CP> loadControlPanels() {
+    public <T extends ControlPanel<?>> List<T> loadControlPanels() {
         List<EmailSenderDescriptor> descriptors = registry.descriptors();
         if (descriptors.isEmpty()) {
-            return (List<CP>) List.of(new EmptyEmailControlPanel(analyzer, configuration));
+            return (List<T>) List.of(new EmptyEmailControlPanel(analyzer, configuration));
         }
         List<EmailControlPanel> panels = new ArrayList<>();
         for (EmailSenderDescriptor descriptor : descriptors) {
             panels.add(new EmailControlPanel(descriptor, analyzer, configuration));
         }
-        return (List<CP>) panels;
+        return (List<T>) panels;
     }
 }
