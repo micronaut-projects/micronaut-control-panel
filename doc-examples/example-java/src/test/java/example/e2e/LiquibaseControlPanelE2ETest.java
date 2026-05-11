@@ -16,6 +16,7 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 
 @UsePlaywright(LiquibaseControlPanelE2ETest.HeadlessBrowserOptions.class)
 @MicronautTest(environments = "liquibase", rebuildContext = true)
+@DisabledInNativeImage
 @Property(name = "datasources.my-postgres.enabled", value = "false")
 @Property(name = "jpa.default.enabled", value = "false")
 @Property(name = "jpa.my-postgres.enabled", value = "false")
@@ -27,7 +28,6 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 class LiquibaseControlPanelE2ETest extends AbstractE2ETest {
 
     @Test
-    @DisabledInNativeImage
     void testLiquibasePanelDesktopAndMobileEvidence(Page page) throws Exception {
         captureLiquibasePanel(page, 1440, 900, "liquibase-panel-1440x900.png");
         captureLiquibasePanel(page, 390, 844, "liquibase-panel-390x844.png");

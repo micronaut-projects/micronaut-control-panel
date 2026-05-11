@@ -43,12 +43,14 @@ tasks.withType<Test> {
 
 configurations.named("nativeImageTestClasspath") {
     resolutionStrategy {
-        // Kafka and datasource - tests are @DisabledInNativeImage
+        // Kafka and JDBC integrations - tests are @DisabledInNativeImage.
+        // Keep micronaut-jdbc available because micronaut-liquibase bean definitions reference DataSourceResolver.
         exclude(group = "io.micronaut.kafka")
         exclude(group = "org.apache.kafka")
         exclude(group = "io.confluent")
         exclude(group = "com.oracle.database.jdbc")
-        exclude(group = "io.micronaut.sql")
+        exclude(group = "io.micronaut.sql", module = "micronaut-hibernate-jpa")
+        exclude(group = "io.micronaut.sql", module = "micronaut-jdbc-hikari")
         exclude(group = "org.postgresql")
         // Cloud object storage providers - only local storage is tested in native image
         exclude(group = "io.micronaut.objectstorage", module = "micronaut-object-storage-aws")

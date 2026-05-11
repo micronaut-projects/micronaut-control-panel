@@ -17,6 +17,7 @@ package io.micronaut.controlpanel.panels.liquibase;
 
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.Qualifier;
+import io.micronaut.jdbc.DataSourceResolver;
 import io.micronaut.liquibase.LiquibaseConfigurationProperties;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -110,6 +111,27 @@ class LiquibaseHistoryServiceTest {
     }
 
     @Test
+    void enabledConfigurationHonorsCustomLiquibaseHistoryTables() {
+        try (ApplicationContext context = ApplicationContext.run(Map.of(
+            "datasources.default.url", "jdbc:h2:mem:liquibasePanelCustomTables;DB_CLOSE_DELAY=-1",
+            "datasources.default.driver-class-name", "org.h2.Driver",
+            "datasources.default.username", "sa",
+            "liquibase.datasources.default.change-log", "classpath:db/changelog/liquibase-panel.xml",
+            "liquibase.datasources.default.default-schema", "PUBLIC",
+            "liquibase.datasources.default.liquibase-schema", "PUBLIC",
+            "liquibase.datasources.default.database-change-log-table", "DATABASECHANGELOG_PANEL",
+            "liquibase.datasources.default.database-change-log-lock-table", "DATABASECHANGELOG_PANEL_LOCK",
+            "liquibase.datasources.default.liquibase-tablespace", "IGNORED"
+        ))) {
+            LiquibasePanelBody body = context.getBean(LiquibaseHistoryService.class).getBody();
+
+            assertEquals(1, body.enabledCount());
+            assertEquals(2, body.totalChangeSets());
+            assertEquals("panel-test", body.dataSources().get(0).latestTag());
+        }
+    }
+
+    @Test
     void repeatedHistoryReadsAreStable() {
         try (ApplicationContext context = ApplicationContext.run(Map.of(
             "datasources.default.url", "jdbc:h2:mem:liquibasePanelCache;DB_CLOSE_DELAY=-1",
@@ -133,14 +155,18 @@ class LiquibaseHistoryServiceTest {
         configuration.setEnabled(true);
         ApplicationContext applicationContext = Mockito.mock(ApplicationContext.class);
         DataSource dataSource = Mockito.mock(DataSource.class);
+        DataSource resolvedDataSource = Mockito.mock(DataSource.class);
+        DataSourceResolver dataSourceResolver = Mockito.mock(DataSourceResolver.class);
         Mockito.when(applicationContext.findBean(eq(DataSource.class), any(Qualifier.class)))
             .thenReturn(Optional.of(dataSource));
-        Mockito.when(dataSource.getConnection())
+        Mockito.when(dataSourceResolver.resolve(dataSource))
+            .thenReturn(resolvedDataSource);
+        Mockito.when(resolvedDataSource.getConnection())
             .thenThrow(new SQLException("jdbc:postgresql://db.example.test/internal?user=admin&password=secret"));
         LiquibaseHistoryService service = new LiquibaseHistoryService(
             List.of(configuration),
             applicationContext,
-            null,
+            dataSourceResolver,
             new LiquibasePanelConfiguration());
 
         LiquibaseDataSourceHistory history = service.getBody().dataSources().get(0);
@@ -151,6 +177,7 @@ class LiquibaseHistoryServiceTest {
         assertFalse(history.errorMessage().contains("db.example.test"));
         assertFalse(history.errorMessage().contains("admin"));
         assertFalse(history.errorMessage().contains("secret"));
+        Mockito.verify(dataSourceResolver).resolve(dataSource);
     }
 
     @Test
