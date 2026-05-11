@@ -1,22 +1,57 @@
 {{#with controlPanel.body }}
     {{#if names}}
         <div id="metrics-panel" data-metrics-api="{{../ext.controlPanelPath}}/api/metrics">
-            <div class="form-group">
-                <label for="metricSearch">Search metrics</label>
-                <input type="search" id="metricSearch" class="form-control" placeholder="Filter metric names">
-            </div>
-
             <div class="row">
-                <div class="col-lg-4">
-                    <div class="list-group" id="metricList">
-                        {{#each names}}
-                            <button type="button" class="list-group-item list-group-item-action" data-metric-name="{{this}}">
-                                <code>{{this}}</code>
-                            </button>
-                        {{/each}}
+                <div class="col-lg-5">
+                    <div id="metricTable" class="cp-data-table cp-data-table-paged" data-filter-table data-filter-table-page-size="12" data-filter-table-label="metric" data-filter-table-label-plural="metrics">
+                        <div class="cp-data-table-toolbar">
+                            <div class="cp-data-table-summary" data-filter-table-summary>{{ names.size }} metrics</div>
+                            <div class="cp-data-table-search">
+                                <input type="search" class="form-control" data-filter-table-search placeholder="Search metrics" aria-label="Search metrics">
+                            </div>
+                        </div>
+                        <div class="cp-data-table-container">
+                            <table class="table cp-data-table-table cp-data-table-fixed">
+                                <thead>
+                                <tr>
+                                    <th>Metric</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {{#each names}}
+                                    <tr data-filter-table-row data-metric-row>
+                                        <td>
+                                            <button type="button" class="btn btn-link p-0 text-left" data-metric-name="{{this}}">
+                                                <code class="cp-table-code">{{this}}</code>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {{/each}}
+                                <tr data-filter-table-empty hidden>
+                                    <td class="cp-data-table-empty-cell">No metrics found.</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="cp-data-table-footer">
+                            <label class="cp-data-table-page-size">
+                                Rows per page
+                                <select class="form-control" data-filter-table-page-size-select aria-label="Metrics per page">
+                                    <option value="8">8</option>
+                                    <option value="12" selected>12</option>
+                                    <option value="20">20</option>
+                                    <option value="50">50</option>
+                                </select>
+                            </label>
+                            <div class="cp-data-table-pagination">
+                                <span class="cp-data-table-page" data-filter-table-page>Page 1 of 1</span>
+                                <button type="button" class="btn btn-secondary btn-sm" data-filter-table-prev>Previous</button>
+                                <button type="button" class="btn btn-secondary btn-sm" data-filter-table-next>Next</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="col-lg-8">
+                <div class="col-lg-7">
                     <div id="metricAlert" class="alert alert-danger d-none" role="alert"></div>
                     <div id="metricEmpty" class="text-muted">Select a metric to view its measurements and tags.</div>
                     <div id="metricDetail" class="d-none">
@@ -47,8 +82,7 @@
             (function () {
                 const panel = document.getElementById('metrics-panel');
                 const api = panel.dataset.metricsApi;
-                const list = document.getElementById('metricList');
-                const search = document.getElementById('metricSearch');
+                const metricTable = document.getElementById('metricTable');
                 const detail = document.getElementById('metricDetail');
                 const empty = document.getElementById('metricEmpty');
                 const alert = document.getElementById('metricAlert');
@@ -160,26 +194,19 @@
                     });
                 }
 
-                list.addEventListener('click', function (event) {
+                metricTable.addEventListener('click', function (event) {
                     const button = event.target.closest('button[data-metric-name]');
                     if (!button) {
                         return;
                     }
-                    list.querySelectorAll('.active').forEach(function (active) {
-                        active.classList.remove('active');
+                    metricTable.querySelectorAll('[data-metric-row].table-active').forEach(function (active) {
+                        active.classList.remove('table-active');
                     });
-                    button.classList.add('active');
+                    button.closest('[data-metric-row]').classList.add('table-active');
                     loadMetric(button.dataset.metricName, []);
                 });
 
-                search.addEventListener('input', function () {
-                    const value = search.value.toLowerCase();
-                    list.querySelectorAll('button[data-metric-name]').forEach(function (button) {
-                        button.classList.toggle('d-none', button.dataset.metricName.toLowerCase().indexOf(value) < 0);
-                    });
-                });
-
-                const first = list.querySelector('button[data-metric-name]');
+                const first = metricTable.querySelector('button[data-metric-name]');
                 if (first) {
                     first.click();
                 }

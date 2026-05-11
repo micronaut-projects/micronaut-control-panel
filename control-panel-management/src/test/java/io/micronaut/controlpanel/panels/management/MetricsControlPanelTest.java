@@ -92,6 +92,19 @@ class MetricsControlPanelTest {
         }
     }
 
+    @Test
+    void metricSelectorUsesPagedDataTable() throws IOException {
+        try (var in = getClass().getResourceAsStream("/views/metrics/detail.hbs")) {
+            assertNotNull(in);
+            var template = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+
+            assertTrue(template.contains("data-filter-table-page-size=\"12\""));
+            assertTrue(template.contains("data-filter-table-row"));
+            assertTrue(template.contains("data-filter-table-page-size-select"));
+            assertFalse(template.contains("class=\"list-group\""));
+        }
+    }
+
     private static void registerTestMetrics(MeterRegistry registry) {
         Counter.builder("control.panel.test.requests")
             .description("Deterministic test requests")

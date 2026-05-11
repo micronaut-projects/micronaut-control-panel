@@ -155,6 +155,8 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         controlPanelDetails(page, "Metrics").click();
 
         assertThat(body(page)).containsText("control.panel.demo.requests");
+        assertThat(body(page)).containsText("Rows per page");
+        assertThat(body(page)).containsText("Showing 1-12");
         page.getByLabel("Search metrics").fill("control.panel.demo.requests");
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("control.panel.demo.requests")).click();
         assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("control.panel.demo.requests"))).isVisible();
@@ -162,7 +164,7 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         assertThat(body(page)).containsText("success:demo");
 
         page.getByLabel("outcome").selectOption("outcome:success:demo");
-        assertThat(page.locator("tbody")).containsText("COUNT");
+        assertThat(page.locator("#metricMeasurements")).containsText("COUNT");
     }
 
     @Test
