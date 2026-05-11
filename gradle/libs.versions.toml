@@ -28,6 +28,7 @@ micronaut-object-storage = "3.0.0-M2"
 micronaut-cache = "6.0.0-RC1"
 micronaut-sql = "7.0.0-RC1"
 micronaut-data = "5.0.0-RC1"
+micronaut-liquibase = "7.0.0-RC1"
 micronaut-testresources = "4.0.0-M1"
 micronaut-gradle-plugin = "5.0.0-M1"
 micronaut-openapi = "7.0.0-M2"
@@ -56,6 +57,7 @@ micronaut-object-storage = { module = "io.micronaut.objectstorage:micronaut-obje
 micronaut-cache = { module = "io.micronaut.cache:micronaut-cache-bom", version.ref = "micronaut-cache" }
 micronaut-sql = { module = "io.micronaut.sql:micronaut-sql-bom", version.ref = "micronaut-sql" }
 micronaut-data = { module = "io.micronaut.data:micronaut-data-bom", version.ref = "micronaut-data" }
+micronaut-liquibase = { module = "io.micronaut.liquibase:micronaut-liquibase-bom", version.ref = "micronaut-liquibase" }
 micronaut-testresources = { module = 'io.micronaut.testresources:micronaut-test-resources-bom', version.ref = "micronaut-testresources" }
 micronaut-kafka = { module = "io.micronaut.kafka:micronaut-kafka-bom", version.ref = "micronaut-kafka" }
 avro = { module = "org.apache.avro:avro", version.ref = "avro" }

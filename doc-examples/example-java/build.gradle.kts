@@ -43,6 +43,11 @@ dependencies {
     implementation(mnSql.micronaut.hibernate.jpa)
     implementation(mnSql.hibernate.jcache)
 
+    // Liquibase
+    implementation(projects.micronautControlPanelLiquibase)
+    implementation(mnLiquibase.micronaut.liquibase)
+    runtimeOnly(mnSql.h2)
+
     // Kafka
     implementation(projects.micronautControlPanelKafka)
     implementation(mnKafka.micronaut.kafka)

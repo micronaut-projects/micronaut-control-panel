@@ -1,0 +1,69 @@
+The Liquibase Control Panel provides a read-only view of applied Liquibase change-set history for each configured
+Liquibase datasource.
+
+Features include:
+
+* Summary rows for enabled, disabled, empty-history, and unavailable Liquibase datasource configurations.
+* Applied change-set detail including id, author, changelog, stored changelog, description, execution type, execution
+  date, deployment id, contexts, labels, checksum, order executed, and tag.
+* Configurable hiding of checksums and deployment ids.
+
+To get started, add the following module as a development-time dependency:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-liquibase[scope=developmentOnly]
+
+The application must also use Micronaut Liquibase:
+
+dependency:io.micronaut.liquibase:micronaut-liquibase[scope=implementation]
+
+The panel reads Liquibase history in-process from the configured datasource. It does not require the Micronaut
+`/liquibase` endpoint to be enabled or marked non-sensitive. If you expose that endpoint separately, normal Micronaut
+Endpoint sensitivity and security rules still apply.
+
+=== Configuration
+
+The Liquibase control panel is automatically enabled when you include the `micronaut-control-panel-liquibase` module in
+an application that also has Micronaut Liquibase on the classpath. You can disable the panel or hide internal audit
+metadata:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      liquibase:
+        enabled: true
+        show-checksums: true
+        show-deployment-ids: true
+----
+
+The panel uses the same Liquibase datasource names configured under `liquibase.datasources.*`. For example:
+
+[configuration]
+----
+datasources:
+  default:
+    url: jdbc:h2:mem:devDb
+    driver-class-name: org.h2.Driver
+    username: sa
+
+liquibase:
+  datasources:
+    default:
+      change-log: classpath:db/changelog.xml
+----
+
+Set `micronaut.control-panel.panels.liquibase.show-checksums=false` or
+`micronaut.control-panel.panels.liquibase.show-deployment-ids=false` when those values should not be displayed in the
+development UI. The detail view states when a column is hidden by Control Panel configuration.
+
+=== Verification
+
+Start the application with Control Panel, Micronaut Liquibase, and at least one `liquibase.datasources.*` entry. Open the
+Control Panel and select the Data Sources category, then the Liquibase panel. The summary should list each Liquibase
+configuration by datasource name. Disabled configurations are shown as disabled without opening a datasource connection,
+enabled configurations with no rows in the Liquibase history table are shown as empty, and read failures are shown per
+configuration instead of failing the whole panel.
+
+The first version is intentionally read-only. It does not expose Liquibase update, rollback, drop, checksum clearing,
+lock-table mutation, generated SQL execution, or any other destructive Liquibase operation.
