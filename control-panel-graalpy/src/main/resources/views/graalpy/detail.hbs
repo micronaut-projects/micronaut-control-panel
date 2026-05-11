@@ -1,0 +1,258 @@
+{{#with controlPanel.body}}
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Modules</h5>
+                    <p class="card-text"><strong>{{moduleCount}}</strong> interfaces</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Python VFS</h5>
+                    <p class="card-text"><strong>{{vfs.entryCount}}</strong> entries</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Shared Context</h5>
+                    <p class="card-text">
+                        {{#if runtime.sharedContextPresent}}
+                            <span class="badge badge-secondary">Present</span>
+                        {{else}}
+                            <span class="badge badge-secondary">Not detected</span>
+                        {{/if}}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Factory</h5>
+                    <p class="card-text">
+                        {{#if runtime.hasActiveFactory}}
+                            <code title="{{runtime.activeFactoryClass}}">{{abbreviate runtime.activeFactoryClass 42}}</code>
+                        {{else}}
+                            <span>{{runtime.factoryStatus}}</span>
+                        {{/if}}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tabs mt-4" data-tabs>
+        <div class="tabs-list" role="tablist" aria-label="GraalPy diagnostics">
+            <button type="button" class="tabs-trigger active" data-tab-target="graalpy-modules" role="tab" aria-selected="true">Module Interfaces</button>
+            <button type="button" class="tabs-trigger" data-tab-target="graalpy-vfs" role="tab" aria-selected="false">Python VFS</button>
+            <button type="button" class="tabs-trigger" data-tab-target="graalpy-runtime" role="tab" aria-selected="false">Runtime Notes</button>
+        </div>
+
+        <div id="graalpy-modules" class="tabs-panel active" role="tabpanel">
+            {{#if hasModules}}
+                <div class="cp-data-table cp-data-table-paged" data-filter-table data-filter-table-page-size="12" data-filter-table-label="module interface" data-filter-table-label-plural="module interfaces">
+                    <div class="cp-data-table-toolbar">
+                        <div class="cp-data-table-summary" data-filter-table-summary>{{moduleCount}} module interfaces</div>
+                        <div class="cp-data-table-search">
+                            <input type="search" class="form-control" data-filter-table-search placeholder="Search GraalPy modules" aria-label="Search GraalPy modules">
+                        </div>
+                    </div>
+                    <div class="cp-data-table-container">
+                        <table class="table cp-data-table-table cp-data-table-fixed">
+                            <thead>
+                            <tr>
+                                <th>Bean</th>
+                                <th>Python module</th>
+                                <th>Java type</th>
+                                <th>Methods</th>
+                                <th>Scope</th>
+                                <th>Instantiated</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {{#each modules}}
+                                <tr data-filter-table-row>
+                                    <td><code class="cp-table-code" title="{{beanName}}">{{beanName}}</code></td>
+                                    <td><code class="cp-table-code" title="{{pythonModule}}">{{pythonModule}}</code></td>
+                                    <td><code class="cp-table-code" title="{{javaType}}">{{javaType}}</code></td>
+                                    <td>
+                                        {{#if hasMethods}}
+                                            <ul class="mb-0">
+                                                {{#each methods}}
+                                                    <li><code class="cp-table-code" title="{{signature}}">{{signature}}</code></li>
+                                                {{/each}}
+                                            </ul>
+                                        {{else}}
+                                            <span class="text-muted">No executable methods detected.</span>
+                                        {{/if}}
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-secondary">{{scope}}</span>
+                                        <span class="text-muted">{{qualifier}}</span>
+                                    </td>
+                                    <td>{{instantiated}}</td>
+                                </tr>
+                            {{/each}}
+                            <tr data-filter-table-empty hidden>
+                                <td class="cp-data-table-empty-cell" colspan="6">No GraalPy module interfaces found.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="cp-data-table-footer">
+                        <label class="cp-data-table-page-size">
+                            Rows per page
+                            <select class="form-control" data-filter-table-page-size-select aria-label="GraalPy module interfaces per page">
+                                <option value="8">8</option>
+                                <option value="12" selected>12</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                            </select>
+                        </label>
+                        <div class="cp-data-table-pagination">
+                            <span class="cp-data-table-page" data-filter-table-page>Page 1 of 1</span>
+                            <button type="button" class="btn btn-secondary btn-sm" data-filter-table-prev>Previous</button>
+                            <button type="button" class="btn btn-secondary btn-sm" data-filter-table-next>Next</button>
+                        </div>
+                    </div>
+                </div>
+            {{else}}
+                <div class="cp-data-table-empty">GraalPy is on the classpath, but no bean definitions annotated with <code>@GraalPyModule</code> were detected.</div>
+            {{/if}}
+        </div>
+
+        <div id="graalpy-vfs" class="tabs-panel" role="tabpanel" hidden>
+            {{#if vfs.hasWarnings}}
+                <div class="alert alert-warning" role="status">
+                    {{#each vfs.warnings}}
+                        <p>{{this}}</p>
+                    {{/each}}
+                </div>
+            {{/if}}
+            {{#if vfs.hasResources}}
+                <div class="cp-data-table-container cp-vertical-table">
+                    <table class="table cp-data-table-table">
+                        <tbody>
+                        {{#each vfs.resources}}
+                            <tr>
+                                <th scope="row">{{label}}</th>
+                                <td>
+                                    <span class="badge badge-secondary">{{kind}}</span>
+                                    {{lineCount}} metadata lines
+                                    {{#if unreadable}}<span class="badge badge-secondary">unreadable</span>{{/if}}
+                                </td>
+                            </tr>
+                        {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+            {{/if}}
+            {{#if vfs.hasEntries}}
+                {{#if vfs.truncated}}
+                    <p class="text-muted">The displayed VFS metadata is capped at {{vfs.entryCount}} entries. {{vfs.omittedEntries}} additional entries were omitted after the cap.</p>
+                {{/if}}
+                <div class="cp-data-table cp-data-table-paged" data-filter-table data-filter-table-page-size="16" data-filter-table-label="VFS entry" data-filter-table-label-plural="VFS entries">
+                    <div class="cp-data-table-toolbar">
+                        <div class="cp-data-table-summary" data-filter-table-summary>{{vfs.entryCount}} VFS entries</div>
+                        <div class="cp-data-table-search">
+                            <input type="search" class="form-control" data-filter-table-search placeholder="Search VFS paths" aria-label="Search VFS paths">
+                        </div>
+                    </div>
+                    <div class="cp-data-table-container">
+                        <table class="table cp-data-table-table cp-data-table-fixed">
+                            <thead>
+                            <tr>
+                                <th>Group</th>
+                                <th>Path</th>
+                                <th>Resource</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {{#each vfs.entries}}
+                                <tr data-filter-table-row>
+                                    <td><span class="badge badge-secondary">{{group}}</span></td>
+                                    <td><code class="cp-table-code" title="{{path}}">{{path}}</code></td>
+                                    <td>{{resource}}</td>
+                                </tr>
+                            {{/each}}
+                            <tr data-filter-table-empty hidden>
+                                <td class="cp-data-table-empty-cell" colspan="3">No VFS entries found.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="cp-data-table-footer">
+                        <label class="cp-data-table-page-size">
+                            Rows per page
+                            <select class="form-control" data-filter-table-page-size-select aria-label="VFS entries per page">
+                                <option value="8">8</option>
+                                <option value="16" selected>16</option>
+                                <option value="30">30</option>
+                                <option value="50">50</option>
+                            </select>
+                        </label>
+                        <div class="cp-data-table-pagination">
+                            <span class="cp-data-table-page" data-filter-table-page>Page 1 of 1</span>
+                            <button type="button" class="btn btn-secondary btn-sm" data-filter-table-prev>Previous</button>
+                            <button type="button" class="btn btn-secondary btn-sm" data-filter-table-next>Next</button>
+                        </div>
+                    </div>
+                </div>
+            {{else}}
+                <div class="cp-data-table-empty">No <code>org.graalvm.python.vfs/fileslist.txt</code> metadata was found. Check that the GraalPy build plugin packaged Python sources and dependencies into the application resources.</div>
+            {{/if}}
+        </div>
+
+        <div id="graalpy-runtime" class="tabs-panel" role="tabpanel" hidden>
+            <div class="cp-data-table-container cp-vertical-table">
+                <table class="table cp-data-table-table">
+                    <tbody>
+                    <tr>
+                        <th scope="row">Context builder factory</th>
+                        <td>
+                            {{#if runtime.hasActiveFactory}}
+                                <code>{{runtime.activeFactoryClass}}</code>
+                            {{else}}
+                                <span>{{runtime.factoryStatus}}</span>
+                            {{/if}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Factory candidates</th>
+                        <td>
+                            {{#if runtime.hasFactoryCandidates}}
+                                <ul>
+                                    {{#each runtime.factoryCandidates}}
+                                        <li><code>{{this}}</code></li>
+                                    {{/each}}
+                                </ul>
+                            {{else}}
+                                <span>No factory bean definitions were detected.</span>
+                            {{/if}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Shared context bean</th>
+                        <td>
+                            {{#if runtime.sharedContextPresent}}
+                                Present
+                            {{else}}
+                                Not detected
+                            {{/if}}
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="alert alert-info" role="status">
+                <p>This panel is read-only. It inspects Micronaut bean definitions and GraalPy VFS metadata; it does not import Python modules, invoke Python functions, read listed Python files, or call package managers.</p>
+                <p>The default GraalPy introduction advice uses one shared polyglot context. Python execution can serialize on the global interpreter lock, so multi-context designs should use custom Context APIs outside this panel.</p>
+            </div>
+        </div>
+    </div>
+{{/with}}
