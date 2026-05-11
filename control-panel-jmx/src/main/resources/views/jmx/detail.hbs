@@ -26,7 +26,7 @@
                 {{/if}}
 
                 <div class="tabs" data-tabs>
-                    <div class="tabs-list" role="tablist" aria-label="JMX diagnostics">
+                    <div class="tabs-list cp-jmx-tabs-list" role="tablist" aria-label="JMX diagnostics">
                         <button type="button" class="tabs-trigger active" id="tab-jmx-server" role="tab" aria-selected="true" aria-controls="panel-jmx-server" data-tabs-trigger="jmx-server">
                             Server
                         </button>
@@ -44,7 +44,7 @@
                     </div>
 
                     <div class="tabs-panel" id="panel-jmx-server" role="tabpanel" aria-labelledby="tab-jmx-server" data-tabs-panel="jmx-server">
-                        <div class="cp-data-table-container cp-vertical-table">
+                        <div class="cp-data-table-container cp-vertical-table cp-jmx-server-table">
                             <table class="table cp-data-table-table">
                                 <tbody>
                                 <tr>
@@ -89,23 +89,23 @@
                                 </tr>
                                 <tr>
                                     <th><code>jmx.agent-id</code></th>
-                                    <td><code class="cp-table-code">{{settings.agentId.value}}</code> <span class="badge badge-secondary">{{settings.agentId.source}}</span></td>
+                                    <td><span class="cp-jmx-setting-value"><code class="cp-table-code">{{settings.agentId.value}}</code> <span class="badge badge-secondary">{{settings.agentId.source}}</span></span></td>
                                 </tr>
                                 <tr>
                                     <th><code>jmx.domain</code></th>
-                                    <td><code class="cp-table-code">{{settings.domain.value}}</code> <span class="badge badge-secondary">{{settings.domain.source}}</span></td>
+                                    <td><span class="cp-jmx-setting-value"><code class="cp-table-code">{{settings.domain.value}}</code> <span class="badge badge-secondary">{{settings.domain.source}}</span></span></td>
                                 </tr>
                                 <tr>
                                     <th><code>jmx.add-to-factory</code></th>
-                                    <td><code class="cp-table-code">{{settings.addToFactory.value}}</code> <span class="badge badge-secondary">{{settings.addToFactory.source}}</span></td>
+                                    <td><span class="cp-jmx-setting-value"><code class="cp-table-code">{{settings.addToFactory.value}}</code> <span class="badge badge-secondary">{{settings.addToFactory.source}}</span></span></td>
                                 </tr>
                                 <tr>
                                     <th><code>jmx.ignore-agent-not-found</code></th>
-                                    <td><code class="cp-table-code">{{settings.ignoreAgentNotFound.value}}</code> <span class="badge badge-secondary">{{settings.ignoreAgentNotFound.source}}</span></td>
+                                    <td><span class="cp-jmx-setting-value"><code class="cp-table-code">{{settings.ignoreAgentNotFound.value}}</code> <span class="badge badge-secondary">{{settings.ignoreAgentNotFound.source}}</span></span></td>
                                 </tr>
                                 <tr>
                                     <th><code>jmx.register-endpoints</code></th>
-                                    <td><code class="cp-table-code">{{settings.registerEndpoints.value}}</code> <span class="badge badge-secondary">{{settings.registerEndpoints.source}}</span></td>
+                                    <td><span class="cp-jmx-setting-value"><code class="cp-table-code">{{settings.registerEndpoints.value}}</code> <span class="badge badge-secondary">{{settings.registerEndpoints.source}}</span></span></td>
                                 </tr>
                                 </tbody>
                             </table>
