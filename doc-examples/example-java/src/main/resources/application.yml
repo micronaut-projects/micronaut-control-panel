@@ -29,6 +29,21 @@ micronaut:
   application:
     name: myApplication
 
+datasources:
+  flyway-demo:
+    url: jdbc:h2:mem:flywayDemo;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+
+flyway:
+  enabled: true
+  datasources:
+    flyway-demo:
+      enabled: true
+      locations:
+        - classpath:db/flyway-demo
+
 ehcache:
   caches:
     my-ehcache:

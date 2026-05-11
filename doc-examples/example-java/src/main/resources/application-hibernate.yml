@@ -31,3 +31,5 @@ jpa:
       hibernate.cache.use_query_cache: false
   my-oracle:
     enabled: false
+  flyway-demo:
+    enabled: false

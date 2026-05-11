@@ -273,6 +273,7 @@ class ControlPanelE2ETest extends AbstractE2ETest {
 
         assertThat(body(page)).containsText("my-oracle");
         assertThat(body(page)).containsText("my-postgres");
+        assertThat(body(page)).containsText("Flyway");
 
         controlPanelDetails(page, "my-oracle").click();
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Show ER diagram")).click();
@@ -289,6 +290,18 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         executeQueryShortcut(page);
 
         assertThat(page.locator("tbody")).containsText("ACCOUNTING");
+    }
+
+    @Test
+    void testFlyway(Page page) {
+        page.navigate(baseUrl());
+        categoryLink(page, "Data Sources").click();
+        controlPanelDetails(page, "Flyway").click();
+
+        assertThat(body(page)).containsText("Migration status");
+        assertThat(body(page)).containsText("flyway-demo");
+        assertThat(body(page)).containsText("create control panel demo");
+        assertThat(body(page)).containsText("Success");
     }
 
     @Test
