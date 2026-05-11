@@ -1,4 +1,62 @@
 {{#with controlPanel.body as |body|}}
+<style>
+    .pulsar-failure-rail {
+        border: 1px solid #dee2e6;
+        border-radius: .25rem;
+        padding: 1rem;
+        background: #fff;
+    }
+
+    .pulsar-failure-event + .pulsar-failure-event {
+        border-top: 1px solid #edf0f5;
+        margin-top: .75rem;
+        padding-top: .75rem;
+    }
+
+    .pulsar-failure-event p:last-child {
+        margin-bottom: 0;
+    }
+
+    @media (max-width: 767.98px) {
+        .pulsar-responsive-table,
+        .pulsar-responsive-table thead,
+        .pulsar-responsive-table tbody,
+        .pulsar-responsive-table tr,
+        .pulsar-responsive-table th,
+        .pulsar-responsive-table td {
+            display: block;
+        }
+
+        .pulsar-responsive-table thead {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .pulsar-responsive-table tr {
+            border: 1px solid #dee2e6;
+            border-radius: .25rem;
+            margin-bottom: .75rem;
+            padding: .5rem;
+            background: #fff;
+        }
+
+        .pulsar-responsive-table td {
+            border: 0;
+            display: grid;
+            grid-template-columns: 7.5rem minmax(0, 1fr);
+            gap: .5rem;
+            padding: .35rem .25rem;
+            overflow-wrap: anywhere;
+        }
+
+        .pulsar-responsive-table td::before {
+            content: attr(data-label);
+            color: #6c757d;
+            font-weight: 700;
+        }
+    }
+</style>
+
 <div class="row">
     <div class="col-md-3">
         <div class="info-box">
@@ -50,157 +108,185 @@
     </div>
 {{/unless}}
 
-<ul class="nav nav-tabs" id="pulsar-tabs" role="tablist">
-    <li class="nav-item">
-        <a class="nav-link active" id="consumers-tab" data-toggle="pill" href="#consumers" role="tab">Consumers</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" id="producers-tab" data-toggle="pill" href="#producers" role="tab">Producers</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" id="readers-tab" data-toggle="pill" href="#readers" role="tab">Readers</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" id="failures-tab" data-toggle="pill" href="#failures" role="tab">Failures</a>
-    </li>
-</ul>
+<div class="row">
+    <div class="col-lg-8">
+        <ul class="nav nav-tabs" id="pulsar-tabs" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="consumers-tab" data-toggle="pill" href="#consumers" role="tab">Consumers</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="producers-tab" data-toggle="pill" href="#producers" role="tab">Producers</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="readers-tab" data-toggle="pill" href="#readers" role="tab">Readers</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="failures-tab" data-toggle="pill" href="#failures" role="tab">Failures</a>
+            </li>
+        </ul>
 
-<div class="tab-content pt-3" id="pulsar-tab-content">
-    <div class="tab-pane fade show active" id="consumers" role="tabpanel" aria-labelledby="consumers-tab">
-        {{#if body.consumers}}
-            <table class="table table-sm table-striped">
-                <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Topic</th>
-                    <th>Subscription</th>
-                    <th>State</th>
-                    <th>Connection</th>
-                    <th>Actions</th>
-                </tr>
-                </thead>
-                <tbody>
-                {{#each body.consumers as |consumer|}}
-                    <tr>
-                        <td><code>{{ consumer.id }}</code></td>
-                        <td>{{ consumer.name }}</td>
-                        <td><code>{{ consumer.topic }}</code></td>
-                        <td><code>{{ consumer.subscription }}</code></td>
-                        <td>
-                            {{#if consumer.paused}}
-                                <span class="badge badge-warning">Paused</span>
-                            {{else}}
-                                <span class="badge badge-success">Running</span>
-                            {{/if}}
-                        </td>
-                        <td>{{ consumer.connectionState }}</td>
-                        <td>
-                            {{#if body.consumerActionsAllowed}}
-                                {{#if consumer.paused}}
-                                    <button type="button" class="btn btn-secondary btn-sm pulsar-consumer-action" data-action="resume" data-consumer-id="{{ consumer.id }}">Resume</button>
-                                {{else}}
-                                    <button type="button" class="btn btn-secondary btn-sm pulsar-consumer-action" data-action="pause" data-consumer-id="{{ consumer.id }}">Pause</button>
-                                {{/if}}
-                            {{else}}
-                                <span class="text-muted">Read-only</span>
-                            {{/if}}
-                        </td>
-                    </tr>
-                {{/each}}
-                </tbody>
-            </table>
-        {{else}}
-            <p class="card-text text-muted">No Pulsar consumers are registered.</p>
-        {{/if}}
+        <div class="tab-content pt-3" id="pulsar-tab-content">
+            <div class="tab-pane fade show active" id="consumers" role="tabpanel" aria-labelledby="consumers-tab">
+                {{#if body.consumers}}
+                    <table class="table table-sm table-striped pulsar-responsive-table">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Topic</th>
+                            <th>Subscription</th>
+                            <th>State</th>
+                            <th>Connection</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {{#each body.consumers as |consumer|}}
+                            <tr>
+                                <td data-label="ID"><code>{{ consumer.id }}</code></td>
+                                <td data-label="Name">{{ consumer.name }}</td>
+                                <td data-label="Topic"><code>{{ consumer.topic }}</code></td>
+                                <td data-label="Subscription"><code>{{ consumer.subscription }}</code></td>
+                                <td data-label="State">
+                                    {{#if consumer.paused}}
+                                        <span class="badge badge-warning">Paused</span>
+                                    {{else}}
+                                        <span class="badge badge-success">Running</span>
+                                    {{/if}}
+                                </td>
+                                <td data-label="Connection">{{ consumer.connectionState }}</td>
+                                <td data-label="Actions">
+                                    {{#if body.consumerActionsAllowed}}
+                                        {{#if consumer.paused}}
+                                            <button type="button" class="btn btn-secondary btn-sm pulsar-consumer-action" data-action="resume" data-consumer-id="{{ consumer.id }}">Resume</button>
+                                        {{else}}
+                                            <button type="button" class="btn btn-secondary btn-sm pulsar-consumer-action" data-action="pause" data-consumer-id="{{ consumer.id }}">Pause</button>
+                                        {{/if}}
+                                    {{else}}
+                                        <span class="text-muted">Read-only</span>
+                                    {{/if}}
+                                </td>
+                            </tr>
+                        {{/each}}
+                        </tbody>
+                    </table>
+                {{else}}
+                    <p class="card-text text-muted">No Pulsar consumers are registered.</p>
+                {{/if}}
+            </div>
+
+            <div class="tab-pane fade" id="producers" role="tabpanel" aria-labelledby="producers-tab">
+                {{#if body.producers}}
+                    <table class="table table-sm table-striped pulsar-responsive-table">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Topic</th>
+                            <th>State</th>
+                            <th>Partitions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {{#each body.producers as |producer|}}
+                            <tr>
+                                <td data-label="ID"><code>{{ producer.id }}</code></td>
+                                <td data-label="Name">{{ producer.name }}</td>
+                                <td data-label="Topic"><code>{{ producer.topic }}</code></td>
+                                <td data-label="State">{{ producer.state }}</td>
+                                <td data-label="Partitions">{{ producer.partitions }}</td>
+                            </tr>
+                        {{/each}}
+                        </tbody>
+                    </table>
+                {{else}}
+                    <p class="card-text text-muted">No Pulsar producers are registered.</p>
+                {{/if}}
+            </div>
+
+            <div class="tab-pane fade" id="readers" role="tabpanel" aria-labelledby="readers-tab">
+                {{#if body.readers}}
+                    <table class="table table-sm table-striped pulsar-responsive-table">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Topic</th>
+                            <th>State</th>
+                            <th>End of topic</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {{#each body.readers as |reader|}}
+                            <tr>
+                                <td data-label="ID"><code>{{ reader.id }}</code></td>
+                                <td data-label="Topic"><code>{{ reader.topic }}</code></td>
+                                <td data-label="State">{{ reader.state }}</td>
+                                <td data-label="End of topic">{{ reader.endOfTopic }}</td>
+                            </tr>
+                        {{/each}}
+                        </tbody>
+                    </table>
+                {{else}}
+                    <p class="card-text text-muted">No Pulsar readers are registered.</p>
+                {{/if}}
+            </div>
+
+            <div class="tab-pane fade" id="failures" role="tabpanel" aria-labelledby="failures-tab">
+                {{#unless body.failureEventsIncluded}}
+                    <p class="card-text text-muted">Failure event collection is disabled.</p>
+                {{/unless}}
+                {{#if body.failures}}
+                    <table class="table table-sm table-striped pulsar-responsive-table">
+                        <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Client type</th>
+                            <th>Client</th>
+                            <th>Reason</th>
+                            <th>Error</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {{#each body.failures as |failure|}}
+                            <tr>
+                                <td data-label="Time"><code>{{ failure.timestamp }}</code></td>
+                                <td data-label="Client type">{{ failure.clientType }}</td>
+                                <td data-label="Client"><code>{{ failure.clientName }}</code></td>
+                                <td data-label="Reason">{{ failure.reason }}</td>
+                                <td data-label="Error">{{ failure.error }}</td>
+                            </tr>
+                        {{/each}}
+                        </tbody>
+                    </table>
+                {{else}}
+                    <p class="card-text text-muted">No Pulsar failure events have been captured.</p>
+                {{/if}}
+            </div>
+        </div>
     </div>
-
-    <div class="tab-pane fade" id="producers" role="tabpanel" aria-labelledby="producers-tab">
-        {{#if body.producers}}
-            <table class="table table-sm table-striped">
-                <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Topic</th>
-                    <th>State</th>
-                    <th>Partitions</th>
-                </tr>
-                </thead>
-                <tbody>
-                {{#each body.producers as |producer|}}
-                    <tr>
-                        <td><code>{{ producer.id }}</code></td>
-                        <td>{{ producer.name }}</td>
-                        <td><code>{{ producer.topic }}</code></td>
-                        <td>{{ producer.state }}</td>
-                        <td>{{ producer.partitions }}</td>
-                    </tr>
-                {{/each}}
-                </tbody>
-            </table>
-        {{else}}
-            <p class="card-text text-muted">No Pulsar producers are registered.</p>
-        {{/if}}
-    </div>
-
-    <div class="tab-pane fade" id="readers" role="tabpanel" aria-labelledby="readers-tab">
-        {{#if body.readers}}
-            <table class="table table-sm table-striped">
-                <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Topic</th>
-                    <th>State</th>
-                    <th>End of topic</th>
-                </tr>
-                </thead>
-                <tbody>
-                {{#each body.readers as |reader|}}
-                    <tr>
-                        <td><code>{{ reader.id }}</code></td>
-                        <td><code>{{ reader.topic }}</code></td>
-                        <td>{{ reader.state }}</td>
-                        <td>{{ reader.endOfTopic }}</td>
-                    </tr>
-                {{/each}}
-                </tbody>
-            </table>
-        {{else}}
-            <p class="card-text text-muted">No Pulsar readers are registered.</p>
-        {{/if}}
-    </div>
-
-    <div class="tab-pane fade" id="failures" role="tabpanel" aria-labelledby="failures-tab">
-        {{#unless body.failureEventsIncluded}}
-            <p class="card-text text-muted">Failure event collection is disabled.</p>
-        {{/unless}}
-        {{#if body.failures}}
-            <table class="table table-sm table-striped">
-                <thead>
-                <tr>
-                    <th>Time</th>
-                    <th>Client type</th>
-                    <th>Client</th>
-                    <th>Reason</th>
-                    <th>Error</th>
-                </tr>
-                </thead>
-                <tbody>
+    <div class="col-lg-4 mt-3 mt-lg-0">
+        <aside class="pulsar-failure-rail" aria-label="Recent Pulsar failure details">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <h5 class="mb-0">Recent failure details</h5>
+                <span class="badge badge-danger">Redacted</span>
+            </div>
+            {{#unless body.failureEventsIncluded}}
+                <p class="text-muted mb-0">Failure event collection is disabled.</p>
+            {{/unless}}
+            {{#if body.failures}}
                 {{#each body.failures as |failure|}}
-                    <tr>
-                        <td><code>{{ failure.timestamp }}</code></td>
-                        <td>{{ failure.clientType }}</td>
-                        <td><code>{{ failure.clientName }}</code></td>
-                        <td>{{ failure.reason }}</td>
-                        <td>{{ failure.error }}</td>
-                    </tr>
+                    <div class="pulsar-failure-event">
+                        <p class="mb-1"><strong>{{ failure.clientType }}</strong> <code>{{ failure.clientName }}</code></p>
+                        <p class="mb-1">{{ failure.reason }}</p>
+                        <p class="text-muted">{{ failure.error }}</p>
+                    </div>
                 {{/each}}
-                </tbody>
-            </table>
-        {{else}}
-            <p class="card-text text-muted">No Pulsar failure events have been captured.</p>
-        {{/if}}
+            {{else}}
+                {{#if body.failureEventsIncluded}}
+                    <p class="text-muted mb-0">No Pulsar failure events have been captured.</p>
+                {{/if}}
+            {{/if}}
+        </aside>
     </div>
 </div>
 
