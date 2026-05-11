@@ -36,7 +36,7 @@ public class LiquibaseControlPanel extends AbstractControlPanel<LiquibasePanelBo
 
     public static final String NAME = "liquibase";
     public static final String CONFIGURATION_PREFIX = ControlPanelModuleConfiguration.PREFIX + ".panels." + NAME;
-    public static final ControlPanel.Category CATEGORY = new ControlPanel.Category("datasource", "Data Sources", "fa-database");
+    public static final ControlPanel.Category CATEGORY = new ControlPanel.Category("datasource", "Data Sources", "fas fa-database");
 
     private final LiquibaseHistoryService historyService;
 

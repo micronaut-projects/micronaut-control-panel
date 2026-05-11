@@ -15,13 +15,14 @@ import java.nio.file.Path;
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
 @UsePlaywright(LiquibaseControlPanelE2ETest.HeadlessBrowserOptions.class)
-@MicronautTest(propertySources = "classpath:application.yml", rebuildContext = true)
+@MicronautTest(environments = "liquibase", rebuildContext = true)
 @Property(name = "datasources.my-postgres.enabled", value = "false")
 @Property(name = "jpa.default.enabled", value = "false")
 @Property(name = "jpa.my-postgres.enabled", value = "false")
 @Property(name = "jpa.hibernate-reporting.enabled", value = "false")
 @Property(name = "jpa.default.properties.hibernate.cache.use_second_level_cache", value = "false")
 @Property(name = "jpa.default.properties.hibernate.cache.use_query_cache", value = "false")
+@Property(name = "jpa.zz-liquibase-history.enabled", value = "false")
 @Property(name = "kafka.enabled", value = "false")
 class LiquibaseControlPanelE2ETest extends AbstractE2ETest {
 

@@ -35,24 +35,13 @@ ehcache:
       enabled: true
 
 datasources:
-  zz-liquibase-history:
-    db-type: h2
-    dialect: H2
-    driver-class-name: org.h2.Driver
-    url: jdbc:h2:mem:liquibasePanelExample;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    username: sa
-    password: ""
   my-postgres:
     db-type: postgres
     driver-class-name: org.postgresql.Driver
 
-liquibase:
-  datasources:
-    zz-liquibase-history:
-      change-log: classpath:db/changelog/liquibase-panel-example.xml
-    disabled-history:
-      enabled: false
-      change-log: classpath:db/changelog/liquibase-panel-example.xml
+jpa:
+  my-postgres:
+    enabled: false
 
 # Test properties to verify environment endpoint filtering
 test:

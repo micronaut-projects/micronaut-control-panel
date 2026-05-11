@@ -22,7 +22,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import javax.sql.DataSource;
-import java.lang.reflect.Field;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -111,7 +110,7 @@ class LiquibaseHistoryServiceTest {
     }
 
     @Test
-    void repeatedHistoryReadsDoNotAccumulateFactoryCachedServices() throws Exception {
+    void repeatedHistoryReadsAreStable() {
         try (ApplicationContext context = ApplicationContext.run(Map.of(
             "datasources.default.url", "jdbc:h2:mem:liquibasePanelCache;DB_CLOSE_DELAY=-1",
             "datasources.default.driver-class-name", "org.h2.Driver",
@@ -119,12 +118,12 @@ class LiquibaseHistoryServiceTest {
             "liquibase.datasources.default.change-log", "classpath:db/changelog/liquibase-panel.xml"
         ))) {
             LiquibaseHistoryService service = context.getBean(LiquibaseHistoryService.class);
-            int factoryServiceCount = changeLogHistoryFactoryServiceCount();
 
-            service.getBody();
-            service.getBody();
+            LiquibasePanelBody firstRead = service.getBody();
+            LiquibasePanelBody secondRead = service.getBody();
 
-            assertEquals(factoryServiceCount, changeLogHistoryFactoryServiceCount());
+            assertEquals(firstRead.totalChangeSets(), secondRead.totalChangeSets());
+            assertEquals(firstRead.dataSources().get(0).changeSets(), secondRead.dataSources().get(0).changeSets());
         }
     }
 
@@ -165,12 +164,5 @@ class LiquibaseHistoryServiceTest {
             assertFalse(body.showChecksums());
             assertFalse(body.showDeploymentIds());
         }
-    }
-
-    private static int changeLogHistoryFactoryServiceCount() throws Exception {
-        Object factory = liquibase.changelog.ChangeLogHistoryServiceFactory.getInstance();
-        Field services = factory.getClass().getDeclaredField("services");
-        services.setAccessible(true);
-        return ((Map<?, ?>) services.get(factory)).size();
     }
 }

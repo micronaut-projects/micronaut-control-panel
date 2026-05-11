@@ -8,11 +8,13 @@ datasources:
 
 jpa:
   default:
+    enabled: true
     entity-scan:
       packages: example
     properties:
       hibernate.hbm2ddl.auto: create-drop
   my-postgres:
+    enabled: true
     entity-scan:
       packages: example
     properties:
@@ -23,6 +25,7 @@ jpa:
       hibernate.javax.cache.missing_cache_strategy: create
       hibernate.javax.cache.provider: org.ehcache.jsr107.EhcacheCachingProvider
   hibernate-reporting:
+    enabled: true
     entity-scan:
       packages: example
     properties:
