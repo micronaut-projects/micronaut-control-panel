@@ -28,7 +28,7 @@ import java.util.List;
  */
 @ConfigurationProperties(ValidationConfiguration.PREFIX)
 @ReflectiveAccess
-public class ValidationConfiguration {
+public final class ValidationConfiguration {
 
     public static final String PREFIX = "micronaut.control-panel.validation";
 
@@ -38,40 +38,73 @@ public class ValidationConfiguration {
 
     /**
      * Package prefixes included in diagnostics. Empty means application packages after framework defaults are excluded.
+     *
+     * @return package prefixes included in diagnostics
      */
     public List<String> getIncludePackages() {
         return includePackages;
     }
 
+    /**
+     * Sets package prefixes included in diagnostics.
+     *
+     * @param includePackages package prefixes included in diagnostics
+     */
     public void setIncludePackages(List<String> includePackages) {
         this.includePackages = includePackages == null ? new ArrayList<>() : includePackages;
     }
 
     /**
      * Package prefixes excluded from diagnostics.
+     *
+     * @return package prefixes excluded from diagnostics
      */
     public List<String> getExcludePackages() {
         return excludePackages;
     }
 
+    /**
+     * Sets package prefixes excluded from diagnostics.
+     *
+     * @param excludePackages package prefixes excluded from diagnostics
+     */
     public void setExcludePackages(List<String> excludePackages) {
         this.excludePackages = excludePackages == null ? new ArrayList<>() : excludePackages;
     }
 
     /**
      * Controls how constraint annotation attributes are displayed.
+     *
+     * @return constraint annotation attribute display mode
      */
     public AttributeMode getShowConstraintAttributes() {
         return showConstraintAttributes;
     }
 
+    /**
+     * Sets how constraint annotation attributes are displayed.
+     *
+     * @param showConstraintAttributes constraint annotation attribute display mode
+     */
     public void setShowConstraintAttributes(AttributeMode showConstraintAttributes) {
         this.showConstraintAttributes = showConstraintAttributes == null ? AttributeMode.SAFE : showConstraintAttributes;
     }
 
+    /**
+     * Constraint annotation attribute display modes.
+     */
     public enum AttributeMode {
+        /**
+         * Hide constraint annotation attributes.
+         */
         NONE,
+        /**
+         * Display safe scalar attributes with redaction and truncation.
+         */
         SAFE,
+        /**
+         * Display all annotation attribute values from Micronaut metadata.
+         */
         ALL
     }
 }
