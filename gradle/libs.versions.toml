@@ -32,6 +32,7 @@ micronaut-testresources = "4.0.0"
 micronaut-gradle-plugin = "5.0.0-M1"
 micronaut-openapi = "7.0.0"
 micronaut-kafka = "6.0.0"
+micronaut-servlet = "6.0.0-RC1"
 kotlin-gradle-plugin = "2.3.21"
 micronaut-shared-settings = "8.0.0"
 playwright = "1.59.0"
@@ -45,6 +46,7 @@ handlebars-humanize = "4.3.1"
 
 [libraries]
 micronaut-openapi = { module = "io.micronaut.openapi:micronaut-openapi-bom", version.ref = "micronaut-openapi" }
+micronaut-servlet = { module = "io.micronaut.servlet:micronaut-servlet-bom", version.ref = "micronaut-servlet" }
 micronaut-core = { module = 'io.micronaut:micronaut-core-bom', version.ref = 'micronaut' }
 micronaut-security = { module = 'io.micronaut.security:micronaut-security', version.ref = 'micronaut-security' }
 micronaut-platform = { module = "io.micronaut.platform:micronaut-platform", version.ref = "micronaut-platform"}

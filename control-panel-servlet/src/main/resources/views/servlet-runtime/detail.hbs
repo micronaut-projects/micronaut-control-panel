@@ -1,0 +1,177 @@
+{{#with controlPanel.body }}
+    <div class="cp-dashboard-stack">
+        <div class="row">
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">Runtime</h5>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row">
+                            <dt class="col-sm-5">Runtime</dt>
+                            <dd class="col-sm-7"><span class="badge badge-primary">{{runtimeName}}</span></dd>
+                            <dt class="col-sm-5">Mode</dt>
+                            <dd class="col-sm-7">{{runtimeMode}}</dd>
+                            <dt class="col-sm-5">Server info</dt>
+                            <dd class="col-sm-7"><code>{{context.serverInfo}}</code></dd>
+                            <dt class="col-sm-5">Context path</dt>
+                            <dd class="col-sm-7"><code>{{context.contextPath}}</code></dd>
+                            <dt class="col-sm-5">Servlet API</dt>
+                            <dd class="col-sm-7">{{context.servletApiVersion}} effective {{context.effectiveServletApiVersion}}</dd>
+                            <dt class="col-sm-5">Virtual server</dt>
+                            <dd class="col-sm-7"><code>{{context.virtualServerName}}</code></dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">Runtime configuration</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="cp-data-table-container">
+                            <table class="table cp-data-table-table">
+                                <thead>
+                                <tr>
+                                    <th>Setting</th>
+                                    <th>Value</th>
+                                    <th>Source</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {{#each config}}
+                                    <tr>
+                                        <td><code class="cp-table-code">{{label}}</code></td>
+                                        <td><code class="cp-table-code">{{value}}</code></td>
+                                        <td>{{source}}</td>
+                                    </tr>
+                                {{/each}}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">Servlets</h5>
+            </div>
+            <div class="card-body">
+                {{#if servlets}}
+                    <div class="cp-data-table-container">
+                        <table class="table cp-data-table-table cp-data-table-fixed">
+                            <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Class</th>
+                                <th>Mappings</th>
+                                <th>Run as</th>
+                                <th>Init parameters</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {{#each servlets}}
+                                <tr>
+                                    <td><code class="cp-table-code">{{name}}</code></td>
+                                    <td><code class="cp-table-code">{{className}}</code></td>
+                                    <td>
+                                        {{#if mappings}}
+                                            {{#each mappings}}<code class="cp-table-code">{{this}}</code> {{/each}}
+                                        {{else}}
+                                            <span class="text-muted">No mappings</span>
+                                        {{/if}}
+                                    </td>
+                                    <td>{{runAsRole}}</td>
+                                    <td>
+                                        {{initParameters.count}} names
+                                        {{#if initParameters.names}}
+                                            {{#each initParameters.names}}<code class="cp-table-code">{{this}}</code> {{/each}}
+                                            <span class="badge badge-secondary">values redacted</span>
+                                        {{/if}}
+                                    </td>
+                                </tr>
+                            {{/each}}
+                            </tbody>
+                        </table>
+                    </div>
+                {{else}}
+                    <p>No servlet registrations are available from the ServletContext.</p>
+                {{/if}}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">Filters</h5>
+            </div>
+            <div class="card-body">
+                {{#if filters}}
+                    <div class="cp-data-table-container">
+                        <table class="table cp-data-table-table cp-data-table-fixed">
+                            <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Class</th>
+                                <th>URL patterns</th>
+                                <th>Servlet mappings</th>
+                                <th>Init parameters</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {{#each filters}}
+                                <tr>
+                                    <td><code class="cp-table-code">{{name}}</code></td>
+                                    <td><code class="cp-table-code">{{className}}</code></td>
+                                    <td>
+                                        {{#if urlPatternMappings}}
+                                            {{#each urlPatternMappings}}<code class="cp-table-code">{{this}}</code> {{/each}}
+                                        {{else}}
+                                            <span class="text-muted">No URL patterns</span>
+                                        {{/if}}
+                                    </td>
+                                    <td>
+                                        {{#if servletNameMappings}}
+                                            {{#each servletNameMappings}}<code class="cp-table-code">{{this}}</code> {{/each}}
+                                        {{else}}
+                                            <span class="text-muted">No servlet mappings</span>
+                                        {{/if}}
+                                    </td>
+                                    <td>
+                                        {{initParameters.count}} names
+                                        {{#if initParameters.names}}
+                                            {{#each initParameters.names}}<code class="cp-table-code">{{this}}</code> {{/each}}
+                                            <span class="badge badge-secondary">values redacted</span>
+                                        {{/if}}
+                                    </td>
+                                </tr>
+                            {{/each}}
+                            </tbody>
+                        </table>
+                    </div>
+                {{else}}
+                    <p>No filter registrations are available from the ServletContext.</p>
+                {{/if}}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">Warnings</h5>
+            </div>
+            <div class="card-body">
+                {{#if warnings}}
+                    <ul>
+                    {{#each warnings}}
+                        <li><span class="badge badge-secondary">{{severity}}</span> <code>{{code}}</code> {{summary}}</li>
+                    {{/each}}
+                    </ul>
+                {{else}}
+                    <p>No Servlet runtime warnings detected.</p>
+                {{/if}}
+            </div>
+        </div>
+    </div>
+{{/with}}

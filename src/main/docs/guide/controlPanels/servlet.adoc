@@ -1,0 +1,41 @@
+= Servlet Runtime Control Panel
+
+The Servlet Runtime Control Panel provides a read-only view of the Servlet container layer used by Micronaut Servlet-backed
+applications. It complements the HTTP Routes panel: routes still show Micronaut route handlers, while this panel shows
+the active Servlet runtime, `ServletContext` metadata, servlet registrations, filter registrations, and safe runtime
+configuration values exposed by the application.
+
+To add the Servlet Runtime control panel, add the following development-time dependency:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-servlet[scope=developmentOnly]
+
+The panel appears only when the application has a `jakarta.servlet.ServletContext` bean. Applications that do not use a
+Servlet runtime can include the module without starting a panel or failing application startup.
+
+The panel is intended for local diagnostics with Servlet-backed runtimes such as Jetty, Tomcat, Undertow, the JDK HTTP
+server, or an external Servlet container. It shows:
+
+* detected runtime and embedded or external mode when available
+* context path, server info, Servlet API version, effective Servlet API version, and virtual server name
+* servlet registration names, classes, URL mappings, run-as role, and init-parameter names/counts
+* filter registration names, classes, URL pattern mappings, servlet-name mappings, and init-parameter names/counts
+* selected non-sensitive server and container configuration keys when present
+* warnings for multiple Servlet runtimes on the classpath or registrations without mappings
+
+Servlet and filter init-parameter values are redacted by default. The panel shows parameter names and counts only. It does
+not show request bodies, headers, cookies, principals, session data, live request traffic, user data, or route handler
+details.
+
+=== Configuration
+
+The Servlet Runtime control panel is automatically enabled when you include the module and a `ServletContext` is present.
+You can disable it by setting:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      servlet-runtime:
+        enabled: false
+----
