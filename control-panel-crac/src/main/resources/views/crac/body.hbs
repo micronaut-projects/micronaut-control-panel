@@ -1,0 +1,21 @@
+{{#with body}}
+    <p class="card-text">
+        <strong>Support</strong>:
+        {{#if support.supported}}
+            <span class="badge badge-primary">Detected</span>
+        {{else}}
+            <span class="badge badge-secondary">Unavailable</span>
+        {{/if}}
+    </p>
+    <p class="card-text">
+        <strong>Resources</strong>: {{resources.size}}
+    </p>
+    <p class="card-text">
+        <strong>Restore</strong>:
+        {{#if restore.restored}}
+            <span class="badge badge-primary">Observed</span>
+        {{else}}
+            <span class="badge badge-secondary">Not observed</span>
+        {{/if}}
+    </p>
+{{/with}}
