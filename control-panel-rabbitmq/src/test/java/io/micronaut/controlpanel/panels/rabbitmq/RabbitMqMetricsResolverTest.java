@@ -50,4 +50,19 @@ class RabbitMqMetricsResolverTest {
         assertEquals("connection", metrics.meters().get(0).tags().get(0).key());
         assertEquals("default", metrics.meters().get(0).tags().get(0).value());
     }
+
+    @Test
+    void redactsSensitiveRabbitMqMeterTagValues() {
+        var registry = new SimpleMeterRegistry();
+        Counter.builder("rabbitmq.published")
+            .tag("password", "secret")
+            .register(registry)
+            .increment();
+
+        var metrics = new MeterRegistryRabbitMqMetricsResolver(registry, null).resolve();
+
+        assertEquals(1, metrics.meters().size());
+        assertEquals("password", metrics.meters().get(0).tags().get(0).key());
+        assertEquals(RabbitMqRedactor.REDACTED, metrics.meters().get(0).tags().get(0).value());
+    }
 }

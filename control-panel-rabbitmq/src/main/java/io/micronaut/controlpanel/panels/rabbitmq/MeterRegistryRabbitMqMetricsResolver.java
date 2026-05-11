@@ -73,7 +73,7 @@ final class MeterRegistryRabbitMqMetricsResolver implements RabbitMqMetricsResol
             id.getBaseUnit(),
             id.getDescription(),
             id.getTags().stream()
-                .map(tag -> new TagInfo(tag.getKey(), RabbitMqRedactor.redact(tag.getValue())))
+                .map(tag -> new TagInfo(tag.getKey(), RabbitMqRedactor.redactKeyValue(tag.getKey(), tag.getValue())))
                 .toList(),
             StreamSupport.stream(meter.measure().spliterator(), false)
                 .map(measurement -> new MeasurementInfo(measurement.getStatistic().name(), measurement.getValue()))
