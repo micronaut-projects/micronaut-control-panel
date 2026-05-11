@@ -43,7 +43,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -67,10 +66,11 @@ public class OpenSearchDiagnosticsService {
     private final Environment environment;
     private final OpenSearchDiagnosticsConfiguration configuration;
 
-    public OpenSearchDiagnosticsService(@Parameter OpenSearchClient client,
+    public OpenSearchDiagnosticsService(@Parameter String beanName,
+                                        @Parameter OpenSearchClient client,
                                         Environment environment,
                                         OpenSearchDiagnosticsConfiguration configuration) {
-        this.beanName = "default";
+        this.beanName = beanName;
         this.client = client;
         this.environment = environment;
         this.configuration = configuration;

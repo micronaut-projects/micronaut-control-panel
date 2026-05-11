@@ -22,6 +22,19 @@ import java.util.Locale;
 
 /**
  * Body rendered by the OpenSearch control panel.
+ *
+ * @param beanName OpenSearch client bean name
+ * @param connection sanitized connection context
+ * @param state diagnostic state
+ * @param clusterHealth cluster health details
+ * @param indices visible index summaries
+ * @param message non-secret diagnostic message
+ * @param partial whether diagnostics are partial
+ * @param indicesTruncated whether index rows were capped
+ * @param hasIndices whether index summaries are present
+ * @param available whether cluster diagnostics are available
+ * @param statusLabel rendered status label
+ * @param statusBadgeClass rendered status badge class
  */
 @ReflectiveAccess
 public record OpenSearchDiagnostics(String beanName,

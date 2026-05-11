@@ -19,6 +19,21 @@ import io.micronaut.core.annotation.ReflectiveAccess;
 
 /**
  * OpenSearch cluster health details.
+ *
+ * @param clusterName cluster name
+ * @param status cluster status
+ * @param timedOut whether the health request timed out
+ * @param numberOfNodes total node count
+ * @param numberOfDataNodes data node count
+ * @param numberOfPendingTasks pending task count
+ * @param numberOfInFlightFetch in-flight fetch count
+ * @param activeShardsPercent active shard percentage
+ * @param activePrimaryShards active primary shard count
+ * @param activeShards active shard count
+ * @param relocatingShards relocating shard count
+ * @param initializingShards initializing shard count
+ * @param unassignedShards unassigned shard count
+ * @param delayedUnassignedShards delayed unassigned shard count
  */
 @ReflectiveAccess
 public record ClusterHealth(String clusterName,

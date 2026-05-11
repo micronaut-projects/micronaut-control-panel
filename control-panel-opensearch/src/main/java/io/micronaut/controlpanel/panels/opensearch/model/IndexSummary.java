@@ -21,6 +21,19 @@ import java.util.List;
 
 /**
  * Bounded index metadata.
+ *
+ * @param name index name
+ * @param health index health
+ * @param status index status
+ * @param primaryShards primary shard count
+ * @param replicaShards replica shard count
+ * @param documentCount document count
+ * @param storeSize index store size
+ * @param aliases visible aliases
+ * @param mappingFields visible mapping fields
+ * @param mappingTruncated whether mapping fields were capped
+ * @param hasAliases whether aliases are present
+ * @param hasMappingFields whether mapping fields are present
  */
 @ReflectiveAccess
 public record IndexSummary(String name,

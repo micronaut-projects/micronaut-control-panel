@@ -18,12 +18,16 @@ package io.micronaut.controlpanel.panels.opensearch;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Requires;
+import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import org.junit.jupiter.api.Test;
 import org.opensearch.client.opensearch.OpenSearchClient;
 
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -49,11 +53,39 @@ class OpenSearchControlPanelTest {
         }
     }
 
+    @Test
+    void panelIsCreatedForEachOpenSearchClientBean() {
+        try (ApplicationContext context = ApplicationContext.run(Map.of("spec.name", "OpenSearchControlPanelMultiClientTest"))) {
+            Set<String> names = context.getBeansOfType(OpenSearchControlPanel.class)
+                .stream()
+                .map(OpenSearchControlPanel::getName)
+                .collect(Collectors.toSet());
+
+            assertEquals(Set.of("opensearch-default", "opensearch-analytics"), names);
+        }
+    }
+
     @Factory
     @Requires(property = "spec.name", value = "OpenSearchControlPanelTest")
     static final class TestFactory {
         @Singleton
         OpenSearchClient openSearchClient() {
+            return mock(OpenSearchClient.class);
+        }
+    }
+
+    @Factory
+    @Requires(property = "spec.name", value = "OpenSearchControlPanelMultiClientTest")
+    static final class MultiClientTestFactory {
+        @Singleton
+        @Named("default")
+        OpenSearchClient defaultOpenSearchClient() {
+            return mock(OpenSearchClient.class);
+        }
+
+        @Singleton
+        @Named("analytics")
+        OpenSearchClient analyticsOpenSearchClient() {
             return mock(OpenSearchClient.class);
         }
     }

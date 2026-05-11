@@ -164,7 +164,7 @@ class OpenSearchDiagnosticsServiceTest {
         OpenSearchDiagnosticsConfiguration configuration = mock(OpenSearchDiagnosticsConfiguration.class);
         when(configuration.getMaxIndices()).thenReturn(maxIndices);
         when(configuration.getMaxMappingFields()).thenReturn(maxMappingFields);
-        return new OpenSearchDiagnosticsService(client, context.getEnvironment(), configuration);
+        return new OpenSearchDiagnosticsService("default", client, context.getEnvironment(), configuration);
     }
 
     private static OpenSearchClient client(HealthResponse health,

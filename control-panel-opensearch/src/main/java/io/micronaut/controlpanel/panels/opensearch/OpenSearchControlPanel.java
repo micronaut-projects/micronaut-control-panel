@@ -15,44 +15,49 @@
  */
 package io.micronaut.controlpanel.panels.opensearch;
 
-import io.micronaut.context.annotation.Requires;
-import io.micronaut.controlpanel.core.AbstractControlPanel;
+import io.micronaut.context.annotation.EachBean;
+import io.micronaut.context.annotation.Parameter;
+import io.micronaut.controlpanel.core.AbstractEachBeanControlPanel;
 import io.micronaut.controlpanel.core.ControlPanel;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.controlpanel.panels.opensearch.model.OpenSearchDiagnostics;
-import io.micronaut.core.util.StringUtils;
 import jakarta.inject.Named;
-import jakarta.inject.Singleton;
 
 /**
  * Control panel for read-only OpenSearch diagnostics.
  */
-@Singleton
-@Requires(beans = OpenSearchDiagnosticsService.class)
-@Requires(property = OpenSearchControlPanel.ENABLED_PROPERTY, notEquals = StringUtils.FALSE)
-public class OpenSearchControlPanel extends AbstractControlPanel<OpenSearchDiagnostics> {
+@EachBean(OpenSearchDiagnosticsService.class)
+public class OpenSearchControlPanel extends AbstractEachBeanControlPanel<OpenSearchDiagnostics> {
 
     public static final String NAME = "opensearch";
     public static final String ENABLED_PROPERTY = ControlPanelConfiguration.PREFIX + "." + NAME + ".enabled";
     public static final String DEFAULT_ICON_CLASS = "fa-magnifying-glass-chart";
     public static final ControlPanel.Category CATEGORY = new ControlPanel.Category(NAME, "OpenSearch", DEFAULT_ICON_CLASS);
 
+    private final String beanName;
     private final OpenSearchDiagnosticsService diagnosticsService;
 
-    public OpenSearchControlPanel(OpenSearchDiagnosticsService diagnosticsService,
+    public OpenSearchControlPanel(@Parameter String beanName,
+                                  @Parameter OpenSearchDiagnosticsService diagnosticsService,
                                   @Named(NAME) ControlPanelConfiguration configuration) {
         super(NAME, configuration);
+        this.beanName = beanName;
         this.diagnosticsService = diagnosticsService;
+    }
+
+    @Override
+    protected String getBeanName() {
+        return beanName;
+    }
+
+    @Override
+    protected String getPanelName() {
+        return NAME;
     }
 
     @Override
     public OpenSearchDiagnostics getBody() {
         return diagnosticsService.diagnostics();
-    }
-
-    @Override
-    public String getTitle() {
-        return "OpenSearch";
     }
 
     @Override
