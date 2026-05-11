@@ -54,8 +54,8 @@ import static io.micronaut.core.util.StringUtils.trimToNull;
 @Requires(classes = LiquibaseConfigurationProperties.class)
 public class LiquibaseHistoryService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(LiquibaseHistoryService.class);
     static final String READ_FAILURE_MESSAGE = "Unable to read Liquibase history. See debug logs for details.";
+    private static final Logger LOG = LoggerFactory.getLogger(LiquibaseHistoryService.class);
 
     private final Collection<LiquibaseConfigurationProperties> configurations;
     private final ApplicationContext applicationContext;
