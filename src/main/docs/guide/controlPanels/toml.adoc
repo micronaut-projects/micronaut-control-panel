@@ -58,7 +58,7 @@ micronaut:
 ----
 
 Set `micronaut.control-panel.toml.show-values=true` to display non-sensitive effective TOML values.
-Set `micronaut.control-panel.toml.show-overridden-values=true` only when you also want non-sensitive shadowed TOML values to be displayed.
+Set `micronaut.control-panel.toml.show-overridden-values=true` only when you also want non-sensitive shadowed or unproven TOML values to be displayed.
 
 Sensitive key names remain masked even when value display is enabled.
 Keys containing `password`, `credential`, `certificate`, `key`, `secret`, or `token` are always rendered as masked values.

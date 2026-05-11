@@ -200,7 +200,7 @@ public class TomlPropertySourceAnalyzer {
         if (isSensitive(key) || !configuration.isShowValues()) {
             return MASKED_VALUE;
         }
-        if (isOverridden(status) && !configuration.isShowOverriddenValues()) {
+        if (status != TomlKeyStatus.EFFECTIVE && !configuration.isShowOverriddenValues()) {
             return MASKED_VALUE;
         }
         return formatValue(value);
