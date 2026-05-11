@@ -18,4 +18,12 @@ class ControlPanelRenderingTest {
         assertTrue(body.contains("my-local"));
         assertTrue(body.contains("files stored."));
     }
+
+    @Test
+    void rendersJmxCategory(@Client("/") HttpClient client) {
+        var body = client.toBlocking().retrieve(HttpRequest.GET("/control-panel/categories/diagnostics"));
+
+        assertTrue(body.contains("JMX"));
+        assertTrue(body.contains("Micronaut endpoint MBeans"));
+    }
 }
