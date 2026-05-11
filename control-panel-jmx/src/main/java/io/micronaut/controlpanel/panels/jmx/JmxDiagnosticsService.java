@@ -44,6 +44,7 @@ public class JmxDiagnosticsService {
 
     private static final Pattern SENSITIVE = Pattern.compile("(?i)(password|credential|certificate|secret|token|key|tenant|user|account)");
     private static final String JMX_CONFIGURATION_CLASS = "io.micronaut.configuration.jmx.JmxConfiguration";
+    private static final String WARNING_LEVEL = "warning";
 
     private final BeanContext beanContext;
     private final Environment environment;
@@ -62,12 +63,12 @@ public class JmxDiagnosticsService {
         JmxDiagnostics.JmxSettings settings = settings();
         List<JmxDiagnostics.Warning> warnings = new ArrayList<>();
         if (settings.registerEndpointsDisabled()) {
-            warnings.add(new JmxDiagnostics.Warning("warning", "jmx.register-endpoints is false, so Micronaut endpoint MBeans are not expected to be registered."));
+            warnings.add(new JmxDiagnostics.Warning(WARNING_LEVEL, "jmx.register-endpoints is false, so Micronaut endpoint MBeans are not expected to be registered."));
         }
 
         MBeanServer server = beanContext.findBean(MBeanServer.class).orElse(null);
         if (server == null) {
-            warnings.add(new JmxDiagnostics.Warning("warning", "No MBeanServer bean is available. Add micronaut-jmx or provide an MBeanServer bean to inspect JMX endpoint registrations."));
+            warnings.add(new JmxDiagnostics.Warning(WARNING_LEVEL, "No MBeanServer bean is available. Add micronaut-jmx or provide an MBeanServer bean to inspect JMX endpoint registrations."));
             return JmxDiagnostics.unavailable(settings, warnings);
         }
 
@@ -82,10 +83,10 @@ public class JmxDiagnosticsService {
         long metadataFailures = endpointMBeans.stream().filter(JmxDiagnostics.EndpointMBean::hasWarning).count();
 
         if (endpointMBeans.isEmpty() && !settings.registerEndpointsDisabled()) {
-            warnings.add(new JmxDiagnostics.Warning("warning", "No Micronaut endpoint MBeans are registered under " + MICRONAUT_ENDPOINT_DOMAIN + ". Verify micronaut-jmx, micronaut-management, and endpoint exposure settings."));
+            warnings.add(new JmxDiagnostics.Warning(WARNING_LEVEL, "No Micronaut endpoint MBeans are registered under " + MICRONAUT_ENDPOINT_DOMAIN + ". Verify micronaut-jmx, micronaut-management, and endpoint exposure settings."));
         }
         if (metadataFailures > 0) {
-            warnings.add(new JmxDiagnostics.Warning("warning", metadataFailures + " Micronaut endpoint MBean metadata read failed. Rows with warnings remain visible."));
+            warnings.add(new JmxDiagnostics.Warning(WARNING_LEVEL, metadataFailures + " Micronaut endpoint MBean metadata read failed. Rows with warnings remain visible."));
         }
 
         return new JmxDiagnostics(
@@ -151,13 +152,13 @@ public class JmxDiagnosticsService {
         try {
             return server.queryNames(pattern, null);
         } catch (SecurityException e) {
-            warnings.add(new JmxDiagnostics.Warning("warning", message + " Metadata is hidden by the active security policy."));
+            warnings.add(new JmxDiagnostics.Warning(WARNING_LEVEL, message + " Metadata is hidden by the active security policy."));
             return Set.of();
         } catch (RuntimeException e) {
-            warnings.add(new JmxDiagnostics.Warning("warning", message + " " + sanitizedException(e) + "."));
+            warnings.add(new JmxDiagnostics.Warning(WARNING_LEVEL, message + " " + sanitizedException(e) + "."));
             return Set.of();
         } catch (Exception e) {
-            warnings.add(new JmxDiagnostics.Warning("warning", message + " " + sanitizedException(e) + "."));
+            warnings.add(new JmxDiagnostics.Warning(WARNING_LEVEL, message + " " + sanitizedException(e) + "."));
             return Set.of();
         }
     }
