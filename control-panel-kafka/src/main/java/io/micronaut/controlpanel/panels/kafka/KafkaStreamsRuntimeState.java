@@ -39,6 +39,10 @@ public record KafkaStreamsRuntimeState(boolean available,
                                        boolean hasThreads) {
 
     private static final String STATUS_UNKNOWN = "UNKNOWN";
+    private static final String BADGE_SECONDARY = "badge-secondary";
+    private static final String BADGE_DESTRUCTIVE = "badge-destructive";
+    private static final String BADGE_SUCCESS = "cp-kafka-badge-success";
+    private static final String BADGE_WARNING = "cp-kafka-badge-warning";
 
     static KafkaStreamsRuntimeState unavailable(String message) {
         return new KafkaStreamsRuntimeState(false, STATUS_UNKNOWN, message, List.of(), false);
@@ -54,9 +58,9 @@ public record KafkaStreamsRuntimeState(boolean available,
      */
     public String statusBadgeClass() {
         return switch (emptyToUnknown(status).toUpperCase(Locale.ROOT)) {
-            case "UP" -> "cp-kafka-badge-success";
-            case "DOWN", "OUT_OF_SERVICE" -> "badge-destructive";
-            default -> "badge-secondary";
+            case "UP" -> BADGE_SUCCESS;
+            case "DOWN", "OUT_OF_SERVICE" -> BADGE_DESTRUCTIVE;
+            default -> BADGE_SECONDARY;
         };
     }
 
@@ -128,13 +132,13 @@ public record KafkaStreamsRuntimeState(boolean available,
          */
         public String stateBadgeClass() {
             if (state == null) {
-                return "badge-secondary";
+                return BADGE_SECONDARY;
             }
             return switch (state.toUpperCase(Locale.ROOT)) {
-                case "RUNNING" -> "cp-kafka-badge-success";
-                case "DEAD", "ERROR", "PENDING_SHUTDOWN" -> "badge-destructive";
-                case "CREATED", "STARTING", "PARTITIONS_ASSIGNED", "PARTITIONS_REVOKED", "REBALANCING" -> "cp-kafka-badge-warning";
-                default -> "badge-secondary";
+                case "RUNNING" -> BADGE_SUCCESS;
+                case "DEAD", "ERROR", "PENDING_SHUTDOWN" -> BADGE_DESTRUCTIVE;
+                case "CREATED", "STARTING", "PARTITIONS_ASSIGNED", "PARTITIONS_REVOKED", "REBALANCING" -> BADGE_WARNING;
+                default -> BADGE_SECONDARY;
             };
         }
     }

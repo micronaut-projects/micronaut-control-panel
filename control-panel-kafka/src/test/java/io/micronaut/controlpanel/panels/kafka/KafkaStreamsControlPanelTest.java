@@ -417,29 +417,33 @@ final class KafkaStreamsControlPanelTest {
 
     @Test
     void testRuntimeStateModelExposesTemplateStateClasses() {
+        KafkaStreamsRuntimeState up = KafkaStreamsRuntimeState.available("UP", null, List.of());
         KafkaStreamsRuntimeState down = KafkaStreamsRuntimeState.available("DOWN", null, List.of());
         KafkaStreamsRuntimeState outOfService = KafkaStreamsRuntimeState.available("OUT_OF_SERVICE", null, List.of());
+        KafkaStreamsRuntimeState unknown = KafkaStreamsRuntimeState.available("UNKNOWN", null, List.of());
         KafkaStreamsRuntimeState unavailable = KafkaStreamsRuntimeState.unavailable("Health details hidden");
-        KafkaStreamsRuntimeState.ThreadState rebalancing = new KafkaStreamsRuntimeState.ThreadState(
-                "orders-thread-1",
-                "REBALANCING",
-                null,
-                null,
-                null,
-                List.of(),
-                null,
-                null
-        );
 
+        Assertions.assertEquals("cp-kafka-badge-success", up.statusBadgeClass());
+        Assertions.assertEquals("cp-kafka-runtime--available", up.sectionStateClass());
+        Assertions.assertFalse(up.errorState());
         Assertions.assertEquals("badge-destructive", down.statusBadgeClass());
         Assertions.assertEquals("cp-kafka-runtime--error", down.sectionStateClass());
         Assertions.assertTrue(down.errorState());
         Assertions.assertEquals("badge-destructive", outOfService.statusBadgeClass());
         Assertions.assertEquals("cp-kafka-runtime--error", outOfService.sectionStateClass());
         Assertions.assertTrue(outOfService.errorState());
+        Assertions.assertEquals("badge-secondary", unknown.statusBadgeClass());
+        Assertions.assertEquals("cp-kafka-runtime--available", unknown.sectionStateClass());
+        Assertions.assertFalse(unknown.errorState());
         Assertions.assertEquals("badge-secondary", unavailable.statusBadgeClass());
         Assertions.assertEquals("cp-kafka-runtime--unavailable", unavailable.sectionStateClass());
-        Assertions.assertEquals("cp-kafka-badge-warning", rebalancing.stateBadgeClass());
+        Assertions.assertFalse(unavailable.errorState());
+
+        Assertions.assertEquals("badge-secondary", threadState(null).stateBadgeClass());
+        Assertions.assertEquals("cp-kafka-badge-success", threadState("RUNNING").stateBadgeClass());
+        Assertions.assertEquals("badge-destructive", threadState("DEAD").stateBadgeClass());
+        Assertions.assertEquals("cp-kafka-badge-warning", threadState("REBALANCING").stateBadgeClass());
+        Assertions.assertEquals("badge-secondary", threadState("UNKNOWN").stateBadgeClass());
     }
 
     @Test
@@ -509,5 +513,18 @@ final class KafkaStreamsControlPanelTest {
             Assertions.assertNotNull(in, () -> "Missing resource " + path);
             return new String(in.readAllBytes(), StandardCharsets.UTF_8);
         }
+    }
+
+    private static KafkaStreamsRuntimeState.ThreadState threadState(String state) {
+        return new KafkaStreamsRuntimeState.ThreadState(
+                "orders-thread-1",
+                state,
+                null,
+                null,
+                null,
+                List.of(),
+                null,
+                null
+        );
     }
 }
