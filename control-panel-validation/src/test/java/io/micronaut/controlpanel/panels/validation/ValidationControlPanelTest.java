@@ -74,7 +74,7 @@ class ValidationControlPanelTest {
     void panelCanBeDisabled() {
         try (ApplicationContext context = ApplicationContext.run(Map.of(ValidationControlPanel.ENABLED_PROPERTY, false))) {
             assertFalse(context.containsBean(ValidationControlPanel.class));
-            assertFalse(context.getBean(ValidationConfiguration.class).getIncludePackages().contains("missing"));
+            assertFalse(context.containsBean(ValidationConfiguration.class));
         }
     }
 
