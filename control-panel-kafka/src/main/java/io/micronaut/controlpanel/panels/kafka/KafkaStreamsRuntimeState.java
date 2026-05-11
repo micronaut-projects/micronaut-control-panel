@@ -22,6 +22,12 @@ import java.util.List;
 
 /**
  * Runtime state exposed by Micronaut Health for a Kafka Streams application.
+ *
+ * @param available whether runtime details are visible through Health
+ * @param status health status for the Kafka Streams application
+ * @param message optional runtime-state message
+ * @param threads stream thread runtime details
+ * @param hasThreads whether stream thread details are present
  */
 @Internal
 @ReflectiveAccess
@@ -46,6 +52,19 @@ public record KafkaStreamsRuntimeState(boolean available,
         return status == null || status.isBlank() ? STATUS_UNKNOWN : status;
     }
 
+    /**
+     * Runtime state for one Kafka Streams thread.
+     *
+     * @param name stream thread name
+     * @param state stream thread state
+     * @param adminClientId admin client identifier
+     * @param consumerClientId consumer client identifier
+     * @param restoreConsumerClientId restore consumer client identifier
+     * @param producerClientIds producer client identifiers
+     * @param hasProducerClientIds whether producer client identifiers are present
+     * @param activeTasks active task summary
+     * @param standbyTasks standby task summary
+     */
     @ReflectiveAccess
     public record ThreadState(String name,
                               String state,
@@ -65,6 +84,14 @@ public record KafkaStreamsRuntimeState(boolean available,
         }
     }
 
+    /**
+     * Summary of a Kafka Streams task set.
+     *
+     * @param taskId task identifier
+     * @param partitions task partitions reported by Health
+     * @param available whether task details are present
+     * @param partitionCount number of reported partitions
+     */
     @ReflectiveAccess
     public record TaskSummary(String taskId,
                               List<String> partitions,
