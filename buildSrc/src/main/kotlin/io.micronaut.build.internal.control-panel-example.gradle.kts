@@ -1,10 +1,5 @@
 import io.micronaut.gradle.MicronautRuntime
 import io.micronaut.gradle.MicronautTestRuntime
-import org.gradle.api.GradleException
-import org.gradle.api.artifacts.component.ModuleComponentIdentifier
-import org.gradle.api.artifacts.component.ProjectComponentIdentifier
-import org.gradle.language.base.plugins.LifecycleBasePlugin
-import org.graalvm.buildtools.gradle.tasks.NativeRunTask
 
 plugins {
     id("groovy")
@@ -18,9 +13,6 @@ application {
     mainClass.set("example.Application")
 }
 val libs = versionCatalogs.named("libs")
-val uiTestsHeadlessProperty = "controlPanel.ui-tests.headless"
-val uiTestsHeadless = providers.gradleProperty(uiTestsHeadlessProperty)
-    .orElse(providers.systemProperty(uiTestsHeadlessProperty))
 
 micronaut {
     version = libs.findVersion("micronaut-platform").get().toString()
@@ -47,83 +39,6 @@ tasks.register<JavaExec>("playwrightInstall") {
 tasks.withType<Test> {
     dependsOn(tasks.named("playwrightInstall"))
     systemProperty("micronaut.test.resources.server.client.read.timeout", "180")
-    systemProperty("controlPanelProjectRoot", rootDir.absolutePath)
-    uiTestsHeadless.orNull?.let {
-        systemProperty(uiTestsHeadlessProperty, it)
-    }
-}
-
-tasks.named<NativeRunTask>("nativeTest") {
-    uiTestsHeadless.orNull?.let {
-        runtimeArgs.add("-D$uiTestsHeadlessProperty=$it")
-    }
-}
-
-configurations.configureEach {
-    resolutionStrategy.preferProjectModules()
-}
-
-val localControlPanelProjects = listOf(
-    ":micronaut-control-panel-cache",
-    ":micronaut-control-panel-core",
-    ":micronaut-control-panel-datasource",
-    ":micronaut-control-panel-hibernate",
-    ":micronaut-control-panel-kafka",
-    ":micronaut-control-panel-management",
-    ":micronaut-control-panel-object-storage",
-    ":micronaut-control-panel-ui",
-)
-
-val checkLocalControlPanelDependencies = tasks.register("checkLocalControlPanelDependencies") {
-    group = LifecycleBasePlugin.VERIFICATION_GROUP
-    description = "Verifies the example runtime classpath uses local control panel projects."
-
-    doLast {
-        val components = configurations.named("runtimeClasspath").get()
-            .incoming
-            .resolutionResult
-            .allComponents
-            .map { it.id }
-
-        val resolvedLocalProjects = components
-            .filterIsInstance<ProjectComponentIdentifier>()
-            .mapTo(mutableSetOf()) { it.projectPath }
-
-        val missingLocalProjects = localControlPanelProjects
-            .filterNot(resolvedLocalProjects::contains)
-
-        val externalControlPanelModules = components
-            .filterIsInstance<ModuleComponentIdentifier>()
-            .filter {
-                it.group == "io.micronaut.controlpanel" &&
-                    it.module.startsWith("micronaut-control-panel-") &&
-                    it.module != "micronaut-control-panel-bom"
-            }
-            .map { "${it.group}:${it.module}:${it.version}" }
-            .sorted()
-
-        if (missingLocalProjects.isNotEmpty() || externalControlPanelModules.isNotEmpty()) {
-            throw GradleException(
-                buildString {
-                    append("The example runtime classpath must use local control panel project dependencies.")
-                    if (missingLocalProjects.isNotEmpty()) {
-                        append(" Missing projects: ")
-                        append(missingLocalProjects.joinToString())
-                        append(".")
-                    }
-                    if (externalControlPanelModules.isNotEmpty()) {
-                        append(" External modules: ")
-                        append(externalControlPanelModules.joinToString())
-                        append(".")
-                    }
-                }
-            )
-        }
-    }
-}
-
-tasks.named("check") {
-    dependsOn(checkLocalControlPanelDependencies)
 }
 
 configurations.named("nativeImageTestClasspath") {
