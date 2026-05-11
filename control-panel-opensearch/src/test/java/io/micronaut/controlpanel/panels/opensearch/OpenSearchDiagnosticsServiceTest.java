@@ -76,6 +76,26 @@ class OpenSearchDiagnosticsServiceTest {
     }
 
     @Test
+    void sanitizesCommaDelimitedScalarHostsIndependently() throws Exception {
+        OpenSearchDiagnosticsService service = service(Map.of(
+            "micronaut.opensearch.rest-client.http-hosts",
+            "http://admin:secret@localhost:9200?token=secret, https://writer:secret@example.com:9200/path?password=secret"
+        ), client(
+            health(HealthStatus.Green),
+            IndicesResponse.of(b -> b.valueBody(List.of())),
+            GetAliasResponse.of(b -> b.result(Map.of())),
+            GetMappingResponse.of(b -> b.result(Map.of()))
+        ), 25, 20);
+
+        var diagnostics = service.diagnostics();
+
+        assertEquals(List.of(
+            "http://***@localhost:9200",
+            "https://***@example.com:9200/path"
+        ), diagnostics.connection().hosts());
+    }
+
+    @Test
     void readsClusterIndexAliasAndMappingSummaries() throws Exception {
         OpenSearchDiagnosticsService service = service(Map.of(
             "micronaut.opensearch.httpclient5.http-hosts[0]", "http://localhost:9200"

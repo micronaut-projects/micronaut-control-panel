@@ -239,13 +239,30 @@ public class OpenSearchDiagnosticsService {
 
     private List<String> sanitizedList(String property) {
         List<String> values = new ArrayList<>();
-        environment.getProperty(property, String.class).ifPresent(values::add);
-        environment.getProperty(property, String[].class).ifPresent(array -> values.addAll(List.of(array)));
+        environment.getProperty(property, String.class).ifPresent(value -> values.addAll(hostValues(value)));
+        environment.getProperty(property, String[].class).ifPresent(array ->
+            List.of(array).forEach(value -> values.addAll(hostValues(value)))
+        );
         return values.stream()
             .map(OpenSearchDiagnosticsService::sanitizedEndpoint)
             .filter(OpenSearchDiagnosticsService::valuePresent)
             .distinct()
             .toList();
+    }
+
+    private static List<String> hostValues(String configured) {
+        String value = value(configured);
+        if (value.isBlank()) {
+            return List.of();
+        }
+        List<String> values = new ArrayList<>();
+        for (String host : value.split(",")) {
+            String hostValue = value(host);
+            if (valuePresent(hostValue)) {
+                values.add(hostValue);
+            }
+        }
+        return values;
     }
 
     static String sanitizedEndpoint(String endpoint) {
