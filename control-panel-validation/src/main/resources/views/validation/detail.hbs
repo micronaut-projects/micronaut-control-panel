@@ -1,0 +1,167 @@
+{{#with controlPanel.body }}
+    <div class="cp-dashboard-stack">
+        <div class="card card-light">
+            <div class="card-header">
+                <div class="cp-card-heading">
+                    <span class="cp-card-icon"><i class="fas fa-shield-halved" aria-hidden="true"></i></span>
+                    <h3 class="card-title">Validation status</h3>
+                </div>
+                <div class="card-tools">
+                    {{#if validationEnabled}}
+                        <span class="badge badge-primary">Enabled</span>
+                    {{else}}
+                        <span class="badge badge-secondary">Disabled</span>
+                    {{/if}}
+                </div>
+            </div>
+            <div class="card-body">
+                <p>{{statusDescription}}</p>
+                {{#if hasMessages}}
+                    <div class="cp-data-table-container">
+                        <table class="table cp-data-table-table">
+                            <thead>
+                            <tr>
+                                <th>State</th>
+                                <th>Message</th>
+                                <th>Details</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {{#each messages as |message|}}
+                                <tr>
+                                    <td><span class="badge badge-secondary">{{message.state}}</span></td>
+                                    <td>{{message.title}}</td>
+                                    <td>{{message.message}}</td>
+                                </tr>
+                            {{/each}}
+                            </tbody>
+                        </table>
+                    </div>
+                {{/if}}
+            </div>
+        </div>
+
+        <div class="card card-light">
+            <div class="card-header">
+                <div class="cp-card-heading">
+                    <span class="cp-card-icon"><i class="fas fa-list-check" aria-hidden="true"></i></span>
+                    <h3 class="card-title">Detected capabilities</h3>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="cp-data-table cp-data-table-paged" data-filter-table data-filter-table-page-size="10" data-filter-table-label="capability" data-filter-table-label-plural="capabilities">
+                    <div class="cp-data-table-toolbar">
+                        <div class="cp-data-table-summary" data-filter-table-summary>{{summary.size}} capabilities</div>
+                        <div class="cp-data-table-search">
+                            <input type="text" class="form-control" data-filter-table-search placeholder="Search capabilities" aria-label="Search validation capabilities">
+                        </div>
+                    </div>
+                    <div class="cp-data-table-container">
+                        <table class="table cp-data-table-table cp-data-table-fixed">
+                            <thead>
+                            <tr>
+                                <th>Capability</th>
+                                <th>Value</th>
+                                <th>Source</th>
+                                <th>State</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {{#each summary as |item|}}
+                                <tr>
+                                    <td>{{item.label}}</td>
+                                    <td><code class="cp-table-code">{{item.value}}</code></td>
+                                    <td>{{item.source}}</td>
+                                    <td><span class="badge badge-secondary">{{item.state}}</span></td>
+                                </tr>
+                            {{/each}}
+                            <tr data-filter-table-empty hidden>
+                                <td class="cp-data-table-empty-cell" colspan="4">No capabilities found.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card card-light">
+            <div class="card-body">
+                <div class="tabs cp-fill-tabs" data-tabs>
+                    <div class="tabs-list" role="tablist" aria-label="Validation metadata groups">
+                        <button type="button" class="tabs-trigger active" id="tab-validation-routes" role="tab" aria-selected="true" aria-controls="panel-validation-routes" data-tabs-trigger="validation-routes">
+                            Routes
+                            <span class="badge badge-secondary">{{routes.size}}</span>
+                        </button>
+                        <button type="button" class="tabs-trigger" id="tab-validation-methods" role="tab" aria-selected="false" aria-controls="panel-validation-methods" data-tabs-trigger="validation-methods">
+                            Methods
+                            <span class="badge badge-secondary">{{methods.size}}</span>
+                        </button>
+                        <button type="button" class="tabs-trigger" id="tab-validation-configuration" role="tab" aria-selected="false" aria-controls="panel-validation-configuration" data-tabs-trigger="validation-configuration">
+                            Configuration
+                            <span class="badge badge-secondary">{{configurationProperties.size}}</span>
+                        </button>
+                        <button type="button" class="tabs-trigger" id="tab-validation-classes" role="tab" aria-selected="false" aria-controls="panel-validation-classes" data-tabs-trigger="validation-classes">
+                            Classes
+                            <span class="badge badge-secondary">{{classes.size}}</span>
+                        </button>
+                        <button type="button" class="tabs-trigger" id="tab-validation-components" role="tab" aria-selected="false" aria-controls="panel-validation-components" data-tabs-trigger="validation-components">
+                            Validators
+                            <span class="badge badge-secondary">{{components.size}}</span>
+                        </button>
+                    </div>
+
+                    <div class="tabs-panel" id="panel-validation-routes" role="tabpanel" aria-labelledby="tab-validation-routes" data-tabs-panel="validation-routes">
+                        {{> "views/validation/elements" rows=routes label="route" labelPlural="routes" }}
+                    </div>
+                    <div class="tabs-panel" id="panel-validation-methods" role="tabpanel" aria-labelledby="tab-validation-methods" data-tabs-panel="validation-methods" hidden>
+                        {{> "views/validation/elements" rows=methods label="method" labelPlural="methods" }}
+                    </div>
+                    <div class="tabs-panel" id="panel-validation-configuration" role="tabpanel" aria-labelledby="tab-validation-configuration" data-tabs-panel="validation-configuration" hidden>
+                        {{> "views/validation/elements" rows=configurationProperties label="configuration bean" labelPlural="configuration beans" }}
+                    </div>
+                    <div class="tabs-panel" id="panel-validation-classes" role="tabpanel" aria-labelledby="tab-validation-classes" data-tabs-panel="validation-classes" hidden>
+                        {{> "views/validation/elements" rows=classes label="class" labelPlural="classes" }}
+                    </div>
+                    <div class="tabs-panel" id="panel-validation-components" role="tabpanel" aria-labelledby="tab-validation-components" data-tabs-panel="validation-components" hidden>
+                        <div class="cp-data-table cp-data-table-paged" data-filter-table data-filter-table-page-size="10" data-filter-table-label="validator" data-filter-table-label-plural="validators">
+                            <div class="cp-data-table-toolbar">
+                                <div class="cp-data-table-summary" data-filter-table-summary>{{components.size}} validators</div>
+                                <div class="cp-data-table-search">
+                                    <input type="text" class="form-control" data-filter-table-search placeholder="Search validators" aria-label="Search validators">
+                                </div>
+                            </div>
+                            <div class="cp-data-table-container">
+                                <table class="table cp-data-table-table cp-data-table-fixed">
+                                    <thead>
+                                    <tr>
+                                        <th>Kind</th>
+                                        <th>Bean</th>
+                                        <th>Qualifier</th>
+                                        <th>Scope</th>
+                                        <th>Origin</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {{#each components as |component|}}
+                                        <tr>
+                                            <td>{{component.kind}}</td>
+                                            <td><code class="cp-table-code">{{component.beanType}}</code></td>
+                                            <td><code class="cp-table-code">{{component.qualifier}}</code></td>
+                                            <td>{{component.scope}}</td>
+                                            <td><span class="badge badge-secondary">{{component.origin}}</span></td>
+                                        </tr>
+                                    {{/each}}
+                                    <tr data-filter-table-empty hidden>
+                                        <td class="cp-data-table-empty-cell" colspan="5">No validators found.</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{{/with}}

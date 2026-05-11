@@ -1,0 +1,114 @@
+<div class="cp-data-table cp-data-table-paged" data-filter-table data-filter-table-page-size="10" data-filter-table-label="{{label}}" data-filter-table-label-plural="{{labelPlural}}">
+    <div class="cp-data-table-toolbar">
+        <div class="cp-data-table-summary" data-filter-table-summary>{{rows.size}} {{labelPlural}}</div>
+        <div class="cp-data-table-search">
+            <input type="text" class="form-control" data-filter-table-search placeholder="Search {{labelPlural}}" aria-label="Search validation {{labelPlural}}">
+        </div>
+    </div>
+    <div class="cp-data-table-container">
+        <table class="table cp-data-table-table cp-data-table-fixed">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Source</th>
+                <th>Constraints</th>
+                <th>Cascade</th>
+                <th>Details</th>
+            </tr>
+            </thead>
+            <tbody>
+            {{#each rows as |row|}}
+                <tr>
+                    <td><code class="cp-table-code">{{row.name}}</code></td>
+                    <td>{{row.source}}</td>
+                    <td><span class="badge badge-primary">{{row.constraintCount}}</span></td>
+                    <td>
+                        {{#if row.cascaded}}
+                            <span class="badge badge-primary">Cascaded</span>
+                        {{else}}
+                            <span class="badge badge-secondary">No cascade</span>
+                        {{/if}}
+                    </td>
+                    <td>
+                        {{#if row.constraints}}
+                            <details>
+                                <summary>{{row.constraints.size}} constraint rows</summary>
+                                <div class="cp-data-table-container">
+                                    <table class="table cp-data-table-table">
+                                        <thead>
+                                        <tr>
+                                            <th>Constraint</th>
+                                            <th>Target</th>
+                                            <th>Groups</th>
+                                            <th>Cascade</th>
+                                            <th>Attributes</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {{#each row.constraints as |constraint|}}
+                                            <tr>
+                                                <td><code class="cp-table-code">{{constraint.name}}</code></td>
+                                                <td>{{constraint.target}}</td>
+                                                <td>
+                                                    {{#if constraint.hasGroups}}
+                                                        {{#each constraint.groups as |group|}}
+                                                            <code class="cp-table-code">{{group}}</code>
+                                                        {{/each}}
+                                                    {{else}}
+                                                        <span class="badge badge-secondary">Default</span>
+                                                    {{/if}}
+                                                </td>
+                                                <td>
+                                                    {{#if constraint.cascaded}}
+                                                        <span class="badge badge-primary">Cascaded</span>
+                                                    {{else}}
+                                                        <span class="badge badge-secondary">No cascade</span>
+                                                    {{/if}}
+                                                </td>
+                                                <td>
+                                                    {{#if constraint.hasAttributes}}
+                                                        {{#each constraint.attributes as |attribute|}}
+                                                            <div>
+                                                                <code class="cp-table-code">{{attribute.name}}</code> =
+                                                                <code class="cp-table-code">{{attribute.value}}</code>
+                                                                {{#if attribute.redacted}}<span class="badge badge-secondary">redacted</span>{{/if}}
+                                                            </div>
+                                                        {{/each}}
+                                                    {{else}}
+                                                        <span class="badge badge-secondary">Hidden</span>
+                                                    {{/if}}
+                                                </td>
+                                            </tr>
+                                        {{/each}}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </details>
+                        {{else}}
+                            <span class="badge badge-secondary">Metadata marker only</span>
+                        {{/if}}
+                    </td>
+                </tr>
+            {{/each}}
+            <tr data-filter-table-empty hidden>
+                <td class="cp-data-table-empty-cell" colspan="5">No {{labelPlural}} found.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="cp-data-table-footer">
+        <label class="cp-data-table-page-size">
+            Rows per page
+            <select class="form-control" data-filter-table-page-size-select aria-label="Validation {{labelPlural}} per page">
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="20">20</option>
+            </select>
+        </label>
+        <div class="cp-data-table-pagination">
+            <span class="cp-data-table-page" data-filter-table-page>Page 1 of 1</span>
+            <button type="button" class="btn btn-secondary btn-sm" data-filter-table-prev>Previous</button>
+            <button type="button" class="btn btn-secondary btn-sm" data-filter-table-next>Next</button>
+        </div>
+    </div>
+</div>

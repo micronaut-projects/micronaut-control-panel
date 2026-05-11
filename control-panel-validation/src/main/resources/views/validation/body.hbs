@@ -1,0 +1,27 @@
+{{#with controlPanel.body }}
+    <p class="card-text">
+        <strong>{{status}}</strong>: {{statusDescription}}
+    </p>
+    <div class="cp-data-table-container cp-vertical-table">
+        <table class="table cp-data-table-table">
+            <tbody>
+            <tr>
+                <th scope="row">Constraints</th>
+                <td><span class="badge badge-primary">{{totalConstraints}}</span></td>
+            </tr>
+            <tr>
+                <th scope="row">Routes</th>
+                <td>{{routes.size}} validated route entries</td>
+            </tr>
+            <tr>
+                <th scope="row">Methods</th>
+                <td>{{methods.size}} validated bean method entries</td>
+            </tr>
+            <tr>
+                <th scope="row">Configuration</th>
+                <td>{{configurationProperties.size}} validated configuration beans</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+{{/with}}
