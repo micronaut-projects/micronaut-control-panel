@@ -1,6 +1,7 @@
 package example;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledInNativeImage;
 import org.junit.jupiter.api.function.Executable;
 
 import java.net.URISyntaxException;
@@ -10,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@DisabledInNativeImage
 class LocalControlPanelDependenciesTest {
 
     @Test

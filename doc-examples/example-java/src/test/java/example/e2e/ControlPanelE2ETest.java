@@ -3,8 +3,6 @@ package example.e2e;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Page.GetByRoleOptions;
-import com.microsoft.playwright.junit.Options;
-import com.microsoft.playwright.junit.OptionsFactory;
 import com.microsoft.playwright.junit.UsePlaywright;
 import com.microsoft.playwright.options.AriaRole;
 import io.micronaut.context.annotation.Property;
@@ -21,7 +19,7 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@UsePlaywright(ControlPanelE2ETest.HeadlessBrowserOptions.class)
+@UsePlaywright(ControlPanelBrowserOptions.class)
 @MicronautTest(environments = {"hibernate", "kafka", "oracle"})
 @Property(name = "kafka.streams.default.state.dir", value = "build/tmp/kafka-streams-e2e")
 class ControlPanelE2ETest extends AbstractE2ETest {
@@ -780,17 +778,6 @@ class ControlPanelE2ETest extends AbstractE2ETest {
     private static void assertGlobalAlert(Page page, String title) {
         page.waitForFunction("expected => document.querySelector('#globalAlertTitle')?.textContent?.includes(expected)", title);
         assertThat(page.locator("#globalAlertTitle")).containsText(title);
-    }
-
-    public static class HeadlessBrowserOptions implements OptionsFactory {
-        @Override
-        public Options getOptions() {
-            if (System.getenv("CI") == null) {
-                return new Options().setHeadless(false);
-            } else {
-                return new Options();
-            }
-        }
     }
 
 }

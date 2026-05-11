@@ -4,6 +4,7 @@ import org.gradle.api.GradleException
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 import org.gradle.api.artifacts.component.ProjectComponentIdentifier
 import org.gradle.language.base.plugins.LifecycleBasePlugin
+import org.graalvm.buildtools.gradle.tasks.NativeRunTask
 
 plugins {
     id("groovy")
@@ -17,6 +18,9 @@ application {
     mainClass.set("example.Application")
 }
 val libs = versionCatalogs.named("libs")
+val uiTestsHeadlessProperty = "controlPanel.ui-tests.headless"
+val uiTestsHeadless = providers.gradleProperty(uiTestsHeadlessProperty)
+    .orElse(providers.systemProperty(uiTestsHeadlessProperty))
 
 micronaut {
     version = libs.findVersion("micronaut-platform").get().toString()
@@ -44,6 +48,15 @@ tasks.withType<Test> {
     dependsOn(tasks.named("playwrightInstall"))
     systemProperty("micronaut.test.resources.server.client.read.timeout", "180")
     systemProperty("controlPanelProjectRoot", rootDir.absolutePath)
+    uiTestsHeadless.orNull?.let {
+        systemProperty(uiTestsHeadlessProperty, it)
+    }
+}
+
+tasks.named<NativeRunTask>("nativeTest") {
+    uiTestsHeadless.orNull?.let {
+        runtimeArgs.add("-D$uiTestsHeadlessProperty=$it")
+    }
 }
 
 configurations.configureEach {
