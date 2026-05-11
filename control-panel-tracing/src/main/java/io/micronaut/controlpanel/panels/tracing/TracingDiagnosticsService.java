@@ -38,9 +38,12 @@ public final class TracingDiagnosticsService {
 
     private static final String NOT_CONFIGURED = "not configured";
     private static final String NONE = "none";
+    private static final String PRESENT = "present";
+    private static final String WARNING = "warning";
+    private static final String RESOURCE_ATTRIBUTES_KEY = "otel.resource.attributes";
     private static final List<String> CONFIGURATION_KEYS = List.of(
             "otel.service.name",
-            "otel.resource.attributes",
+            RESOURCE_ATTRIBUTES_KEY,
             "otel.traces.exporter",
             "otel.metrics.exporter",
             "otel.logs.exporter",
@@ -207,7 +210,7 @@ public final class TracingDiagnosticsService {
         String serviceName = serviceName();
         String sampler = property("otel.traces.sampler").orElse(NOT_CONFIGURED);
         String propagators = property("otel.propagators").orElse(NOT_CONFIGURED);
-        int presentInstrumentationCount = (int) instrumentations.stream().filter(i -> "present".equals(i.status())).count();
+        int presentInstrumentationCount = (int) instrumentations.stream().filter(i -> PRESENT.equals(i.status())).count();
         return new TracingBody(
                 providers,
                 exporters,
@@ -262,7 +265,7 @@ public final class TracingDiagnosticsService {
 
     private TracingInstrumentationInfo instrumentation(InstrumentationCheck check) {
         if (anyClassOrBeanPresent(check.tracingClasses())) {
-            return new TracingInstrumentationInfo(check.name(), "present", check.presentDetail());
+            return new TracingInstrumentationInfo(check.name(), PRESENT, check.presentDetail());
         }
         if (anyClassPresent(check.baseClasses())) {
             return new TracingInstrumentationInfo(check.name(), "unknown", check.unknownDetail());
@@ -280,7 +283,7 @@ public final class TracingDiagnosticsService {
 
     private List<TracingKeyValue> resourceAttributes() {
         Map<String, String> attributes = new LinkedHashMap<>();
-        property("otel.resource.attributes").ifPresent(value -> {
+        property(RESOURCE_ATTRIBUTES_KEY).ifPresent(value -> {
             for (String entry : value.split(",")) {
                 String trimmed = entry.trim();
                 if (!trimmed.isEmpty()) {
@@ -313,7 +316,7 @@ public final class TracingDiagnosticsService {
                 .distinct()
                 .count();
         if (providerFamilies > 1) {
-            diagnostics.add(new TracingDiagnostic("warning", "Multiple tracing provider families were detected. Check for duplicate agent and application instrumentation."));
+            diagnostics.add(new TracingDiagnostic(WARNING, "Multiple tracing provider families were detected. Check for duplicate agent and application instrumentation."));
         }
         exporters.stream()
                 .filter(exporter -> exporter.configured() && NONE.equalsIgnoreCase(exporter.exporter()))
@@ -321,8 +324,8 @@ public final class TracingDiagnosticsService {
         configuredExporterWithoutKnownDependency(exporters).ifPresent(diagnostics::add);
         kafkaTopicConflict().ifPresent(diagnostics::add);
         property("otel.sdk.disabled")
-                .filter(value -> "true".equalsIgnoreCase(value))
-                .ifPresent(value -> diagnostics.add(new TracingDiagnostic("warning", "OpenTelemetry SDK is disabled by configuration.")));
+                .filter("true"::equalsIgnoreCase)
+                .ifPresent(value -> diagnostics.add(new TracingDiagnostic(WARNING, "OpenTelemetry SDK is disabled by configuration.")));
         diagnostics.sort(Comparator.comparing(TracingDiagnostic::severity).reversed().thenComparing(TracingDiagnostic::message));
         return diagnostics;
     }
@@ -332,7 +335,7 @@ public final class TracingDiagnosticsService {
         if (hasConfiguredExporter
                 && !classPresence.isPresent("io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter")
                 && !classPresence.isPresent("io.opentelemetry.exporter.zipkin.ZipkinSpanExporter")) {
-            return Optional.of(new TracingDiagnostic("warning", "An exporter is configured, but a known OpenTelemetry exporter implementation was not detected."));
+            return Optional.of(new TracingDiagnostic(WARNING, "An exporter is configured, but a known OpenTelemetry exporter implementation was not detected."));
         }
         return Optional.empty();
     }
@@ -341,7 +344,7 @@ public final class TracingDiagnosticsService {
         Optional<String> included = property("kafka.tracing.included-topics");
         Optional<String> excluded = property("kafka.tracing.excluded-topics");
         if (included.isPresent() && excluded.isPresent()) {
-            return Optional.of(new TracingDiagnostic("warning", "Kafka tracing has both include and exclude topic filters configured."));
+            return Optional.of(new TracingDiagnostic(WARNING, "Kafka tracing has both include and exclude topic filters configured."));
         }
         return Optional.empty();
     }
@@ -352,7 +355,7 @@ public final class TracingDiagnosticsService {
     }
 
     private String configurationValue(String key, String value) {
-        if (!"otel.resource.attributes".equals(key)) {
+        if (!RESOURCE_ATTRIBUTES_KEY.equals(key)) {
             return value;
         }
         List<String> redactedAttributes = new ArrayList<>();
@@ -375,7 +378,7 @@ public final class TracingDiagnosticsService {
 
     private String serviceName() {
         return property("otel.service.name")
-                .or(() -> applicationConfiguration.getName())
+                .or(applicationConfiguration::getName)
                 .orElse(NOT_CONFIGURED);
     }
 
@@ -387,7 +390,7 @@ public final class TracingDiagnosticsService {
         try {
             Class<?> type = Class.forName(className, false, Thread.currentThread().getContextClassLoader());
             return beanContext.containsBean(type);
-        } catch (ClassNotFoundException | LinkageError e) {
+        } catch (ClassNotFoundException | LinkageError _) {
             return false;
         }
     }

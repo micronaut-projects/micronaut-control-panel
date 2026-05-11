@@ -16,6 +16,7 @@
 package io.micronaut.controlpanel.panels.tracing;
 
 import jakarta.inject.Singleton;
+import org.jspecify.annotations.Nullable;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -33,7 +34,7 @@ final class TracingRedactor {
     static final String REDACTED = "[redacted]";
 
     String redact(String key, String value) {
-        if (value == null || value.isBlank()) {
+        if (value.isBlank()) {
             return "";
         }
         if (isSensitiveKey(key)) {
@@ -46,9 +47,6 @@ final class TracingRedactor {
     }
 
     boolean isSensitiveKey(String key) {
-        if (key == null) {
-            return false;
-        }
         String normalized = key.toLowerCase(Locale.ROOT).replace('_', '-');
         return normalized.contains("password")
                 || normalized.contains("credential")
@@ -75,7 +73,7 @@ final class TracingRedactor {
             String userInfo = uri.getRawUserInfo() == null ? null : REDACTED;
             String query = redactQuery(uri.getRawQuery());
             return new URI(uri.getScheme(), userInfo, uri.getHost(), uri.getPort(), uri.getRawPath(), query, uri.getRawFragment()).toString();
-        } catch (URISyntaxException e) {
+        } catch (URISyntaxException _) {
             return redactMalformedUrl(value);
         }
     }
@@ -94,7 +92,7 @@ final class TracingRedactor {
         return redacted.substring(0, queryStart + 1) + redactQuery(query) + fragment;
     }
 
-    private String redactQuery(String query) {
+    private String redactQuery(@Nullable String query) {
         if (query == null || query.isBlank()) {
             return query;
         }
@@ -117,7 +115,7 @@ final class TracingRedactor {
         }
         try {
             return isSensitiveKey(URLDecoder.decode(key, StandardCharsets.UTF_8));
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException _) {
             return false;
         }
     }

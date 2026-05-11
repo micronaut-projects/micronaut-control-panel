@@ -28,7 +28,7 @@ interface ClassPresence {
             try {
                 Class.forName(className, false, classLoader);
                 return true;
-            } catch (ClassNotFoundException | LinkageError e) {
+            } catch (ClassNotFoundException | LinkageError _) {
                 return false;
             }
         };
