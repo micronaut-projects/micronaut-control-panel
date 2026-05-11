@@ -25,8 +25,9 @@ import io.micronaut.core.annotation.Internal;
  * @param exporter configured exporter value
  * @param endpoint configured endpoint value
  * @param status exporter status
+ * @param configured whether the exporter was explicitly configured
  */
 @ReflectiveAccess
 @Internal
-public record TracingExporterInfo(String signal, String exporter, String endpoint, String status) {
+public record TracingExporterInfo(String signal, String exporter, String endpoint, String status, boolean configured) {
 }

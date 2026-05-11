@@ -76,8 +76,22 @@ final class TracingRedactor {
             String query = redactQuery(uri.getRawQuery());
             return new URI(uri.getScheme(), userInfo, uri.getHost(), uri.getPort(), uri.getRawPath(), query, uri.getRawFragment()).toString();
         } catch (URISyntaxException e) {
-            return value.replaceFirst("(?i)(://)[^/?#@]+@", "$1" + REDACTED + "@");
+            return redactMalformedUrl(value);
         }
+    }
+
+    private String redactMalformedUrl(String value) {
+        String redacted = value.replaceFirst("(?i)(://)[^/?#@]+@", "$1" + REDACTED + "@");
+        int queryStart = redacted.indexOf('?');
+        if (queryStart < 0) {
+            return redacted;
+        }
+        int fragmentStart = redacted.indexOf('#', queryStart);
+        String query = fragmentStart >= 0
+                ? redacted.substring(queryStart + 1, fragmentStart)
+                : redacted.substring(queryStart + 1);
+        String fragment = fragmentStart >= 0 ? redacted.substring(fragmentStart) : "";
+        return redacted.substring(0, queryStart + 1) + redactQuery(query) + fragment;
     }
 
     private String redactQuery(String query) {

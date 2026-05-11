@@ -242,13 +242,16 @@ public final class TracingDiagnosticsService {
     }
 
     private TracingExporterInfo exporter(String signal, String exporterKey, String endpointKey) {
-        String exporter = property(exporterKey).orElse(NONE);
+        Optional<String> configuredExporter = property(exporterKey);
+        String exporter = configuredExporter.orElse(NONE);
         String endpoint = property(endpointKey)
                 .or(() -> property("otel.exporter.otlp.endpoint"))
                 .map(value -> redactor.redact(endpointKey, value))
                 .orElse(NOT_CONFIGURED);
-        String status = NONE.equalsIgnoreCase(exporter) ? "disabled" : "configured";
-        return new TracingExporterInfo(signal, exporter, endpoint, status);
+        String status = configuredExporter
+                .map(value -> NONE.equalsIgnoreCase(value) ? "disabled" : "configured")
+                .orElse("default disabled");
+        return new TracingExporterInfo(signal, exporter, endpoint, status, configuredExporter.isPresent());
     }
 
     private List<TracingInstrumentationInfo> instrumentations() {
@@ -313,7 +316,7 @@ public final class TracingDiagnosticsService {
             diagnostics.add(new TracingDiagnostic("warning", "Multiple tracing provider families were detected. Check for duplicate agent and application instrumentation."));
         }
         exporters.stream()
-                .filter(exporter -> NONE.equalsIgnoreCase(exporter.exporter()))
+                .filter(exporter -> exporter.configured() && NONE.equalsIgnoreCase(exporter.exporter()))
                 .forEach(exporter -> diagnostics.add(new TracingDiagnostic("info", exporter.signal() + " exporter is set to none.")));
         configuredExporterWithoutKnownDependency(exporters).ifPresent(diagnostics::add);
         kafkaTopicConflict().ifPresent(diagnostics::add);
@@ -325,7 +328,7 @@ public final class TracingDiagnosticsService {
     }
 
     private Optional<TracingDiagnostic> configuredExporterWithoutKnownDependency(List<TracingExporterInfo> exporters) {
-        boolean hasConfiguredExporter = exporters.stream().anyMatch(exporter -> !"none".equalsIgnoreCase(exporter.exporter()));
+        boolean hasConfiguredExporter = exporters.stream().anyMatch(exporter -> exporter.configured() && !"none".equalsIgnoreCase(exporter.exporter()));
         if (hasConfiguredExporter
                 && !classPresence.isPresent("io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter")
                 && !classPresence.isPresent("io.opentelemetry.exporter.zipkin.ZipkinSpanExporter")) {

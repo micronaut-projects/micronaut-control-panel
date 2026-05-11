@@ -89,6 +89,17 @@ class TracingDiagnosticsServiceTest {
     }
 
     @Test
+    void doesNotReportExporterNoneDiagnosticForDefaultedExporterValues() {
+        try (ApplicationContext context = ApplicationContext.run(Map.of())) {
+            TracingBody body = service(context, "io.opentelemetry.api.OpenTelemetry").getBody();
+
+            assertTrue(body.exporters().stream().allMatch(exporter -> "none".equals(exporter.exporter())));
+            assertTrue(body.exporters().stream().allMatch(exporter -> "default disabled".equals(exporter.status())));
+            assertFalse(body.diagnostics().stream().anyMatch(diagnostic -> diagnostic.message().contains("exporter is set to none")));
+        }
+    }
+
+    @Test
     void reportsLegacyProviderAndMultipleProviderCompatibilityWarning() {
         try (ApplicationContext context = ApplicationContext.run(Map.of())) {
             TracingBody body = service(context, "io.opentelemetry.api.OpenTelemetry", "brave.Tracing").getBody();

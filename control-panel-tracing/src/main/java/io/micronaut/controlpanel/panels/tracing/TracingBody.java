@@ -48,7 +48,7 @@ public record TracingBody(
         String sampler,
         String propagators,
         String providerState,
-    int presentInstrumentationCount
+        int presentInstrumentationCount
 ) {
 
     /**
