@@ -40,16 +40,17 @@ The runtime section includes the health status, stream thread names and states, 
 
 Runtime state is optional.
 If Health details are hidden, disabled, or unavailable, the Kafka Streams panel still renders the topology diagram and shows an unavailable runtime-state message.
-The Kafka panel only reads the visible `HealthEndpoint` result; it does not query Kafka brokers directly or bypass Health endpoint detail visibility.
+The Kafka Streams panel only reads the visible `HealthEndpoint` result; it does not query Kafka brokers directly or bypass Health endpoint detail visibility.
 
-For local development, enable Health details in the environment where the Control Panel is available:
+For local development with an authenticated Control Panel, authenticated Health details can be shown to authenticated users:
 
 [configuration]
 ----
 endpoints:
   health:
-    details-visible: ANONYMOUS
+    details-visible: AUTHENTICATED
 ----
 
+If the Control Panel itself is intentionally anonymous in a trusted local environment, use `ANONYMOUS` instead.
 Only expose anonymous Health details in development or another trusted environment-specific configuration.
 The runtime-state section is intended for quick development diagnostics and is not a replacement for Micrometer metrics, consumer lag monitoring, or a full Kafka monitoring product.

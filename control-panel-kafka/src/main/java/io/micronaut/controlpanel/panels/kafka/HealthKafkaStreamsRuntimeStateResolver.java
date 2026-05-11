@@ -20,6 +20,7 @@ import io.micronaut.context.annotation.Requires;
 import io.micronaut.core.annotation.Internal;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.health.HealthStatus;
+import io.micronaut.http.context.ServerRequestContext;
 import io.micronaut.management.endpoint.health.HealthEndpoint;
 import io.micronaut.management.health.indicator.HealthResult;
 import jakarta.inject.Singleton;
@@ -27,6 +28,7 @@ import org.apache.kafka.streams.StreamsConfig;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Mono;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -77,7 +79,10 @@ final class HealthKafkaStreamsRuntimeStateResolver implements KafkaStreamsRuntim
     }
 
     private HealthResult readVisibleHealth() {
-        Publisher<HealthResult> health = healthEndpoint.getHealth(null);
+        Principal principal = ServerRequestContext.currentRequest()
+                .flatMap(request -> request.getUserPrincipal(Principal.class))
+                .orElse(null);
+        Publisher<HealthResult> health = healthEndpoint.getHealth(principal);
         return Mono.from(health).block();
     }
 
@@ -133,7 +138,6 @@ final class HealthKafkaStreamsRuntimeStateResolver implements KafkaStreamsRuntim
                 stringValue(threadMap.get("consumerClientId")),
                 stringValue(threadMap.get("restoreConsumerClientId")),
                 stringList(threadMap.get("producerClientIds")),
-                false,
                 taskSummary(threadMap.get("activeTasks")),
                 taskSummary(threadMap.get("standbyTasks"))
         );
@@ -143,12 +147,7 @@ final class HealthKafkaStreamsRuntimeStateResolver implements KafkaStreamsRuntim
         if (!(value instanceof Map<?, ?> taskMap)) {
             return KafkaStreamsRuntimeState.TaskSummary.empty();
         }
-        return new KafkaStreamsRuntimeState.TaskSummary(
-                stringValue(taskMap.get("taskId")),
-                stringList(taskMap.get("partitions")),
-                false,
-                0
-        );
+        return new KafkaStreamsRuntimeState.TaskSummary(stringValue(taskMap.get("taskId")), stringList(taskMap.get("partitions")));
     }
 
     private static Set<String> candidates(String beanName, ConfiguredStreamBuilder builder) {

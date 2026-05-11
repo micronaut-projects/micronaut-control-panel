@@ -82,6 +82,17 @@ public record KafkaStreamsRuntimeState(boolean available,
             activeTasks = activeTasks == null ? TaskSummary.empty() : activeTasks;
             standbyTasks = standbyTasks == null ? TaskSummary.empty() : standbyTasks;
         }
+
+        ThreadState(String name,
+                    String state,
+                    String adminClientId,
+                    String consumerClientId,
+                    String restoreConsumerClientId,
+                    List<String> producerClientIds,
+                    TaskSummary activeTasks,
+                    TaskSummary standbyTasks) {
+            this(name, state, adminClientId, consumerClientId, restoreConsumerClientId, producerClientIds, false, activeTasks, standbyTasks);
+        }
     }
 
     /**
@@ -104,8 +115,12 @@ public record KafkaStreamsRuntimeState(boolean available,
             partitionCount = partitions.size();
         }
 
+        TaskSummary(String taskId, List<String> partitions) {
+            this(taskId, partitions, false, 0);
+        }
+
         static TaskSummary empty() {
-            return new TaskSummary(null, List.of(), false, 0);
+            return new TaskSummary(null, List.of());
         }
     }
 }

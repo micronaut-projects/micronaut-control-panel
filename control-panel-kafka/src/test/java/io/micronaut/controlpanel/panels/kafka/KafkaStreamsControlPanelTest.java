@@ -28,11 +28,14 @@ import org.apache.kafka.streams.state.Stores;
 import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.health.HealthStatus;
+import io.micronaut.http.HttpRequest;
+import io.micronaut.http.context.ServerRequestContext;
 import io.micronaut.management.endpoint.health.HealthEndpoint;
 import io.micronaut.management.health.indicator.HealthResult;
 import org.mockito.Mockito;
 import reactor.core.publisher.Mono;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -266,6 +269,32 @@ final class KafkaStreamsControlPanelTest {
     }
 
     @Test
+    void testRuntimeStateUsesCurrentRequestPrincipalForHealthDetails() {
+        ConfiguredStreamBuilder builder = configuredStreamBuilder("orders-streams", "orders-client");
+        HealthResult health = HealthResult.builder("composite", HealthStatus.UP)
+                .details(Map.of(
+                        "kafkaStreams", HealthResult.builder("kafkaStreams", HealthStatus.UP)
+                                .details(Map.of("orders-streams", HealthResult.builder("orders-streams", HealthStatus.UP).build()))
+                                .build()
+                ))
+                .build();
+        Principal principal = () -> "sherlock";
+        HealthEndpoint endpoint = Mockito.mock(HealthEndpoint.class);
+        Mockito.when(endpoint.getHealth(principal)).thenReturn(Mono.just(health));
+        HttpRequest<?> request = HttpRequest.GET("/control-panel/kafka-streams/default");
+        request.setUserPrincipal(principal);
+
+        KafkaStreamsRuntimeState state = ServerRequestContext.with(
+                request,
+                (java.util.function.Supplier<KafkaStreamsRuntimeState>) () ->
+                        new HealthKafkaStreamsRuntimeStateResolver(endpoint).resolve("default", builder)
+        );
+
+        Assertions.assertTrue(state.available());
+        Mockito.verify(endpoint).getHealth(principal);
+    }
+
+    @Test
     void testRuntimeStateMatchesClientIdAndNormalizedHealthKeys() {
         ConfiguredStreamBuilder builder = configuredStreamBuilder("orders-streams", "orders-client");
         HealthResult health = HealthResult.builder("kafkaStreams()", HealthStatus.DOWN)
@@ -371,7 +400,6 @@ final class KafkaStreamsControlPanelTest {
                 null,
                 null,
                 null,
-                false,
                 null,
                 null
         );
