@@ -47,7 +47,7 @@ import org.jspecify.annotations.Nullable;
 /**
  * Internal API used by the Metrics control panel detail view.
  *
- * @author Sergio del Amo
+ * @author Álvaro Sánchez-Mariscal
  * @since 2.0.0
  */
 @Internal
