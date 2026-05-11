@@ -33,7 +33,7 @@ public class CracControlPanel extends AbstractControlPanel<CracDiagnostics> {
 
     public static final String NAME = "crac";
     public static final String ENABLED_PROPERTY = ControlPanelConfiguration.PREFIX + "." + NAME + ".enabled";
-    public static final Category CATEGORY = new Category("runtime", "Runtime", "fa-microchip");
+    public static final Category CATEGORY = new Category("runtime", "Runtime", "fas fa-microchip");
 
     private final CracDiagnosticsService diagnosticsService;
 
