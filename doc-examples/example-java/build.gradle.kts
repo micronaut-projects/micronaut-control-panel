@@ -50,6 +50,10 @@ dependencies {
     implementation(libs.avro)
     implementation(libs.avro.serde)
 
+    // Pulsar
+    implementation(projects.micronautControlPanelPulsar)
+    implementation(mnPulsar.micronaut.pulsar)
+
     // OpenAPI + Swagger UI (views generated at compile-time)
     annotationProcessor(mnOpenapi.micronaut.openapi)
     testAnnotationProcessor(mnOpenapi.micronaut.openapi)

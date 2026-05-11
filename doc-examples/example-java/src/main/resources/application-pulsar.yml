@@ -1,0 +1,8 @@
+pulsar:
+  service-url: pulsar://localhost:6650
+
+micronaut:
+  control-panel:
+    panels:
+      pulsar:
+        allow-consumer-actions: true
