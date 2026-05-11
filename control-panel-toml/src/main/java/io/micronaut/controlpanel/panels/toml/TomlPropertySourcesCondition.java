@@ -23,12 +23,15 @@ import io.micronaut.core.annotation.Internal;
 import io.micronaut.core.util.StringUtils;
 
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 /**
  * Enables the TOML panel only when there is TOML data to inspect, unless empty diagnostics are requested.
  */
 @Internal
 public class TomlPropertySourcesCondition implements Condition {
+
+    private static final Pattern TOML_LOCATION_PATTERN = Pattern.compile("(^|[/:\\\\])[^/\\\\?#)!\\s]+\\.toml($|[?#)!\\s])");
 
     /**
      * Creates a TOML property-source condition.
@@ -49,6 +52,6 @@ public class TomlPropertySourcesCondition implements Condition {
 
     static boolean isTomlPropertySource(PropertySource propertySource) {
         String location = propertySource.getOrigin().location();
-        return StringUtils.isNotEmpty(location) && location.toLowerCase(Locale.ROOT).contains(".toml");
+        return StringUtils.isNotEmpty(location) && TOML_LOCATION_PATTERN.matcher(location.toLowerCase(Locale.ROOT)).find();
     }
 }

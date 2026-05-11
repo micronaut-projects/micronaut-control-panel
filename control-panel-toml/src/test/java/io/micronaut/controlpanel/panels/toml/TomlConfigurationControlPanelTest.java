@@ -99,6 +99,46 @@ final class TomlConfigurationControlPanelTest {
     }
 
     @Test
+    void duplicateTomlSourceNamesArePreserved() {
+        PropertySource profileSource = propertySource(
+            "application",
+            300,
+            "classpath:application-dev.toml",
+            Map.of("micronaut.application.name", "dev")
+        );
+        PropertySource baseSource = propertySource(
+            "application",
+            100,
+            "classpath:application.toml",
+            Map.of("server.port", 8080)
+        );
+        TomlConfigurationControlPanel.Body body = new TomlPropertySourceAnalyzer()
+            .analyze(new UnknownValueEnvironment(List.of(profileSource, baseSource)), new TomlPanelConfiguration());
+
+        assertEquals(2, body.summary().sourceCount());
+        assertEquals(2, body.sources().size());
+        assertTrue(body.sources().stream().anyMatch(source -> source.origin().equals("classpath:application-dev.toml")));
+        assertTrue(body.sources().stream().anyMatch(source -> source.origin().equals("classpath:application.toml")));
+        assertEquals(2, body.keys().size());
+    }
+
+    @Test
+    void tomlSourceDetectionRequiresTomlExtensionBoundary() {
+        try (ApplicationContext context = context(
+            propertySource("application-backup", 100, "classpath:application.toml.bak", Map.of("micronaut.application.name", "demo"))
+        )) {
+            assertFalse(context.containsBean(TomlConfigurationControlPanel.class));
+        }
+
+        assertTrue(TomlPropertySourcesCondition.isTomlPropertySource(
+            propertySource("application", 100, "classpath:APPLICATION.TOML?profile=dev", Map.of("micronaut.application.name", "demo"))
+        ));
+        assertFalse(TomlPropertySourcesCondition.isTomlPropertySource(
+            propertySource("application-backup", 100, "classpath:application.toml.bak", Map.of("micronaut.application.name", "demo"))
+        ));
+    }
+
+    @Test
     void nonTomlPropertySourceOverridesTomlKey() {
         try (ApplicationContext context = context(
             propertySource("system", 400, "system properties", Map.of("datasources.default.url", "jdbc:h2:mem:override")),

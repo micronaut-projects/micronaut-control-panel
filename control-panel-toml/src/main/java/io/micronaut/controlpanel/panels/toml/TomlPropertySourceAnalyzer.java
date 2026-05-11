@@ -25,7 +25,6 @@ import org.jspecify.annotations.Nullable;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -67,7 +66,7 @@ public class TomlPropertySourceAnalyzer {
     public TomlConfigurationControlPanel.Body analyze(Environment environment, TomlPanelConfiguration configuration) {
         List<PropertySource> propertySources = new ArrayList<>(environment.getPropertySources());
         List<TomlKeyEntryBuilder> keyBuilders = new ArrayList<>();
-        Map<String, TomlSourceBuilder> sourceBuilders = new LinkedHashMap<>();
+        List<TomlSourceBuilder> sourceBuilders = new ArrayList<>();
         Set<String> uniqueKeys = new LinkedHashSet<>();
 
         int precedence = 1;
@@ -83,13 +82,12 @@ public class TomlPropertySourceAnalyzer {
                 propertySource.getOrder(),
                 precedence
             );
-            sourceBuilders.put(name, sourceBuilder);
+            sourceBuilders.add(sourceBuilder);
             for (String key : sortedKeys(propertySource)) {
                 Object value = propertySource.get(key);
-                TomlKeyStatus status = resolveStatus(environment, propertySources, propertySource, key, value);
-                String overridingSource = findOverridingSource(propertySources, propertySource, key)
-                    .map(PropertySource::getName)
-                    .orElse("");
+                Optional<PropertySource> overridingPropertySource = findOverridingSource(propertySources, propertySource, key);
+                TomlKeyStatus status = resolveStatus(environment, overridingPropertySource, key, value);
+                String overridingSource = overridingPropertySource.map(PropertySource::getName).orElse("");
                 String displayValue = displayValue(key, value, status, configuration);
                 sourceBuilder.add(status);
                 uniqueKeys.add(key);
@@ -107,7 +105,7 @@ public class TomlPropertySourceAnalyzer {
             precedence++;
         }
 
-        List<TomlConfigurationControlPanel.TomlSource> sources = sourceBuilders.values()
+        List<TomlConfigurationControlPanel.TomlSource> sources = sourceBuilders
             .stream()
             .map(TomlSourceBuilder::build)
             .toList();
@@ -153,11 +151,9 @@ public class TomlPropertySourceAnalyzer {
     }
 
     private static TomlKeyStatus resolveStatus(Environment environment,
-                                               List<PropertySource> propertySources,
-                                               PropertySource tomlSource,
+                                               Optional<PropertySource> overridingSource,
                                                String key,
                                                @Nullable Object value) {
-        Optional<PropertySource> overridingSource = findOverridingSource(propertySources, tomlSource, key);
         if (overridingSource.isPresent()) {
             return isTomlPropertySource(overridingSource.get())
                 ? TomlKeyStatus.OVERRIDDEN_BY_TOML
@@ -167,7 +163,7 @@ public class TomlPropertySourceAnalyzer {
         if (resolvedValue.isEmpty()) {
             return TomlKeyStatus.UNKNOWN;
         }
-        return Objects.equals(resolvedValue.get(), value) ? TomlKeyStatus.EFFECTIVE : TomlKeyStatus.UNKNOWN;
+        return valuesEquivalent(resolvedValue.get(), value) ? TomlKeyStatus.EFFECTIVE : TomlKeyStatus.UNKNOWN;
     }
 
     private static Optional<PropertySource> findOverridingSource(List<PropertySource> propertySources,
@@ -191,6 +187,10 @@ public class TomlPropertySourceAnalyzer {
             }
         }
         return false;
+    }
+
+    private static boolean valuesEquivalent(@Nullable Object resolvedValue, @Nullable Object sourceValue) {
+        return Objects.equals(resolvedValue, sourceValue) || formatValue(resolvedValue).equals(formatValue(sourceValue));
     }
 
     private static String displayValue(String key,
