@@ -19,6 +19,7 @@ import com.oracle.bmc.auth.AuthenticationDetailsProvider;
 import com.oracle.bmc.auth.BasicAuthenticationDetailsProvider;
 import io.micronaut.context.BeanContext;
 import io.micronaut.context.BeanRegistration;
+import io.micronaut.context.Qualifier;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.env.Environment;
 import io.micronaut.context.env.PropertySource;
@@ -27,6 +28,7 @@ import io.micronaut.controlpanel.core.ControlPanel;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.core.annotation.ReflectiveAccess;
 import io.micronaut.core.naming.NameUtils;
+import io.micronaut.core.reflect.ClassUtils;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.inject.BeanDefinition;
 import io.micronaut.inject.qualifiers.Qualifiers;
@@ -59,8 +61,14 @@ public class OciSdkClientsControlPanel extends AbstractControlPanel<OciSdkClient
     private static final String OCI_CLIENT_PREFIX = "oci.client.";
     private static final String OCI_CLIENTS_PREFIX = "oci.clients.";
     private static final String MICRONAUT_HTTP_SERVICES_OCI_PREFIX = "micronaut.http.services.oci.";
+    private static final String OKE_WORKLOAD_IDENTITY_PREFIX = "oci.config.oke-workload-identity.";
+    private static final String METRICS_EXPORT_ORACLECLOUD_PREFIX = "micronaut.metrics.export.oraclecloud.";
+    private static final String LOGBACK_ORACLE_CLOUD_PREFIX = "logback.appenders.oracle-cloud.";
     private static final String OCI_NETTY_LEGACY = "oci.netty.legacy-netty-client";
     private static final String OCI_NETTY_MANAGED = "oci.netty.use-managed-provider-globally";
+    private static final String NETTY_CONFIGURATION_CLASS = "io.micronaut.oraclecloud.httpclient.netty.OciNettyConfiguration";
+    private static final String NOTICE_INFO = "info";
+    private static final String NOTICE_WARNING = "warning";
     private static final List<String> HIDDEN_FIELDS = List.of(
         "private keys",
         "passphrases",
@@ -126,7 +134,7 @@ public class OciSdkClientsControlPanel extends AbstractControlPanel<OciSdkClient
             if (isOciClientType(beanType)) {
                 ClientInfoBuilder builder = clientInfo(definition, beanType, registration.getIdentifier().toString(), false, propertyNames, authProviderType);
                 clients.put(builder.key(), builder);
-                variantsByService.computeIfAbsent(builder.serviceId, ignored -> new TreeSet<>()).add(builder.clientKind);
+                variantsByService.computeIfAbsent(builder.serviceId(), ignored -> new TreeSet<>()).add(builder.clientKind());
             }
         }
 
@@ -134,17 +142,17 @@ public class OciSdkClientsControlPanel extends AbstractControlPanel<OciSdkClient
             Class<?> beanType = definition.getBeanType();
             if (isOciClientType(beanType)) {
                 ClientInfoBuilder builder = clientInfo(definition, beanType, definition.getName(), true, propertyNames, authProviderType);
-                variantsByService.computeIfAbsent(builder.serviceId, ignored -> new TreeSet<>()).add(builder.clientKind);
+                variantsByService.computeIfAbsent(builder.serviceId(), ignored -> new TreeSet<>()).add(builder.clientKind());
                 clients.putIfAbsent(builder.key(), builder);
             }
         }
 
         return clients.values()
             .stream()
-            .peek(builder -> builder.reactiveVariants = variantsByService.getOrDefault(builder.serviceId, Set.of())
+            .map(builder -> builder.withReactiveVariants(variantsByService.getOrDefault(builder.serviceId(), Set.of())
                 .stream()
-                .filter(variant -> !variant.equals(builder.clientKind))
-                .toList())
+                .filter(variant -> !variant.equals(builder.clientKind()))
+                .toList()))
             .map(ClientInfoBuilder::build)
             .sorted(Comparator.comparing(ClientInfo::serviceId).thenComparing(ClientInfo::clientClass))
             .toList();
@@ -156,7 +164,7 @@ public class OciSdkClientsControlPanel extends AbstractControlPanel<OciSdkClient
                                          boolean definitionOnly,
                                          Set<String> propertyNames,
                                          String authProviderType) {
-        String qualifier = Qualifiers.findName(definition.getDeclaredQualifier());
+        String qualifier = findQualifierName(definition);
         String beanName = qualifier == null ? fallbackName : qualifier;
         String serviceId = inferServiceId(beanType);
         String clientKind = inferClientKind(beanType);
@@ -196,8 +204,13 @@ public class OciSdkClientsControlPanel extends AbstractControlPanel<OciSdkClient
     }
 
     private static String clientKey(BeanDefinition<?> definition, Class<?> beanType) {
-        String qualifier = Qualifiers.findName(definition.getDeclaredQualifier());
+        String qualifier = findQualifierName(definition);
         return clientKey(qualifier == null ? "" : qualifier, beanType.getName());
+    }
+
+    private static String findQualifierName(BeanDefinition<?> definition) {
+        Qualifier<?> qualifier = definition.getDeclaredQualifier();
+        return qualifier == null ? null : Qualifiers.findName(qualifier);
     }
 
     private static String clientKey(String qualifier, String clientClass) {
@@ -278,34 +291,34 @@ public class OciSdkClientsControlPanel extends AbstractControlPanel<OciSdkClient
             environment.getProperty(OCI_NETTY_MANAGED, Boolean.class).orElse(false),
             legacyConfigured,
             environment.getProperty(OCI_NETTY_LEGACY, Boolean.class).orElse(false),
-            beanContext.getAllBeanDefinitions().stream().anyMatch(definition -> "io.micronaut.oraclecloud.httpclient.netty.OciNettyConfiguration".equals(definition.getBeanType().getName()))
+            ClassUtils.isPresent(NETTY_CONFIGURATION_CLASS, OciSdkClientsControlPanel.class.getClassLoader())
         );
     }
 
     private List<IntegrationInfo> resolveIntegrations(Set<String> propertyNames) {
         return List.of(
             new IntegrationInfo("Vault config import", hasBeanType("io.micronaut.oraclecloud.vault") || hasPrefix(propertyNames, "oci.vault."), hasPrefix(propertyNames, "oci.vault."), true),
-            new IntegrationInfo("Oracle Cloud Micrometer", hasBeanType("io.micronaut.oraclecloud.micrometer") || hasPrefix(propertyNames, "micronaut.metrics.export.oraclecloud."), hasPrefix(propertyNames, "micronaut.metrics.export.oraclecloud."), true),
-            new IntegrationInfo("OCI Logging appender", hasBeanType("io.micronaut.oraclecloud.logging") || hasPrefix(propertyNames, "logback.appenders.oracle-cloud."), hasPrefix(propertyNames, "logback.appenders.oracle-cloud."), true),
+            new IntegrationInfo("Oracle Cloud Micrometer", hasBeanType("io.micronaut.oraclecloud.micrometer") || hasPrefix(propertyNames, METRICS_EXPORT_ORACLECLOUD_PREFIX), hasPrefix(propertyNames, METRICS_EXPORT_ORACLECLOUD_PREFIX), true),
+            new IntegrationInfo("OCI Logging appender", hasBeanType("io.micronaut.oraclecloud.logging") || hasPrefix(propertyNames, LOGBACK_ORACLE_CLOUD_PREFIX), hasPrefix(propertyNames, LOGBACK_ORACLE_CLOUD_PREFIX), true),
             new IntegrationInfo("Certificate refresh", hasBeanType("io.micronaut.oraclecloud.certificates") || hasPrefix(propertyNames, "oci.certificates."), hasPrefix(propertyNames, "oci.certificates."), true),
-            new IntegrationInfo("OKE Kubernetes client", hasBeanType("io.micronaut.oraclecloud.oke") || hasPrefix(propertyNames, "oci.config.oke-workload-identity."), hasPrefix(propertyNames, "oci.config.oke-workload-identity."), true)
+            new IntegrationInfo("OKE Kubernetes client", hasBeanType("io.micronaut.oraclecloud.oke") || hasPrefix(propertyNames, OKE_WORKLOAD_IDENTITY_PREFIX), hasPrefix(propertyNames, OKE_WORKLOAD_IDENTITY_PREFIX), true)
         );
     }
 
     private List<DiagnosticNotice> resolveNotices(List<ClientInfo> clients, Set<String> propertyNames, HttpConfigurationInfo http) {
         List<DiagnosticNotice> notices = new ArrayList<>();
-        notices.add(new DiagnosticNotice("info", "no-network", "No OCI network calls or credential accessors were invoked."));
-        notices.add(new DiagnosticNotice("info", "redacted", "Credential and account-identifying values are hidden by design."));
+        notices.add(new DiagnosticNotice(NOTICE_INFO, "no-network", "No OCI network calls or credential accessors were invoked."));
+        notices.add(new DiagnosticNotice(NOTICE_INFO, "redacted", "Credential and account-identifying values are hidden by design."));
         if (clients.isEmpty()) {
-            notices.add(new DiagnosticNotice("warning", "empty", "No instantiated OCI SDK client beans or OCI SDK client bean definitions were detected."));
+            notices.add(new DiagnosticNotice(NOTICE_WARNING, "empty", "No instantiated OCI SDK client beans or OCI SDK client bean definitions were detected."));
         } else if (clients.stream().anyMatch(ClientInfo::definitionOnly)) {
-            notices.add(new DiagnosticNotice("warning", "partial", "Some OCI SDK client bean definitions exist but have not been instantiated yet."));
+            notices.add(new DiagnosticNotice(NOTICE_WARNING, "partial", "Some OCI SDK client bean definitions exist but have not been instantiated yet."));
         }
         if (http.conflictWarning()) {
-            notices.add(new DiagnosticNotice("warning", "http-config-conflict", "Both oci.client and micronaut.http.services.oci configuration are present; choose one HTTP configuration path."));
+            notices.add(new DiagnosticNotice(NOTICE_WARNING, "http-config-conflict", "Both oci.client and micronaut.http.services.oci configuration are present; choose one HTTP configuration path."));
         }
         if (hasSensitiveConfiguredKey(propertyNames)) {
-            notices.add(new DiagnosticNotice("info", "permission-hidden", "Sensitive OCI configuration keys are configured, but their values are hidden."));
+            notices.add(new DiagnosticNotice(NOTICE_INFO, "permission-hidden", "Sensitive OCI configuration keys are configured, but their values are hidden."));
         }
         return notices;
     }
@@ -315,7 +328,7 @@ public class OciSdkClientsControlPanel extends AbstractControlPanel<OciSdkClient
         if (hasPrefix(propertyNames, "oci.config.instance-principal.")) {
             signals.add("instance principal configuration present");
         }
-        if (hasPrefix(propertyNames, "oci.config.oke-workload-identity.")) {
+        if (hasPrefix(propertyNames, OKE_WORKLOAD_IDENTITY_PREFIX)) {
             signals.add("OKE workload identity configuration present");
         }
         if (hasAny(propertyNames, "oci.config.enabled", "oci.config.path", "oci.config.profile", "oci.config.session-token")) {
@@ -370,8 +383,8 @@ public class OciSdkClientsControlPanel extends AbstractControlPanel<OciSdkClient
     private static boolean isOracleCloudProperty(String propertyName) {
         return propertyName.startsWith("oci.")
             || propertyName.startsWith(MICRONAUT_HTTP_SERVICES_OCI_PREFIX)
-            || propertyName.startsWith("micronaut.metrics.export.oraclecloud.")
-            || propertyName.startsWith("logback.appenders.oracle-cloud.");
+            || propertyName.startsWith(METRICS_EXPORT_ORACLECLOUD_PREFIX)
+            || propertyName.startsWith(LOGBACK_ORACLE_CLOUD_PREFIX);
     }
 
     private static boolean isOciClientType(Class<?> beanType) {
@@ -609,48 +622,24 @@ public class OciSdkClientsControlPanel extends AbstractControlPanel<OciSdkClient
                        List<DiagnosticNotice> notices) {
     }
 
-    private static final class ClientInfoBuilder {
-        private final String beanName;
-        private final String qualifier;
-        private final String clientClass;
-        private final String serviceId;
-        private final String clientKind;
-        private List<String> reactiveVariants;
-        private final String authProviderType;
-        private final boolean regionConfigured;
-        private final boolean endpointConfigured;
-        private final boolean serviceConfigurationPresent;
-        private final boolean definitionOnly;
-        private final List<String> notes;
-
-        private ClientInfoBuilder(String beanName,
-                                  String qualifier,
-                                  String clientClass,
-                                  String serviceId,
-                                  String clientKind,
-                                  List<String> reactiveVariants,
-                                  String authProviderType,
-                                  boolean regionConfigured,
-                                  boolean endpointConfigured,
-                                  boolean serviceConfigurationPresent,
-                                  boolean definitionOnly,
-                                  List<String> notes) {
-            this.beanName = beanName;
-            this.qualifier = qualifier;
-            this.clientClass = clientClass;
-            this.serviceId = serviceId;
-            this.clientKind = clientKind;
-            this.reactiveVariants = reactiveVariants;
-            this.authProviderType = authProviderType;
-            this.regionConfigured = regionConfigured;
-            this.endpointConfigured = endpointConfigured;
-            this.serviceConfigurationPresent = serviceConfigurationPresent;
-            this.definitionOnly = definitionOnly;
-            this.notes = notes;
-        }
-
+    private record ClientInfoBuilder(String beanName,
+                                     String qualifier,
+                                     String clientClass,
+                                     String serviceId,
+                                     String clientKind,
+                                     List<String> reactiveVariants,
+                                     String authProviderType,
+                                     boolean regionConfigured,
+                                     boolean endpointConfigured,
+                                     boolean serviceConfigurationPresent,
+                                     boolean definitionOnly,
+                                     List<String> notes) {
         private String key() {
             return clientKey(qualifier, clientClass);
+        }
+
+        private ClientInfoBuilder withReactiveVariants(List<String> reactiveVariants) {
+            return new ClientInfoBuilder(beanName, qualifier, clientClass, serviceId, clientKind, reactiveVariants, authProviderType, regionConfigured, endpointConfigured, serviceConfigurationPresent, definitionOnly, notes);
         }
 
         private ClientInfo build() {

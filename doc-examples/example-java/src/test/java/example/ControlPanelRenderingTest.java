@@ -5,6 +5,7 @@ import io.micronaut.http.client.HttpClient;
 import io.micronaut.http.client.annotation.Client;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledInNativeImage;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -20,6 +21,7 @@ class ControlPanelRenderingTest {
     }
 
     @Test
+    @DisabledInNativeImage
     void rendersOracleCloudCategory(@Client("/") HttpClient client) {
         var body = client.toBlocking().retrieve(HttpRequest.GET("/control-panel/categories/oracle-cloud"));
 

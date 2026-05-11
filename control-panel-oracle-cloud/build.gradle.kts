@@ -7,14 +7,14 @@ dependencies {
 
     compileOnly(libs.micronaut.oraclecloud.common)
 
+    testAnnotationProcessor(mn.micronaut.inject.java)
     testImplementation(mnTest.micronaut.test.junit5)
     testImplementation(mnTest.mockito.junit.jupiter)
-    testRuntimeOnly(mnTest.junit.jupiter.engine)
-    testAnnotationProcessor(mn.micronaut.inject.java)
     testImplementation(libs.micronaut.oraclecloud.common)
     testImplementation(mnSerde.micronaut.serde.jackson)
     testImplementation(mn.micronaut.http.server.netty)
     testImplementation(mn.micronaut.http.client)
+    testRuntimeOnly(mnTest.junit.jupiter.engine)
 }
 
 micronautBuild {

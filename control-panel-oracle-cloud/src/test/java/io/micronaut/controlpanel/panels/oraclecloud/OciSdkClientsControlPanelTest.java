@@ -131,6 +131,50 @@ final class OciSdkClientsControlPanelTest {
     }
 
     @Test
+    void classifiesSafePropertyCategoriesAndSensitiveKeys() {
+        assertEquals("hidden by design", OciDiagnosticsRedactor.safePropertyCategory("oci.config.path"));
+        assertEquals("hidden by design", OciDiagnosticsRedactor.safePropertyCategory("oci.clients.identity.proxy-password"));
+        assertEquals("timeout", OciDiagnosticsRedactor.safePropertyCategory("oci.clients.identity.read-timeout"));
+        assertEquals("retry", OciDiagnosticsRedactor.safePropertyCategory("oci.clients.identity.retry.max-attempts"));
+        assertEquals("retry", OciDiagnosticsRedactor.safePropertyCategory("oci.clients.identity.circuit-breaker.enabled"));
+        assertEquals("proxy", OciDiagnosticsRedactor.safePropertyCategory("oci.clients.identity.proxy-host"));
+        assertEquals("ssl", OciDiagnosticsRedactor.safePropertyCategory("oci.clients.identity.ssl.enabled"));
+        assertEquals("ssl", OciDiagnosticsRedactor.safePropertyCategory("oci.clients.identity.tls.enabled"));
+        assertEquals("logging", OciDiagnosticsRedactor.safePropertyCategory("oci.clients.identity.log-level"));
+        assertEquals("http2", OciDiagnosticsRedactor.safePropertyCategory("oci.clients.identity.http2.enabled"));
+        assertEquals("http2", OciDiagnosticsRedactor.safePropertyCategory("oci.clients.identity.http-2.enabled"));
+        assertEquals("connection pool", OciDiagnosticsRedactor.safePropertyCategory("oci.clients.identity.connection-pool.max"));
+        assertEquals("endpoint", OciDiagnosticsRedactor.safePropertyCategory("oci.clients.identity.endpoint"));
+        assertEquals("region", OciDiagnosticsRedactor.safePropertyCategory("oci.clients.identity.region"));
+        assertEquals("configured", OciDiagnosticsRedactor.safePropertyCategory("oci.clients.identity.enabled"));
+        assertTrue(OciDiagnosticsRedactor.isSensitiveKey("oci.user_id"));
+        assertFalse(OciDiagnosticsRedactor.isSensitiveKey("oci.clients.identity.read-timeout"));
+    }
+
+    @Test
+    void reportsIntegrationAndAuthenticationSourceSignalsWithoutValues() {
+        try (ApplicationContext context = context(
+            new AtomicInteger(),
+            new AtomicInteger(),
+            Map.of(
+                "oci.vault.config.enabled", true,
+                "micronaut.metrics.export.oraclecloud.enabled", true,
+                "logback.appenders.oracle-cloud.enabled", true,
+                "oci.certificates.refresh.enabled", true,
+                "oci.config.oke-workload-identity.enabled", true,
+                "oci.config.instance-principal.diagnostics-only", true
+            )
+        )) {
+            OciSdkClientsControlPanel.Body body = context.getBean(OciSdkClientsControlPanel.class).getBody();
+
+            assertTrue(body.integrations().stream().allMatch(OciSdkClientsControlPanel.IntegrationInfo::present));
+            assertTrue(body.integrations().stream().allMatch(OciSdkClientsControlPanel.IntegrationInfo::detailsHidden));
+            assertTrue(body.authentication().sourceSignals().contains("instance principal configuration present"));
+            assertTrue(body.authentication().sourceSignals().contains("OKE workload identity configuration present"));
+        }
+    }
+
+    @Test
     void infersReactorWrapperServiceIdAndDoesNotDuplicateCurrentKind() {
         try (ApplicationContext context = context(
             new AtomicInteger(),
@@ -252,44 +296,42 @@ final class OciSdkClientsControlPanelTest {
 
         @Override
         public String getKeyId() {
-            calls.incrementAndGet();
-            throw new AssertionError("Auth provider credential methods must not be called");
+            throw credentialAccess("getKeyId");
         }
 
         @Override
         public InputStream getPrivateKey() {
-            calls.incrementAndGet();
-            throw new AssertionError("Auth provider credential methods must not be called");
+            throw credentialAccess("getPrivateKey");
         }
 
         @Override
         public String getPassPhrase() {
-            calls.incrementAndGet();
-            throw new AssertionError("Auth provider credential methods must not be called");
+            throw credentialAccess("getPassPhrase");
         }
 
         @Override
         public char[] getPassphraseCharacters() {
-            calls.incrementAndGet();
-            throw new AssertionError("Auth provider credential methods must not be called");
+            throw credentialAccess("getPassphraseCharacters");
         }
 
         @Override
         public String getFingerprint() {
-            calls.incrementAndGet();
-            throw new AssertionError("Auth provider credential methods must not be called");
+            throw credentialAccess("getFingerprint");
         }
 
         @Override
         public String getTenantId() {
-            calls.incrementAndGet();
-            throw new AssertionError("Auth provider credential methods must not be called");
+            throw credentialAccess("getTenantId");
         }
 
         @Override
         public String getUserId() {
+            throw credentialAccess("getUserId");
+        }
+
+        private AssertionError credentialAccess(String methodName) {
             calls.incrementAndGet();
-            throw new AssertionError("Auth provider credential methods must not be called");
+            return new AssertionError("Auth provider credential methods must not be called: " + methodName);
         }
     }
 }
