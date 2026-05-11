@@ -164,13 +164,13 @@ public class OciSdkClientsControlPanel extends AbstractControlPanel<OciSdkClient
                                          boolean definitionOnly,
                                          Set<String> propertyNames,
                                          String authProviderType) {
-        String qualifier = findQualifierName(definition);
-        String beanName = qualifier == null ? fallbackName : qualifier;
+        Optional<String> qualifier = findQualifierName(definition);
+        String beanName = qualifier.orElse(fallbackName);
         String serviceId = inferServiceId(beanType);
         String clientKind = inferClientKind(beanType);
         return new ClientInfoBuilder(
             beanName,
-            qualifier == null ? "" : qualifier,
+            qualifier.orElse(""),
             beanType.getName(),
             serviceId,
             clientKind,
@@ -204,13 +204,13 @@ public class OciSdkClientsControlPanel extends AbstractControlPanel<OciSdkClient
     }
 
     private static String clientKey(BeanDefinition<?> definition, Class<?> beanType) {
-        String qualifier = findQualifierName(definition);
-        return clientKey(qualifier == null ? "" : qualifier, beanType.getName());
+        String qualifier = findQualifierName(definition).orElse("");
+        return clientKey(qualifier, beanType.getName());
     }
 
-    private static String findQualifierName(BeanDefinition<?> definition) {
+    private static Optional<String> findQualifierName(BeanDefinition<?> definition) {
         Qualifier<?> qualifier = definition.getDeclaredQualifier();
-        return qualifier == null ? null : Qualifiers.findName(qualifier);
+        return qualifier == null ? Optional.empty() : Optional.ofNullable(Qualifiers.findName(qualifier));
     }
 
     private static String clientKey(String qualifier, String clientClass) {
