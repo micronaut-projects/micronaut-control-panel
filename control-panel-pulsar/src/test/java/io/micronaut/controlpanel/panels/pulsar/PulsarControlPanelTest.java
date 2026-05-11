@@ -23,6 +23,7 @@ import io.micronaut.pulsar.PulsarConsumerRegistry;
 import io.micronaut.pulsar.PulsarProducerRegistry;
 import io.micronaut.pulsar.PulsarReaderRegistry;
 import io.micronaut.pulsar.events.ConsumerSubscriptionFailedEvent;
+import io.micronaut.pulsar.events.PulsarFailureEvent;
 import org.apache.pulsar.client.api.Consumer;
 import org.apache.pulsar.client.api.Producer;
 import org.apache.pulsar.client.api.Reader;
@@ -132,6 +133,37 @@ class PulsarControlPanelTest {
         assertEquals("invoices", failures.get(0).clientName());
         assertTrue(failures.get(0).reason().contains("invoices"));
         assertTrue(failures.get(0).error().contains("IllegalArgumentException"));
+    }
+
+    @Test
+    void redactsSecretBearingFailureTextBeforeSnapshot() {
+        var collector = new PulsarFailureEventCollector(defaultConfiguration());
+        collector.onApplicationEvent(new PulsarFailureEvent() {
+            @Override
+            public String getReason() {
+                return "Failed to connect to pulsar://alice:uri-password@localhost:6650 with authParams=reason-token password=\"reason-password\"";
+            }
+        });
+
+        var reason = collector.snapshot().get(0).reason();
+        assertTrue(reason.contains("[REDACTED]"));
+        assertFalse(reason.contains("alice"));
+        assertFalse(reason.contains("uri-password"));
+        assertFalse(reason.contains("reason-token"));
+        assertFalse(reason.contains("reason-password"));
+
+        collector = new PulsarFailureEventCollector(defaultConfiguration());
+        collector.onApplicationEvent(new ConsumerSubscriptionFailedEvent(
+            new IllegalStateException("token=error-token privateKey=-----BEGIN PRIVATE KEY-----\nraw-private-key\n-----END PRIVATE KEY----- secret='error-secret'"),
+            "orders"
+        ));
+
+        var error = collector.snapshot().get(0).error();
+        assertTrue(error.contains("IllegalStateException"));
+        assertTrue(error.contains("[REDACTED]"));
+        assertFalse(error.contains("error-token"));
+        assertFalse(error.contains("raw-private-key"));
+        assertFalse(error.contains("error-secret"));
     }
 
     @Test

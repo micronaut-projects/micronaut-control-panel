@@ -30,6 +30,7 @@ import java.util.Comparator;
 import java.util.Deque;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 /**
  * Bounded in-memory collector for Pulsar failure events raised in this application process.
@@ -40,6 +41,22 @@ import java.util.Optional;
 final class PulsarFailureEventCollector implements ApplicationEventListener<PulsarFailureEvent> {
 
     private static final int MAX_REASON_LENGTH = 500;
+    private static final String REDACTED = "[REDACTED]";
+    private static final Pattern URI_USER_INFO = Pattern.compile("(?i)\\b([a-z][a-z0-9+.-]*://)([^\\s/@]+@)");
+    private static final Pattern PRIVATE_KEY_BLOCK = Pattern.compile(
+        "-----BEGIN [A-Z ]*PRIVATE KEY-----.*?-----END [A-Z ]*PRIVATE KEY-----",
+        Pattern.CASE_INSENSITIVE | Pattern.DOTALL
+    );
+    private static final String SECRET_KEY_PATTERN = "token|authToken|authenticationToken|accessToken|refreshToken"
+        + "|authParams|authData|password|passwd|pwd|secret|credential|credentials"
+        + "|privateKey|privateKeyData|private-key|private-key-data|private_key|private_key_data"
+        + "|tlsPrivateKey|tlsPrivateKeyData|tlsKeyFilePath|tlsPrivateKeyFilePath";
+    private static final Pattern QUOTED_SECRET_VALUE = Pattern.compile(
+        "(?i)\\b(" + SECRET_KEY_PATTERN + ")\\b(\\s*[:=]\\s*)([\"'])(.*?)(\\3)"
+    );
+    private static final Pattern UNQUOTED_SECRET_VALUE = Pattern.compile(
+        "(?i)\\b(" + SECRET_KEY_PATTERN + ")\\b(\\s*[:=]\\s*)([^,;\\s\\}\\)]+)"
+    );
 
     private final PulsarControlPanelConfiguration configuration;
     private final Deque<PulsarControlPanel.FailureInfo> failures = new ArrayDeque<>();
@@ -95,8 +112,8 @@ final class PulsarFailureEventCollector implements ApplicationEventListener<Puls
             Instant.now().toString(),
             clientType,
             clientName,
-            truncate(nullSafe(event.getReason())),
-            truncate(error)
+            truncate(sanitize(nullSafe(event.getReason()))),
+            truncate(sanitize(error))
         );
     }
 
@@ -113,6 +130,16 @@ final class PulsarFailureEventCollector implements ApplicationEventListener<Puls
             return value;
         }
         return value.substring(0, MAX_REASON_LENGTH) + "...";
+    }
+
+    private static String sanitize(String value) {
+        if (value.isBlank()) {
+            return value;
+        }
+        String sanitized = PRIVATE_KEY_BLOCK.matcher(value).replaceAll(REDACTED);
+        sanitized = URI_USER_INFO.matcher(sanitized).replaceAll("$1" + REDACTED + "@");
+        sanitized = QUOTED_SECRET_VALUE.matcher(sanitized).replaceAll("$1$2$3" + REDACTED + "$5");
+        return UNQUOTED_SECRET_VALUE.matcher(sanitized).replaceAll("$1$2" + REDACTED);
     }
 
     private static String nullSafe(String value) {
