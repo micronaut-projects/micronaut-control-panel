@@ -120,6 +120,20 @@ class RabbitMqDiagnosticsServiceTest {
         }
     }
 
+    @Test
+    void managementUrlWithUserInfoIsNotDisplayed() {
+        try (ApplicationContext context = ApplicationContext.run(Map.of(
+            "spec.name", SPEC_NAME,
+            "test.queue", "orders.created",
+            "micronaut.control-panel.panels.rabbitmq.management-url", "http://user:secret@localhost:15672"
+        ))) {
+            RabbitMqBody body = context.getBean(RabbitMqControlPanel.class).getBody();
+
+            assertNotNull(body);
+            assertEquals(null, body.managementUrl());
+        }
+    }
+
     @Requires(property = "spec.name", value = SPEC_NAME)
     @Singleton
     @Primary

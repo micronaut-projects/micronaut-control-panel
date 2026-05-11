@@ -66,7 +66,9 @@ public class RabbitMqControlPanelConfiguration {
         try {
             URI uri = URI.create(value);
             String scheme = uri.getScheme();
-            return uri.isAbsolute() && ("http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme));
+            return uri.isAbsolute()
+                && uri.getUserInfo() == null
+                && ("http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme));
         } catch (IllegalArgumentException e) {
             return false;
         }
