@@ -33,7 +33,6 @@ import io.micronaut.validation.validator.constraints.ConstraintValidator;
 import io.micronaut.web.router.Router;
 import jakarta.inject.Singleton;
 import jakarta.validation.Valid;
-import jakarta.validation.Constraint;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 
@@ -86,7 +85,7 @@ final class ValidationDiagnosticsCollector {
         List<ValidationDiagnostics.ValidatedElementRow> routes = collectRoutes(messages);
         List<ValidationDiagnostics.ValidatedElementRow> methods = collectMethods(messages);
         List<ValidationDiagnostics.ValidatedElementRow> configurationProperties = collectConfigurationProperties(messages);
-        List<ValidationDiagnostics.ValidatedElementRow> classes = collectClasses(routes, configurationProperties, messages);
+        List<ValidationDiagnostics.ValidatedElementRow> classes = collectClasses(configurationProperties, messages);
         int totalConstraints = countConstraints(routes) + countConstraints(methods) + countConstraints(configurationProperties) + countConstraints(classes);
         if (!validationEnabled) {
             messages.add(new ValidationDiagnostics.StateMessage("disabled", "Validation is disabled", "`micronaut.validator.enabled=false` disables runtime validation. Metadata remains visible for diagnostics."));
@@ -256,8 +255,7 @@ final class ValidationDiagnosticsCollector {
         }
     }
 
-    private List<ValidationDiagnostics.ValidatedElementRow> collectClasses(List<ValidationDiagnostics.ValidatedElementRow> routes,
-                                                                           List<ValidationDiagnostics.ValidatedElementRow> configurationProperties,
+    private List<ValidationDiagnostics.ValidatedElementRow> collectClasses(List<ValidationDiagnostics.ValidatedElementRow> configurationProperties,
                                                                            List<ValidationDiagnostics.StateMessage> messages) {
         try {
             Set<Class<?>> types = new LinkedHashSet<>();
@@ -279,7 +277,7 @@ final class ValidationDiagnosticsCollector {
                 .map(type -> inspectClass(type, "Class", "BeanIntrospection"))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .filter(row -> routes.stream().noneMatch(r -> r.name().contains(row.name())) || configurationProperties.stream().noneMatch(r -> r.name().equals(row.name())))
+                .filter(row -> configurationProperties.stream().noneMatch(configuration -> configuration.name().equals(row.name())))
                 .sorted(Comparator.comparing(ValidationDiagnostics.ValidatedElementRow::name))
                 .toList();
         } catch (RuntimeException e) {
@@ -319,7 +317,6 @@ final class ValidationDiagnosticsCollector {
 
     private List<ValidationDiagnostics.ConstraintRow> extractConstraints(AnnotationMetadata metadata, String target, String source) {
         List<ValidationDiagnostics.ConstraintRow> rows = new ArrayList<>();
-        Set<String> added = new LinkedHashSet<>();
         for (AnnotationValue<Annotation> value : metadata.getAnnotationValuesByStereotype(CONSTRAINT_STEREOTYPE)) {
             rows.add(new ValidationDiagnostics.ConstraintRow(
                 simpleName(value.getAnnotationName()),
@@ -329,38 +326,16 @@ final class ValidationDiagnosticsCollector {
                 attributeSanitizer.sanitize(value.getValues(), configuration.getShowConstraintAttributes()),
                 source
             ));
-            added.add(value.getAnnotationName());
-        }
-        for (String annotationName : metadata.getAnnotationNames()) {
-            if (added.contains(annotationName) || !isConstraintAnnotation(annotationName)) {
-                continue;
-            }
-            rows.add(new ValidationDiagnostics.ConstraintRow(
-                simpleName(annotationName),
-                target,
-                classNames(metadata.classValues(annotationName, "groups")),
-                hasCascade(metadata),
-                attributeSanitizer.sanitize(metadata.getValues(annotationName), configuration.getShowConstraintAttributes()),
-                source
-            ));
         }
         return rows;
-    }
-
-    private static boolean isConstraintAnnotation(String annotationName) {
-        try {
-            Class<?> type = Class.forName(annotationName);
-            return type.isAnnotationPresent(Constraint.class);
-        } catch (ClassNotFoundException e) {
-            return false;
-        }
     }
 
     private List<ValidationDiagnostics.ConstraintRow> extractTypeArgumentConstraints(Argument<?> argument, String target, String source) {
         List<ValidationDiagnostics.ConstraintRow> rows = new ArrayList<>();
         for (Argument<?> typeArgument : argument.getTypeParameters()) {
-            rows.addAll(extractConstraints(typeArgument.getAnnotationMetadata(), target + " type argument " + typeArgument.getName(), source));
-            rows.addAll(extractTypeArgumentConstraints(typeArgument, target, source));
+            String typeArgumentTarget = target + " type argument " + typeArgument.getName();
+            rows.addAll(extractConstraints(typeArgument.getAnnotationMetadata(), typeArgumentTarget, source));
+            rows.addAll(extractTypeArgumentConstraints(typeArgument, typeArgumentTarget, source));
         }
         return rows;
     }

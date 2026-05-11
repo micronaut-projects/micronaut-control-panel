@@ -1,7 +1,7 @@
 The Validation control panel provides read-only diagnostics for applications that use Micronaut Validation.
 It is intended for development-time troubleshooting when route validation, method validation, request body cascades, custom validators, or configuration-property constraints do not behave as expected.
 
-dependency:io.micronaut.controlpanel:micronaut-control-panel-validation[]
+dependency:io.micronaut.controlpanel:micronaut-control-panel-validation[scope=developmentOnly]
 
 The application must also include Micronaut Validation and the validation annotation processor, as it normally would for runtime validation:
 
