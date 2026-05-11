@@ -213,7 +213,7 @@
         var consumerId = button.data('consumer-id');
         $.ajax({
             type: 'POST',
-            url: '{{ ext.appPath }}/pulsar-control-panel-controller/consumers/' + action,
+            url: '{{ ext.controlPanelPath }}/pulsar-control-panel-controller/consumers/' + action,
             data: JSON.stringify({ id: consumerId }),
             contentType: 'application/json; charset=utf-8'
         }).done(function (data) {
