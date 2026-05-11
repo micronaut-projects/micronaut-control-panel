@@ -36,6 +36,14 @@ class Neo4jConnectionSummaryResolverTest {
     }
 
     @Test
+    void masksUserInfoWhenUriParsingFallsBack() {
+        String masked = Neo4jConnectionSummaryResolver.maskUri("user:password@localhost:7687");
+
+        assertEquals("***@localhost:7687", masked);
+        assertFalse(masked.contains("password"));
+    }
+
+    @Test
     void masksSecretAssignmentsInFreeFormValues() {
         String masked = Neo4jConnectionSummaryResolver.maskSecretValue("password=hunter2, token:abc, user=neo4j");
 

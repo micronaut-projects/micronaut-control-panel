@@ -133,7 +133,7 @@ class Neo4jDiagnosticsServiceTest {
         Neo4jPanelConfiguration configuration = new Neo4jPanelConfiguration();
         Neo4jConnectionSummaryResolver resolver = mock(Neo4jConnectionSummaryResolver.class);
         when(resolver.resolve()).thenReturn(new Neo4jConnectionInfo("default", "bolt://localhost:7687", "neo4j", "", ""));
-        return new Neo4jDiagnosticsService("default", driver, configuration, resolver);
+        return new Neo4jDiagnosticsService(driver, configuration, resolver);
     }
 
     private static Result serverResult() {

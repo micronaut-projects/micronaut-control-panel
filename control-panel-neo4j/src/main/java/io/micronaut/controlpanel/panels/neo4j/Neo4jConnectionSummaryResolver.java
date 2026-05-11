@@ -133,9 +133,10 @@ public class Neo4jConnectionSummaryResolver {
 
     private static String maskUserInfoFallback(String value) {
         int scheme = value.indexOf("://");
-        int at = value.indexOf('@', Math.max(0, scheme));
-        if (scheme > -1 && at > scheme) {
-            return value.substring(0, scheme + 3) + "***@" + value.substring(at + 1);
+        int userInfoStart = scheme > -1 ? scheme + 3 : 0;
+        int at = value.indexOf('@', userInfoStart);
+        if (at > userInfoStart) {
+            return value.substring(0, userInfoStart) + "***@" + value.substring(at + 1);
         }
         return value;
     }

@@ -58,7 +58,7 @@ public class Neo4jControlPanel extends AbstractEachBeanControlPanel<Neo4jBody> {
                              @Named(NAME) ControlPanelConfiguration configuration) {
         super(NAME, configuration);
         this.beanName = beanName;
-        this.diagnosticsService = new Neo4jDiagnosticsService(beanName, driver, panelConfiguration, connectionSummaryResolver);
+        this.diagnosticsService = new Neo4jDiagnosticsService(driver, panelConfiguration, connectionSummaryResolver);
     }
 
     @Override

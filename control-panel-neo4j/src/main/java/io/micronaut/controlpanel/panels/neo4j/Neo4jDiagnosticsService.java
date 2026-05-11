@@ -15,7 +15,6 @@
  */
 package io.micronaut.controlpanel.panels.neo4j;
 
-import io.micronaut.context.annotation.Parameter;
 import io.micronaut.controlpanel.panels.neo4j.model.Neo4jBody;
 import io.micronaut.controlpanel.panels.neo4j.model.Neo4jConnectionInfo;
 import io.micronaut.controlpanel.panels.neo4j.model.Neo4jDiagnostic;
@@ -65,15 +64,13 @@ public class Neo4jDiagnosticsService {
     /**
      * Constructor.
      *
-     * @param beanName Neo4j driver bean name
      * @param driver Neo4j driver
      * @param configuration panel configuration
      * @param connectionSummaryResolver connection summary resolver
      */
-    public Neo4jDiagnosticsService(@Parameter String beanName,
-                                   @Parameter Driver driver,
+    public Neo4jDiagnosticsService(Driver driver,
                                    Neo4jPanelConfiguration configuration,
-                                   @Parameter Neo4jConnectionSummaryResolver connectionSummaryResolver) {
+                                   Neo4jConnectionSummaryResolver connectionSummaryResolver) {
         this.driver = driver;
         this.configuration = configuration;
         this.connectionSummaryResolver = connectionSummaryResolver;
