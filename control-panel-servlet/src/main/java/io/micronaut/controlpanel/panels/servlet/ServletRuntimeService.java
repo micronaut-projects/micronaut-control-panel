@@ -36,7 +36,6 @@ import java.util.Optional;
  */
 @Singleton
 @Requires(classes = ServletContext.class)
-@Requires(beans = ServletContext.class)
 public class ServletRuntimeService {
 
     private static final String UNKNOWN = "unknown";
@@ -55,6 +54,7 @@ public class ServletRuntimeService {
         "micronaut.server.jdk.thread-selection"
     );
 
+    @Nullable
     private final ServletContext servletContext;
     private final Environment environment;
     @Nullable
@@ -67,7 +67,7 @@ public class ServletRuntimeService {
      * @param environment application environment
      * @param embeddedServer embedded server, if available
      */
-    public ServletRuntimeService(ServletContext servletContext,
+    public ServletRuntimeService(@Nullable ServletContext servletContext,
                                   Environment environment,
                                   @Nullable EmbeddedServer embeddedServer) {
         this.servletContext = servletContext;
@@ -81,18 +81,36 @@ public class ServletRuntimeService {
      * @return servlet runtime body
      */
     public ServletRuntimeBody getBody() {
-        var servlets = servletRegistrations(servletContext);
-        var filters = filterRegistrations(servletContext);
+        ServletContext context = resolveServletContext();
+        if (context == null) {
+            return unavailableBody();
+        }
+        var servlets = servletRegistrations(context);
+        var filters = filterRegistrations(context);
         var warnings = warnings(servlets, filters);
         return new ServletRuntimeBody(
             true,
-            runtimeName(),
+            runtimeName(context),
             embeddedServer == null ? "external WAR or servlet container" : "embedded",
-            contextInfo(servletContext),
+            contextInfo(context),
             servlets,
             filters,
             runtimeConfig(),
             warnings
+        );
+    }
+
+    private ServletRuntimeBody unavailableBody() {
+        return new ServletRuntimeBody(
+            false,
+            runtimeName(null),
+            embeddedServer == null ? UNKNOWN : "embedded",
+            new ServletContextInfo(UNKNOWN, UNKNOWN, UNKNOWN, UNKNOWN, UNKNOWN),
+            List.of(),
+            List.of(),
+            runtimeConfig(),
+            List.of(new DiagnosticWarning("servlet-context-unavailable", "warning",
+                "No ServletContext is available from the Micronaut application context or detected embedded servlet server."))
         );
     }
 
@@ -164,7 +182,7 @@ public class ServletRuntimeService {
         long runtimes = availableRuntimes();
         if (runtimes > 1) {
             warnings.add(new DiagnosticWarning("multiple-runtimes", "warning",
-                "Multiple Micronaut Servlet runtimes appear to be on the classpath; the active runtime is " + runtimeName() + "."));
+                "Multiple Micronaut Servlet runtimes appear to be on the classpath; the active runtime is " + runtimeName(resolveServletContext()) + "."));
         }
         servlets.stream()
             .filter(servlet -> servlet.mappings().isEmpty())
@@ -179,7 +197,7 @@ public class ServletRuntimeService {
         return warnings;
     }
 
-    private String runtimeName() {
+    private String runtimeName(@Nullable ServletContext context) {
         if (embeddedServer != null) {
             String className = embeddedServer.getClass().getName().toLowerCase();
             if (className.contains("jetty")) {
@@ -195,7 +213,7 @@ public class ServletRuntimeService {
                 return "JDK HTTP server";
             }
         }
-        String serverInfo = safe(servletContext::getServerInfo);
+        String serverInfo = context == null ? null : safe(context::getServerInfo);
         if (serverInfo != null) {
             String lower = serverInfo.toLowerCase();
             if (lower.contains("jetty")) {
@@ -209,6 +227,48 @@ public class ServletRuntimeService {
             }
         }
         return UNKNOWN;
+    }
+
+    @Nullable
+    private ServletContext resolveServletContext() {
+        if (servletContext != null) {
+            return servletContext;
+        }
+        return embeddedServer == null ? null : servletContextFromEmbeddedServer(embeddedServer);
+    }
+
+    @Nullable
+    private ServletContext servletContextFromEmbeddedServer(EmbeddedServer server) {
+        Object nativeServer = invoke(server, "getServer");
+        return nativeServer == null ? null : findServletContext(nativeServer);
+    }
+
+    @Nullable
+    private ServletContext findServletContext(Object candidate) {
+        if (candidate instanceof ServletContext context) {
+            return context;
+        }
+        Object context = invoke(candidate, "getServletContext");
+        if (context instanceof ServletContext servletContext) {
+            return servletContext;
+        }
+        Object handler = invoke(candidate, "getHandler");
+        if (handler != null && handler != candidate) {
+            ServletContext servletContext = findServletContext(handler);
+            if (servletContext != null) {
+                return servletContext;
+            }
+        }
+        Object handlers = invoke(candidate, "getHandlers");
+        if (handlers instanceof Iterable<?> iterable) {
+            for (Object nested : iterable) {
+                ServletContext servletContext = findServletContext(nested);
+                if (servletContext != null) {
+                    return servletContext;
+                }
+            }
+        }
+        return null;
     }
 
     private long availableRuntimes() {
@@ -237,6 +297,15 @@ public class ServletRuntimeService {
         try {
             return supplier.get();
         } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    @Nullable
+    private static Object invoke(Object target, String methodName) {
+        try {
+            return target.getClass().getMethod(methodName).invoke(target);
+        } catch (ReflectiveOperationException | RuntimeException e) {
             return null;
         }
     }

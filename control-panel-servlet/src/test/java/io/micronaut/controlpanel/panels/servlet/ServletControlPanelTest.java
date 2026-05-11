@@ -26,8 +26,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRegistration;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
-import jakarta.servlet.annotation.WebFilter;
-import jakarta.servlet.annotation.WebInitParam;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -45,11 +43,17 @@ import static org.mockito.Mockito.when;
 
 class ServletControlPanelTest {
 
+    private static final String AUDIT_FILTER_NAME = "AuditFilter";
+    private static final String AUDIT_FILTER_URL_PATTERN = "/api/*";
+    private static final String AUDIT_FILTER_SERVLET_NAME = "MicronautServlet";
+
     @Test
-    void panelIsAbsentWithoutServletContext() {
+    void serviceShowsUnavailableStateWithoutServletContext() {
         try (ApplicationContext ctx = ApplicationContext.run()) {
-            assertFalse(ctx.containsBean(ServletRuntimeService.class));
-            assertFalse(ctx.containsBean(ServletControlPanel.class));
+            ServletRuntimeService service = new ServletRuntimeService(null, ctx.getEnvironment(), null);
+            ServletRuntimeBody body = service.getBody();
+            assertFalse(body.available());
+            assertTrue(body.warnings().stream().anyMatch(warning -> warning.code().equals("servlet-context-unavailable")));
         }
     }
 
@@ -82,10 +86,8 @@ class ServletControlPanelTest {
             assertEquals("/demo", body.context().contextPath());
             assertEquals("6.1", body.context().servletApiVersion());
             assertEquals(List.of("/"), body.servlets().get(0).mappings());
-            WebFilter annotation = AuditFilter.class.getAnnotation(WebFilter.class);
-
-            assertEquals(List.of(annotation.urlPatterns()[0]), body.filters().get(0).urlPatternMappings());
-            assertEquals(List.of(annotation.servletNames()[0]), body.filters().get(0).servletNameMappings());
+            assertEquals(List.of(AUDIT_FILTER_URL_PATTERN), body.filters().get(0).urlPatternMappings());
+            assertEquals(List.of(AUDIT_FILTER_SERVLET_NAME), body.filters().get(0).servletNameMappings());
             assertEquals(List.of("apiKey"), body.filters().get(0).initParameters().names());
             assertFalse(body.toString().contains("super-secret-value"));
             assertTrue(body.config().stream().anyMatch(config -> config.label().equals("micronaut.server.port") && config.value().equals("8081")));
@@ -126,21 +128,14 @@ class ServletControlPanelTest {
         when(servlet.getRunAsRole()).thenReturn(null);
         when(servlet.getInitParameters()).thenReturn(Map.of("startupMode", "super-secret-value"));
 
-        WebFilter annotation = AuditFilter.class.getAnnotation(WebFilter.class);
-        when(filter.getName()).thenReturn(annotation.filterName());
+        when(filter.getName()).thenReturn(AUDIT_FILTER_NAME);
         when(filter.getClassName()).thenReturn(AuditFilter.class.getName());
-        when(filter.getUrlPatternMappings()).thenReturn(List.of(annotation.urlPatterns()));
-        when(filter.getServletNameMappings()).thenReturn(List.of(annotation.servletNames()));
+        when(filter.getUrlPatternMappings()).thenReturn(List.of(AUDIT_FILTER_URL_PATTERN));
+        when(filter.getServletNameMappings()).thenReturn(List.of(AUDIT_FILTER_SERVLET_NAME));
         when(filter.getInitParameters()).thenReturn(Map.of("apiKey", "super-secret-value"));
         return context;
     }
 
-    @WebFilter(
-        filterName = "AuditFilter",
-        urlPatterns = "/api/*",
-        servletNames = "MicronautServlet",
-        initParams = @WebInitParam(name = "apiKey", value = "super-secret-value")
-    )
     private static final class AuditFilter implements Filter {
         @Override
         public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {

@@ -9,8 +9,10 @@ To add the Servlet Runtime control panel, add the following development-time dep
 
 dependency:io.micronaut.controlpanel:micronaut-control-panel-servlet[scope=developmentOnly]
 
-The panel appears only when the application has a `jakarta.servlet.ServletContext` bean. Applications that do not use a
-Servlet runtime can include the module without starting a panel or failing application startup.
+The panel appears when Servlet APIs are on the classpath and the module is enabled. For embedded Servlet runtimes such as
+Jetty, it can inspect the runtime `ServletContext` directly from the running embedded server even when the context is not
+published as a Micronaut bean. Applications that include the module without an inspectable `ServletContext` show an
+unavailable state rather than failing application startup.
 
 The panel is intended for local diagnostics with Servlet-backed runtimes such as Jetty, Tomcat, Undertow, the JDK HTTP
 server, or an external Servlet container. It shows:
@@ -28,7 +30,7 @@ details.
 
 === Configuration
 
-The Servlet Runtime control panel is automatically enabled when you include the module and a `ServletContext` is present.
+The Servlet Runtime control panel is automatically enabled when you include the module and Servlet APIs are present.
 You can disable it by setting:
 
 [configuration]

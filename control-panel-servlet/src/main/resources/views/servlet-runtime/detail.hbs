@@ -1,5 +1,11 @@
 {{#with controlPanel.body }}
     <div class="cp-dashboard-stack">
+        {{#unless available}}
+            <div class="alert alert-warning" role="status">
+                Servlet runtime details are unavailable because no inspectable ServletContext was found.
+            </div>
+        {{/unless}}
+
         <div class="row">
             <div class="col-lg-4">
                 <div class="card">

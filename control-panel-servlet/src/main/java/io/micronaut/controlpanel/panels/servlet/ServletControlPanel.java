@@ -31,10 +31,12 @@ import jakarta.servlet.ServletContext;
  */
 @Singleton
 @Requires(classes = ServletContext.class)
-@Requires(beans = ServletContext.class)
 @Requires(property = ServletControlPanel.ENABLED_PROPERTY, notEquals = StringUtils.FALSE)
 public class ServletControlPanel extends AbstractControlPanel<ServletRuntimeBody> {
 
+    /**
+     * Stable panel name.
+     */
     public static final String NAME = "servlet-runtime";
     /**
      * Configuration property that enables the panel.
