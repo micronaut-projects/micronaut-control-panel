@@ -2201,6 +2201,9 @@ You can disable it by setting:</p>
 <p>View the number of sub-topologies as a badge.</p>
 </li>
 <li>
+<p>View Kafka Streams runtime state when Micronaut Management exposes Kafka Streams health details.</p>
+</li>
+<li>
 <p>Automatically generated from the configured <code>ConfiguredStreamBuilder</code> beans.</p>
 </li>
 </ul>
@@ -2316,6 +2319,81 @@ You can disable it by setting:</p>
 </div>
 </div>
 </div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_runtime_state">Runtime State</h3>
+<div class="paragraph">
+<p>The Kafka Streams panel always renders the topology from the configured <code>ConfiguredStreamBuilder</code>.
+When Micronaut Management and the Micronaut Kafka Streams health indicator expose details to the current Control Panel request path, the detail page also shows runtime state for the matching Kafka Streams application.
+The runtime section includes the health status, stream thread names and states, client IDs, producer client IDs, and active or standby task information when those values are present in the Health endpoint response.</p>
+</div>
+<div class="paragraph">
+<p>Runtime state is optional.
+If Health details are hidden, disabled, or unavailable, the Kafka Streams panel still renders the topology diagram and shows an unavailable runtime-state message.
+The Kafka Streams panel only reads the visible <code>HealthEndpoint</code> result; it does not query Kafka brokers directly or bypass Health endpoint detail visibility.</p>
+</div>
+<div class="paragraph">
+<p>For local development with an authenticated Control Panel, authenticated Health details can be shown to authenticated users:</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">endpoints.health.details-visible=AUTHENTICATED</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">endpoints:
+  health:
+    details-visible: AUTHENTICATED</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[endpoints]
+  [endpoints.health]
+    details-visible="AUTHENTICATED"</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-groovy-config hljs" data-lang="groovy-config">endpoints {
+  health {
+    detailsVisible = "AUTHENTICATED"
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-hocon hljs" data-lang="hocon">{
+  endpoints {
+    health {
+      details-visible = "AUTHENTICATED"
+    }
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json-config hljs" data-lang="json-config">{
+  "endpoints": {
+    "health": {
+      "details-visible": "AUTHENTICATED"
+    }
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>If the Control Panel itself is intentionally anonymous in a trusted local environment, use <code>ANONYMOUS</code> instead.
+Only expose anonymous Health details in development or another trusted environment-specific configuration.
+The runtime-state section is intended for quick development diagnostics and is not a replacement for Micrometer metrics, consumer lag monitoring, or a full Kafka monitoring product.</p>
 </div>
 </div>
 
