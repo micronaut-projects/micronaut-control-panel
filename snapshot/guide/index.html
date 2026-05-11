@@ -838,8 +838,7 @@ micronaut.control-panel.security.access=authorized
 micronaut.control-panel.security.role=ROLE_CONTROL_PANEL
 endpoints.env.enabled=true
 endpoints.health.details-visible=AUTHENTICATED
-endpoints.loggers.enabled=true
-endpoints.loggers.write-sensitive=false</code></pre>
+endpoints.loggers.enabled=true</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
@@ -861,8 +860,7 @@ endpoints:
   health:
     details-visible: AUTHENTICATED
   loggers:
-    enabled: true
-    write-sensitive: false</code></pre>
+    enabled: true</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
@@ -883,8 +881,7 @@ endpoints:
   [endpoints.health]
     details-visible="AUTHENTICATED"
   [endpoints.loggers]
-    enabled=true
-    write-sensitive=false</code></pre>
+    enabled=true</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
@@ -913,7 +910,6 @@ endpoints {
   }
   loggers {
     enabled = true
-    writeSensitive = false
   }
 }</code></pre>
 </div>
@@ -945,7 +941,6 @@ endpoints {
     }
     loggers {
       enabled = true
-      write-sensitive = false
     }
   }
 }</code></pre>
@@ -977,8 +972,7 @@ endpoints {
       "details-visible": "AUTHENTICATED"
     },
     "loggers": {
-      "enabled": true,
-      "write-sensitive": false
+      "enabled": true
     }
   }
 }</code></pre>
@@ -1466,9 +1460,10 @@ the reasons why the bean was not loaded.</p>
 <h3 id="_logging_configuration">Logging Configuration</h3>
 <div class="paragraph">
 <p>This panel allows you to view and re-configure the logging levels without restarting the application. It relies on the
-<a href="https://docs.micronaut.io/latest/guide/#loggersEndpoint">Loggers Endpoint</a> to display and update the logging levels. This
-endpoint is disabled by default, so if you want to manage the logging configuration in the control panel, you need to
-enable the endpoint. Also, by default, the endpoint is read-only, so you need to configure it to be writable:</p>
+<a href="https://docs.micronaut.io/latest/guide/#loggersEndpoint">Loggers Endpoint</a> to display the logging levels. The control
+panel updates logger levels through a control-panel route, so the raw management endpoint can keep its default write
+sensitivity when you only need writes from the control panel. The endpoint is disabled by default, so enable it in the
+environments where the control panel should manage logging:</p>
 </div>
 <div class="admonitionblock important">
 <table>
@@ -1487,24 +1482,21 @@ Make sure this is done in an environment-specific configuration file, for exampl
 <div class="content">
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">endpoints.loggers.enabled=true
-endpoints.loggers.write-sensitive=false</code></pre>
+<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">endpoints.loggers.enabled=true</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">endpoints:
   loggers:
-    enabled: true
-    write-sensitive: false</code></pre>
+    enabled: true</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[endpoints]
   [endpoints.loggers]
-    enabled=true
-    write-sensitive=false</code></pre>
+    enabled=true</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
@@ -1512,7 +1504,6 @@ endpoints.loggers.write-sensitive=false</code></pre>
 <pre class="highlightjs highlight"><code class="language-groovy-config hljs" data-lang="groovy-config">endpoints {
   loggers {
     enabled = true
-    writeSensitive = false
   }
 }</code></pre>
 </div>
@@ -1523,7 +1514,6 @@ endpoints.loggers.write-sensitive=false</code></pre>
   endpoints {
     loggers {
       enabled = true
-      write-sensitive = false
     }
   }
 }</code></pre>
@@ -1534,14 +1524,20 @@ endpoints.loggers.write-sensitive=false</code></pre>
 <pre class="highlightjs highlight"><code class="language-json-config hljs" data-lang="json-config">{
   "endpoints": {
     "loggers": {
-      "enabled": true,
-      "write-sensitive": false
+      "enabled": true
     }
   }
 }</code></pre>
 </div>
 </div>
 </div>
+</div>
+<div class="paragraph">
+<p>When Micronaut Security is active and <code>micronaut.control-panel.security.access=AUTHORIZED</code>, only users with the
+configured control-panel role can re-configure loggers through the control panel. Direct HTTP calls to
+<code>/loggers/{logger}</code> still follow Micronaut Management endpoint sensitivity rules. Set
+<code>endpoints.loggers.write-sensitive=false</code> only when you intentionally want to expose direct writable management endpoint
+access outside the control panel.</p>
 </div>
 </div>
 
