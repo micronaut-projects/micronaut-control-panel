@@ -20,6 +20,10 @@ import io.micronaut.core.annotation.Internal;
 
 /**
  * Instrumentation classpath diagnostic row.
+ *
+ * @param surface instrumentation surface
+ * @param status instrumentation status
+ * @param detail instrumentation detail
  */
 @ReflectiveAccess
 @Internal

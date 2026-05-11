@@ -20,6 +20,9 @@ import io.micronaut.core.annotation.Internal;
 
 /**
  * Local deterministic tracing diagnostic.
+ *
+ * @param severity diagnostic severity
+ * @param message diagnostic message
  */
 @ReflectiveAccess
 @Internal

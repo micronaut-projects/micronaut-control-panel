@@ -57,6 +57,7 @@ class TracingDiagnosticsServiceTest {
             assertFalse(renderedValues.contains("raw-client-secret"));
             assertFalse(renderedValues.contains("raw-access-token"));
             assertFalse(renderedValues.contains("user:password"));
+            assertFalse(renderedValues.contains("tenant-a"));
             assertTrue(renderedValues.contains(TracingRedactor.REDACTED));
         }
     }

@@ -30,12 +30,29 @@ import jakarta.inject.Singleton;
 @Requires(property = TracingControlPanel.ENABLED_PROPERTY, notEquals = StringUtils.FALSE)
 public class TracingControlPanel extends AbstractControlPanel<TracingBody> {
 
+    /**
+     * The tracing control panel name.
+     */
     public static final String NAME = "tracing";
+
+    /**
+     * Property used to enable or disable the tracing panel.
+     */
     public static final String ENABLED_PROPERTY = ControlPanelConfiguration.PREFIX + "." + NAME + ".enabled";
+
+    /**
+     * Observability category used by the tracing panel.
+     */
     public static final ControlPanel.Category CATEGORY = new ControlPanel.Category("observability", "Observability", "fa-chart-line", 20);
 
     private final TracingDiagnosticsService diagnosticsService;
 
+    /**
+     * Creates the tracing control panel.
+     *
+     * @param diagnosticsService tracing diagnostics service
+     * @param configuration control panel configuration
+     */
     public TracingControlPanel(TracingDiagnosticsService diagnosticsService,
                                @Named(NAME) ControlPanelConfiguration configuration) {
         super(NAME, configuration);

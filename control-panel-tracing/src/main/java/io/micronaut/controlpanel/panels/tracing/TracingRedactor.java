@@ -61,6 +61,9 @@ final class TracingRedactor {
                 || normalized.contains("headers")
                 || normalized.contains("auth")
                 || normalized.contains("bearer")
+                || normalized.contains("tenant")
+                || normalized.contains("account")
+                || normalized.contains("user")
                 || normalized.endsWith(".key")
                 || normalized.endsWith("-key")
                 || normalized.equals("key");

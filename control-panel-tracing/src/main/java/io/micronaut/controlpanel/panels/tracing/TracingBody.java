@@ -22,6 +22,18 @@ import java.util.List;
 
 /**
  * Body rendered by the tracing diagnostics panel.
+ *
+ * @param providers detected tracing providers
+ * @param exporters exporter rows grouped by signal
+ * @param resourceAttributes OpenTelemetry resource attributes
+ * @param instrumentations instrumentation surface rows
+ * @param configuration recognized tracing configuration values
+ * @param diagnostics local deterministic diagnostics
+ * @param serviceName effective service name
+ * @param sampler configured sampler
+ * @param propagators configured propagators
+ * @param providerState provider summary for compact rendering
+ * @param presentInstrumentationCount number of present instrumentation rows
  */
 @ReflectiveAccess
 @Internal
@@ -36,17 +48,32 @@ public record TracingBody(
         String sampler,
         String propagators,
         String providerState,
-        int presentInstrumentationCount
+    int presentInstrumentationCount
 ) {
 
+    /**
+     * Whether tracing providers were detected.
+     *
+     * @return true when at least one tracing provider was detected
+     */
     public boolean hasProviders() {
         return !providers.isEmpty();
     }
 
+    /**
+     * Whether resource attributes are available.
+     *
+     * @return true when at least one resource attribute is available
+     */
     public boolean hasResourceAttributes() {
         return !resourceAttributes.isEmpty();
     }
 
+    /**
+     * Whether local diagnostics are available.
+     *
+     * @return true when at least one local diagnostic is available
+     */
     public boolean hasDiagnostics() {
         return !diagnostics.isEmpty();
     }

@@ -170,6 +170,14 @@ public final class TracingDiagnosticsService {
     private final TracingRedactor redactor;
     private final ClassPresence classPresence;
 
+    /**
+     * Creates a tracing diagnostics service.
+     *
+     * @param environment Micronaut environment
+     * @param applicationConfiguration application configuration
+     * @param beanContext bean context
+     * @param redactor tracing redactor
+     */
     public TracingDiagnosticsService(Environment environment,
                                      ApplicationConfiguration applicationConfiguration,
                                      BeanContext beanContext,

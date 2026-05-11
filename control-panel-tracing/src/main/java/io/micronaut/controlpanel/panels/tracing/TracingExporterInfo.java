@@ -20,6 +20,11 @@ import io.micronaut.core.annotation.Internal;
 
 /**
  * Exporter diagnostic row.
+ *
+ * @param signal OpenTelemetry signal name
+ * @param exporter configured exporter value
+ * @param endpoint configured endpoint value
+ * @param status exporter status
  */
 @ReflectiveAccess
 @Internal

@@ -13,20 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/**
+ * Tracing Control Panel classes.
+ */
+@NullMarked
 package io.micronaut.controlpanel.panels.tracing;
 
-import io.micronaut.core.annotation.ReflectiveAccess;
-import io.micronaut.core.annotation.Internal;
-
-/**
- * Redacted configuration or resource attribute row.
- *
- * @param key row key
- * @param value row value
- * @param source row source
- * @param redacted whether the value was redacted
- */
-@ReflectiveAccess
-@Internal
-public record TracingKeyValue(String key, String value, String source, boolean redacted) {
-}
+import org.jspecify.annotations.NullMarked;

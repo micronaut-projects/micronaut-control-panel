@@ -20,6 +20,10 @@ import io.micronaut.core.annotation.Internal;
 
 /**
  * Tracing provider diagnostic row.
+ *
+ * @param name provider name
+ * @param status provider status
+ * @param detail provider detail
  */
 @ReflectiveAccess
 @Internal
