@@ -72,6 +72,7 @@ public class ViewsControlPanel extends AbstractControlPanel<ViewsControlPanel.Bo
      */
     public static final ControlPanel.Category CATEGORY = new ControlPanel.Category("web", "Web", "fas fa-globe");
     private static final String VIEW_ANNOTATION = "io.micronaut.views.View";
+    private static final String UNAVAILABLE = "unavailable";
     // Reuses badge/body diagnostics during one dashboard render without hiding live changes for long.
     private static final long BODY_CACHE_NANOS = TimeUnit.MILLISECONDS.toNanos(250);
 
@@ -171,17 +172,17 @@ public class ViewsControlPanel extends AbstractControlPanel<ViewsControlPanel.Bo
         String folder = viewsConfiguration.map(ViewsConfiguration::getFolder)
             .or(() -> environment.getProperty("micronaut.views.folder", String.class))
             .filter(StringUtils::isNotEmpty)
-            .orElse("views");
+            .orElse(NAME);
         return new ConfigurationBody(
             viewsAvailable,
             viewsEnabled,
             folder,
-            viewsFilterConfiguration.map(ViewsFilterConfiguration::isEnabled).map(ViewsControlPanel::enabledLabel).orElse("unavailable"),
+            viewsFilterConfiguration.map(ViewsFilterConfiguration::isEnabled).map(ViewsControlPanel::enabledLabel).orElse(UNAVAILABLE),
             cspConfiguration.isPresent(),
-            cspConfiguration.map(CspConfiguration::isEnabled).map(ViewsControlPanel::enabledLabel).orElse("unavailable"),
-            cspConfiguration.map(CspConfiguration::isReportOnly).map(ViewsControlPanel::enabledLabel).orElse("unavailable"),
-            cspConfiguration.map(CspConfiguration::isNonceEnabled).map(ViewsControlPanel::enabledLabel).orElse("unavailable"),
-            cspConfiguration.map(CspConfiguration::getFilterPath).filter(StringUtils::isNotEmpty).orElse("unavailable")
+            cspConfiguration.map(CspConfiguration::isEnabled).map(ViewsControlPanel::enabledLabel).orElse(UNAVAILABLE),
+            cspConfiguration.map(CspConfiguration::isReportOnly).map(ViewsControlPanel::enabledLabel).orElse(UNAVAILABLE),
+            cspConfiguration.map(CspConfiguration::isNonceEnabled).map(ViewsControlPanel::enabledLabel).orElse(UNAVAILABLE),
+            cspConfiguration.map(CspConfiguration::getFilterPath).filter(StringUtils::isNotEmpty).orElse(UNAVAILABLE)
         );
     }
 
@@ -253,7 +254,7 @@ public class ViewsControlPanel extends AbstractControlPanel<ViewsControlPanel.Bo
     private static TemplateProbe probe(ViewsRenderer<?, ?> renderer, String view) {
         try {
             return new TemplateProbe(renderer.exists(view), false);
-        } catch (RuntimeException e) {
+        } catch (RuntimeException _) {
             return new TemplateProbe(false, true);
         }
     }
@@ -270,12 +271,12 @@ public class ViewsControlPanel extends AbstractControlPanel<ViewsControlPanel.Bo
     private ProcessorBody resolveProcessors() {
         return new ProcessorBody(
             viewModelProcessors.size(),
-            securityViewModelProcessorConfiguration.map(SecurityViewModelProcessorConfiguration::isEnabled).map(ViewsControlPanel::enabledLabel).orElse("unavailable"),
-            securityViewModelProcessorConfiguration.map(SecurityViewModelProcessorConfiguration::getSecurityKey).orElse("unavailable"),
-            securityViewModelProcessorConfiguration.map(SecurityViewModelProcessorConfiguration::getPrincipalNameKey).orElse("unavailable"),
-            securityViewModelProcessorConfiguration.map(SecurityViewModelProcessorConfiguration::getAttributesKey).orElse("unavailable"),
-            csrfViewModelProcessorConfiguration.map(CsrfViewModelProcessorConfiguration::isEnabled).map(ViewsControlPanel::enabledLabel).orElse("unavailable"),
-            csrfViewModelProcessorConfiguration.map(CsrfViewModelProcessorConfiguration::getCsrfTokenKey).orElse("unavailable")
+            securityViewModelProcessorConfiguration.map(SecurityViewModelProcessorConfiguration::isEnabled).map(ViewsControlPanel::enabledLabel).orElse(UNAVAILABLE),
+            securityViewModelProcessorConfiguration.map(SecurityViewModelProcessorConfiguration::getSecurityKey).orElse(UNAVAILABLE),
+            securityViewModelProcessorConfiguration.map(SecurityViewModelProcessorConfiguration::getPrincipalNameKey).orElse(UNAVAILABLE),
+            securityViewModelProcessorConfiguration.map(SecurityViewModelProcessorConfiguration::getAttributesKey).orElse(UNAVAILABLE),
+            csrfViewModelProcessorConfiguration.map(CsrfViewModelProcessorConfiguration::isEnabled).map(ViewsControlPanel::enabledLabel).orElse(UNAVAILABLE),
+            csrfViewModelProcessorConfiguration.map(CsrfViewModelProcessorConfiguration::getCsrfTokenKey).orElse(UNAVAILABLE)
         );
     }
 

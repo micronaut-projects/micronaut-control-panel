@@ -147,21 +147,23 @@ class ViewsControlPanelTest {
         @Get("/present")
         @View("present")
         String present() {
-            invocations.incrementAndGet();
-            throw new AssertionError("View diagnostics must not invoke controller methods");
+            return failInvocation("present");
         }
 
         @Get("/missing")
         @View("missing")
         String missing() {
-            invocations.incrementAndGet();
-            throw new AssertionError("View diagnostics must not invoke controller methods");
+            return failInvocation("missing");
         }
 
         @Get("/dynamic")
         ModelAndView<String> dynamic() {
+            return failInvocation("dynamic");
+        }
+
+        private static <T> T failInvocation(String route) {
             invocations.incrementAndGet();
-            throw new AssertionError("View diagnostics must not invoke controller methods");
+            throw new AssertionError("View diagnostics must not invoke controller method " + route);
         }
     }
 
