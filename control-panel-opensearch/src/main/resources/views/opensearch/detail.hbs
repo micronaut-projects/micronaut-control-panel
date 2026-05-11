@@ -1,0 +1,209 @@
+{{#with body as |body|}}
+    <div class="cp-dashboard-stack">
+        <section class="card card-light">
+            <div class="card-header">
+                <div class="cp-card-heading">
+                    <span class="cp-card-icon">
+                        <i class="fa fa-magnifying-glass-chart"></i>
+                    </span>
+                    <h3 class="card-title">Connection</h3>
+                </div>
+                <div class="card-tools">
+                    <span class="badge {{body.statusBadgeClass}}">{{body.statusLabel}}</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="cp-data-table-container cp-vertical-table">
+                    <table class="table cp-data-table-table">
+                        <tbody>
+                        <tr>
+                            <th scope="row">Client</th>
+                            <td><code class="cp-table-code">{{body.beanName}}</code></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Transport</th>
+                            <td><code class="cp-table-code">{{body.connection.transport}}</code></td>
+                        </tr>
+                        {{#if body.connection.hasHosts}}
+                            <tr>
+                                <th scope="row">Hosts</th>
+                                <td>
+                                    {{#each body.connection.hosts as |host|}}
+                                        <code class="cp-table-code">{{host}}</code>
+                                    {{/each}}
+                                </td>
+                            </tr>
+                        {{/if}}
+                        {{#if body.connection.hasAmazon}}
+                            <tr>
+                                <th scope="row">Amazon endpoint</th>
+                                <td><code class="cp-table-code">{{body.connection.amazonEndpoint}}</code></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Signing region</th>
+                                <td><code class="cp-table-code">{{body.connection.signingRegion}}</code></td>
+                            </tr>
+                        {{/if}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        {{#if body.available}}
+            <section class="card card-light">
+                <div class="card-header">
+                    <h3 class="card-title">Cluster health</h3>
+                </div>
+                <div class="card-body">
+                    <div class="cp-data-table-container cp-vertical-table">
+                        <table class="table cp-data-table-table">
+                            <tbody>
+                            <tr>
+                                <th scope="row">Cluster</th>
+                                <td><code class="cp-table-code">{{body.clusterHealth.clusterName}}</code></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Status</th>
+                                <td><span class="badge {{body.statusBadgeClass}}">{{body.statusLabel}}</span></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Timed out</th>
+                                <td>{{body.clusterHealth.timedOut}}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Nodes</th>
+                                <td>{{body.clusterHealth.numberOfNodes}} total / {{body.clusterHealth.numberOfDataNodes}} data</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Pending tasks</th>
+                                <td>{{body.clusterHealth.numberOfPendingTasks}}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">In-flight fetches</th>
+                                <td>{{body.clusterHealth.numberOfInFlightFetch}}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Active shards</th>
+                                <td>{{body.clusterHealth.activeShards}} total / {{body.clusterHealth.activePrimaryShards}} primary ({{body.clusterHealth.activeShardsPercent}}%)</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Shard movement</th>
+                                <td>{{body.clusterHealth.relocatingShards}} relocating / {{body.clusterHealth.initializingShards}} initializing / {{body.clusterHealth.unassignedShards}} unassigned / {{body.clusterHealth.delayedUnassignedShards}} delayed</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card card-light">
+                <div class="card-header">
+                    <div class="cp-card-heading">
+                        <h3 class="card-title">Visible indices</h3>
+                        <span class="badge badge-secondary">{{body.indices.size}}</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {{#if body.hasIndices}}
+                        {{#if body.indicesTruncated}}
+                            <p class="card-text">The index list is capped by the configured OpenSearch panel limit.</p>
+                        {{/if}}
+                        <div class="cp-data-table" data-filter-table data-filter-table-label="index" data-filter-table-label-plural="indices">
+                            <div class="cp-data-table-toolbar">
+                                <div class="cp-data-table-summary" data-filter-table-summary>{{body.indices.size}} indices</div>
+                                <div class="cp-data-table-search">
+                                    <input type="text" class="form-control" data-filter-table-search placeholder="Search indices" aria-label="Search indices">
+                                </div>
+                            </div>
+                            <div class="cp-data-table-container">
+                                <table class="table cp-data-table-table cp-data-table-fixed">
+                                    <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Health</th>
+                                        <th>Status</th>
+                                        <th>Primaries</th>
+                                        <th>Replicas</th>
+                                        <th>Docs</th>
+                                        <th>Store</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {{#each body.indices as |index|}}
+                                        <tr data-filter-table-row>
+                                            <td><code class="cp-table-code">{{index.name}}</code></td>
+                                            <td><span class="badge badge-secondary">{{index.health}}</span></td>
+                                            <td>{{index.status}}</td>
+                                            <td>{{index.primaryShards}}</td>
+                                            <td>{{index.replicaShards}}</td>
+                                            <td>{{index.documentCount}}</td>
+                                            <td>{{index.storeSize}}</td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="7">
+                                                <details>
+                                                    <summary>Aliases and mapping fields for <code class="cp-table-code">{{index.name}}</code></summary>
+                                                    {{#if index.hasAliases}}
+                                                        <p>
+                                                            <strong>Aliases</strong>:
+                                                            {{#each index.aliases as |alias|}}
+                                                                <code class="cp-table-code">{{alias}}</code>
+                                                            {{/each}}
+                                                        </p>
+                                                    {{else}}
+                                                        <p>No aliases visible.</p>
+                                                    {{/if}}
+                                                    {{#if index.hasMappingFields}}
+                                                        <div class="cp-data-table-container">
+                                                            <table class="table cp-data-table-table">
+                                                                <thead>
+                                                                <tr>
+                                                                    <th>Field</th>
+                                                                    <th>Type</th>
+                                                                </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                {{#each index.mappingFields as |field|}}
+                                                                    <tr>
+                                                                        <td><code class="cp-table-code">{{field.name}}</code></td>
+                                                                        <td>{{field.type}}</td>
+                                                                    </tr>
+                                                                {{/each}}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                        {{#if index.mappingTruncated}}
+                                                            <p>The mapping field list is capped by the configured OpenSearch panel limit.</p>
+                                                        {{/if}}
+                                                    {{else}}
+                                                        <p>No mapping fields visible.</p>
+                                                    {{/if}}
+                                                </details>
+                                            </td>
+                                        </tr>
+                                    {{/each}}
+                                    <tr data-filter-table-empty hidden>
+                                        <td class="cp-data-table-empty-cell" colspan="7">No indices found.</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    {{else}}
+                        <div class="cp-data-table-empty">No indices are visible to the current OpenSearch credentials.</div>
+                    {{/if}}
+                </div>
+            </section>
+        {{else}}
+            <section class="card card-light">
+                <div class="card-header">
+                    <h3 class="card-title">Diagnostics unavailable</h3>
+                </div>
+                <div class="card-body">
+                    <div class="cp-data-table-empty">{{body.message}}</div>
+                </div>
+            </section>
+        {{/if}}
+    </div>
+{{/with}}
