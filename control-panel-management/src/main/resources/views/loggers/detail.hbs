@@ -95,7 +95,9 @@
                 <form id="configureLogger">
                     <div class="form-group">
                         <label for="logger" class="col-form-label">Logger name:</label>
-                        <input type="text" class="form-control" id="logger" name="logger">
+                        <input type="text" class="form-control" id="logger" name="logger" aria-describedby="loggerHelp loggerError">
+                        <small id="loggerHelp" class="form-text text-muted">Logger writes use the protected Control Panel route. The raw Management loggers endpoint can remain write-sensitive.</small>
+                        <div class="invalid-feedback" id="loggerError">Logger name must not be blank.</div>
                         <label for="configuredLevel" class="col-form-label">Level:</label>
                         <select name="configuredLevel" class="form-control" id="configuredLevel">
                             {{#each levels as |level|}}
@@ -115,35 +117,57 @@
 </div>
 
 <script>
-    $('#actionsModal').on('show.bs.modal', function (event) {
-        var button = $(event.relatedTarget)
-        var logger = button.data('logger')
-        var currentlevel = button.data('currentlevel')
+    var loggerModalTrigger = null;
+    var configuredLoggerButton = null;
 
-        var modal = $(this)
+    $('#actionsModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        loggerModalTrigger = button[0];
+        configuredLoggerButton = null;
+        var logger = button.data('logger');
+        var currentlevel = button.data('currentlevel');
+
+        var modal = $(this);
+        $('#result').empty();
+        clearLoggerValidation();
         if (logger) {
-            modal.find('.modal-title').html('Reconfigure logger <code>' + logger + '</code>')
-            modal.find('.modal-body input').val(logger)
-            modal.find('.modal-body select').val(currentlevel)
+            modal.find('.modal-title').empty().append(document.createTextNode('Reconfigure logger ')).append($('<code>').text(logger));
+            modal.find('.modal-body input').val(logger);
+            modal.find('.modal-body select').val(currentlevel);
         } else {
-            modal.find('.modal-title').html('Configure new logger')
-            modal.find('.modal-body input').val('')
-            modal.find('.modal-body select').val('')
+            modal.find('.modal-title').text('Configure new logger');
+            modal.find('.modal-body input').val('');
+            modal.find('.modal-body select').val('');
         }
-        $('#submit').show()
+        $('#submit').show().prop('disabled', false).removeAttr('aria-describedby').removeAttr('title');
     })
 
     $('#actionsModal').on('hidden.bs.modal', function (e) {
-        $('#result').html("");
-        location.reload();
+        $('#result').empty();
+        clearLoggerValidation();
+        if (configuredLoggerButton) {
+            configuredLoggerButton.focus();
+        } else if (loggerModalTrigger) {
+            loggerModalTrigger.focus();
+        }
     })
 
     $('#submit').click(function(e){
         submitForm();
     })
 
+    $('#logger').on('input', function () {
+        clearLoggerValidation();
+    })
+
     function submitForm(){
-        var logger = $('#logger').val();
+        var loggerInput = $('#logger');
+        var logger = loggerInput.val().trim();
+        if (!logger) {
+            loggerInput.addClass('is-invalid').attr('aria-invalid', 'true').focus();
+            setResult('danger', 'Enter a logger name before submitting.');
+            return;
+        }
         var payload = {
             configuredLevel: $("#configuredLevel").val()
         }
@@ -153,11 +177,61 @@
             data: JSON.stringify(payload),
             contentType: "application/json; charset=utf-8",
         }).done(function (data) {
-            $('#result').html('<div class="alert alert-success" role="alert">Logger configured</div>');
-            $('#submit').hide()
+            updateConfiguredLogger(logger, payload.configuredLevel);
+            setResult('success', 'Logger configured through the Control Panel route.');
+            $('#submit').hide();
         }).fail(function (data) {
-            $('#result').html('<div class="alert alert-danger" role="alert">Error: ' + data.responseJSON.message + '</div>');
+            var message = data.responseJSON && data.responseJSON.message ? data.responseJSON.message : 'Logger could not be configured.';
+            if (data.status === 401 || data.status === 403) {
+                message = 'You do not have permission to reconfigure loggers through the Control Panel.';
+                $('#submit')
+                    .prop('disabled', true)
+                    .attr('aria-describedby', 'result')
+                    .attr('title', message);
+            }
+            setResult('danger', message);
         });
+    }
+
+    function clearLoggerValidation() {
+        $('#logger').removeClass('is-invalid').removeAttr('aria-invalid');
+    }
+
+    function setResult(type, message) {
+        $('#result').empty().append($('<div>', {
+            class: 'alert alert-' + type,
+            role: 'alert',
+            text: message
+        }));
+    }
+
+    function updateConfiguredLogger(logger, configuredLevel) {
+        var button = findLoggerButton(logger);
+        if (button.length === 0) {
+            var row = $('<tr>', {'data-filter-table-row': ''});
+            row.append($('<td>').append($('<code>', {class: 'cp-table-code', text: logger})));
+            row.append($('<td>', {class: 'cp-logger-level'}).append($('<span>', {class: 'badge', text: configuredLevel})));
+            row.append($('<td>', {class: 'cp-logger-actions'}).append($('<button>', {
+                type: 'button',
+                class: 'btn btn-secondary btn-sm',
+                'data-toggle': 'modal',
+                'data-target': '#actionsModal',
+                'data-logger': logger,
+                'data-currentlevel': configuredLevel
+            }).append($('<i>', {class: 'fa fa-edit'})).append(document.createTextNode(' Reconfigure'))));
+            $('tr[data-filter-table-empty]').before(row);
+            button = row.find('button');
+        } else {
+            button.data('currentlevel', configuredLevel).attr('data-currentlevel', configuredLevel);
+            button.closest('tr').find('.cp-logger-level .badge').text(configuredLevel);
+        }
+        configuredLoggerButton = button[0];
+    }
+
+    function findLoggerButton(logger) {
+        return $('[data-logger]').filter(function () {
+            return $(this).data('logger') === logger;
+        }).first();
     }
 </script>
 

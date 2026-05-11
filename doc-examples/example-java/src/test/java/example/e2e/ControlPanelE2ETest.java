@@ -3,6 +3,7 @@ package example.e2e;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Page.GetByRoleOptions;
+import com.microsoft.playwright.Route;
 import com.microsoft.playwright.junit.UsePlaywright;
 import com.microsoft.playwright.options.AriaRole;
 import io.micronaut.context.annotation.Property;
@@ -131,13 +132,20 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         assertThat(page.locator("#actionsModal")).isVisible();
         assertThat(page.locator("#modalLabel")).containsText("Reconfigure logger ROOT");
 
+        var loggerInput = page.locator("#actionsModal").getByLabel("Logger name:");
+        loggerInput.fill(" ");
+        id(page, "submit").click();
+        assertThat(page.getByRole(AriaRole.ALERT)).containsText("Enter a logger name");
+        assertThat(loggerInput).hasAttribute("aria-invalid", "true");
+
+        loggerInput.fill("ROOT");
         page.locator("#actionsModal").getByLabel("Level:").selectOption("DEBUG");
         id(page, "submit").click();
-        assertThat(page.getByRole(AriaRole.ALERT)).containsText("Logger configured");
+        assertThat(page.getByRole(AriaRole.ALERT)).containsText("Logger configured through the Control Panel route.");
 
         page.locator("#actionsModal .modal-footer [data-dismiss='modal']").click();
-        page.navigate(baseUrl() + "/loggers");
         assertThat(body(page)).containsText("DEBUG");
+        assertTrue((Boolean) page.evaluate("document.activeElement && document.activeElement.dataset.logger === 'ROOT'"));
 
         page.locator("tbody tr")
             .filter(new Locator.FilterOptions().setHasText("ROOT"))
@@ -145,6 +153,21 @@ class ControlPanelE2ETest extends AbstractE2ETest {
             .click();
         page.locator("#actionsModal").getByLabel("Level:").selectOption("INFO");
         id(page, "submit").click();
+        assertThat(page.getByRole(AriaRole.ALERT)).containsText("Logger configured through the Control Panel route.");
+        page.locator("#actionsModal .modal-footer [data-dismiss='modal']").click();
+
+        page.route("**/control-panel/loggers-control-panel-controller/**", route -> route.fulfill(new Route.FulfillOptions()
+            .setStatus(403)
+            .setContentType("application/json")
+            .setBody("{\"message\":\"Forbidden\"}")));
+        page.locator("tbody tr")
+            .filter(new Locator.FilterOptions().setHasText("ROOT"))
+            .getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName("Reconfigure"))
+            .click();
+        page.locator("#actionsModal").getByLabel("Level:").selectOption("DEBUG");
+        id(page, "submit").click();
+        assertThat(page.getByRole(AriaRole.ALERT)).containsText("You do not have permission to reconfigure loggers through the Control Panel.");
+        assertThat(id(page, "submit")).isDisabled();
     }
 
     @Test
