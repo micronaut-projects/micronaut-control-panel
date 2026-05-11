@@ -1,3 +1,11 @@
 <p class="card-text">
     <strong>{{badge}}</strong> sub-topologies in this Kafka Streams application.
 </p>
+<p class="card-text">
+    <strong>Runtime</strong>:
+    {{#if body.runtimeState.available}}
+        <span class="badge badge-primary">{{body.runtimeState.status}}</span>
+    {{else}}
+        <span class="badge badge-secondary">Unavailable</span>
+    {{/if}}
+</p>

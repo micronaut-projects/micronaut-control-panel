@@ -6,6 +6,7 @@ Features include:
 
 * Visualize the stream processing topology using Mermaid diagrams.
 * View the number of sub-topologies as a badge.
+* View Kafka Streams runtime state when Micronaut Management exposes Kafka Streams health details.
 * Automatically generated from the configured `ConfiguredStreamBuilder` beans.
 
 To get started, add the following module as a development-time dependency:
@@ -30,3 +31,25 @@ micronaut:
       kafka-streams:
         enabled: false
 ----
+
+=== Runtime State
+
+The Kafka Streams panel always renders the topology from the configured `ConfiguredStreamBuilder`.
+When Micronaut Management and the Micronaut Kafka Streams health indicator expose details to the current Control Panel request path, the detail page also shows runtime state for the matching Kafka Streams application.
+The runtime section includes the health status, stream thread names and states, client IDs, producer client IDs, and active or standby task information when those values are present in the Health endpoint response.
+
+Runtime state is optional.
+If Health details are hidden, disabled, or unavailable, the Kafka Streams panel still renders the topology diagram and shows an unavailable runtime-state message.
+The Kafka panel only reads the visible `HealthEndpoint` result; it does not query Kafka brokers directly or bypass Health endpoint detail visibility.
+
+For local development, enable Health details in the environment where the Control Panel is available:
+
+[configuration]
+----
+endpoints:
+  health:
+    details-visible: ANONYMOUS
+----
+
+Only expose anonymous Health details in development or another trusted environment-specific configuration.
+The runtime-state section is intended for quick development diagnostics and is not a replacement for Micrometer metrics, consumer lag monitoring, or a full Kafka monitoring product.

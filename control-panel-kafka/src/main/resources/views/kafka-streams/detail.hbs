@@ -1,3 +1,68 @@
+<h5>Runtime state</h5>
+{{#if body.runtimeState.available}}
+    <p>
+        <strong>Status</strong>: <span class="badge badge-primary">{{body.runtimeState.status}}</span>
+        {{#if body.runtimeState.message}}
+            <span>{{body.runtimeState.message}}</span>
+        {{/if}}
+    </p>
+    {{#if body.runtimeState.hasThreads}}
+        <ul>
+        {{#each body.runtimeState.threads as |thread|}}
+            <li title="{{thread.name}}">
+                <strong>Thread</strong>:
+                <code>{{abbreviate thread.name 50}}</code> <span class="badge badge-primary">{{thread.state}}</span>
+            </li>
+            <ul>
+                {{#if thread.adminClientId}}
+                    <li title="{{thread.adminClientId}}"><strong>Admin Client ID</strong>: <code>{{abbreviate thread.adminClientId 40}}</code></li>
+                {{/if}}
+                {{#if thread.consumerClientId}}
+                    <li title="{{thread.consumerClientId}}"><strong>Consumer Client ID</strong>: <code>{{abbreviate thread.consumerClientId 40}}</code></li>
+                {{/if}}
+                {{#if thread.restoreConsumerClientId}}
+                    <li title="{{thread.restoreConsumerClientId}}"><strong>Restore Consumer Client ID</strong>: <code>{{abbreviate thread.restoreConsumerClientId 40}}</code></li>
+                {{/if}}
+                {{#if thread.hasProducerClientIds}}
+                    <li><strong>Producer Client IDs</strong>:</li>
+                    <ul>
+                        {{#each thread.producerClientIds as |producerClientId|}}
+                            <li title="{{producerClientId}}"><code>{{abbreviate producerClientId 30}}</code></li>
+                        {{/each}}
+                    </ul>
+                {{/if}}
+                <li><strong>Active tasks</strong>:</li>
+                {{#if thread.activeTasks.available}}
+                    <ul>
+                        {{#if thread.activeTasks.taskId}}
+                            <li><strong>Task ID</strong>: <code>{{thread.activeTasks.taskId}}</code></li>
+                        {{/if}}
+                        <li><strong>Partition/topic</strong>: {{thread.activeTasks.partitionCount}}</li>
+                    </ul>
+                {{else}}
+                    <p>No active task information reported.</p>
+                {{/if}}
+                <li><strong>Stand-by tasks</strong>:</li>
+                {{#if thread.standbyTasks.available}}
+                    <ul>
+                        {{#if thread.standbyTasks.taskId}}
+                            <li><strong>Task ID</strong>: <code>{{thread.standbyTasks.taskId}}</code></li>
+                        {{/if}}
+                        <li><strong>Partition/topic</strong>: {{thread.standbyTasks.partitionCount}}</li>
+                    </ul>
+                {{else}}
+                    <p>No standby task information reported.</p>
+                {{/if}}
+            </ul>
+        {{/each}}
+        </ul>
+    {{else}}
+        <p>No stream thread details are available for this Kafka Streams application.</p>
+    {{/if}}
+{{else}}
+    <p>{{body.runtimeState.message}}</p>
+{{/if}}
+
 <h5>Kafka Streams Topology</h5>
 <pre id="kafkaStreamsMermaidCode" style="display:none;">{{{ body.mermaid }}}</pre>
 <div id="kafkaStreamsDiagram" class="mermaid"></div>

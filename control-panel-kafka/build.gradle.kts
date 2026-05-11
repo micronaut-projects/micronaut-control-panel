@@ -18,6 +18,7 @@ dependencies {
 
     compileOnly(mnKafka.micronaut.kafka)
     compileOnly(mnKafka.micronaut.kafka.streams)
+    compileOnly(mn.micronaut.management)
 
     testImplementation(mnTest.micronaut.test.junit5)
     testImplementation(mnTest.mockito.core)
@@ -26,6 +27,7 @@ dependencies {
     testAnnotationProcessor(mn.micronaut.inject.java)
     testImplementation(mnKafka.micronaut.kafka)
     testImplementation(mnKafka.micronaut.kafka.streams)
+    testImplementation(mn.micronaut.management)
     testImplementation(mnSerde.micronaut.serde.jackson)
     testImplementation(mn.micronaut.http.server.netty)
     testImplementation(mn.micronaut.http.client)

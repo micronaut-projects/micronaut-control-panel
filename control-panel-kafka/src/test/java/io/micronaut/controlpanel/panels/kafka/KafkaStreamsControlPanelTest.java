@@ -12,9 +12,11 @@ package io.micronaut.controlpanel.panels.kafka;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.Topology;
 import org.apache.kafka.streams.TopologyDescription;
 import org.apache.kafka.streams.processor.RecordContext;
+import org.apache.kafka.streams.processor.TaskId;
 import org.apache.kafka.streams.processor.TopicNameExtractor;
 import org.apache.kafka.streams.processor.api.Processor;
 import org.apache.kafka.streams.processor.api.ProcessorContext;
@@ -23,6 +25,13 @@ import org.apache.kafka.streams.processor.api.Record;
 import org.apache.kafka.streams.state.KeyValueStore;
 import org.apache.kafka.streams.state.StoreBuilder;
 import org.apache.kafka.streams.state.Stores;
+import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
+import io.micronaut.health.HealthStatus;
+import io.micronaut.management.health.indicator.HealthResult;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 final class KafkaStreamsControlPanelTest {
 
@@ -173,6 +182,69 @@ final class KafkaStreamsControlPanelTest {
     }
 
     @Test
+    void testRuntimeStateMapsVisibleKafkaStreamsHealthDetails() {
+        ConfiguredStreamBuilder builder = configuredStreamBuilder("orders-streams", "orders-client");
+        HealthResult health = HealthResult.builder("composite", HealthStatus.UP)
+                .details(Map.of(
+                        "kafkaStreams", HealthResult.builder("kafkaStreams", HealthStatus.UP)
+                                .details(Map.of(
+                                        "orders-streams", HealthResult.builder("orders-streams", HealthStatus.UP)
+                                                .details(Map.of(
+                                                        "orders-thread-1", Map.of(
+                                                                "threadName", "orders-thread-1",
+                                                                "threadState", "RUNNING",
+                                                                "adminClientId", "orders-admin",
+                                                                "consumerClientId", "orders-consumer",
+                                                                "restoreConsumerClientId", "orders-restore",
+                                                                "producerClientIds", List.of("orders-producer-1", "orders-producer-2"),
+                                                                "activeTasks", Map.of(
+                                                                        "taskId", new TaskId(0, 1),
+                                                                        "partitions", List.of("orders-0", "orders-1")
+                                                                ),
+                                                                "standbyTasks", Map.of(
+                                                                        "taskId", new TaskId(1, 0),
+                                                                        "partitions", List.of("orders-standby-0")
+                                                                )
+                                                        )
+                                                ))
+                                                .build()
+                                ))
+                                .build()
+                ))
+                .build();
+
+        KafkaStreamsRuntimeState state = HealthKafkaStreamsRuntimeStateResolver.resolve("default", builder, health);
+
+        Assertions.assertTrue(state.available());
+        Assertions.assertEquals("UP", state.status());
+        Assertions.assertEquals(1, state.threads().size());
+        KafkaStreamsRuntimeState.ThreadState thread = state.threads().getFirst();
+        Assertions.assertEquals("orders-thread-1", thread.name());
+        Assertions.assertEquals("RUNNING", thread.state());
+        Assertions.assertEquals("orders-admin", thread.adminClientId());
+        Assertions.assertEquals("orders-consumer", thread.consumerClientId());
+        Assertions.assertEquals("orders-restore", thread.restoreConsumerClientId());
+        Assertions.assertEquals(List.of("orders-producer-1", "orders-producer-2"), thread.producerClientIds());
+        Assertions.assertEquals("0_1", thread.activeTasks().taskId());
+        Assertions.assertEquals(2, thread.activeTasks().partitionCount());
+        Assertions.assertEquals("1_0", thread.standbyTasks().taskId());
+        Assertions.assertEquals(1, thread.standbyTasks().partitionCount());
+    }
+
+    @Test
+    void testRuntimeStateUnavailableWhenHealthDetailsAreAbsent() {
+        ConfiguredStreamBuilder builder = configuredStreamBuilder("orders-streams", "orders-client");
+        HealthResult health = HealthResult.builder("composite", HealthStatus.UP).build();
+
+        KafkaStreamsRuntimeState state = HealthKafkaStreamsRuntimeStateResolver.resolve("default", builder, health);
+
+        Assertions.assertFalse(state.available());
+        Assertions.assertEquals("UNKNOWN", state.status());
+        Assertions.assertTrue(state.threads().isEmpty());
+        Assertions.assertEquals(HealthKafkaStreamsRuntimeStateResolver.UNAVAILABLE_MESSAGE, state.message());
+    }
+
+    @Test
     void testHyphenLabelBreaks() {
         Topology topology = new Topology();
         topology.addSource("KSTREAM-SOURCE-0", "a-b");
@@ -209,5 +281,13 @@ final class KafkaStreamsControlPanelTest {
                 Serdes.String()
         );
         topology.addStateStore(storeBuilder, processors);
+    }
+
+    private static ConfiguredStreamBuilder configuredStreamBuilder(String applicationId, String clientId) {
+        Properties properties = new Properties();
+        properties.setProperty(StreamsConfig.APPLICATION_ID_CONFIG, applicationId);
+        properties.setProperty(StreamsConfig.CLIENT_ID_CONFIG, clientId);
+        properties.setProperty(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        return new ConfiguredStreamBuilder(properties);
     }
 }
