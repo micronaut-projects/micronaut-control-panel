@@ -16,6 +16,7 @@
 package io.micronaut.controlpanel.panels.neo4j;
 
 import io.micronaut.context.ApplicationContext;
+import io.micronaut.context.BeanContext;
 import io.micronaut.controlpanel.panels.neo4j.model.Neo4jBody;
 import io.micronaut.controlpanel.panels.neo4j.model.Neo4jConnectionInfo;
 import io.micronaut.controlpanel.panels.neo4j.model.Neo4jDiagnostic;
@@ -131,9 +132,11 @@ class Neo4jDiagnosticsServiceTest {
 
     private static Neo4jDiagnosticsService service(Driver driver) {
         Neo4jPanelConfiguration configuration = new Neo4jPanelConfiguration();
+        BeanContext beanContext = mock(BeanContext.class);
+        when(beanContext.getBean(Driver.class)).thenReturn(driver);
         Neo4jConnectionSummaryResolver resolver = mock(Neo4jConnectionSummaryResolver.class);
         when(resolver.resolve()).thenReturn(new Neo4jConnectionInfo("default", "bolt://localhost:7687", "neo4j", "", ""));
-        return new Neo4jDiagnosticsService(driver, configuration, resolver);
+        return new Neo4jDiagnosticsService("default", beanContext, configuration, resolver);
     }
 
     private static Result serverResult() {

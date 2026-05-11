@@ -15,14 +15,17 @@
  */
 package io.micronaut.controlpanel.panels.neo4j;
 
+import io.micronaut.context.BeanContext;
 import io.micronaut.context.annotation.EachBean;
 import io.micronaut.context.annotation.Parameter;
+import io.micronaut.context.env.Environment;
 import io.micronaut.controlpanel.core.AbstractEachBeanControlPanel;
 import io.micronaut.controlpanel.core.ControlPanel;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.controlpanel.panels.neo4j.model.Neo4jBody;
 import jakarta.inject.Named;
 import org.neo4j.driver.Driver;
+import org.jspecify.annotations.Nullable;
 
 import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
 
@@ -46,19 +49,24 @@ public class Neo4jControlPanel extends AbstractEachBeanControlPanel<Neo4jBody> {
      * Constructor.
      *
      * @param beanName the Neo4j driver bean name
-     * @param driver the Neo4j driver
+     * @param beanContext the bean context
+     * @param environment the environment
      * @param panelConfiguration the Neo4j panel configuration
-     * @param connectionSummaryResolver safe connection summary resolver
      * @param configuration the control panel configuration
      */
-    public Neo4jControlPanel(@Parameter String beanName,
-                             @Parameter Driver driver,
+    public Neo4jControlPanel(@Parameter @Nullable String beanName,
+                             BeanContext beanContext,
+                             Environment environment,
                              Neo4jPanelConfiguration panelConfiguration,
-                             @Parameter Neo4jConnectionSummaryResolver connectionSummaryResolver,
                              @Named(NAME) ControlPanelConfiguration configuration) {
         super(NAME, configuration);
-        this.beanName = beanName;
-        this.diagnosticsService = new Neo4jDiagnosticsService(driver, panelConfiguration, connectionSummaryResolver);
+        this.beanName = beanName == null || beanName.isBlank() ? "default" : beanName;
+        this.diagnosticsService = new Neo4jDiagnosticsService(
+            this.beanName,
+            beanContext,
+            panelConfiguration,
+            new Neo4jConnectionSummaryResolver(this.beanName, environment)
+        );
     }
 
     @Override

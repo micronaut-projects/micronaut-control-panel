@@ -15,11 +15,8 @@
  */
 package io.micronaut.controlpanel.panels.neo4j;
 
-import io.micronaut.context.annotation.EachBean;
-import io.micronaut.context.annotation.Parameter;
 import io.micronaut.context.env.Environment;
 import io.micronaut.controlpanel.panels.neo4j.model.Neo4jConnectionInfo;
-import org.neo4j.driver.Driver;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -34,7 +31,6 @@ import java.util.regex.Pattern;
  * @author Sergio del Amo
  * @since 2.0.0
  */
-@EachBean(Driver.class)
 public class Neo4jConnectionSummaryResolver {
 
     private static final String DEFAULT_BEAN_NAME = "default";
@@ -51,7 +47,7 @@ public class Neo4jConnectionSummaryResolver {
      * @param beanName the Neo4j driver bean name
      * @param environment the Micronaut environment
      */
-    public Neo4jConnectionSummaryResolver(@Parameter String beanName, Environment environment) {
+    public Neo4jConnectionSummaryResolver(String beanName, Environment environment) {
         this.beanName = beanName;
         this.environment = environment;
     }

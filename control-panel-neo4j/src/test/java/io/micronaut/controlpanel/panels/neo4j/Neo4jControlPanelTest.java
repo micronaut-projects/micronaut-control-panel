@@ -16,6 +16,8 @@
 package io.micronaut.controlpanel.panels.neo4j;
 
 import io.micronaut.context.ApplicationContext;
+import io.micronaut.context.BeanContext;
+import io.micronaut.context.env.Environment;
 import io.micronaut.inject.qualifiers.Qualifiers;
 import org.junit.jupiter.api.Test;
 import org.neo4j.driver.Driver;
@@ -50,13 +52,29 @@ class Neo4jControlPanelTest {
     }
 
     @Test
+    void contextCreatesPanelForMicronautNeo4jDriverBean() {
+        try (ApplicationContext context = ApplicationContext.run(Map.of(
+            "neo4j.uri", "bolt://localhost:7687",
+            "neo4j.username", "neo4j",
+            "neo4j.password", "configured-secret"
+        ))) {
+            var panels = context.getBeansOfType(Neo4jControlPanel.class);
+
+            assertEquals(1, panels.size());
+            Neo4jControlPanel panel = panels.iterator().next();
+            assertEquals("neo4j-default", panel.getName());
+            assertFalse(panel.getBody().toString().contains("configured-secret"));
+        }
+    }
+
+    @Test
     void panelMetadataIsConfigured() {
-        Driver driver = mock(Driver.class);
+        BeanContext beanContext = mock(BeanContext.class);
+        Environment environment = mock(Environment.class);
         Neo4jPanelConfiguration panelConfiguration = new Neo4jPanelConfiguration();
-        Neo4jConnectionSummaryResolver connectionSummaryResolver = mock(Neo4jConnectionSummaryResolver.class);
         var configuration = mock(io.micronaut.controlpanel.core.config.ControlPanelConfiguration.class);
 
-        Neo4jControlPanel panel = new Neo4jControlPanel("default", driver, panelConfiguration, connectionSummaryResolver, configuration);
+        Neo4jControlPanel panel = new Neo4jControlPanel("default", beanContext, environment, panelConfiguration, configuration);
 
         assertEquals("default", panel.getTitle());
         assertEquals("neo4j-default", panel.getName());
@@ -66,13 +84,13 @@ class Neo4jControlPanelTest {
 
     @Test
     void badgeDoesNotProbeNeo4j() {
-        Driver driver = mock(Driver.class);
+        BeanContext beanContext = mock(BeanContext.class);
+        Environment environment = mock(Environment.class);
         Neo4jPanelConfiguration panelConfiguration = new Neo4jPanelConfiguration();
-        Neo4jConnectionSummaryResolver connectionSummaryResolver = mock(Neo4jConnectionSummaryResolver.class);
         var configuration = mock(io.micronaut.controlpanel.core.config.ControlPanelConfiguration.class);
-        Neo4jControlPanel panel = new Neo4jControlPanel("default", driver, panelConfiguration, connectionSummaryResolver, configuration);
+        Neo4jControlPanel panel = new Neo4jControlPanel("default", beanContext, environment, panelConfiguration, configuration);
 
         assertEquals("", panel.getBadge());
-        verifyNoInteractions(driver, connectionSummaryResolver);
+        verifyNoInteractions(beanContext, environment);
     }
 }

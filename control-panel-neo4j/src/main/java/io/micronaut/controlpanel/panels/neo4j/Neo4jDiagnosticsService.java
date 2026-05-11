@@ -15,11 +15,13 @@
  */
 package io.micronaut.controlpanel.panels.neo4j;
 
+import io.micronaut.context.BeanContext;
 import io.micronaut.controlpanel.panels.neo4j.model.Neo4jBody;
 import io.micronaut.controlpanel.panels.neo4j.model.Neo4jConnectionInfo;
 import io.micronaut.controlpanel.panels.neo4j.model.Neo4jDiagnostic;
 import io.micronaut.controlpanel.panels.neo4j.model.Neo4jServerInfo;
 import io.micronaut.controlpanel.panels.neo4j.model.Neo4jStatus;
+import io.micronaut.inject.qualifiers.Qualifiers;
 import org.neo4j.driver.AccessMode;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.Record;
@@ -57,21 +59,25 @@ public class Neo4jDiagnosticsService {
         .withDefaultAccessMode(AccessMode.READ)
         .build();
 
-    private final Driver driver;
+    private final String beanName;
+    private final BeanContext beanContext;
     private final Neo4jPanelConfiguration configuration;
     private final Neo4jConnectionSummaryResolver connectionSummaryResolver;
 
     /**
      * Constructor.
      *
-     * @param driver Neo4j driver
+     * @param beanName Neo4j driver bean name
+     * @param beanContext bean context used to resolve the driver lazily
      * @param configuration panel configuration
      * @param connectionSummaryResolver connection summary resolver
      */
-    public Neo4jDiagnosticsService(Driver driver,
+    public Neo4jDiagnosticsService(String beanName,
+                                   BeanContext beanContext,
                                    Neo4jPanelConfiguration configuration,
                                    Neo4jConnectionSummaryResolver connectionSummaryResolver) {
-        this.driver = driver;
+        this.beanName = beanName;
+        this.beanContext = beanContext;
         this.configuration = configuration;
         this.connectionSummaryResolver = connectionSummaryResolver;
     }
@@ -91,6 +97,7 @@ public class Neo4jDiagnosticsService {
         List<String> propertyKeys = List.of();
 
         try {
+            Driver driver = driver();
             driver.verifyConnectivity();
             try (Session session = driver.session(READ_SESSION)) {
                 serverInfo = serverInfo(session, diagnostics);
@@ -106,6 +113,13 @@ public class Neo4jDiagnosticsService {
             }
         }
         return new Neo4jBody(connectionInfo, status, serverInfo, labels, relationshipTypes, propertyKeys, List.copyOf(diagnostics), false);
+    }
+
+    private Driver driver() {
+        if ("default".equals(beanName)) {
+            return beanContext.getBean(Driver.class);
+        }
+        return beanContext.getBean(Driver.class, Qualifiers.byName(beanName));
     }
 
     private static Neo4jServerInfo serverInfo(Session session, List<Neo4jDiagnostic> diagnostics) {
