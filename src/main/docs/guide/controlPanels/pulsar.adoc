@@ -61,3 +61,5 @@ micronaut:
 == Local Verification
 
 With `micronaut-control-panel-ui`, `micronaut-control-panel-pulsar`, and `micronaut-pulsar` on the classpath, start the application in the `dev` environment and open the Control Panel. The Messaging category contains the Pulsar panel. If no clients are registered, the panel displays empty registry states. If clients are registered, the Producers, Consumers, and Readers tabs show the public registry metadata available from the running application.
+
+The Java example application includes an opt-in Pulsar producer, consumer, and reader configuration in the `pulsar` environment. With a local Pulsar broker available at `pulsar://localhost:6650`, run `./gradlew :micronaut-doc-examples:micronaut-example-java:run -Dmicronaut.environments=dev,pulsar` and open the Pulsar panel to inspect the registered example clients.
