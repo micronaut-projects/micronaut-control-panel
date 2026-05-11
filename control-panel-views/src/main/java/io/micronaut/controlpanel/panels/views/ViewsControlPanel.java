@@ -45,6 +45,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Control panel for Micronaut Views runtime diagnostics.
@@ -70,6 +72,8 @@ public class ViewsControlPanel extends AbstractControlPanel<ViewsControlPanel.Bo
      */
     public static final ControlPanel.Category CATEGORY = new ControlPanel.Category("web", "Web", "fas fa-globe");
     private static final String VIEW_ANNOTATION = "io.micronaut.views.View";
+    // Reuses badge/body diagnostics during one dashboard render without hiding live changes for long.
+    private static final long BODY_CACHE_NANOS = TimeUnit.MILLISECONDS.toNanos(250);
 
     private final Router router;
     private final Environment environment;
@@ -80,6 +84,7 @@ public class ViewsControlPanel extends AbstractControlPanel<ViewsControlPanel.Bo
     private final Optional<CsrfViewModelProcessorConfiguration> csrfViewModelProcessorConfiguration;
     private final Collection<ViewModelProcessor<?, ?>> viewModelProcessors;
     private final List<ActiveRenderer> renderers;
+    private final AtomicReference<CachedBody> cachedBody = new AtomicReference<>();
 
     /**
      * Constructor.
@@ -123,6 +128,17 @@ public class ViewsControlPanel extends AbstractControlPanel<ViewsControlPanel.Bo
 
     @Override
     public Body getBody() {
+        long now = System.nanoTime();
+        CachedBody cached = cachedBody.get();
+        if (cached != null && now - cached.createdAtNanos() <= BODY_CACHE_NANOS) {
+            return cached.body();
+        }
+        Body body = buildBody();
+        cachedBody.set(new CachedBody(System.nanoTime(), body));
+        return body;
+    }
+
+    private Body buildBody() {
         List<WarningRow> warnings = new ArrayList<>();
         ConfigurationBody configuration = resolveConfiguration(warnings);
         List<RouteRow> routes = resolveRoutes(warnings);
@@ -136,7 +152,8 @@ public class ViewsControlPanel extends AbstractControlPanel<ViewsControlPanel.Bo
         if (body.warningCount() == 0) {
             return body.routeCount() + " routes";
         }
-        return body.routeCount() + " routes, " + body.warningCount() + " warnings";
+        return body.routeCount() + " routes, " + body.warningCount() + " "
+            + (body.warningCount() == 1 ? "warning" : "warnings");
     }
 
     @Override
@@ -320,6 +337,9 @@ public class ViewsControlPanel extends AbstractControlPanel<ViewsControlPanel.Bo
     }
 
     private record ActiveRenderer(RendererRow row, ViewsRenderer<?, ?> renderer) {
+    }
+
+    private record CachedBody(long createdAtNanos, Body body) {
     }
 
     /**

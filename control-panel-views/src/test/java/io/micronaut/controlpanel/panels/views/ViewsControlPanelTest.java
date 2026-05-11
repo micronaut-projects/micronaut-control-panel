@@ -72,6 +72,7 @@ class ViewsControlPanelTest {
     void discoversStaticAndDynamicViewRoutesWithoutInvokingControllers() {
         InvokedController.invocations.set(0);
         TestViewsRenderer.renderInvocations.set(0);
+        TestViewsRenderer.existsInvocations.set(0);
         ctx = ApplicationContext.run();
 
         ViewsControlPanel.Body body = ctx.getBean(ViewsControlPanel.class).getBody();
@@ -90,6 +91,21 @@ class ViewsControlPanelTest {
             && warning.message().contains("/views/missing")));
         assertEquals(0, InvokedController.invocations.get());
         assertEquals(0, TestViewsRenderer.renderInvocations.get());
+        assertEquals(2, TestViewsRenderer.existsInvocations.get());
+    }
+
+    @Test
+    void badgeAndBodyShareTemplateProbeWork() {
+        TestViewsRenderer.existsInvocations.set(0);
+        ctx = ApplicationContext.run();
+
+        ViewsControlPanel panel = ctx.getBean(ViewsControlPanel.class);
+        String badge = panel.getBadge();
+        ViewsControlPanel.Body body = panel.getBody();
+
+        assertEquals("6 routes, 2 warnings", badge);
+        assertEquals(2, body.warningCount());
+        assertEquals(2, TestViewsRenderer.existsInvocations.get());
     }
 
     @Test
@@ -153,6 +169,7 @@ class ViewsControlPanelTest {
     @Requires(property = "test.renderer.enabled", notEquals = "false")
     static class TestViewsRenderer implements ViewsRenderer<Object, Object> {
         static final AtomicInteger renderInvocations = new AtomicInteger();
+        static final AtomicInteger existsInvocations = new AtomicInteger();
 
         @Override
         public Writable render(String viewName, Object data, Object request) {
@@ -164,6 +181,7 @@ class ViewsControlPanelTest {
         @Override
         public boolean exists(String viewName) {
             assertNotNull(viewName);
+            existsInvocations.incrementAndGet();
             return "present".equals(viewName);
         }
     }
