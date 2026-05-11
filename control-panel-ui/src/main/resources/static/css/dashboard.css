@@ -1720,6 +1720,40 @@ dl.row dt {
     text-align: center;
 }
 
+.cp-reactor-route-cards {
+    display: none;
+}
+
+.cp-reactor-route-card {
+    margin-bottom: 0;
+}
+
+.cp-reactor-route-card-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.75rem;
+}
+
+.cp-reactor-route-fields {
+    display: grid;
+    grid-template-columns: minmax(6.5rem, max-content) minmax(0, 1fr);
+    gap: 0.55rem 0.75rem;
+    margin: 0;
+}
+
+.cp-reactor-route-fields dt {
+    color: var(--muted-foreground);
+    font-size: 0.8125rem;
+    font-weight: 650;
+}
+
+.cp-reactor-route-fields dd {
+    min-width: 0;
+    margin: 0;
+}
+
 .cp-data-table-empty {
     border: 1px solid var(--border);
     border-radius: var(--radius);
@@ -2998,5 +3032,27 @@ div.mermaid {
     .cp-detail-section-heading {
         align-items: stretch;
         flex-direction: column;
+    }
+
+    .cp-reactor-routes-table {
+        display: none;
+    }
+
+    .cp-reactor-route-cards {
+        display: grid;
+        gap: 0.75rem;
+    }
+
+    .cp-reactor-route-fields {
+        grid-template-columns: 1fr;
+        gap: 0.2rem;
+    }
+
+    .cp-reactor-route-fields dd {
+        margin-bottom: 0.45rem;
+    }
+
+    .cp-reactor-route-fields dd:last-child {
+        margin-bottom: 0;
     }
 }

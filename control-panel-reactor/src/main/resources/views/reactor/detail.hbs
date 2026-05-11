@@ -44,7 +44,7 @@
                             <input type="search" class="form-control" data-filter-table-search placeholder="Search reactive routes" aria-label="Search reactive routes">
                         </div>
                     </div>
-                    <div class="cp-data-table-container">
+                    <div class="cp-data-table-container cp-reactor-routes-table">
                         <table class="table cp-data-table-table">
                             <thead>
                             <tr>
@@ -86,6 +86,42 @@
                             </tr>
                             </tbody>
                         </table>
+                    </div>
+                    <div class="cp-reactor-route-cards" aria-label="Reactive routes">
+                        {{#each routes}}
+                            <article class="card cp-reactor-route-card">
+                                <div class="card-body">
+                                    <div class="cp-reactor-route-card-header">
+                                        <span class="badge badge-info">{{httpMethodName}}</span>
+                                        <span class="badge badge-secondary" title="{{modeDescription}}">{{mode}}</span>
+                                    </div>
+                                    <dl class="cp-reactor-route-fields">
+                                        <dt>URI</dt>
+                                        <dd><code class="cp-table-code">{{uri}}</code></dd>
+                                        <dt>Controller method</dt>
+                                        <dd><code class="cp-table-code">{{controllerMethod}}</code></dd>
+                                        <dt>Return type</dt>
+                                        <dd><code class="cp-table-code">{{returnType}}</code></dd>
+                                        <dt>Produces</dt>
+                                        <dd>
+                                            {{#if produces}}
+                                                {{#each produces}}<code class="cp-table-code">{{this}}</code>{{/each}}
+                                            {{else}}
+                                                <span class="text-muted">not declared</span>
+                                            {{/if}}
+                                        </dd>
+                                        <dt>Consumes</dt>
+                                        <dd>
+                                            {{#if consumes}}
+                                                {{#each consumes}}<code class="cp-table-code">{{this}}</code>{{/each}}
+                                            {{else}}
+                                                <span class="text-muted">not declared</span>
+                                            {{/if}}
+                                        </dd>
+                                    </dl>
+                                </div>
+                            </article>
+                        {{/each}}
                     </div>
                     <div class="cp-data-table-footer">
                         <label class="cp-data-table-page-size">

@@ -15,10 +15,14 @@ import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledInNativeImage;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.regex.Pattern;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @UsePlaywright(ControlPanelE2ETest.HeadlessBrowserOptions.class)
@@ -93,7 +97,8 @@ class ControlPanelE2ETest extends AbstractE2ETest {
     }
 
     @Test
-    void testReactorDiagnostics(Page page) {
+    void testReactorDiagnostics(Page page) throws IOException {
+        page.setViewportSize(1440, 900);
         page.navigate(baseUrl());
         categoryLink(page, "Reactor").click();
         controlPanelDetails(page, "Reactor Diagnostics").click();
@@ -105,6 +110,34 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         assertThat(body(page)).containsText("sse");
         assertThat(body(page)).containsText("Context propagation artifact");
         assertThat(body(page)).containsText("Endpoint URLs, headers, credentials");
+
+        Path screenshotDir = Path.of("build/reports/dev490");
+        Files.createDirectories(screenshotDir);
+        page.screenshot(new Page.ScreenshotOptions()
+            .setPath(screenshotDir.resolve("reactor-desktop.png")));
+
+        page.setViewportSize(390, 844);
+        page.evaluate("() => document.body.classList.remove('cp-sidebar-open')");
+        page.waitForFunction("""
+            () => {
+                const sidebar = document.querySelector(".cp-sidebar");
+                return window.matchMedia("(max-width: 1000px)").matches
+                    && sidebar
+                    && sidebar.getBoundingClientRect().right <= 1;
+            }
+            """);
+
+        assertFalse((Boolean) body(page).evaluate("body => body.classList.contains('cp-sidebar-open')"));
+        assertThat(page.locator(".cp-reactor-routes-table")).isHidden();
+        assertThat(page.locator(".cp-reactor-route-cards")).isVisible();
+        var monoRoute = page.locator(".cp-reactor-route-card")
+            .filter(new Locator.FilterOptions().setHasText("/demo/reactor/mono"))
+            .first();
+        assertThat(monoRoute).containsText("DemoController.mono()");
+        assertThat(monoRoute).containsText("reactor.core.publisher.Mono<java.lang.String>");
+        monoRoute.scrollIntoViewIfNeeded();
+        page.screenshot(new Page.ScreenshotOptions()
+            .setPath(screenshotDir.resolve("reactor-mobile.png")));
     }
 
     @Test
