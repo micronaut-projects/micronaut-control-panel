@@ -32,7 +32,7 @@ public class OpenSearchControlPanel extends AbstractEachBeanControlPanel<OpenSea
     public static final String NAME = "opensearch";
     public static final String ENABLED_PROPERTY = ControlPanelConfiguration.PREFIX + "." + NAME + ".enabled";
     public static final String DEFAULT_ICON_CLASS = "fa-magnifying-glass-chart";
-    public static final ControlPanel.Category CATEGORY = new ControlPanel.Category(NAME, "OpenSearch", DEFAULT_ICON_CLASS);
+    public static final ControlPanel.Category CATEGORY = new ControlPanel.Category(NAME, "OpenSearch", "fas " + DEFAULT_ICON_CLASS);
 
     private final String beanName;
     private final OpenSearchDiagnosticsService diagnosticsService;
@@ -58,11 +58,6 @@ public class OpenSearchControlPanel extends AbstractEachBeanControlPanel<OpenSea
     @Override
     public OpenSearchDiagnostics getBody() {
         return diagnosticsService.diagnostics();
-    }
-
-    @Override
-    public String getBadge() {
-        return getBody().statusLabel();
     }
 
     @Override

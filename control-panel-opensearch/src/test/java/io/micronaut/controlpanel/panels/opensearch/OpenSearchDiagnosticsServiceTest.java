@@ -54,7 +54,7 @@ class OpenSearchDiagnosticsServiceTest {
 
     @Test
     void sanitizesConfiguredConnectionMetadata() throws Exception {
-        OpenSearchDiagnosticsService service = service(Map.of(
+        try (ServiceFixture fixture = service(Map.of(
             "micronaut.opensearch.rest-client.http-hosts[0]", "http://admin:secret@localhost:9200?token=secret",
             "micronaut.opensearch.aws.endpoint", "search-example.us-east-1.es.amazonaws.com",
             "micronaut.opensearch.aws.signing-region", "us-east-1"
@@ -63,21 +63,21 @@ class OpenSearchDiagnosticsServiceTest {
             IndicesResponse.of(b -> b.valueBody(List.of())),
             GetAliasResponse.of(b -> b.result(Map.of())),
             GetMappingResponse.of(b -> b.result(Map.of()))
-        ), 25, 20);
+        ), 25, 20)) {
+            var diagnostics = fixture.service().diagnostics();
 
-        var diagnostics = service.diagnostics();
-
-        assertEquals(DiagnosticState.AVAILABLE, diagnostics.state());
-        assertEquals("GREEN", diagnostics.statusLabel());
-        assertEquals("http://***@localhost:9200", diagnostics.connection().hosts().get(0));
-        assertEquals("search-example.us-east-1.es.amazonaws.com", diagnostics.connection().amazonEndpoint());
-        assertEquals("us-east-1", diagnostics.connection().signingRegion());
-        assertFalse(diagnostics.hasIndices());
+            assertEquals(DiagnosticState.AVAILABLE, diagnostics.state());
+            assertEquals("GREEN", diagnostics.statusLabel());
+            assertEquals("http://***@localhost:9200", diagnostics.connection().hosts().get(0));
+            assertEquals("search-example.us-east-1.es.amazonaws.com", diagnostics.connection().amazonEndpoint());
+            assertEquals("us-east-1", diagnostics.connection().signingRegion());
+            assertFalse(diagnostics.hasIndices());
+        }
     }
 
     @Test
     void sanitizesCommaDelimitedScalarHostsIndependently() throws Exception {
-        OpenSearchDiagnosticsService service = service(Map.of(
+        try (ServiceFixture fixture = service(Map.of(
             "micronaut.opensearch.rest-client.http-hosts",
             "http://admin:secret@localhost:9200?token=secret, https://writer:secret@example.com:9200/path?password=secret"
         ), client(
@@ -85,19 +85,19 @@ class OpenSearchDiagnosticsServiceTest {
             IndicesResponse.of(b -> b.valueBody(List.of())),
             GetAliasResponse.of(b -> b.result(Map.of())),
             GetMappingResponse.of(b -> b.result(Map.of()))
-        ), 25, 20);
+        ), 25, 20)) {
+            var diagnostics = fixture.service().diagnostics();
 
-        var diagnostics = service.diagnostics();
-
-        assertEquals(List.of(
-            "http://***@localhost:9200",
-            "https://***@example.com:9200/path"
-        ), diagnostics.connection().hosts());
+            assertEquals(List.of(
+                "http://***@localhost:9200",
+                "https://***@example.com:9200/path"
+            ), diagnostics.connection().hosts());
+        }
     }
 
     @Test
     void readsClusterIndexAliasAndMappingSummaries() throws Exception {
-        OpenSearchDiagnosticsService service = service(Map.of(
+        try (ServiceFixture fixture = service(Map.of(
             "micronaut.opensearch.httpclient5.http-hosts[0]", "http://localhost:9200"
         ), client(
             health(HealthStatus.Yellow),
@@ -115,19 +115,42 @@ class OpenSearchDiagnosticsServiceTest {
                     .properties("id", Property.of(p -> p.keyword(k -> k)))
                 )))
             )))
-        ), 1, 1);
+        ), 1, 1)) {
+            var diagnostics = fixture.service().diagnostics();
 
-        var diagnostics = service.diagnostics();
+            assertEquals(DiagnosticState.AVAILABLE, diagnostics.state());
+            assertEquals("YELLOW", diagnostics.statusLabel());
+            assertEquals(1, diagnostics.indices().size());
+            assertTrue(diagnostics.indicesTruncated());
+            var movies = diagnostics.indices().get(0);
+            assertEquals("movies", movies.name());
+            assertEquals(List.of("current-movies"), movies.aliases());
+            assertEquals(1, movies.mappingFields().size());
+            assertTrue(movies.mappingTruncated());
+        }
+    }
 
-        assertEquals(DiagnosticState.AVAILABLE, diagnostics.state());
-        assertEquals("YELLOW", diagnostics.statusLabel());
-        assertEquals(1, diagnostics.indices().size());
-        assertTrue(diagnostics.indicesTruncated());
-        var movies = diagnostics.indices().get(0);
-        assertEquals("movies", movies.name());
-        assertEquals(List.of("current-movies"), movies.aliases());
-        assertEquals(1, movies.mappingFields().size());
-        assertTrue(movies.mappingTruncated());
+    @Test
+    void nestedMappingFieldTruncationIsDetected() throws Exception {
+        try (ServiceFixture fixture = service(Map.of(), client(
+            health(HealthStatus.Green),
+            IndicesResponse.of(b -> b.valueBody(index("movies"))),
+            GetAliasResponse.of(b -> b.result(Map.of())),
+            GetMappingResponse.of(b -> b.result(Map.of(
+                "movies", IndexMappingRecord.of(m -> m.mappings(TypeMapping.of(tm -> tm
+                    .properties("metadata", Property.of(p -> p.object(o -> o
+                        .properties("title", Property.of(mp -> mp.text(t -> t)))
+                        .properties("releaseYear", Property.of(mp -> mp.integer(i -> i)))
+                    )))
+                )))
+            )))
+        ), 25, 1)) {
+            var diagnostics = fixture.service().diagnostics();
+            var movies = diagnostics.indices().get(0);
+
+            assertEquals(1, movies.mappingFields().size());
+            assertTrue(movies.mappingTruncated());
+        }
     }
 
     @Test
@@ -140,14 +163,14 @@ class OpenSearchDiagnosticsServiceTest {
             .error(error -> error.type("security_exception").reason("raw secret details"))
         )));
 
-        OpenSearchDiagnosticsService service = service(Map.of(), client, 25, 20);
+        try (ServiceFixture fixture = service(Map.of(), client, 25, 20)) {
+            var diagnostics = fixture.service().diagnostics();
 
-        var diagnostics = service.diagnostics();
-
-        assertEquals(DiagnosticState.AUTHORIZATION_FAILED, diagnostics.state());
-        assertEquals("Authorization", diagnostics.statusLabel());
-        assertTrue(diagnostics.message().contains("privileges"));
-        assertFalse(diagnostics.message().contains("raw secret details"));
+            assertEquals(DiagnosticState.AUTHORIZATION_FAILED, diagnostics.state());
+            assertEquals("Authorization", diagnostics.statusLabel());
+            assertTrue(diagnostics.message().contains("privileges"));
+            assertFalse(diagnostics.message().contains("raw secret details"));
+        }
     }
 
     @Test
@@ -156,15 +179,15 @@ class OpenSearchDiagnosticsServiceTest {
         assertEquals("https://example.com/path/***", OpenSearchDiagnosticsService.sanitizedEndpoint("https://example.com/path/secret_key=value"));
     }
 
-    private static OpenSearchDiagnosticsService service(Map<String, Object> properties,
-                                                        OpenSearchClient client,
-                                                        int maxIndices,
-                                                        int maxMappingFields) {
+    private static ServiceFixture service(Map<String, Object> properties,
+                                          OpenSearchClient client,
+                                          int maxIndices,
+                                          int maxMappingFields) {
         ApplicationContext context = ApplicationContext.run(properties);
         OpenSearchDiagnosticsConfiguration configuration = mock(OpenSearchDiagnosticsConfiguration.class);
         when(configuration.getMaxIndices()).thenReturn(maxIndices);
         when(configuration.getMaxMappingFields()).thenReturn(maxMappingFields);
-        return new OpenSearchDiagnosticsService("default", client, context.getEnvironment(), configuration);
+        return new ServiceFixture(context, new OpenSearchDiagnosticsService("default", client, context.getEnvironment(), configuration));
     }
 
     private static OpenSearchClient client(HealthResponse health,
@@ -227,5 +250,12 @@ class OpenSearchDiagnosticsServiceTest {
             .docsCount("42")
             .storeSize("128kb")
         );
+    }
+
+    private record ServiceFixture(ApplicationContext context, OpenSearchDiagnosticsService service) implements AutoCloseable {
+        @Override
+        public void close() {
+            context.close();
+        }
     }
 }

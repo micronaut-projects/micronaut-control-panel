@@ -146,20 +146,20 @@ public class OpenSearchDiagnosticsService {
             .result()
             .forEach((index, value) -> {
                 TypeMapping mapping = value.mappings() == null ? value.item() : value.mappings();
-                List<MappingField> fields = mappingFields(mapping, maxMappingFields);
-                int totalFields = mapping == null ? 0 : mapping.properties().size();
-                summaries.put(index, new MappingSummary(fields, totalFields > fields.size()));
+                summaries.put(index, mappingSummary(mapping, maxMappingFields));
             });
         return summaries;
     }
 
-    private static List<MappingField> mappingFields(TypeMapping mapping, int maxMappingFields) {
+    private static MappingSummary mappingSummary(TypeMapping mapping, int maxMappingFields) {
         if (mapping == null || mapping.properties().isEmpty()) {
-            return List.of();
+            return MappingSummary.EMPTY;
         }
         List<MappingField> fields = new ArrayList<>();
-        collectMappingFields("", mapping.properties(), fields, maxMappingFields);
-        return List.copyOf(fields);
+        collectMappingFields("", mapping.properties(), fields, maxMappingFields + 1);
+        boolean truncated = fields.size() > maxMappingFields;
+        List<MappingField> visibleFields = truncated ? fields.subList(0, maxMappingFields) : fields;
+        return new MappingSummary(List.copyOf(visibleFields), truncated);
     }
 
     private static void collectMappingFields(String prefix, Map<String, Property> properties, List<MappingField> fields, int maxMappingFields) {
