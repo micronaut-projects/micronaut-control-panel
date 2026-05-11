@@ -1,77 +1,132 @@
-<h5>Runtime state</h5>
-{{#if body.runtimeState.available}}
-    <p>
-        <strong>Status</strong>: <span class="badge badge-primary">{{body.runtimeState.status}}</span>
-        {{#if body.runtimeState.message}}
-            <span>{{body.runtimeState.message}}</span>
-        {{/if}}
-    </p>
-    {{#if body.runtimeState.hasThreads}}
-        <ul>
-        {{#each body.runtimeState.threads as |thread|}}
-            <li title="{{thread.name}}">
-                <strong>Thread</strong>:
-                <code>{{abbreviate thread.name 50}}</code> <span class="badge badge-primary">{{thread.state}}</span>
-                <ul>
-                    {{#if thread.adminClientId}}
-                        <li title="{{thread.adminClientId}}"><strong>Admin Client ID</strong>: <code>{{abbreviate thread.adminClientId 40}}</code></li>
-                    {{/if}}
-                    {{#if thread.consumerClientId}}
-                        <li title="{{thread.consumerClientId}}"><strong>Consumer Client ID</strong>: <code>{{abbreviate thread.consumerClientId 40}}</code></li>
-                    {{/if}}
-                    {{#if thread.restoreConsumerClientId}}
-                        <li title="{{thread.restoreConsumerClientId}}"><strong>Restore Consumer Client ID</strong>: <code>{{abbreviate thread.restoreConsumerClientId 40}}</code></li>
-                    {{/if}}
-                    {{#if thread.hasProducerClientIds}}
-                        <li>
-                            <strong>Producer Client IDs</strong>:
-                            <ul>
-                                {{#each thread.producerClientIds as |producerClientId|}}
-                                    <li title="{{producerClientId}}"><code>{{abbreviate producerClientId 30}}</code></li>
-                                {{/each}}
-                            </ul>
-                        </li>
-                    {{/if}}
-                    <li>
-                        <strong>Active tasks</strong>:
-                        {{#if thread.activeTasks.available}}
-                            <ul>
-                                {{#if thread.activeTasks.taskId}}
-                                    <li><strong>Task ID</strong>: <code>{{thread.activeTasks.taskId}}</code></li>
-                                {{/if}}
-                                <li><strong>Partition/topic</strong>: {{thread.activeTasks.partitionCount}}</li>
-                            </ul>
-                        {{else}}
-                            <span>No active task information reported.</span>
-                        {{/if}}
-                    </li>
-                    <li>
-                        <strong>Stand-by tasks</strong>:
-                        {{#if thread.standbyTasks.available}}
-                            <ul>
-                                {{#if thread.standbyTasks.taskId}}
-                                    <li><strong>Task ID</strong>: <code>{{thread.standbyTasks.taskId}}</code></li>
-                                {{/if}}
-                                <li><strong>Partition/topic</strong>: {{thread.standbyTasks.partitionCount}}</li>
-                            </ul>
-                        {{else}}
-                            <span>No standby task information reported.</span>
-                        {{/if}}
-                    </li>
-                </ul>
-            </li>
-        {{/each}}
-        </ul>
-    {{else}}
-        <p>No stream thread details are available for this Kafka Streams application.</p>
-    {{/if}}
-{{else}}
-    <p>{{body.runtimeState.message}}</p>
-{{/if}}
+<section class="cp-kafka-runtime {{body.runtimeState.sectionStateClass}}" aria-labelledby="kafka-streams-runtime-heading">
+    <div class="cp-kafka-section-header">
+        <div>
+            <h5 id="kafka-streams-runtime-heading" class="cp-kafka-section-title">Runtime state</h5>
+            <p class="cp-kafka-section-description">
+                Source: Micronaut <code>HealthEndpoint</code> visible details. Hidden or disabled Health details render as unavailable.
+            </p>
+        </div>
+        <span class="badge {{body.runtimeState.statusBadgeClass}}">{{body.runtimeState.status}}</span>
+    </div>
 
-<h5>Kafka Streams Topology</h5>
-<pre id="kafkaStreamsMermaidCode" style="display:none;">{{{ body.mermaid }}}</pre>
-<div id="kafkaStreamsDiagram" class="mermaid"></div>
+    {{#if body.runtimeState.available}}
+        {{#if body.runtimeState.message}}
+            <p class="cp-kafka-runtime-message">{{body.runtimeState.message}}</p>
+        {{/if}}
+
+        {{#if body.runtimeState.hasThreads}}
+            <div class="cp-data-table cp-kafka-runtime-table">
+                <div class="cp-data-table-container">
+                    <table class="table cp-data-table-table cp-kafka-threads-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Thread</th>
+                                <th scope="col">State</th>
+                                <th scope="col">Admin client</th>
+                                <th scope="col">Consumer client</th>
+                                <th scope="col">Restore consumer</th>
+                                <th scope="col">Producer clients</th>
+                                <th scope="col">Active tasks</th>
+                                <th scope="col">Standby tasks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {{#each body.runtimeState.threads as |thread|}}
+                            <tr tabindex="0">
+                                <td data-label="Thread" title="{{thread.name}}">
+                                    <code class="cp-table-code">{{abbreviate thread.name 50}}</code>
+                                </td>
+                                <td data-label="State">
+                                    <span class="badge {{thread.stateBadgeClass}}">{{thread.state}}</span>
+                                </td>
+                                <td data-label="Admin client" title="{{thread.adminClientId}}">
+                                    {{#if thread.adminClientId}}
+                                        <code class="cp-table-code">{{abbreviate thread.adminClientId 40}}</code>
+                                    {{else}}
+                                        <span class="cp-kafka-muted">Not reported</span>
+                                    {{/if}}
+                                </td>
+                                <td data-label="Consumer client" title="{{thread.consumerClientId}}">
+                                    {{#if thread.consumerClientId}}
+                                        <code class="cp-table-code">{{abbreviate thread.consumerClientId 40}}</code>
+                                    {{else}}
+                                        <span class="cp-kafka-muted">Not reported</span>
+                                    {{/if}}
+                                </td>
+                                <td data-label="Restore consumer" title="{{thread.restoreConsumerClientId}}">
+                                    {{#if thread.restoreConsumerClientId}}
+                                        <code class="cp-table-code">{{abbreviate thread.restoreConsumerClientId 40}}</code>
+                                    {{else}}
+                                        <span class="cp-kafka-muted">Not reported</span>
+                                    {{/if}}
+                                </td>
+                                <td data-label="Producer clients">
+                                    {{#if thread.hasProducerClientIds}}
+                                        <ul class="cp-kafka-inline-list">
+                                            {{#each thread.producerClientIds as |producerClientId|}}
+                                                <li title="{{producerClientId}}"><code class="cp-table-code">{{abbreviate producerClientId 30}}</code></li>
+                                            {{/each}}
+                                        </ul>
+                                    {{else}}
+                                        <span class="cp-kafka-muted">None reported</span>
+                                    {{/if}}
+                                </td>
+                                <td data-label="Active tasks">
+                                    {{#if thread.activeTasks.available}}
+                                        <span class="cp-kafka-task-summary">
+                                            {{#if thread.activeTasks.taskId}}
+                                                <code class="cp-table-code">{{thread.activeTasks.taskId}}</code>
+                                            {{/if}}
+                                            <span>{{thread.activeTasks.partitionCount}} partition/topic entries</span>
+                                        </span>
+                                    {{else}}
+                                        <span class="cp-kafka-muted">None reported</span>
+                                    {{/if}}
+                                </td>
+                                <td data-label="Standby tasks">
+                                    {{#if thread.standbyTasks.available}}
+                                        <span class="cp-kafka-task-summary">
+                                            {{#if thread.standbyTasks.taskId}}
+                                                <code class="cp-table-code">{{thread.standbyTasks.taskId}}</code>
+                                            {{/if}}
+                                            <span>{{thread.standbyTasks.partitionCount}} partition/topic entries</span>
+                                        </span>
+                                    {{else}}
+                                        <span class="cp-kafka-muted">None reported</span>
+                                    {{/if}}
+                                </td>
+                            </tr>
+                        {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {{else}}
+            <div class="cp-kafka-runtime-empty">
+                <strong>No stream thread details reported.</strong>
+                <span>Health details are visible, but this Kafka Streams application did not report thread/task rows.</span>
+            </div>
+        {{/if}}
+    {{else}}
+        <div class="cp-kafka-runtime-empty">
+            <strong>Runtime state unavailable.</strong>
+            <span>{{body.runtimeState.message}}</span>
+        </div>
+    {{/if}}
+</section>
+
+<section class="cp-kafka-topology" aria-labelledby="kafka-streams-topology-heading">
+    <div class="cp-kafka-section-header">
+        <div>
+            <h5 id="kafka-streams-topology-heading" class="cp-kafka-section-title">Kafka Streams topology</h5>
+            <p class="cp-kafka-section-description">Configured topology remains the primary view for this stream.</p>
+        </div>
+    </div>
+    <pre id="kafkaStreamsMermaidCode" style="display:none;">{{{ body.mermaid }}}</pre>
+    <div id="kafkaStreamsDiagram" class="mermaid cp-kafka-diagram" aria-live="polite">
+        <span class="cp-kafka-muted">Rendering topology...</span>
+    </div>
+</section>
 
 <script>
   (function(){
@@ -96,7 +151,7 @@
       }
       if (window.mermaid) {
         container.innerText = code;
-        container.className = 'mermaid';
+        container.className = 'mermaid cp-kafka-diagram';
         try { window.mermaid.init(undefined, container); } catch(e) {}
         return true;
       }

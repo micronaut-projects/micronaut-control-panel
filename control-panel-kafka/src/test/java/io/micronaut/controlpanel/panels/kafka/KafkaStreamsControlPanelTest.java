@@ -35,6 +35,8 @@ import io.micronaut.management.health.indicator.HealthResult;
 import org.mockito.Mockito;
 import reactor.core.publisher.Mono;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
@@ -414,6 +416,43 @@ final class KafkaStreamsControlPanelTest {
     }
 
     @Test
+    void testRuntimeStateModelExposesTemplateStateClasses() {
+        KafkaStreamsRuntimeState down = KafkaStreamsRuntimeState.available("DOWN", null, List.of());
+        KafkaStreamsRuntimeState unavailable = KafkaStreamsRuntimeState.unavailable("Health details hidden");
+        KafkaStreamsRuntimeState.ThreadState rebalancing = new KafkaStreamsRuntimeState.ThreadState(
+                "orders-thread-1",
+                "REBALANCING",
+                null,
+                null,
+                null,
+                List.of(),
+                null,
+                null
+        );
+
+        Assertions.assertEquals("badge-destructive", down.statusBadgeClass());
+        Assertions.assertEquals("cp-kafka-runtime--error", down.sectionStateClass());
+        Assertions.assertTrue(down.errorState());
+        Assertions.assertEquals("badge-secondary", unavailable.statusBadgeClass());
+        Assertions.assertEquals("cp-kafka-runtime--unavailable", unavailable.sectionStateClass());
+        Assertions.assertEquals("cp-kafka-badge-warning", rebalancing.stateBadgeClass());
+    }
+
+    @Test
+    void testKafkaStreamsDetailTemplateUsesResponsiveRuntimeRows() throws IOException {
+        String template = resourceText("/views/kafka-streams/detail.hbs");
+
+        Assertions.assertTrue(template.contains("Source: Micronaut <code>HealthEndpoint</code> visible details"));
+        Assertions.assertTrue(template.contains("class=\"table cp-data-table-table cp-kafka-threads-table\""));
+        Assertions.assertTrue(template.contains("<tr tabindex=\"0\">"));
+        Assertions.assertTrue(template.contains("data-label=\"Thread\""));
+        Assertions.assertTrue(template.contains("data-label=\"Producer clients\""));
+        Assertions.assertTrue(template.contains("Runtime state unavailable."));
+        Assertions.assertTrue(template.contains("Rendering topology..."));
+        Assertions.assertFalse(template.contains("<ul>\n        {{#each body.runtimeState.threads"));
+    }
+
+    @Test
     void testHyphenLabelBreaks() {
         Topology topology = new Topology();
         topology.addSource("KSTREAM-SOURCE-0", "a-b");
@@ -458,5 +497,12 @@ final class KafkaStreamsControlPanelTest {
         properties.setProperty(StreamsConfig.CLIENT_ID_CONFIG, clientId);
         properties.setProperty(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         return new ConfiguredStreamBuilder(properties);
+    }
+
+    private static String resourceText(String path) throws IOException {
+        try (var in = KafkaStreamsControlPanelTest.class.getResourceAsStream(path)) {
+            Assertions.assertNotNull(in, () -> "Missing resource " + path);
+            return new String(in.readAllBytes(), StandardCharsets.UTF_8);
+        }
     }
 }
