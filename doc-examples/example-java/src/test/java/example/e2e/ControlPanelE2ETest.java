@@ -142,6 +142,7 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         page.locator("#actionsModal").getByLabel("Level:").selectOption("DEBUG");
         id(page, "submit").click();
         assertThat(page.getByRole(AriaRole.ALERT)).containsText("Logger configured through the Control Panel route.");
+        assertThat(page.getByRole(AriaRole.BUTTON, new GetByRoleOptions().setName("Refresh table"))).isVisible();
 
         page.locator("#actionsModal .modal-footer [data-dismiss='modal']").click();
         assertThat(body(page)).containsText("DEBUG");

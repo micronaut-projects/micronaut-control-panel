@@ -95,7 +95,7 @@
                 <form id="configureLogger">
                     <div class="form-group">
                         <label for="logger" class="col-form-label">Logger name:</label>
-                        <input type="text" class="form-control" id="logger" name="logger" aria-describedby="loggerHelp loggerError">
+                        <input type="text" class="form-control" id="logger" name="logger" aria-describedby="loggerHelp loggerError loggerWriteBoundary">
                         <small id="loggerHelp" class="form-text text-muted">Logger writes use the protected Control Panel route. The raw Management loggers endpoint can remain write-sensitive.</small>
                         <div class="invalid-feedback" id="loggerError">Logger name must not be blank.</div>
                         <label for="configuredLevel" class="col-form-label">Level:</label>
@@ -104,12 +104,14 @@
                                 <option>{{level}}</option>
                             {{/each}}
                         </select>
+                        <div class="alert alert-info mt-3" id="loggerWriteBoundary" role="note">This posts through the Control Panel route. Raw Management logger writes can remain sensitive.</div>
                     </div>
                 </form>
                 <div id="result"></div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-secondary" id="refreshTable" style="display: none;">Refresh table</button>
                 <button type="button" class="btn btn-primary" id="submit">Submit</button>
             </div>
         </div>
@@ -139,6 +141,7 @@
             modal.find('.modal-body input').val('');
             modal.find('.modal-body select').val('');
         }
+        $('#refreshTable').hide();
         $('#submit').show().prop('disabled', false).removeAttr('aria-describedby').removeAttr('title');
     })
 
@@ -154,6 +157,10 @@
 
     $('#submit').click(function(e){
         submitForm();
+    })
+
+    $('#refreshTable').click(function(e){
+        location.reload();
     })
 
     $('#logger').on('input', function () {
@@ -179,6 +186,7 @@
         }).done(function (data) {
             updateConfiguredLogger(logger, payload.configuredLevel);
             setResult('success', 'Logger configured through the Control Panel route.');
+            $('#refreshTable').show();
             $('#submit').hide();
         }).fail(function (data) {
             var message = data.responseJSON && data.responseJSON.message ? data.responseJSON.message : 'Logger could not be configured.';
