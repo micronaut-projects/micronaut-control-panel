@@ -1,0 +1,239 @@
+{{#with controlPanel.body as |body|}}
+<div class="row">
+    <div class="col-md-3">
+        <div class="info-box">
+            <span class="info-box-icon bg-info"><i class="fas fa-paper-plane"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Producers</span>
+                <span class="info-box-number">{{ body.summary.producers }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="info-box">
+            <span class="info-box-icon bg-success"><i class="fas fa-inbox"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Consumers</span>
+                <span class="info-box-number">{{ body.summary.consumers }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="info-box">
+            <span class="info-box-icon bg-primary"><i class="fas fa-book-open"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Readers</span>
+                <span class="info-box-number">{{ body.summary.readers }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="info-box">
+            <span class="info-box-icon bg-danger"><i class="fas fa-triangle-exclamation"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Failures</span>
+                <span class="info-box-number">{{ body.summary.failures }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{#unless body.adminEnrichmentAvailable}}
+    <div class="alert alert-secondary">
+        Broker/admin topic statistics are not available. This panel shows in-process Micronaut Pulsar registry data.
+    </div>
+{{/unless}}
+
+{{#unless body.consumerActionsAllowed}}
+    <div class="alert alert-info">
+        Consumer pause and resume actions are disabled.
+    </div>
+{{/unless}}
+
+<ul class="nav nav-tabs" id="pulsar-tabs" role="tablist">
+    <li class="nav-item">
+        <a class="nav-link active" id="consumers-tab" data-toggle="pill" href="#consumers" role="tab">Consumers</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="producers-tab" data-toggle="pill" href="#producers" role="tab">Producers</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="readers-tab" data-toggle="pill" href="#readers" role="tab">Readers</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="failures-tab" data-toggle="pill" href="#failures" role="tab">Failures</a>
+    </li>
+</ul>
+
+<div class="tab-content pt-3" id="pulsar-tab-content">
+    <div class="tab-pane fade show active" id="consumers" role="tabpanel" aria-labelledby="consumers-tab">
+        {{#if body.consumers}}
+            <table class="table table-sm table-striped">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Topic</th>
+                    <th>Subscription</th>
+                    <th>State</th>
+                    <th>Connection</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {{#each body.consumers as |consumer|}}
+                    <tr>
+                        <td><code>{{ consumer.id }}</code></td>
+                        <td>{{ consumer.name }}</td>
+                        <td><code>{{ consumer.topic }}</code></td>
+                        <td><code>{{ consumer.subscription }}</code></td>
+                        <td>
+                            {{#if consumer.paused}}
+                                <span class="badge badge-warning">Paused</span>
+                            {{else}}
+                                <span class="badge badge-success">Running</span>
+                            {{/if}}
+                        </td>
+                        <td>{{ consumer.connectionState }}</td>
+                        <td>
+                            {{#if body.consumerActionsAllowed}}
+                                {{#if consumer.paused}}
+                                    <button type="button" class="btn btn-secondary btn-sm pulsar-consumer-action" data-action="resume" data-consumer-id="{{ consumer.id }}">Resume</button>
+                                {{else}}
+                                    <button type="button" class="btn btn-secondary btn-sm pulsar-consumer-action" data-action="pause" data-consumer-id="{{ consumer.id }}">Pause</button>
+                                {{/if}}
+                            {{else}}
+                                <span class="text-muted">Read-only</span>
+                            {{/if}}
+                        </td>
+                    </tr>
+                {{/each}}
+                </tbody>
+            </table>
+        {{else}}
+            <p class="card-text text-muted">No Pulsar consumers are registered.</p>
+        {{/if}}
+    </div>
+
+    <div class="tab-pane fade" id="producers" role="tabpanel" aria-labelledby="producers-tab">
+        {{#if body.producers}}
+            <table class="table table-sm table-striped">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Topic</th>
+                    <th>State</th>
+                    <th>Partitions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {{#each body.producers as |producer|}}
+                    <tr>
+                        <td><code>{{ producer.id }}</code></td>
+                        <td>{{ producer.name }}</td>
+                        <td><code>{{ producer.topic }}</code></td>
+                        <td>{{ producer.state }}</td>
+                        <td>{{ producer.partitions }}</td>
+                    </tr>
+                {{/each}}
+                </tbody>
+            </table>
+        {{else}}
+            <p class="card-text text-muted">No Pulsar producers are registered.</p>
+        {{/if}}
+    </div>
+
+    <div class="tab-pane fade" id="readers" role="tabpanel" aria-labelledby="readers-tab">
+        {{#if body.readers}}
+            <table class="table table-sm table-striped">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Topic</th>
+                    <th>State</th>
+                    <th>End of topic</th>
+                </tr>
+                </thead>
+                <tbody>
+                {{#each body.readers as |reader|}}
+                    <tr>
+                        <td><code>{{ reader.id }}</code></td>
+                        <td><code>{{ reader.topic }}</code></td>
+                        <td>{{ reader.state }}</td>
+                        <td>{{ reader.endOfTopic }}</td>
+                    </tr>
+                {{/each}}
+                </tbody>
+            </table>
+        {{else}}
+            <p class="card-text text-muted">No Pulsar readers are registered.</p>
+        {{/if}}
+    </div>
+
+    <div class="tab-pane fade" id="failures" role="tabpanel" aria-labelledby="failures-tab">
+        {{#unless body.failureEventsIncluded}}
+            <p class="card-text text-muted">Failure event collection is disabled.</p>
+        {{/unless}}
+        {{#if body.failures}}
+            <table class="table table-sm table-striped">
+                <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Client type</th>
+                    <th>Client</th>
+                    <th>Reason</th>
+                    <th>Error</th>
+                </tr>
+                </thead>
+                <tbody>
+                {{#each body.failures as |failure|}}
+                    <tr>
+                        <td><code>{{ failure.timestamp }}</code></td>
+                        <td>{{ failure.clientType }}</td>
+                        <td><code>{{ failure.clientName }}</code></td>
+                        <td>{{ failure.reason }}</td>
+                        <td>{{ failure.error }}</td>
+                    </tr>
+                {{/each}}
+                </tbody>
+            </table>
+        {{else}}
+            <p class="card-text text-muted">No Pulsar failure events have been captured.</p>
+        {{/if}}
+    </div>
+</div>
+
+<div class="alert mt-3" id="pulsarActionResult" style="display:none;"></div>
+
+<script>
+    $('.pulsar-consumer-action').click(function() {
+        var button = $(this);
+        var action = button.data('action');
+        var consumerId = button.data('consumer-id');
+        $.ajax({
+            type: 'POST',
+            url: '{{ ext.appPath }}/pulsar-control-panel-controller/consumers/' + action,
+            data: JSON.stringify({ id: consumerId }),
+            contentType: 'application/json; charset=utf-8'
+        }).done(function (data) {
+            $('#pulsarActionResult')
+                .removeClass('alert-danger')
+                .addClass('alert-success')
+                .text(data.message)
+                .show();
+            location.reload();
+        }).fail(function (data) {
+            var message = 'Pulsar consumer action failed';
+            if (data.responseJSON && data.responseJSON.message) {
+                message = data.responseJSON.message;
+            }
+            $('#pulsarActionResult')
+                .removeClass('alert-success')
+                .addClass('alert-danger')
+                .text(message)
+                .show();
+        });
+    });
+</script>
+{{/with}}
