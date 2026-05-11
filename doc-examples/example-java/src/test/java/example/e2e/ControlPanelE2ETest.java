@@ -8,9 +8,11 @@ import com.microsoft.playwright.junit.OptionsFactory;
 import com.microsoft.playwright.junit.UsePlaywright;
 import com.microsoft.playwright.options.AriaRole;
 import io.micronaut.context.annotation.Property;
+import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpStatus;
 import io.micronaut.http.client.HttpClient;
 import io.micronaut.http.client.annotation.Client;
+import io.micronaut.http.client.exceptions.HttpClientResponseException;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledInNativeImage;
@@ -19,6 +21,7 @@ import java.util.regex.Pattern;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @UsePlaywright(ControlPanelE2ETest.HeadlessBrowserOptions.class)
@@ -293,7 +296,13 @@ class ControlPanelE2ETest extends AbstractE2ETest {
     }
 
     @Test
-    void testFlyway(Page page) {
+    void testFlyway(Page page, @Client("/") HttpClient httpClient) {
+        var exception = assertThrows(
+            HttpClientResponseException.class,
+            () -> httpClient.toBlocking().exchange(HttpRequest.GET("/flyway"))
+        );
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
+
         page.navigate(baseUrl());
         categoryLink(page, "Data Sources").click();
         controlPanelDetails(page, "Flyway").click();

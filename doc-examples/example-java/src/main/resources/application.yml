@@ -60,6 +60,8 @@ endpoints:
   all:
     enabled: true
     sensitive: false
+  flyway:
+    enabled: false
   health:
     details-visible: ANONYMOUS
 
