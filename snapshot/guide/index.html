@@ -224,6 +224,28 @@ cards, buttons, badges, dialogs, data tables, tabs, breadcrumbs, sidebars, and l
 </p>
 </div>
 <div class="paragraph">
+<p>Some management panels require their backing Micronaut modules. For example, the Metrics panel appears only when
+Micrometer is present and metrics are enabled:</p>
+</div>
+<div class="paragraph">
+<p>        <div class="listingblock multi-language-sample">
+<div class="title"></div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="gradle">runtimeOnly(<span class="hljs-string">"io.micronaut.micrometer:micronaut-micrometer-core")</span></code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="maven">&lt;dependency&gt;
+    &lt;groupId&gt;io.micronaut.micrometer&lt;/groupId&gt;
+    &lt;artifactId&gt;micronaut-micrometer-core&lt;/artifactId&gt;
+    &lt;scope&gt;runtime&lt;/scope&gt;
+&lt;/dependency&gt;</code></pre>
+</div>
+</div>
+</p>
+</div>
+<div class="paragraph">
 <p>By default, the Control Panel is only enabled in the <code>dev</code> or <code>test</code> environments. You can change this and other settings
 in your configuration file:</p>
 </div>
@@ -748,6 +770,27 @@ Micronaut Endpoints require having the <code>io.micronaut:micronaut-management</
 </p>
 </div>
 <div class="paragraph">
+<p>The Metrics panel also needs Micrometer support:</p>
+</div>
+<div class="paragraph">
+<p>        <div class="listingblock multi-language-sample">
+<div class="title"></div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="gradle">runtimeOnly(<span class="hljs-string">"io.micronaut.micrometer:micronaut-micrometer-core")</span></code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="maven">&lt;dependency&gt;
+    &lt;groupId&gt;io.micronaut.micrometer&lt;/groupId&gt;
+    &lt;artifactId&gt;micronaut-micrometer-core&lt;/artifactId&gt;
+    &lt;scope&gt;runtime&lt;/scope&gt;
+&lt;/dependency&gt;</code></pre>
+</div>
+</div>
+</p>
+</div>
+<div class="paragraph">
 <p>The following panels are available:</p>
 </div>
 <div class="ulist">
@@ -757,6 +800,9 @@ Micronaut Endpoints require having the <code>io.micronaut:micronaut-management</
 </li>
 <li>
 <p><code>env</code>: Environment Properties</p>
+</li>
+<li>
+<p><code>metrics</code>: Metrics</p>
 </li>
 <li>
 <p><code>beans</code>: Bean Definitions</p>
@@ -1307,6 +1353,97 @@ you can enable the built-in filter by setting the following configuration proper
 <div class="paragraph">
 <p>This will show all values apart from those that contain the words <code>password</code>, <code>credential</code>, <code>certificate</code>, <code>key</code>,
 <code>secret</code> or <code>token</code> anywhere in their name.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_metrics">Metrics</h3>
+<div class="paragraph">
+<p>This panel displays a searchable, read-only view of Micrometer metrics. It relies on the
+<a href="https://micronaut-projects.github.io/micronaut-micrometer/latest/guide/">Micronaut Micrometer</a> module and the Metrics
+Endpoint bean. The panel appears only when Micrometer metrics are enabled and the Metrics endpoint is available.</p>
+</div>
+<div class="paragraph">
+<p>The detail view shows the selected metric&#8217;s description, base unit, measurements, and available tags. Tag filtering uses
+the same repeatable <code>tag</code> parameter shape as the Metrics endpoint, for example <code>tag=outcome:success</code>. Tag values that
+contain additional <code>:</code> characters are preserved.</p>
+</div>
+<div class="paragraph">
+<p>This panel is intended as a lightweight development-time inspector. It does not configure meter registries, expose
+exporters, mutate metrics, provide alerts, or replace production observability dashboards such as Grafana.</p>
+</div>
+<div class="paragraph">
+<p>You can disable only this panel with:</p>
+</div>
+<div class="openblock">
+<div class="title">Disabling the Metrics panel</div>
+<div class="content">
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">micronaut.control-panel.panels.metrics.enabled=false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">micronaut:
+  control-panel:
+    panels:
+      metrics:
+        enabled: false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[micronaut]
+  [micronaut.control-panel]
+    [micronaut.control-panel.panels]
+      [micronaut.control-panel.panels.metrics]
+        enabled=false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-groovy-config hljs" data-lang="groovy-config">micronaut {
+  controlPanel {
+    panels {
+      metrics {
+        enabled = false
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-hocon hljs" data-lang="hocon">{
+  micronaut {
+    control-panel {
+      panels {
+        metrics {
+          enabled = false
+        }
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json-config hljs" data-lang="json-config">{
+  "micronaut": {
+    "control-panel": {
+      "panels": {
+        "metrics": {
+          "enabled": false
+        }
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+</div>
 </div>
 </div>
 <div class="sect2">
@@ -2321,7 +2458,8 @@ to display a badge in the control panel header.</p>
 <div class="content">
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">micronaut.control-panel.panels.my-application.title=My Application Control Panel
+<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">micronaut.metrics.enabled=true
+micronaut.control-panel.panels.my-application.title=My Application Control Panel
 micronaut.control-panel.panels.my-application.icon=fa-plug
 micronaut.control-panel.panels.my-application.order=10</code></pre>
 </div>
@@ -2329,6 +2467,8 @@ micronaut.control-panel.panels.my-application.order=10</code></pre>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">micronaut:
+  metrics:
+    enabled: true
   control-panel:
     panels:
       my-application:
@@ -2340,6 +2480,8 @@ micronaut.control-panel.panels.my-application.order=10</code></pre>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[micronaut]
+  [micronaut.metrics]
+    enabled=true
   [micronaut.control-panel]
     [micronaut.control-panel.panels]
       [micronaut.control-panel.panels.my-application]
@@ -2351,6 +2493,9 @@ micronaut.control-panel.panels.my-application.order=10</code></pre>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-groovy-config hljs" data-lang="groovy-config">micronaut {
+  metrics {
+    enabled = true
+  }
   controlPanel {
     panels {
       myApplication {
@@ -2367,6 +2512,9 @@ micronaut.control-panel.panels.my-application.order=10</code></pre>
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-hocon hljs" data-lang="hocon">{
   micronaut {
+    metrics {
+      enabled = true
+    }
     control-panel {
       panels {
         my-application {
@@ -2384,6 +2532,9 @@ micronaut.control-panel.panels.my-application.order=10</code></pre>
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-json-config hljs" data-lang="json-config">{
   "micronaut": {
+    "metrics": {
+      "enabled": true
+    },
     "control-panel": {
       "panels": {
         "my-application": {
