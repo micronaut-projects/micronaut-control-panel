@@ -17,6 +17,7 @@ package io.micronaut.controlpanel.panels.pulsar;
 
 import io.micronaut.context.BeanLocator;
 import io.micronaut.context.annotation.Requires;
+import io.micronaut.controlpanel.core.security.ControlPanelSecurityPaths;
 import io.micronaut.core.annotation.Internal;
 import io.micronaut.core.annotation.Introspected;
 import io.micronaut.core.type.Argument;
@@ -37,7 +38,7 @@ import io.micronaut.serde.annotation.Serdeable;
  * @author Sergio del Amo
  * @since 2.0.0
  */
-@Controller("/pulsar-control-panel-controller")
+@Controller(ControlPanelSecurityPaths.PULSAR)
 @ExecuteOn(TaskExecutors.BLOCKING)
 @Internal
 @Requires(classes = PulsarConsumerRegistry.class)

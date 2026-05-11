@@ -64,6 +64,7 @@ class ControlPanelSecurityRuleTest {
         assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.POST("/control-panel" + ControlPanelSecurityPaths.HIBERNATE_PATH + "/default/hql", "{}"), null));
         assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.POST("/control-panel" + ControlPanelSecurityPaths.LOGGERS_PATH + "/ROOT", "{}"), null));
         assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.GET("/control-panel" + ControlPanelSecurityPaths.OBJECT_STORAGE_PATH + "/local/object"), null));
+        assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.POST("/control-panel" + ControlPanelSecurityPaths.PULSAR_PATH + "/consumers/pause", "{}"), null));
     }
 
     @Test
@@ -75,6 +76,7 @@ class ControlPanelSecurityRuleTest {
         assertEquals(SecurityRuleResult.REJECTED, check(rule, HttpRequest.DELETE("/control-panel" + ControlPanelSecurityPaths.CACHE_PATH + "/demo"), null));
         assertEquals(SecurityRuleResult.REJECTED, check(rule, HttpRequest.POST("/control-panel" + ControlPanelSecurityPaths.HIBERNATE_PATH + "/default/hql", "{}"), null));
         assertEquals(SecurityRuleResult.REJECTED, check(rule, HttpRequest.POST("/control-panel" + ControlPanelSecurityPaths.LOGGERS_PATH + "/ROOT", "{}"), null));
+        assertEquals(SecurityRuleResult.REJECTED, check(rule, HttpRequest.POST("/control-panel" + ControlPanelSecurityPaths.PULSAR_PATH + "/consumers/pause", "{}"), null));
     }
 
     @Test
@@ -86,6 +88,7 @@ class ControlPanelSecurityRuleTest {
         assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.POST("/app/control-panel" + ControlPanelSecurityPaths.HIBERNATE_PATH + "/default/hql", "{}"), authentication));
         assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.POST("/app/control-panel" + ControlPanelSecurityPaths.LOGGERS_PATH + "/ROOT", "{}"), authentication));
         assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.GET("/app/control-panel" + ControlPanelSecurityPaths.OBJECT_STORAGE_PATH + "/local/object"), authentication));
+        assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.POST("/app/control-panel" + ControlPanelSecurityPaths.PULSAR_PATH + "/consumers/resume", "{}"), authentication));
     }
 
     @Test
@@ -104,6 +107,7 @@ class ControlPanelSecurityRuleTest {
         assertEquals(SecurityRuleResult.REJECTED, check(rule, HttpRequest.GET("/control-panel"), authentication));
         assertEquals(SecurityRuleResult.REJECTED, check(rule, HttpRequest.DELETE("/control-panel" + ControlPanelSecurityPaths.CACHE_PATH + "/demo"), authentication));
         assertEquals(SecurityRuleResult.REJECTED, check(rule, HttpRequest.POST("/control-panel" + ControlPanelSecurityPaths.LOGGERS_PATH + "/ROOT", "{}"), authentication));
+        assertEquals(SecurityRuleResult.REJECTED, check(rule, HttpRequest.POST("/control-panel" + ControlPanelSecurityPaths.PULSAR_PATH + "/consumers/pause", "{}"), authentication));
     }
 
     @Test
@@ -114,6 +118,7 @@ class ControlPanelSecurityRuleTest {
         assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.GET("/control-panel"), authentication));
         assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.POST("/control-panel" + ControlPanelSecurityPaths.LOGGERS_PATH + "/ROOT", "{}"), authentication));
         assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.GET("/control-panel" + ControlPanelSecurityPaths.OBJECT_STORAGE_PATH + "/local/object"), authentication));
+        assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.POST("/control-panel" + ControlPanelSecurityPaths.PULSAR_PATH + "/consumers/pause", "{}"), authentication));
     }
 
     @Test
@@ -193,6 +198,7 @@ class ControlPanelSecurityRuleTest {
         assertEquals(SecurityRuleResult.REJECTED, check(rule, HttpRequest.GET("/app/admin/panel" + ControlPanelSecurityPaths.CACHE_PATH + "/demo"), null));
         assertEquals(SecurityRuleResult.REJECTED, check(rule, HttpRequest.POST("/app/admin/panel" + ControlPanelSecurityPaths.HIBERNATE_PATH + "/default/hql", "{}"), null));
         assertEquals(SecurityRuleResult.REJECTED, check(rule, HttpRequest.POST("/app/admin/panel" + ControlPanelSecurityPaths.LOGGERS_PATH + "/ROOT", "{}"), null));
+        assertEquals(SecurityRuleResult.REJECTED, check(rule, HttpRequest.POST("/app/admin/panel" + ControlPanelSecurityPaths.PULSAR_PATH + "/consumers/pause", "{}"), null));
         assertEquals(SecurityRuleResult.UNKNOWN, check(rule, HttpRequest.GET("/app/control-panel"), null));
     }
 
