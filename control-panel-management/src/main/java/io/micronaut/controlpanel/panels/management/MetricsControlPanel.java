@@ -29,7 +29,7 @@ import java.util.SortedSet;
 /**
  * Control panel that displays Micrometer metric names and details.
  *
- * @author Sergio del Amo
+ * @author Álvaro Sánchez-Mariscal
  * @since 2.0.0
  */
 @Singleton
