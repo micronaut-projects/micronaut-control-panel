@@ -5,6 +5,10 @@ repositories {
     mavenCentral()
 }
 
+configurations.configureEach {
+    resolutionStrategy.preferProjectModules()
+}
+
 val mn = versionCatalogs.named("mn")
 
 dependencies {

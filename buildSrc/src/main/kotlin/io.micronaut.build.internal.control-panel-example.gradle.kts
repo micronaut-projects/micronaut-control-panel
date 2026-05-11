@@ -20,6 +20,10 @@ micronaut {
     testRuntime = MicronautTestRuntime.JUNIT_5
 }
 
+configurations.configureEach {
+    resolutionStrategy.preferProjectModules()
+}
+
 tasks.register<JavaExec>("playwrightCodegen") {
     mainClass.set("com.microsoft.playwright.CLI")
     classpath = sourceSets.test.get().runtimeClasspath
