@@ -18,4 +18,13 @@ class ControlPanelRenderingTest {
         assertTrue(body.contains("my-local"));
         assertTrue(body.contains("files stored."));
     }
+
+    @Test
+    void rendersEmailCategory(@Client("/") HttpClient client) {
+        var body = client.toBlocking().retrieve(HttpRequest.GET("/control-panel/categories/email"));
+
+        assertTrue(body.contains("Email: demo"));
+        assertTrue(body.contains("Custom/Unknown"));
+        assertTrue(body.contains("Test send"));
+    }
 }
