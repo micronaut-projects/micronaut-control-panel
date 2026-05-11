@@ -63,6 +63,7 @@ final class OciSdkClientsControlPanelTest {
             OciSdkClientsControlPanel.ClientInfo client = body.clients().get(0);
             assertEquals("identity", client.serviceId());
             assertEquals("blocking", client.clientKind());
+            assertEquals("1", context.getBean(OciSdkClientsControlPanel.class).getBadge());
             assertEquals("com.oracle.bmc.identity.IdentityClient", client.clientClass());
             assertTrue(client.regionConfigured());
             assertTrue(client.serviceConfigurationPresent());

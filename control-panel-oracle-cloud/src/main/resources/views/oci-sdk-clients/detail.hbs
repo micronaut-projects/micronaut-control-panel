@@ -20,8 +20,6 @@
                                     <li><span class="badge badge-secondary">{{notice.code}}</span> {{notice.message}}</li>
                                 {{/each}}
                             </ul>
-                        {{else}}
-                            <p>No diagnostics notices.</p>
                         {{/if}}
                     </div>
                 </div>
@@ -135,9 +133,9 @@
                         <span class="badge badge-warning">configuration conflict</span>
                     {{/if}}
                 </p>
-                {{#if globalHttp.configuredKeysBySafeCategory}}
+                {{#if globalHttp.configuredCategories}}
                     <p>
-                        {{#each globalHttp.configuredKeysBySafeCategory as |category|}}
+                        {{#each globalHttp.configuredCategories as |category|}}
                             <span class="badge badge-secondary">{{category}}</span>
                         {{/each}}
                     </p>

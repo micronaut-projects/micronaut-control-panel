@@ -89,8 +89,8 @@ public class OciSdkClientsControlPanel extends AbstractControlPanel<OciSdkClient
     @Override
     public Body getBody() {
         Set<String> propertyNames = collectPropertyNames();
-        List<ClientInfo> clients = resolveClients(propertyNames);
         AuthenticationInfo authentication = resolveAuthentication(propertyNames);
+        List<ClientInfo> clients = resolveClients(propertyNames, authentication.providerType());
         HttpConfigurationInfo http = resolveHttpConfiguration(propertyNames);
         List<ServiceConfigurationInfo> serviceConfigurations = resolveServiceConfigurations(propertyNames);
         NettyInfo netty = resolveNettyInfo(propertyNames);
@@ -102,7 +102,7 @@ public class OciSdkClientsControlPanel extends AbstractControlPanel<OciSdkClient
 
     @Override
     public String getBadge() {
-        return String.valueOf(resolveClients(collectPropertyNames()).size());
+        return String.valueOf(countOciClientBeans());
     }
 
     @Override
@@ -115,7 +115,7 @@ public class OciSdkClientsControlPanel extends AbstractControlPanel<OciSdkClient
         return "Open diagnostics";
     }
 
-    private List<ClientInfo> resolveClients(Set<String> propertyNames) {
+    private List<ClientInfo> resolveClients(Set<String> propertyNames, String authProviderType) {
         Map<String, ClientInfoBuilder> clients = new LinkedHashMap<>();
         Map<String, Set<String>> variantsByService = new LinkedHashMap<>();
 
@@ -124,7 +124,7 @@ public class OciSdkClientsControlPanel extends AbstractControlPanel<OciSdkClient
             BeanDefinition<?> definition = registration.getBeanDefinition();
             Class<?> beanType = registration.getBeanType();
             if (isOciClientType(beanType)) {
-                ClientInfoBuilder builder = clientInfo(definition, beanType, registration.getIdentifier().toString(), false, propertyNames);
+                ClientInfoBuilder builder = clientInfo(definition, beanType, registration.getIdentifier().toString(), false, propertyNames, authProviderType);
                 clients.put(builder.key(), builder);
                 variantsByService.computeIfAbsent(builder.serviceId, ignored -> new TreeSet<>()).add(builder.clientKind);
             }
@@ -133,7 +133,7 @@ public class OciSdkClientsControlPanel extends AbstractControlPanel<OciSdkClient
         for (BeanDefinition<?> definition : beanContext.getAllBeanDefinitions()) {
             Class<?> beanType = definition.getBeanType();
             if (isOciClientType(beanType)) {
-                ClientInfoBuilder builder = clientInfo(definition, beanType, definition.getName(), true, propertyNames);
+                ClientInfoBuilder builder = clientInfo(definition, beanType, definition.getName(), true, propertyNames, authProviderType);
                 variantsByService.computeIfAbsent(builder.serviceId, ignored -> new TreeSet<>()).add(builder.clientKind);
                 clients.putIfAbsent(builder.key(), builder);
             }
@@ -154,7 +154,8 @@ public class OciSdkClientsControlPanel extends AbstractControlPanel<OciSdkClient
                                          Class<?> beanType,
                                          String fallbackName,
                                          boolean definitionOnly,
-                                         Set<String> propertyNames) {
+                                         Set<String> propertyNames,
+                                         String authProviderType) {
         String qualifier = Qualifiers.findName(definition.getDeclaredQualifier());
         String beanName = qualifier == null ? fallbackName : qualifier;
         String serviceId = inferServiceId(beanType);
@@ -166,13 +167,41 @@ public class OciSdkClientsControlPanel extends AbstractControlPanel<OciSdkClient
             serviceId,
             clientKind,
             List.of(clientKind),
-            resolveAuthentication(propertyNames).providerType(),
+            authProviderType,
             hasProperty(propertyNames, "oci.region") || hasProperty(propertyNames, OCI_CLIENTS_PREFIX + serviceId + ".region"),
             hasProperty(propertyNames, "oci.endpoint") || hasProperty(propertyNames, OCI_CLIENT_PREFIX + "endpoint") || hasProperty(propertyNames, OCI_CLIENTS_PREFIX + serviceId + ".endpoint"),
             hasPrefix(propertyNames, OCI_CLIENTS_PREFIX + serviceId + "."),
             definitionOnly,
             definitionOnly ? List.of("Bean definition detected; client has not been instantiated yet.") : List.of()
         );
+    }
+
+    private int countOciClientBeans() {
+        Set<String> clientKeys = new TreeSet<>();
+        Collection<BeanRegistration<?>> activeRegistrations = beanContext.getActiveBeanRegistrations(Qualifiers.any());
+        for (BeanRegistration<?> registration : activeRegistrations) {
+            BeanDefinition<?> definition = registration.getBeanDefinition();
+            Class<?> beanType = registration.getBeanType();
+            if (isOciClientType(beanType)) {
+                clientKeys.add(clientKey(definition, beanType));
+            }
+        }
+        for (BeanDefinition<?> definition : beanContext.getAllBeanDefinitions()) {
+            Class<?> beanType = definition.getBeanType();
+            if (isOciClientType(beanType)) {
+                clientKeys.add(clientKey(definition, beanType));
+            }
+        }
+        return clientKeys.size();
+    }
+
+    private static String clientKey(BeanDefinition<?> definition, Class<?> beanType) {
+        String qualifier = Qualifiers.findName(definition.getDeclaredQualifier());
+        return clientKey(qualifier == null ? "" : qualifier, beanType.getName());
+    }
+
+    private static String clientKey(String qualifier, String clientClass) {
+        return (qualifier.isEmpty() ? clientClass : qualifier) + ":" + clientClass;
     }
 
     private AuthenticationInfo resolveAuthentication(Set<String> propertyNames) {
@@ -430,6 +459,19 @@ public class OciSdkClientsControlPanel extends AbstractControlPanel<OciSdkClient
 
     /**
      * OCI SDK client metadata safe for rendering.
+     *
+     * @param beanName bean name or identifier
+     * @param qualifier qualifier name
+     * @param clientClass client implementation class
+     * @param serviceId inferred OCI service id
+     * @param clientKind client kind
+     * @param reactiveVariants other client variants detected for the service
+     * @param authProviderType authentication provider type
+     * @param regionConfigured whether region configuration is present
+     * @param endpointConfigured whether endpoint configuration is present
+     * @param serviceConfigurationPresent whether service-specific configuration is present
+     * @param definitionOnly whether only the bean definition was detected
+     * @param notes non-secret diagnostic notes
      */
     @ReflectiveAccess
     public record ClientInfo(String beanName,
@@ -448,6 +490,12 @@ public class OciSdkClientsControlPanel extends AbstractControlPanel<OciSdkClient
 
     /**
      * Authentication provider metadata safe for rendering.
+     *
+     * @param providerType provider type
+     * @param providerClass provider class
+     * @param beanName provider bean identifier
+     * @param sourceSignals non-secret source signals
+     * @param hiddenFields hidden field categories
      */
     @ReflectiveAccess
     public record AuthenticationInfo(String providerType,
@@ -459,16 +507,30 @@ public class OciSdkClientsControlPanel extends AbstractControlPanel<OciSdkClient
 
     /**
      * Global HTTP configuration signals.
+     *
+     * @param globalOciClientConfigured whether `oci.client` configuration is present
+     * @param micronautHttpServicesOciConfigured whether `micronaut.http.services.oci` configuration is present
+     * @param conflictWarning whether both global HTTP configuration paths are present
+     * @param configuredCategories safe configuration categories
      */
     @ReflectiveAccess
     public record HttpConfigurationInfo(boolean globalOciClientConfigured,
                                         boolean micronautHttpServicesOciConfigured,
                                         boolean conflictWarning,
-                                        List<String> configuredKeysBySafeCategory) {
+                                        List<String> configuredCategories) {
     }
 
     /**
      * Service-specific HTTP configuration signals.
+     *
+     * @param serviceId service id
+     * @param configurationPresent whether service configuration is present
+     * @param timeoutConfigured whether timeout configuration is present
+     * @param retryConfigured whether retry configuration is present
+     * @param proxyConfigured whether proxy configuration is present
+     * @param sslConfigured whether SSL configuration is present
+     * @param loggingConfigured whether logging configuration is present
+     * @param configuredCategories safe configuration categories
      */
     @ReflectiveAccess
     public record ServiceConfigurationInfo(String serviceId,
@@ -477,12 +539,18 @@ public class OciSdkClientsControlPanel extends AbstractControlPanel<OciSdkClient
                                            boolean retryConfigured,
                                            boolean proxyConfigured,
                                            boolean sslConfigured,
-                                           boolean logLevelConfigured,
+                                           boolean loggingConfigured,
                                            List<String> configuredCategories) {
     }
 
     /**
      * Managed Netty configuration signals.
+     *
+     * @param managedProviderGlobalConfigured whether the managed provider flag is configured
+     * @param managedProviderGlobalEnabled whether the managed provider flag is enabled
+     * @param legacyNettyConfigured whether the legacy Netty flag is configured
+     * @param legacyNettyEnabled whether the legacy Netty flag is enabled
+     * @param nettyProviderClassPresent whether the Netty provider configuration class is present
      */
     @ReflectiveAccess
     public record NettyInfo(boolean managedProviderGlobalConfigured,
@@ -494,6 +562,11 @@ public class OciSdkClientsControlPanel extends AbstractControlPanel<OciSdkClient
 
     /**
      * Optional Oracle Cloud integration indicator.
+     *
+     * @param name integration name
+     * @param present whether the integration is present
+     * @param configured whether integration configuration is present
+     * @param detailsHidden whether details are hidden
      */
     @ReflectiveAccess
     public record IntegrationInfo(String name,
@@ -504,6 +577,10 @@ public class OciSdkClientsControlPanel extends AbstractControlPanel<OciSdkClient
 
     /**
      * Non-secret diagnostics notice.
+     *
+     * @param level notice level
+     * @param code notice code
+     * @param message notice message
      */
     @ReflectiveAccess
     public record DiagnosticNotice(String level, String code, String message) {
@@ -511,6 +588,15 @@ public class OciSdkClientsControlPanel extends AbstractControlPanel<OciSdkClient
 
     /**
      * Body for the OCI SDK clients panel.
+     *
+     * @param summary panel summary
+     * @param clients client rows
+     * @param authentication authentication metadata
+     * @param globalHttp global HTTP configuration metadata
+     * @param serviceConfigurations service configuration rows
+     * @param netty Netty configuration metadata
+     * @param integrations integration rows
+     * @param notices diagnostic notices
      */
     @ReflectiveAccess
     public record Body(Summary summary,
@@ -564,7 +650,7 @@ public class OciSdkClientsControlPanel extends AbstractControlPanel<OciSdkClient
         }
 
         private String key() {
-            return beanName + ":" + clientClass;
+            return clientKey(qualifier, clientClass);
         }
 
         private ClientInfo build() {
