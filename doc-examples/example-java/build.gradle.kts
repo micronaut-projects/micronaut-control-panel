@@ -52,7 +52,7 @@ dependencies {
 
     // JMX
     implementation(projects.micronautControlPanelJmx)
-    implementation("io.micronaut.jmx:micronaut-jmx")
+    implementation(libs.micronaut.jmx)
 
     // OpenAPI + Swagger UI (views generated at compile-time)
     annotationProcessor(mnOpenapi.micronaut.openapi)
