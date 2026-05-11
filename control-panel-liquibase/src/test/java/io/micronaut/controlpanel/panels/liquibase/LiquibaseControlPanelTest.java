@@ -34,6 +34,7 @@ class LiquibaseControlPanelTest {
             assertEquals("liquibase", panel.getName());
             assertEquals("datasource", panel.getCategory().id());
             assertEquals("Data Sources", panel.getCategory().name());
+            assertEquals("fas fa-database", panel.getCategory().iconClass());
             assertEquals("", panel.getBadge());
         }
     }

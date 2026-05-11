@@ -13,11 +13,13 @@ dependencies {
     testImplementation(mnTest.mockito.core)
     testImplementation(mnTest.mockito.junit.jupiter)
     testImplementation(mnViews.handlebars)
-    testRuntimeOnly(mnTest.junit.jupiter.engine)
-    testAnnotationProcessor(mn.micronaut.inject.java)
     testImplementation(mnLiquibase.micronaut.liquibase)
     testImplementation(mnSql.micronaut.jdbc.hikari)
     testImplementation(mnLiquibase.liquibase)
+
+    testAnnotationProcessor(mn.micronaut.inject.java)
+
+    testRuntimeOnly(mnTest.junit.jupiter.engine)
     testRuntimeOnly(mnSql.h2)
 }
 

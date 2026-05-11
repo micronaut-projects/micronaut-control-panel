@@ -31,6 +31,7 @@ import liquibase.database.Database;
 import liquibase.database.DatabaseConnection;
 import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
+import liquibase.exception.DatabaseException;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -124,7 +125,7 @@ public class LiquibaseHistoryService {
         }
     }
 
-    private static Database createDatabase(Connection connection, LiquibaseConfigurationProperties configuration) throws Exception {
+    private static Database createDatabase(Connection connection, LiquibaseConfigurationProperties configuration) throws DatabaseException {
         DatabaseConnection liquibaseConnection = new JdbcConnection(connection);
         Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(liquibaseConnection);
 
@@ -175,7 +176,7 @@ public class LiquibaseHistoryService {
             changeSet.getTag());
     }
 
-    private static List<String> sorted(Set<String> values) {
+    private static List<String> sorted(@Nullable Set<String> values) {
         return values == null ? List.of() : values.stream().sorted().toList();
     }
 
