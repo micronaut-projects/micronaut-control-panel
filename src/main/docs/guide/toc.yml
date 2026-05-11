@@ -10,6 +10,7 @@ controlPanels:
   datasource: Datasource
   hibernate: Hibernate
   kafka: Kafka
+  validation: Validation
 
 custom: Creating Custom Control Panels
 repository: Repository
