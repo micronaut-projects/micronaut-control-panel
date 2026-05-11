@@ -141,7 +141,10 @@ public class OciSdkClientsControlPanel extends AbstractControlPanel<OciSdkClient
 
         return clients.values()
             .stream()
-            .peek(builder -> builder.reactiveVariants = List.copyOf(variantsByService.getOrDefault(builder.serviceId, Set.of())))
+            .peek(builder -> builder.reactiveVariants = variantsByService.getOrDefault(builder.serviceId, Set.of())
+                .stream()
+                .filter(variant -> !variant.equals(builder.clientKind))
+                .toList())
             .map(ClientInfoBuilder::build)
             .sorted(Comparator.comparing(ClientInfo::serviceId).thenComparing(ClientInfo::clientClass))
             .toList();
@@ -286,7 +289,7 @@ public class OciSdkClientsControlPanel extends AbstractControlPanel<OciSdkClient
         if (hasPrefix(propertyNames, "oci.config.oke-workload-identity.")) {
             signals.add("OKE workload identity configuration present");
         }
-        if (hasPrefix(propertyNames, "oci.config.")) {
+        if (hasAny(propertyNames, "oci.config.enabled", "oci.config.path", "oci.config.profile", "oci.config.session-token")) {
             signals.add("config-file/session configuration present");
         }
         if (hasProperty(propertyNames, "oci.region")) {
@@ -330,7 +333,16 @@ public class OciSdkClientsControlPanel extends AbstractControlPanel<OciSdkClient
     }
 
     private static boolean hasSensitiveConfiguredKey(Set<String> propertyNames) {
-        return propertyNames.stream().anyMatch(OciDiagnosticsRedactor::isSensitiveKey);
+        return propertyNames.stream()
+            .filter(OciSdkClientsControlPanel::isOracleCloudProperty)
+            .anyMatch(OciDiagnosticsRedactor::isSensitiveKey);
+    }
+
+    private static boolean isOracleCloudProperty(String propertyName) {
+        return propertyName.startsWith("oci.")
+            || propertyName.startsWith(MICRONAUT_HTTP_SERVICES_OCI_PREFIX)
+            || propertyName.startsWith("micronaut.metrics.export.oraclecloud.")
+            || propertyName.startsWith("logback.appenders.oracle-cloud.");
     }
 
     private static boolean isOciClientType(Class<?> beanType) {
@@ -368,6 +380,9 @@ public class OciSdkClientsControlPanel extends AbstractControlPanel<OciSdkClient
         simpleName = simpleName.replaceFirst("Client$", "");
         simpleName = simpleName.replaceFirst("^Reactor", "");
         simpleName = simpleName.replaceFirst("^Rx", "");
+        simpleName = simpleName.replaceFirst("Reactor$", "");
+        simpleName = simpleName.replaceFirst("RxJava2$", "");
+        simpleName = simpleName.replaceFirst("Rx$", "");
         return NameUtils.hyphenate(simpleName).replace("-", "").toLowerCase(Locale.ROOT);
     }
 

@@ -19,7 +19,9 @@ import com.oracle.bmc.auth.AuthenticationDetailsProvider;
 import com.oracle.bmc.identity.IdentityClient;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.annotation.Factory;
+import io.micronaut.context.annotation.Requires;
 import io.micronaut.controlpanel.core.ControlPanelRepository;
+import io.micronaut.oraclecloud.clients.reactor.objectstorage.ObjectStorageReactorClient;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import org.junit.jupiter.api.Test;
@@ -128,6 +130,34 @@ final class OciSdkClientsControlPanelTest {
     }
 
     @Test
+    void infersReactorWrapperServiceIdAndDoesNotDuplicateCurrentKind() {
+        try (ApplicationContext context = context(
+            new AtomicInteger(),
+            new AtomicInteger(),
+            Map.of("reactor.fixture.enabled", true)
+        )) {
+            OciSdkClientsControlPanel.ClientInfo reactorClient = context.getBean(OciSdkClientsControlPanel.class).getBody().clients()
+                .stream()
+                .filter(client -> client.clientClass().equals("io.micronaut.oraclecloud.clients.reactor.objectstorage.ObjectStorageReactorClient"))
+                .findFirst()
+                .orElseThrow();
+
+            assertEquals("objectstorage", reactorClient.serviceId());
+            assertEquals("reactor", reactorClient.clientKind());
+            assertFalse(reactorClient.reactiveVariants().contains("reactor"));
+        }
+    }
+
+    @Test
+    void ignoresNonOracleCloudSensitiveSystemPropertiesForNotices() {
+        try (ApplicationContext context = ApplicationContext.run(Map.of("spec.name", "OciSdkClientsControlPanelTest"))) {
+            OciSdkClientsControlPanel.Body body = context.getBean(OciSdkClientsControlPanel.class).getBody();
+
+            assertTrue(body.notices().stream().noneMatch(notice -> "permission-hidden".equals(notice.code())));
+        }
+    }
+
+    @Test
     void panelIsAvailableInOracleCloudCategory() {
         try (ApplicationContext context = context(new AtomicInteger(), new AtomicInteger())) {
             OciSdkClientsControlPanel panel = context.getBean(OciSdkClientsControlPanel.class);
@@ -198,6 +228,12 @@ final class OciSdkClientsControlPanelTest {
         @Named("identity")
         IdentityClient identityClient() {
             return new IdentityClient(clientCalls);
+        }
+
+        @Singleton
+        @Requires(property = "reactor.fixture.enabled", value = "true")
+        ObjectStorageReactorClient objectStorageReactorClient() {
+            return new ObjectStorageReactorClient();
         }
 
         @Singleton
