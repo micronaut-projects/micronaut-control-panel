@@ -12,7 +12,6 @@ import io.micronaut.http.HttpStatus;
 import io.micronaut.http.client.HttpClient;
 import io.micronaut.http.client.annotation.Client;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledInNativeImage;
 
@@ -26,14 +25,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @MicronautTest(environments = {"hibernate", "kafka", "oracle"})
 @Property(name = "kafka.streams.default.state.dir", value = "build/tmp/kafka-streams-e2e")
 class ControlPanelE2ETest extends AbstractE2ETest {
-
-    private static final double CONTROL_PANEL_TIMEOUT_MS = 180_000;
-
-    @BeforeEach
-    void configurePage(Page page) {
-        page.setDefaultTimeout(CONTROL_PANEL_TIMEOUT_MS);
-        page.setDefaultNavigationTimeout(CONTROL_PANEL_TIMEOUT_MS);
-    }
 
     @Test
     void testDashboard(Page page) {

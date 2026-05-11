@@ -66,20 +66,6 @@ class ObjectStorageControlPanelTest {
     }
 
     @Test
-    void getIconReturnsDefaultIconForAwsStorageConfiguration() {
-        AwsS3Configuration awsConfig = new AwsS3Configuration("test-storage");
-        ObjectStorageControlPanel panel = createPanel(Mockito.mock(ObjectStorageOperations.class), awsConfig, Mockito.mock(ControlPanelConfiguration.class));
-        assertEquals(ObjectStorageControlPanel.DEFAULT_ICON_CLASS, panel.getIcon());
-    }
-
-    @Test
-    void getIconReturnsDefaultIconForLocalStorageConfiguration() {
-        LocalStorageConfiguration localConfig = new LocalStorageConfiguration("test-storage");
-        ObjectStorageControlPanel panel = createPanel(Mockito.mock(ObjectStorageOperations.class), localConfig, Mockito.mock(ControlPanelConfiguration.class));
-        assertEquals(ObjectStorageControlPanel.DEFAULT_ICON_CLASS, panel.getIcon());
-    }
-
-    @Test
     void itHasCorrectBodyView() {
         ObjectStorageControlPanel panel = createPanel(Mockito.mock(ObjectStorageOperations.class), Mockito.mock(AbstractObjectStorageConfiguration.class), Mockito.mock(ControlPanelConfiguration.class));
         assertEquals("/views/object-storage/body", panel.getBodyView().file());
@@ -111,8 +97,8 @@ class ObjectStorageControlPanelTest {
         ObjectStorageControlPanel panel = createPanel(operations, Mockito.mock(AbstractObjectStorageConfiguration.class), Mockito.mock(ControlPanelConfiguration.class));
         var body = panel.getBody();
         assertEquals(2, body.entries().size());
-        assertTrue(body.entries().stream().anyMatch(entry -> entry.key().equals(entry1.getKey())));
-        assertTrue(body.entries().stream().anyMatch(entry -> entry.key().equals(entry2.getKey())));
+        assertTrue(body.entries().contains(entry1));
+        assertTrue(body.entries().contains(entry2));
     }
 
     @Test
@@ -127,8 +113,8 @@ class ObjectStorageControlPanelTest {
         ObjectStorageControlPanel panel = createPanel(operations, Mockito.mock(AbstractObjectStorageConfiguration.class), Mockito.mock(ControlPanelConfiguration.class));
         var body = panel.getBody();
         assertEquals(1, body.entries().size());
-        assertTrue(body.entries().stream().anyMatch(entry -> entry.key().equals(entry1.getKey())));
-        assertFalse(body.entries().stream().anyMatch(entry -> entry.key().equals(entry2.getKey())));
+        assertTrue(body.entries().contains(entry1));
+        assertFalse(body.entries().contains(entry2));
     }
 
     @Test
@@ -149,8 +135,8 @@ class ObjectStorageControlPanelTest {
 
     @Test
     void computeMetadataReturnsBucketForAws() {
-        AwsS3Configuration awsConfig = new AwsS3Configuration("test-storage");
-        awsConfig.setBucket("mybucket");
+        AwsS3Configuration awsConfig = Mockito.mock(AwsS3Configuration.class);
+        Mockito.when(awsConfig.getBucket()).thenReturn("mybucket");
         ObjectStorageControlPanel panel = new ObjectStorageControlPanel(Mockito.mock(ObjectStorageOperations.class), awsConfig, Mockito.mock(ControlPanelConfiguration.class));
         var metadata = panel.computeMetadata();
         assertEquals(1, metadata.size());
@@ -159,8 +145,8 @@ class ObjectStorageControlPanelTest {
 
     @Test
     void computeMetadataIncludesPathForLocalStorageConfiguration() {
-        LocalStorageConfiguration localConfig = new LocalStorageConfiguration("test-storage");
-        localConfig.setPath(Path.of("/tmp/test-storage"));
+        LocalStorageConfiguration localConfig = Mockito.mock(LocalStorageConfiguration.class);
+        Mockito.when(localConfig.getPath()).thenReturn(Path.of("/tmp/test-storage"));
         ObjectStorageControlPanel panel = new ObjectStorageControlPanel(Mockito.mock(ObjectStorageOperations.class), localConfig, Mockito.mock(ControlPanelConfiguration.class));
         var metadata = panel.computeMetadata();
         assertEquals(1, metadata.size());

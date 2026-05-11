@@ -21,10 +21,19 @@ import io.micronaut.controlpanel.core.AbstractEachBeanControlPanel;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.core.annotation.ReflectiveAccess;
 import io.micronaut.core.annotation.TypeHint;
-import io.micronaut.core.beans.BeanWrapper;
 import io.micronaut.objectstorage.ObjectStorageEntry;
 import io.micronaut.objectstorage.ObjectStorageOperations;
+import io.micronaut.objectstorage.aws.AwsS3Configuration;
+import io.micronaut.objectstorage.aws.AwsS3ObjectStorageEntry;
+import io.micronaut.objectstorage.azure.AzureBlobStorageConfiguration;
+import io.micronaut.objectstorage.azure.AzureBlobStorageEntry;
 import io.micronaut.objectstorage.configuration.AbstractObjectStorageConfiguration;
+import io.micronaut.objectstorage.googlecloud.GoogleCloudStorageConfiguration;
+import io.micronaut.objectstorage.googlecloud.GoogleCloudStorageEntry;
+import io.micronaut.objectstorage.local.LocalStorageConfiguration;
+import io.micronaut.objectstorage.local.LocalStorageEntry;
+import io.micronaut.objectstorage.oraclecloud.OracleCloudStorageConfiguration;
+import io.micronaut.objectstorage.oraclecloud.OracleCloudStorageEntry;
 import jakarta.inject.Named;
 
 import java.util.HashMap;
@@ -50,10 +59,21 @@ public class ObjectStorageControlPanel extends AbstractEachBeanControlPanel<Obje
     public static final String ENABLED_PROPERTY = ControlPanelConfiguration.PREFIX + "." + NAME + ".enabled";
     public static final String DEFAULT_ICON_CLASS = "fas fa-cloud-arrow-down";
     public static final String BUCKET = "bucket";
+    private static final String AWS_S3_CONFIGURATION = "io.micronaut.objectstorage.aws.AwsS3Configuration";
+    private static final String AZURE_BLOB_STORAGE_CONFIGURATION = "io.micronaut.objectstorage.azure.AzureBlobStorageConfiguration";
+    private static final String GOOGLE_CLOUD_STORAGE_CONFIGURATION = "io.micronaut.objectstorage.googlecloud.GoogleCloudStorageConfiguration";
+    private static final String LOCAL_STORAGE_CONFIGURATION = "io.micronaut.objectstorage.local.LocalStorageConfiguration";
+    private static final String ORACLE_CLOUD_STORAGE_CONFIGURATION = "io.micronaut.objectstorage.oraclecloud.OracleCloudStorageConfiguration";
     private static final String CONTAINER = "container";
     private static final String ENDPOINT = "endpoint";
     private static final String NAMESPACE = "namespace";
     private static final String PATH = "path";
+    private static final Map<String, String> PROVIDER_ICONS = Map.of(
+        AWS_S3_CONFIGURATION, "fa-brands fa-aws",
+        AZURE_BLOB_STORAGE_CONFIGURATION, "fa-brands fa-microsoft",
+        GOOGLE_CLOUD_STORAGE_CONFIGURATION, "fa-brands fa-google",
+        LOCAL_STORAGE_CONFIGURATION, "fa-hard-drive"
+    );
 
     private final ObjectStorageOperations<?, ?, ?> operations;
     private final AbstractObjectStorageConfiguration objectStorageConfiguration;
@@ -83,7 +103,6 @@ public class ObjectStorageControlPanel extends AbstractEachBeanControlPanel<Obje
             .map(operations::retrieve)
             .filter(Optional::isPresent)
             .map(Optional::get)
-            .map(ObjectStorageControlPanel::entry)
             .toList();
         var metadata = computeMetadata();
 
@@ -97,7 +116,13 @@ public class ObjectStorageControlPanel extends AbstractEachBeanControlPanel<Obje
 
     @Override
     public String getIcon() {
-        return DEFAULT_ICON_CLASS;
+        var configurationType = objectStorageConfiguration.getClass();
+        return PROVIDER_ICONS.entrySet()
+            .stream()
+            .filter(entry -> isConfiguration(configurationType, entry.getKey()))
+            .map(Map.Entry::getValue)
+            .findFirst()
+            .orElse(DEFAULT_ICON_CLASS);
     }
 
     /**
@@ -107,41 +132,34 @@ public class ObjectStorageControlPanel extends AbstractEachBeanControlPanel<Obje
      */
     Map<String, Object> computeMetadata() {
         var metadata = new HashMap<String, Object>();
-        putMetadata(metadata, PATH);
-        putMetadata(metadata, BUCKET);
-        putMetadata(metadata, CONTAINER);
-        putMetadata(metadata, ENDPOINT);
-        putMetadata(metadata, NAMESPACE);
+        var configurationType = objectStorageConfiguration.getClass();
+        if (isConfiguration(configurationType, LOCAL_STORAGE_CONFIGURATION)) {
+            metadata.put(PATH, ((LocalStorageConfiguration) objectStorageConfiguration).getPath());
+        } else if (isConfiguration(configurationType, AWS_S3_CONFIGURATION)) {
+            metadata.put(BUCKET, ((AwsS3Configuration) objectStorageConfiguration).getBucket());
+        } else if (isConfiguration(configurationType, AZURE_BLOB_STORAGE_CONFIGURATION)) {
+            var configuration = (AzureBlobStorageConfiguration) objectStorageConfiguration;
+            metadata.put(CONTAINER, configuration.getContainer());
+            metadata.put(ENDPOINT, configuration.getEndpoint());
+        } else if (isConfiguration(configurationType, GOOGLE_CLOUD_STORAGE_CONFIGURATION)) {
+            metadata.put(BUCKET, ((GoogleCloudStorageConfiguration) objectStorageConfiguration).getBucket());
+        } else if (isConfiguration(configurationType, ORACLE_CLOUD_STORAGE_CONFIGURATION)) {
+            var configuration = (OracleCloudStorageConfiguration) objectStorageConfiguration;
+            metadata.put(BUCKET, configuration.getBucket());
+            metadata.put(NAMESPACE, configuration.getNamespace());
+        }
         return metadata;
     }
 
-    private void putMetadata(Map<String, Object> metadata, String propertyName) {
-        try {
-            BeanWrapper.findWrapper(objectStorageConfiguration)
-                .flatMap(wrapper -> wrapper.getIntrospection().getReadProperty(propertyName))
-                .map(property -> property.get(objectStorageConfiguration))
-                .or(() -> readProperty(propertyName))
-                .ifPresent(value -> metadata.put(propertyName, value));
-        } catch (LinkageError e) {
-            readProperty(propertyName).ifPresent(value -> metadata.put(propertyName, value));
+    private static boolean isConfiguration(Class<?> type, String configurationClassName) {
+        var currentType = type;
+        while (currentType != null) {
+            if (configurationClassName.equals(currentType.getName())) {
+                return true;
+            }
+            currentType = currentType.getSuperclass();
         }
-    }
-
-    private Optional<Object> readProperty(String propertyName) {
-        try {
-            var method = objectStorageConfiguration.getClass().getMethod(getterName(propertyName));
-            return Optional.ofNullable(method.invoke(objectStorageConfiguration));
-        } catch (ReflectiveOperationException | SecurityException | LinkageError e) {
-            return Optional.empty();
-        }
-    }
-
-    private static String getterName(String propertyName) {
-        return "get" + Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1);
-    }
-
-    private static Entry entry(ObjectStorageEntry<?> entry) {
-        return new Entry(entry.getKey(), entry.getContentType());
+        return false;
     }
 
     @Override
@@ -156,15 +174,15 @@ public class ObjectStorageControlPanel extends AbstractEachBeanControlPanel<Obje
      * @param metadata the metadata for this control panel
      */
     @ReflectiveAccess
-    @TypeHint(value = { Entry.class }, accessType = TypeHint.AccessType.ALL_PUBLIC)
-    public record Body(List<Entry> entries, Map<String, Object> metadata) { }
-
-    /**
-     * Render-safe object storage entry metadata.
-     *
-     * @param key the object key
-     * @param contentType the optional content type
-     */
-    @ReflectiveAccess
-    public record Entry(String key, Optional<String> contentType) { }
+    @TypeHint(
+        value = {
+            LocalStorageEntry.class,
+            AwsS3ObjectStorageEntry.class,
+            AzureBlobStorageEntry.class,
+            GoogleCloudStorageEntry.class,
+            OracleCloudStorageEntry.class
+        },
+        accessType = TypeHint.AccessType.ALL_PUBLIC
+    )
+    public record Body(List<? extends ObjectStorageEntry<?>> entries, Map<String, Object> metadata) { }
 }
