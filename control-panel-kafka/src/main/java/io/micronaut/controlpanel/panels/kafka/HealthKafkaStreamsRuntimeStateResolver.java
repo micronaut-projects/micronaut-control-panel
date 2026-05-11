@@ -78,7 +78,7 @@ final class HealthKafkaStreamsRuntimeStateResolver implements KafkaStreamsRuntim
 
     private HealthResult readVisibleHealth() {
         Publisher<HealthResult> health = healthEndpoint.getHealth(null);
-        return health == null ? null : Mono.from(health).block();
+        return Mono.from(health).block();
     }
 
     private static HealthResult kafkaStreamsHealth(HealthResult health) {

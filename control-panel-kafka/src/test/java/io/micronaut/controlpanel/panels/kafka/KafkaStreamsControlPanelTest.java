@@ -26,12 +26,17 @@ import org.apache.kafka.streams.state.KeyValueStore;
 import org.apache.kafka.streams.state.StoreBuilder;
 import org.apache.kafka.streams.state.Stores;
 import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
+import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.health.HealthStatus;
+import io.micronaut.management.endpoint.health.HealthEndpoint;
 import io.micronaut.management.health.indicator.HealthResult;
+import org.mockito.Mockito;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 
 final class KafkaStreamsControlPanelTest {
 
@@ -232,6 +237,86 @@ final class KafkaStreamsControlPanelTest {
     }
 
     @Test
+    void testRuntimeStateReadsVisibleHealthEndpointDetails() {
+        ConfiguredStreamBuilder builder = configuredStreamBuilder("orders-streams", "orders-client");
+        HealthResult health = HealthResult.builder("composite", HealthStatus.UP)
+                .details(Map.of(
+                        "kafkaStreams", HealthResult.builder("kafkaStreams", HealthStatus.UP)
+                                .details(Map.of(
+                                        "orders-streams", HealthResult.builder("orders-streams", HealthStatus.UP)
+                                                .details(Map.of(
+                                                        "orders-thread-1", Map.of(
+                                                                "threadName", "orders-thread-1",
+                                                                "threadState", "RUNNING"
+                                                        )
+                                                ))
+                                                .build()
+                                ))
+                                .build()
+                ))
+                .build();
+        HealthEndpoint endpoint = Mockito.mock(HealthEndpoint.class);
+        Mockito.when(endpoint.getHealth(null)).thenReturn(Mono.just(health));
+
+        KafkaStreamsRuntimeState state = new HealthKafkaStreamsRuntimeStateResolver(endpoint).resolve("default", builder);
+
+        Assertions.assertTrue(state.available());
+        Assertions.assertEquals("UP", state.status());
+        Assertions.assertEquals("orders-thread-1", state.threads().getFirst().name());
+    }
+
+    @Test
+    void testRuntimeStateMatchesClientIdAndNormalizedHealthKeys() {
+        ConfiguredStreamBuilder builder = configuredStreamBuilder("orders-streams", "orders-client");
+        HealthResult health = HealthResult.builder("kafkaStreams()", HealthStatus.DOWN)
+                .details(Map.of(
+                        "orders-client()", HealthResult.builder("orders-client", HealthStatus.DOWN)
+                                .details(Map.of("error", "thread stopped"))
+                                .build()
+                ))
+                .build();
+
+        KafkaStreamsRuntimeState state = HealthKafkaStreamsRuntimeStateResolver.resolve("default", builder, health);
+
+        Assertions.assertTrue(state.available());
+        Assertions.assertEquals("DOWN", state.status());
+        Assertions.assertEquals("thread stopped", state.message());
+        Assertions.assertFalse(state.hasThreads());
+    }
+
+    @Test
+    void testRuntimeStateHandlesPartialThreadDetailsDefensively() {
+        ConfiguredStreamBuilder builder = configuredStreamBuilder("orders-streams", "orders-client");
+        HealthResult health = HealthResult.builder("composite", HealthStatus.UP)
+                .details(Map.of(
+                        "kafkaStreams", HealthResult.builder("kafkaStreams", HealthStatus.UP)
+                                .details(Map.of(
+                                        "default", HealthResult.builder("default", HealthStatus.UP)
+                                                .details(Map.of(
+                                                        "orders-thread-1", Map.of(
+                                                                "threadName", "orders-thread-1",
+                                                                "threadState", "REBALANCING",
+                                                                "producerClientIds", "orders-producer",
+                                                                "activeTasks", "unexpected",
+                                                                "standbyTasks", Map.of("partitions", "orders-0")
+                                                        )
+                                                ))
+                                                .build()
+                                ))
+                                .build()
+                ))
+                .build();
+
+        KafkaStreamsRuntimeState state = HealthKafkaStreamsRuntimeStateResolver.resolve("default", builder, health);
+
+        KafkaStreamsRuntimeState.ThreadState thread = state.threads().getFirst();
+        Assertions.assertEquals(List.of("orders-producer"), thread.producerClientIds());
+        Assertions.assertFalse(thread.activeTasks().available());
+        Assertions.assertTrue(thread.standbyTasks().available());
+        Assertions.assertEquals(1, thread.standbyTasks().partitionCount());
+    }
+
+    @Test
     void testRuntimeStateUnavailableWhenHealthDetailsAreAbsent() {
         ConfiguredStreamBuilder builder = configuredStreamBuilder("orders-streams", "orders-client");
         HealthResult health = HealthResult.builder("composite", HealthStatus.UP).build();
@@ -242,6 +327,62 @@ final class KafkaStreamsControlPanelTest {
         Assertions.assertEquals("UNKNOWN", state.status());
         Assertions.assertTrue(state.threads().isEmpty());
         Assertions.assertEquals(HealthKafkaStreamsRuntimeStateResolver.UNAVAILABLE_MESSAGE, state.message());
+    }
+
+    @Test
+    void testUnavailableRuntimeStateResolverReturnsUnavailableState() {
+        KafkaStreamsRuntimeState state = new UnavailableKafkaStreamsRuntimeStateResolver()
+                .resolve("default", configuredStreamBuilder("orders-streams", "orders-client"));
+
+        Assertions.assertFalse(state.available());
+        Assertions.assertEquals("UNKNOWN", state.status());
+        Assertions.assertEquals("Runtime state is unavailable because Micronaut Health details are not visible.", state.message());
+    }
+
+    @Test
+    void testControlPanelResolvesRuntimeStateForEachBodyCall() {
+        AtomicInteger calls = new AtomicInteger();
+        ConfiguredStreamBuilder builder = configuredStreamBuilder("orders-streams", "orders-client");
+        KafkaStreamsRuntimeStateResolver resolver = (beanName, streamBuilder) ->
+                KafkaStreamsRuntimeState.available("UP-" + calls.incrementAndGet(), null, List.of());
+        KafkaStreamsControlPanel panel = new KafkaStreamsControlPanel(
+                "default",
+                builder,
+                resolver,
+                new ControlPanelConfiguration(KafkaStreamsControlPanel.NAME)
+        );
+
+        KafkaStreamsControlPanel.Body first = panel.getBody();
+        KafkaStreamsControlPanel.Body second = panel.getBody();
+
+        Assertions.assertEquals("Kafka Streams: default", panel.getTitle());
+        Assertions.assertEquals("0", panel.getBadge());
+        Assertions.assertEquals("UP-1", first.runtimeState().status());
+        Assertions.assertEquals("UP-2", second.runtimeState().status());
+        Assertions.assertEquals("flowchart LR\nEMPTY[No topology detected]", first.mermaid());
+    }
+
+    @Test
+    void testRuntimeStateModelNormalizesNullCollectionsAndBlankStatus() {
+        KafkaStreamsRuntimeState.ThreadState thread = new KafkaStreamsRuntimeState.ThreadState(
+                "orders-thread-1",
+                "RUNNING",
+                null,
+                null,
+                null,
+                null,
+                false,
+                null,
+                null
+        );
+
+        KafkaStreamsRuntimeState state = KafkaStreamsRuntimeState.available(" ", null, List.of(thread));
+
+        Assertions.assertEquals("UNKNOWN", state.status());
+        Assertions.assertTrue(state.hasThreads());
+        Assertions.assertFalse(thread.hasProducerClientIds());
+        Assertions.assertFalse(thread.activeTasks().available());
+        Assertions.assertFalse(thread.standbyTasks().available());
     }
 
     @Test
