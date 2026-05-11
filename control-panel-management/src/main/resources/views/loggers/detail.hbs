@@ -149,7 +149,7 @@
         }
         $.ajax({
             type: "POST",
-            url: "{{ ext.appPath }}/loggers/" + logger,
+            url: "{{ ext.controlPanelPath }}/loggers-control-panel-controller/" + encodeURIComponent(logger),
             data: JSON.stringify(payload),
             contentType: "application/json; charset=utf-8",
         }).done(function (data) {

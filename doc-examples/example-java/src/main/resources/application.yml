@@ -47,8 +47,6 @@ endpoints:
     sensitive: false
   health:
     details-visible: ANONYMOUS
-  loggers:
-    write-sensitive: false
 
 infinispan:
   enabled: false
