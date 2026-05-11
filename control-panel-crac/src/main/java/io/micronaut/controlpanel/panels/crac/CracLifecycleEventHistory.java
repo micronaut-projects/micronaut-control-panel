@@ -47,12 +47,12 @@ final class CracLifecycleEventHistory implements ApplicationEventListener<Before
 
     @Override
     public void onApplicationEvent(BeforeCheckpointEvent event) {
-        record("beforeCheckpoint", (OrderedResource) event.getSource(), event.getNow().toString(), event.getTimeTakenNanos());
+        recordEvent("beforeCheckpoint", (OrderedResource) event.getSource(), event.getNow().toString(), event.getTimeTakenNanos());
     }
 
     @io.micronaut.runtime.event.annotation.EventListener
     void onAfterRestore(AfterRestoreEvent event) {
-        record("afterRestore", (OrderedResource) event.getSource(), event.getNow().toString(), event.getTimeTakenNanos());
+        recordEvent("afterRestore", (OrderedResource) event.getSource(), event.getNow().toString(), event.getTimeTakenNanos());
     }
 
     synchronized List<CracDiagnostics.LifecycleEvent> recentEvents() {
@@ -61,7 +61,7 @@ final class CracLifecycleEventHistory implements ApplicationEventListener<Before
             .toList();
     }
 
-    private synchronized void record(String phase, OrderedResource resource, String completedAt, long timeTakenNanos) {
+    private synchronized void recordEvent(String phase, OrderedResource resource, String completedAt, long timeTakenNanos) {
         if (events.size() == CAPACITY) {
             events.removeFirst();
         }

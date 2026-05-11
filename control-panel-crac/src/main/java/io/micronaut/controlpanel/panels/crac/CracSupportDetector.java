@@ -32,6 +32,7 @@ final class CracSupportDetector {
     private static final String CRAC_RESOURCE_CLASS = "org.crac.Resource";
     private static final String CRAC_MX_BEAN_CLASS = "org.crac.management.CRaCMXBean";
     private static final String MICRONAUT_ORDERED_RESOURCE_CLASS = "io.micronaut.crac.OrderedResource";
+    private static final String UNAVAILABLE = "Unavailable";
 
     private final ClassLoader classLoader;
     private final Supplier<CRaCMXBean> mxBeanSupplier;
@@ -70,7 +71,7 @@ final class CracSupportDetector {
             boolean restored = restoreTime > 0 || uptimeSinceRestore > 0;
             String message = restored ? "Restore metrics were read from the CRaC MXBean." : "No restore has been observed by the CRaC MXBean.";
             return new CracDiagnostics.RestoreMetrics(true, restored, formatMillis(restoreTime), formatMillis(uptimeSinceRestore), message);
-        } catch (LinkageError | RuntimeException e) {
+        } catch (LinkageError | RuntimeException _) {
             return unavailableRestoreMetrics("CRaC MXBean metrics are not readable on this JVM.");
         }
     }
@@ -80,12 +81,12 @@ final class CracSupportDetector {
     }
 
     static CracDiagnostics.RestoreMetrics unavailableRestoreMetrics(String message) {
-        return new CracDiagnostics.RestoreMetrics(false, false, "Unavailable", "Unavailable", message);
+        return new CracDiagnostics.RestoreMetrics(false, false, UNAVAILABLE, UNAVAILABLE, message);
     }
 
     static String formatMillis(long millis) {
         if (millis < 0) {
-            return "Unavailable";
+            return UNAVAILABLE;
         }
         if (millis < 1000) {
             return millis + " ms";
@@ -102,7 +103,7 @@ final class CracSupportDetector {
 
     static String formatNanos(long nanos) {
         if (nanos < 0) {
-            return "Unavailable";
+            return UNAVAILABLE;
         }
         if (nanos < 1_000_000) {
             return nanos + " ns";
