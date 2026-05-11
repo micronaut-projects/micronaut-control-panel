@@ -145,6 +145,7 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         assertThat(page.getByRole(AriaRole.BUTTON, new GetByRoleOptions().setName("Refresh table"))).isVisible();
 
         page.locator("#actionsModal .modal-footer [data-dismiss='modal']").click();
+        assertThat(page.locator("#actionsModal")).isHidden();
         assertThat(body(page)).containsText("DEBUG");
         assertTrue((Boolean) page.evaluate("document.activeElement && document.activeElement.dataset.logger === 'ROOT'"));
 
