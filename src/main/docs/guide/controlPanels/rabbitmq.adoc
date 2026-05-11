@@ -1,0 +1,121 @@
+= RabbitMQ Control Panel
+
+The RabbitMQ Control Panel provides a read-only diagnostics view for Micronaut RabbitMQ applications.
+It shows listener metadata, connection and channel-pool configuration, RabbitMQ health visibility, and RabbitMQ
+Micrometer meters when they are present.
+
+To get started, add the following module as a development-time dependency:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-rabbitmq[scope=developmentOnly]
+
+It is assumed that your application already has Micronaut RabbitMQ configured:
+
+dependency:io.micronaut.rabbitmq:micronaut-rabbitmq[scope=implementation]
+
+== What The Panel Shows
+
+The panel is application-local and read-only.
+It inspects Micronaut bean metadata and configuration from the running application context.
+
+The listener table includes:
+
+* `@RabbitListener` bean and method metadata.
+* `@Queue` queue names.
+* connection and executor names.
+* number of consumers, prefetch, exclusive, requeue, and acknowledgement mode details.
+* whether the method accepts an `Acknowledgement` argument.
+
+The connection table includes configured RabbitMQ connection factory and channel-pool settings such as host, port,
+virtual host, requested heartbeat, recovery flags, confirm timeout, RPC timeout, and maximum idle channels.
+Credential-like values are redacted before rendering.
+
+The panel does not display message bodies, message headers, queue contents, or broker credentials.
+It does not publish, consume, purge, acknowledge, nack, or otherwise mutate RabbitMQ state.
+
+== Configuration
+
+The RabbitMQ control panel is automatically enabled when you include the `micronaut-control-panel-rabbitmq` module and
+Micronaut RabbitMQ is present.
+You can disable only this panel with:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      rabbitmq:
+        enabled: false
+----
+
+=== RabbitMQ Management UI Link
+
+You can configure an optional outbound link to the RabbitMQ Management UI:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      rabbitmq:
+        management-url: http://localhost:15672
+----
+
+Only absolute `http` and `https` URLs are displayed.
+The Control Panel does not proxy the RabbitMQ Management API and does not store or request broker management
+credentials.
+
+== Health Visibility
+
+RabbitMQ health is shown when `micronaut-management` is present and RabbitMQ health contributes to the Health endpoint.
+If management health is absent, hidden, or RabbitMQ health is disabled, the panel shows an unavailable state instead of
+failing the page.
+
+For local development with authenticated Control Panel access, authenticated Health details can be shown to authenticated
+users:
+
+[configuration]
+----
+endpoints:
+  health:
+    details-visible: AUTHENTICATED
+----
+
+Use `ANONYMOUS` only in trusted development or test environments where anonymous health details are intentional.
+
+== Metrics Visibility
+
+RabbitMQ metrics are shown when Micrometer is present and RabbitMQ meters with the configured prefix exist.
+The default RabbitMQ meter prefix is `rabbitmq`.
+If Micrometer is absent or no RabbitMQ meters exist, the panel shows a neutral empty state.
+
+For Micrometer support, add:
+
+dependency:io.micronaut.micrometer:micronaut-micrometer-core[scope=runtimeOnly]
+
+If you customize the RabbitMQ metrics prefix, the panel follows the same configuration:
+
+[configuration]
+----
+micronaut:
+  metrics:
+    binders:
+      rabbitmq:
+        prefix: rabbitmq
+----
+
+The metrics section is intended as a lightweight development-time inspector.
+It is not a replacement for production monitoring, alerting, broker dashboards, or the RabbitMQ Management UI.
+
+== Troubleshooting
+
+If listeners are missing, verify that the listener bean is active in the current environment and that methods are
+annotated with `@Queue`.
+
+If health is unavailable, verify that `micronaut-management` is on the classpath and that the Health endpoint exposes
+RabbitMQ details to the current Control Panel request.
+
+If metrics are empty, verify that Micrometer is enabled and that RabbitMQ client metrics are configured for the running
+application.
+
+If connection details look incomplete, the application may be using defaults or the values may be intentionally hidden
+or redacted.
