@@ -93,6 +93,21 @@ class ControlPanelE2ETest extends AbstractE2ETest {
     }
 
     @Test
+    void testReactorDiagnostics(Page page) {
+        page.navigate(baseUrl());
+        categoryLink(page, "Reactor").click();
+        controlPanelDetails(page, "Reactor Diagnostics").click();
+
+        assertThat(body(page)).containsText("Reactive routes");
+        assertThat(body(page)).containsText("/demo/reactor/mono");
+        assertThat(body(page)).containsText("/demo/reactor/sse");
+        assertThat(body(page)).containsText("single");
+        assertThat(body(page)).containsText("sse");
+        assertThat(body(page)).containsText("Context propagation artifact");
+        assertThat(body(page)).containsText("Endpoint URLs, headers, credentials");
+    }
+
+    @Test
     void testBeanDefinitions(Page page) {
         page.navigate(baseUrl());
         categoryLink(page, "Beans").click();

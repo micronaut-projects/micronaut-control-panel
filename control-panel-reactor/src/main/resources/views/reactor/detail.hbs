@@ -1,0 +1,168 @@
+{{#with controlPanel.body }}
+    <div class="cp-dashboard-stack">
+        {{#if errors}}
+            <div class="alert alert-warning" role="alert">
+                <strong>Some diagnostics are unavailable.</strong>
+                <ul class="mb-0">
+                    {{#each errors}}
+                        <li>{{section}}: {{message}}</li>
+                    {{/each}}
+                </ul>
+            </div>
+        {{/if}}
+
+        <div class="cp-detail-card-grid">
+            <section class="card">
+                <div class="card-body">
+                    <h3 class="cp-detail-section-title">Reactive routes</h3>
+                    <p class="text-muted mb-0">{{routeCount}} Mono or Flux route(s) are visible in the application route table.</p>
+                </div>
+            </section>
+            <section class="card">
+                <div class="card-body">
+                    <h3 class="cp-detail-section-title">Reactor clients</h3>
+                    <p class="text-muted mb-0">{{clientCount}} Reactor HTTP client bean(s) are present.</p>
+                </div>
+            </section>
+            <section class="card">
+                <div class="card-body">
+                    <h3 class="cp-detail-section-title">Hidden by design</h3>
+                    <p class="text-muted mb-0">Endpoint URLs, headers, credentials, request and response data, Reactor context values, trace/span values, metric tags, and measurements are not shown.</p>
+                </div>
+            </section>
+        </div>
+
+        <section>
+            <div class="cp-detail-section-heading">
+                <h3 class="cp-detail-section-title">Routes</h3>
+            </div>
+            {{#if routes}}
+                <div class="cp-data-table cp-data-table-paged" data-filter-table data-filter-table-page-size="12" data-filter-table-label="route" data-filter-table-label-plural="routes">
+                    <div class="cp-data-table-toolbar">
+                        <div class="cp-data-table-summary" data-filter-table-summary>{{routeCount}} routes</div>
+                        <div class="cp-data-table-search">
+                            <input type="search" class="form-control" data-filter-table-search placeholder="Search reactive routes" aria-label="Search reactive routes">
+                        </div>
+                    </div>
+                    <div class="cp-data-table-container">
+                        <table class="table cp-data-table-table">
+                            <thead>
+                            <tr>
+                                <th>Method</th>
+                                <th>URI</th>
+                                <th>Controller method</th>
+                                <th>Return type</th>
+                                <th>Mode</th>
+                                <th>Produces</th>
+                                <th>Consumes</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {{#each routes}}
+                                <tr data-filter-table-row>
+                                    <td><span class="badge badge-info">{{httpMethodName}}</span></td>
+                                    <td><code class="cp-table-code">{{uri}}</code></td>
+                                    <td><code class="cp-table-code">{{controllerMethod}}</code></td>
+                                    <td><code class="cp-table-code">{{returnType}}</code></td>
+                                    <td><span class="badge badge-secondary" title="{{modeDescription}}">{{mode}}</span></td>
+                                    <td>
+                                        {{#if produces}}
+                                            {{#each produces}}<code class="cp-table-code">{{this}}</code>{{/each}}
+                                        {{else}}
+                                            <span class="text-muted">not declared</span>
+                                        {{/if}}
+                                    </td>
+                                    <td>
+                                        {{#if consumes}}
+                                            {{#each consumes}}<code class="cp-table-code">{{this}}</code>{{/each}}
+                                        {{else}}
+                                            <span class="text-muted">not declared</span>
+                                        {{/if}}
+                                    </td>
+                                </tr>
+                            {{/each}}
+                            <tr data-filter-table-empty hidden>
+                                <td class="cp-data-table-empty-cell" colspan="7">No reactive routes found.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="cp-data-table-footer">
+                        <label class="cp-data-table-page-size">
+                            Rows per page
+                            <select class="form-control" data-filter-table-page-size-select aria-label="Reactive routes per page">
+                                <option value="8">8</option>
+                                <option value="12" selected>12</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                            </select>
+                        </label>
+                        <div class="cp-data-table-pagination">
+                            <span class="cp-data-table-page" data-filter-table-page>Page 1 of 1</span>
+                            <button type="button" class="btn btn-secondary btn-sm" data-filter-table-prev>Previous</button>
+                            <button type="button" class="btn btn-secondary btn-sm" data-filter-table-next>Next</button>
+                        </div>
+                    </div>
+                </div>
+            {{else}}
+                <p class="text-muted">No application routes returning Reactor Mono or Flux were found.</p>
+            {{/if}}
+        </section>
+
+        <section>
+            <div class="cp-detail-section-heading">
+                <h3 class="cp-detail-section-title">Reactor HTTP clients</h3>
+            </div>
+            {{#if clients}}
+                <div class="cp-data-table-container">
+                    <table class="table cp-data-table-table">
+                        <thead>
+                        <tr>
+                            <th>Bean name</th>
+                            <th>Type</th>
+                            <th>Qualifier</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {{#each clients}}
+                            <tr>
+                                <td><code class="cp-table-code">{{beanName}}</code></td>
+                                <td>{{type}}</td>
+                                <td>{{#if qualifier}}<code class="cp-table-code">{{qualifier}}</code>{{else}}<span class="text-muted">none</span>{{/if}}</td>
+                            </tr>
+                        {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+            {{else}}
+                <p class="text-muted">No Reactor HTTP client beans were found, or the Reactor HTTP client module is not present.</p>
+            {{/if}}
+        </section>
+
+        <section>
+            <div class="cp-detail-section-heading">
+                <h3 class="cp-detail-section-title">Readiness checks</h3>
+            </div>
+            <div class="cp-data-table-container">
+                <table class="table cp-data-table-table">
+                    <thead>
+                    <tr>
+                        <th>Check</th>
+                        <th>Status</th>
+                        <th>Detail</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {{#each readiness}}
+                        <tr>
+                            <td>{{name}}</td>
+                            <td><span class="badge badge-secondary">{{status}}</span></td>
+                            <td>{{detail}}</td>
+                        </tr>
+                    {{/each}}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+{{/with}}
