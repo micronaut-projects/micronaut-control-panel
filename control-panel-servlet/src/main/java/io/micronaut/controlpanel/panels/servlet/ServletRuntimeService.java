@@ -39,6 +39,10 @@ import java.util.Optional;
 public class ServletRuntimeService {
 
     private static final String UNKNOWN = "unknown";
+    private static final String JETTY = "Jetty";
+    private static final String TOMCAT = "Tomcat";
+    private static final String UNDERTOW = "Undertow";
+    private static final String JDK_HTTP_SERVER = "JDK HTTP server";
     private static final List<String> SAFE_CONFIGURATION_KEYS = List.of(
         "micronaut.server.host",
         "micronaut.server.port",
@@ -199,32 +203,28 @@ public class ServletRuntimeService {
 
     private String runtimeName(@Nullable ServletContext context) {
         if (embeddedServer != null) {
-            String className = embeddedServer.getClass().getName().toLowerCase();
-            if (className.contains("jetty")) {
-                return "Jetty";
-            }
-            if (className.contains("tomcat")) {
-                return "Tomcat";
-            }
-            if (className.contains("undertow")) {
-                return "Undertow";
-            }
-            if (className.contains("jdk")) {
-                return "JDK HTTP server";
-            }
+            return detectRuntimeName(embeddedServer.getClass().getName(), true);
         }
         String serverInfo = context == null ? null : safe(context::getServerInfo);
-        if (serverInfo != null) {
-            String lower = serverInfo.toLowerCase();
-            if (lower.contains("jetty")) {
-                return "Jetty";
-            }
-            if (lower.contains("tomcat")) {
-                return "Tomcat";
-            }
-            if (lower.contains("undertow")) {
-                return "Undertow";
-            }
+        return detectRuntimeName(serverInfo, false);
+    }
+
+    private static String detectRuntimeName(@Nullable String source, boolean includeJdk) {
+        if (source == null) {
+            return UNKNOWN;
+        }
+        String value = source.toLowerCase();
+        if (value.contains("jetty")) {
+            return JETTY;
+        }
+        if (value.contains("tomcat")) {
+            return TOMCAT;
+        }
+        if (value.contains("undertow")) {
+            return UNDERTOW;
+        }
+        if (includeJdk && value.contains("jdk")) {
+            return JDK_HTTP_SERVER;
         }
         return UNKNOWN;
     }
