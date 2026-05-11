@@ -34,6 +34,7 @@ configure<MicronautBuildSettingsExtension> {
     importMicronautCatalog("micronaut-views")
     importMicronautCatalog("micronaut-reactor")
     importMicronautCatalog("micronaut-serde")
+    importMicronautCatalog("micronaut-micrometer")
     importMicronautCatalog("micronaut-object-storage")
     importMicronautCatalog("micronaut-cache")
     importMicronautCatalog("micronaut-sql")
