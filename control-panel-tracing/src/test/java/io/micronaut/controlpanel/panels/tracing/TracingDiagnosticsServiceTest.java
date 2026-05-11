@@ -36,7 +36,7 @@ class TracingDiagnosticsServiceTest {
                 "otel.traces.exporter", "otlp",
                 "otel.metrics.exporter", "none",
                 "otel.logs.exporter", "none",
-                "otel.exporter.otlp.endpoint", "https://user:password@collector.example:4317/v1/traces?token=raw-token&region=us",
+                "otel.exporter.otlp.endpoint", "https://user:password@collector.example:4317/v1/traces?token=raw-token&api-key=raw-api-key&clientSecret=raw-client-secret&access%5Ftoken=raw-access-token&region=us",
                 "otel.exporter.otlp.headers", "Authorization=Bearer raw-header",
                 "otel.propagators", "tracecontext,baggage",
                 "otel.traces.sampler", "parentbased_always_on"
@@ -49,10 +49,13 @@ class TracingDiagnosticsServiceTest {
             assertTrue(body.providers().stream().anyMatch(provider -> provider.name().equals("OpenTelemetry")));
             assertTrue(body.exporters().stream().anyMatch(exporter -> exporter.signal().equals("Traces") && exporter.exporter().equals("otlp")));
 
-            String renderedValues = body.configuration().toString() + body.resourceAttributes();
+            String renderedValues = body.configuration().toString() + body.resourceAttributes() + body.exporters();
             assertFalse(renderedValues.contains("resource-secret"));
             assertFalse(renderedValues.contains("raw-header"));
             assertFalse(renderedValues.contains("raw-token"));
+            assertFalse(renderedValues.contains("raw-api-key"));
+            assertFalse(renderedValues.contains("raw-client-secret"));
+            assertFalse(renderedValues.contains("raw-access-token"));
             assertFalse(renderedValues.contains("user:password"));
             assertTrue(renderedValues.contains(TracingRedactor.REDACTED));
         }

@@ -19,8 +19,9 @@ import jakarta.inject.Singleton;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
-import java.util.Set;
 import java.util.StringJoiner;
 
 /**
@@ -30,19 +31,6 @@ import java.util.StringJoiner;
 final class TracingRedactor {
 
     static final String REDACTED = "[redacted]";
-
-    private static final Set<String> SENSITIVE_QUERY_KEYS = Set.of(
-            "access_token",
-            "api_key",
-            "apikey",
-            "authorization",
-            "client_secret",
-            "credential",
-            "key",
-            "password",
-            "secret",
-            "token"
-    );
 
     String redact(String key, String value) {
         if (value == null || value.isBlank()) {
@@ -97,13 +85,24 @@ final class TracingRedactor {
         for (String part : query.split("&")) {
             int equals = part.indexOf('=');
             String key = equals >= 0 ? part.substring(0, equals) : part;
-            if (SENSITIVE_QUERY_KEYS.contains(key.toLowerCase(Locale.ROOT))) {
+            if (isSensitiveQueryKey(key)) {
                 joiner.add(key + "=" + REDACTED);
             } else {
                 joiner.add(part);
             }
         }
         return joiner.toString();
+    }
+
+    private boolean isSensitiveQueryKey(String key) {
+        if (isSensitiveKey(key)) {
+            return true;
+        }
+        try {
+            return isSensitiveKey(URLDecoder.decode(key, StandardCharsets.UTF_8));
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
     private static boolean looksLikeUrl(String value) {

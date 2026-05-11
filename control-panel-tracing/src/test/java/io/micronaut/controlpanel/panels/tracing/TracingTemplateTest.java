@@ -33,7 +33,7 @@ class TracingTemplateTest {
     void renderedDetailTemplateDoesNotExposeRawSecrets() throws IOException {
         try (ApplicationContext context = ApplicationContext.run(Map.of(
                 "otel.traces.exporter", "otlp",
-                "otel.exporter.otlp.endpoint", "https://user:password@collector.example:4317?token=raw-token",
+                "otel.exporter.otlp.endpoint", "https://user:password@collector.example:4317?api-key=prod-secret&clientSecret=client-secret&token=raw-token",
                 "otel.resource.attributes", "api.key=resource-secret"
         ))) {
             TracingBody body = new TracingDiagnosticsService(
@@ -49,6 +49,8 @@ class TracingTemplateTest {
 
             assertTrue(html.contains(TracingRedactor.REDACTED));
             assertFalse(html.contains("user:password"));
+            assertFalse(html.contains("prod-secret"));
+            assertFalse(html.contains("client-secret"));
             assertFalse(html.contains("raw-token"));
             assertFalse(html.contains("resource-secret"));
         }
