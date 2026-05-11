@@ -127,7 +127,7 @@ class ControlPanelE2ETest extends AbstractE2ETest {
             }
             """);
 
-        assertFalse((Boolean) body(page).evaluate("body => body.classList.contains('cp-sidebar-open')"));
+        assertFalse((Boolean) page.evaluate("() => document.body.classList.contains('cp-sidebar-open')"));
         assertFalse(isVisible(page, ".cp-reactor-routes-table"));
         assertTrue(isVisible(page, ".cp-reactor-route-cards"));
         String monoRoute = routeCardText(page, "/demo/reactor/mono");
