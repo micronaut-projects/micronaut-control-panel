@@ -17,16 +17,19 @@ package io.micronaut.controlpanel.panels.opensearch;
 
 import io.micronaut.context.annotation.EachBean;
 import io.micronaut.context.annotation.Parameter;
+import io.micronaut.context.env.Environment;
 import io.micronaut.controlpanel.core.AbstractEachBeanControlPanel;
 import io.micronaut.controlpanel.core.ControlPanel;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.controlpanel.panels.opensearch.model.OpenSearchDiagnostics;
+import io.micronaut.core.annotation.Nullable;
 import jakarta.inject.Named;
+import org.opensearch.client.opensearch.OpenSearchClient;
 
 /**
  * Control panel for read-only OpenSearch diagnostics.
  */
-@EachBean(OpenSearchDiagnosticsService.class)
+@EachBean(OpenSearchClient.class)
 public class OpenSearchControlPanel extends AbstractEachBeanControlPanel<OpenSearchDiagnostics> {
 
     public static final String NAME = "opensearch";
@@ -37,12 +40,14 @@ public class OpenSearchControlPanel extends AbstractEachBeanControlPanel<OpenSea
     private final String beanName;
     private final OpenSearchDiagnosticsService diagnosticsService;
 
-    public OpenSearchControlPanel(@Parameter String beanName,
-                                  @Parameter OpenSearchDiagnosticsService diagnosticsService,
+    public OpenSearchControlPanel(@Nullable @Parameter String beanName,
+                                  @Parameter OpenSearchClient client,
+                                  Environment environment,
+                                  OpenSearchDiagnosticsConfiguration diagnosticsConfiguration,
                                   @Named(NAME) ControlPanelConfiguration configuration) {
         super(NAME, configuration);
-        this.beanName = beanName;
-        this.diagnosticsService = diagnosticsService;
+        this.beanName = beanName == null || beanName.isBlank() ? "default" : beanName;
+        this.diagnosticsService = new OpenSearchDiagnosticsService(this.beanName, client, environment, diagnosticsConfiguration);
     }
 
     @Override

@@ -15,8 +15,6 @@
  */
 package io.micronaut.controlpanel.panels.opensearch;
 
-import io.micronaut.context.annotation.EachBean;
-import io.micronaut.context.annotation.Parameter;
 import io.micronaut.context.env.Environment;
 import io.micronaut.controlpanel.panels.opensearch.model.ClusterHealth;
 import io.micronaut.controlpanel.panels.opensearch.model.ConnectionContext;
@@ -49,8 +47,7 @@ import java.util.Set;
  * Collects read-only diagnostics from a configured OpenSearch client.
  */
 @Internal
-@EachBean(OpenSearchClient.class)
-public class OpenSearchDiagnosticsService {
+final class OpenSearchDiagnosticsService {
 
     static final int HARD_MAX_INDICES = 100;
     static final int HARD_MAX_MAPPING_FIELDS = 100;
@@ -66,10 +63,10 @@ public class OpenSearchDiagnosticsService {
     private final Environment environment;
     private final OpenSearchDiagnosticsConfiguration configuration;
 
-    public OpenSearchDiagnosticsService(@Parameter String beanName,
-                                        @Parameter OpenSearchClient client,
-                                        Environment environment,
-                                        OpenSearchDiagnosticsConfiguration configuration) {
+    OpenSearchDiagnosticsService(String beanName,
+                                 OpenSearchClient client,
+                                 Environment environment,
+                                 OpenSearchDiagnosticsConfiguration configuration) {
         this.beanName = beanName;
         this.client = client;
         this.environment = environment;

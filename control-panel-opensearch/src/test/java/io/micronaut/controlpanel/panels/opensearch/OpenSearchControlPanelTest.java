@@ -37,8 +37,8 @@ class OpenSearchControlPanelTest {
     @Test
     void panelIsCreatedWhenOpenSearchClientBeanExists() {
         try (ApplicationContext context = ApplicationContext.run(Map.of("spec.name", "OpenSearchControlPanelTest"))) {
-            assertTrue(context.containsBean(OpenSearchDiagnosticsService.class));
             assertTrue(context.containsBean(OpenSearchControlPanel.class));
+            assertEquals("opensearch-default", context.getBean(OpenSearchControlPanel.class).getName());
         }
     }
 
