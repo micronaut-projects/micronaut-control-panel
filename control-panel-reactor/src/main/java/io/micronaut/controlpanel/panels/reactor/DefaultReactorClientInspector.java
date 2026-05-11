@@ -27,11 +27,14 @@ import jakarta.inject.Singleton;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Stream;
 
 @Singleton
 @Requires(classes = ReactorHttpClient.class)
 final class DefaultReactorClientInspector implements ReactorClientInspector {
+
+    private static final String REDACTED_LABEL = "redacted";
 
     private final BeanContext beanContext;
 
@@ -61,8 +64,30 @@ final class DefaultReactorClientInspector implements ReactorClientInspector {
     }
 
     private static ReactorDiagnosticsBody.ReactorClient toClient(BeanDefinition<?> definition, String exposedType) {
-        String qualifier = definition.getDeclaredQualifier() == null ? "" : definition.getDeclaredQualifier().toString();
-        String beanName = definition.stringValue(Named.class).orElse(definition.getName());
-        return new ReactorDiagnosticsBody.ReactorClient(beanName, exposedType, qualifier);
+        String beanName = safeLabel(definition.stringValue(Named.class).orElse(definition.getName()));
+        return new ReactorDiagnosticsBody.ReactorClient(beanName, exposedType, "");
+    }
+
+    private static String safeLabel(String value) {
+        if (value.isBlank()) {
+            return REDACTED_LABEL;
+        }
+        String normalized = value.toLowerCase(Locale.ROOT);
+        if (normalized.contains("://")
+            || normalized.contains("@")
+            || normalized.contains("@client")
+            || normalized.contains("authorization")
+            || normalized.contains("bearer ")
+            || normalized.contains("cookie")
+            || normalized.contains("credential")
+            || normalized.contains("password")
+            || normalized.contains("passwd")
+            || normalized.contains("secret")
+            || normalized.contains("token")
+            || normalized.contains("api-key")
+            || normalized.contains("apikey")) {
+            return REDACTED_LABEL;
+        }
+        return value;
     }
 }

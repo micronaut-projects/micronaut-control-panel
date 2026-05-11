@@ -100,7 +100,7 @@ public class ReactorControlPanel extends AbstractControlPanel<ReactorDiagnostics
         try {
             return routeAnalyzer.routes();
         } catch (RuntimeException e) {
-            errors.add(new ReactorDiagnosticsBody.SectionError("Routes", diagnosticMessage("Reactor route diagnostics are unavailable.", e)));
+            errors.add(new ReactorDiagnosticsBody.SectionError("Routes", "Reactor route diagnostics are unavailable."));
             return List.of();
         }
     }
@@ -109,7 +109,7 @@ public class ReactorControlPanel extends AbstractControlPanel<ReactorDiagnostics
         try {
             return clientInspector.clients();
         } catch (RuntimeException e) {
-            errors.add(new ReactorDiagnosticsBody.SectionError("HTTP clients", diagnosticMessage("Reactor HTTP client diagnostics are unavailable.", e)));
+            errors.add(new ReactorDiagnosticsBody.SectionError("HTTP clients", "Reactor HTTP client diagnostics are unavailable."));
             return List.of();
         }
     }
@@ -118,12 +118,8 @@ public class ReactorControlPanel extends AbstractControlPanel<ReactorDiagnostics
         try {
             return readinessInspector.readiness();
         } catch (RuntimeException e) {
-            errors.add(new ReactorDiagnosticsBody.SectionError("Readiness", diagnosticMessage("Reactor readiness diagnostics are unavailable.", e)));
+            errors.add(new ReactorDiagnosticsBody.SectionError("Readiness", "Reactor readiness diagnostics are unavailable."));
             return List.of();
         }
-    }
-
-    private static String diagnosticMessage(String message, RuntimeException e) {
-        return e.getMessage() == null ? message : message + " " + e.getClass().getSimpleName() + ": " + e.getMessage();
     }
 }

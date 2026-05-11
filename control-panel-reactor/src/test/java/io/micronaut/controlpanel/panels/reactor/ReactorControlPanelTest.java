@@ -94,7 +94,40 @@ class ReactorControlPanelTest {
                 && client.type().equals("ReactorHttpClient")), () -> body.clients().toString());
             assertTrue(body.clients().stream()
                 .flatMap(client -> java.util.stream.Stream.of(client.beanName(), client.type(), client.qualifier()))
-                .noneMatch(value -> value.contains("http://") || value.contains("Authorization")));
+                .noneMatch(value -> value.contains("http://")
+                    || value.contains("https://")
+                    || value.contains("user:pass")
+                    || value.contains("internal.example")
+                    || value.contains("Authorization")));
+            assertTrue(body.clients().stream().anyMatch(client -> client.beanName().equals("redacted")
+                && client.type().equals("ReactorHttpClient")), () -> body.clients().toString());
+            assertTrue(body.clients().stream().allMatch(client -> client.qualifier().isEmpty()));
+        }
+    }
+
+    @Test
+    void sectionErrorsDoNotExposeExceptionMessages() {
+        try (ApplicationContext ctx = ApplicationContext.run(Map.of("spec.name", SPEC_NAME))) {
+            ReactorControlPanel panel = new ReactorControlPanel(
+                ctx.getBean(ReactorRouteAnalyzer.class),
+                () -> {
+                    throw new IllegalStateException("https://user:pass@internal.example?token=secret");
+                },
+                ctx.getBean(ReactorReadinessInspector.class),
+                ctx.getBean(ControlPanelConfiguration.class, Qualifiers.byName(ReactorControlPanel.NAME))
+            );
+
+            ReactorDiagnosticsBody body = panel.getBody();
+
+            assertTrue(body.errors().stream().anyMatch(error -> error.section().equals("HTTP clients")
+                && error.message().equals("Reactor HTTP client diagnostics are unavailable.")), () -> body.errors().toString());
+            assertTrue(body.errors().stream()
+                .map(ReactorDiagnosticsBody.SectionError::message)
+                .noneMatch(message -> message.contains("https://")
+                    || message.contains("user:pass")
+                    || message.contains("internal.example")
+                    || message.contains("secret")
+                    || message.contains("token")), () -> body.errors().toString());
         }
     }
 
@@ -137,6 +170,12 @@ class ReactorControlPanelTest {
         @Singleton
         @Named("testReactorClient")
         ReactorHttpClient testReactorClient() {
+            return null;
+        }
+
+        @Singleton
+        @Named("https://user:pass@internal.example")
+        ReactorHttpClient unsafeReactorClient() {
             return null;
         }
     }
