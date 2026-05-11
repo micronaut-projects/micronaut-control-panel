@@ -1,0 +1,156 @@
+{{#with controlPanel.body }}
+    <div class="cp-dashboard-stack">
+        <div class="card card-light">
+            <div class="card-header">
+                <h3 class="card-title">TOML configuration summary</h3>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3">Active environments</dt>
+                    <dd class="col-sm-9">
+                        {{#if activeEnvironments}}
+                            {{#each activeEnvironments}}
+                                <span class="badge cp-environment-tag">{{this}}</span>
+                            {{/each}}
+                        {{else}}
+                            <span>None</span>
+                        {{/if}}
+                    </dd>
+                    <dt class="col-sm-3">TOML property sources</dt>
+                    <dd class="col-sm-9">{{summary.sourceCount}}</dd>
+                    <dt class="col-sm-3">Unique TOML keys</dt>
+                    <dd class="col-sm-9">{{summary.uniqueKeys}}</dd>
+                    <dt class="col-sm-3">Rows by status</dt>
+                    <dd class="col-sm-9">
+                        <span class="badge badge-primary">{{summary.effectiveRows}} effective</span>
+                        <span class="badge badge-secondary">{{summary.overriddenRows}} overridden</span>
+                        <span class="badge badge-secondary">{{summary.unknownRows}} unknown</span>
+                    </dd>
+                    <dt class="col-sm-3">Value display</dt>
+                    <dd class="col-sm-9">
+                        {{#if valuesVisible}}
+                            Non-sensitive effective values are visible.
+                        {{else}}
+                            Values are masked.
+                        {{/if}}
+                        {{#if overriddenValuesVisible}}
+                            Non-sensitive overridden values are visible.
+                        {{else}}
+                            Overridden values remain masked.
+                        {{/if}}
+                    </dd>
+                    <dt class="col-sm-3">Origin metadata</dt>
+                    <dd class="col-sm-9">
+                        Source locations are shown when Micronaut exposes them. TOML line and column metadata is not available through the generic Environment API.
+                    </dd>
+                </dl>
+            </div>
+        </div>
+
+        <div class="card card-light">
+            <div class="card-header">
+                <h3 class="card-title">TOML property sources</h3>
+            </div>
+            <div class="card-body">
+                {{#if sources}}
+                    <div class="cp-data-table cp-data-table-unpaged" data-filter-table data-filter-table-unpaged data-filter-table-label="source" data-filter-table-label-plural="sources">
+                        <div class="cp-data-table-toolbar">
+                            <div class="cp-data-table-summary" data-filter-table-summary>{{sources.size}} sources</div>
+                            <div class="cp-data-table-search">
+                                <input type="text" class="form-control" data-filter-table-search placeholder="Search TOML sources" aria-label="Search TOML sources">
+                            </div>
+                        </div>
+                        <div class="cp-data-table-container">
+                            <table class="table cp-data-table-table cp-data-table-fixed">
+                                <thead>
+                                <tr>
+                                    <th>Precedence</th>
+                                    <th>Source</th>
+                                    <th>Origin</th>
+                                    <th>Order</th>
+                                    <th>Keys</th>
+                                    <th>Effective</th>
+                                    <th>Overridden</th>
+                                    <th>Unknown</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {{#each sources as |source|}}
+                                    <tr data-filter-table-row>
+                                        <td>{{source.precedence}}</td>
+                                        <td><code class="cp-table-code">{{source.name}}</code></td>
+                                        <td><code class="cp-table-code">{{source.origin}}</code></td>
+                                        <td>{{source.order}}</td>
+                                        <td>{{source.keyCount}}</td>
+                                        <td>{{source.effectiveCount}}</td>
+                                        <td>{{source.overriddenCount}}</td>
+                                        <td>{{source.unknownCount}}</td>
+                                    </tr>
+                                {{/each}}
+                                <tr data-filter-table-empty hidden>
+                                    <td class="cp-data-table-empty-cell" colspan="8">No TOML sources found.</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                {{else}}
+                    <div class="cp-data-table-empty">No TOML property sources found.</div>
+                {{/if}}
+            </div>
+        </div>
+
+        <div class="card card-light">
+            <div class="card-header">
+                <h3 class="card-title">TOML keys</h3>
+            </div>
+            <div class="card-body">
+                {{#if keys}}
+                    <div class="cp-data-table cp-data-table-unpaged" data-filter-table data-filter-table-unpaged data-filter-table-label="key" data-filter-table-label-plural="keys">
+                        <div class="cp-data-table-toolbar">
+                            <div class="cp-data-table-summary" data-filter-table-summary>{{keys.size}} keys</div>
+                            <div class="cp-data-table-search">
+                                <input type="text" class="form-control" data-filter-table-search placeholder="Search TOML keys" aria-label="Search TOML keys">
+                            </div>
+                        </div>
+                        <div class="cp-data-table-container">
+                            <table class="table cp-data-table-table cp-data-table-fixed">
+                                <thead>
+                                <tr>
+                                    <th>Key</th>
+                                    <th>Type</th>
+                                    <th>Value</th>
+                                    <th>Source</th>
+                                    <th>Status</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {{#each keys as |key|}}
+                                    <tr data-filter-table-row>
+                                        <td><code class="cp-table-code">{{key.key}}</code></td>
+                                        <td>{{key.type}}</td>
+                                        <td><code class="cp-table-code cp-property-value">{{key.displayValue}}</code></td>
+                                        <td>
+                                            <code class="cp-table-code">{{key.sourceName}}</code>
+                                            <br>
+                                            <code class="cp-table-code">{{key.sourceOrigin}}</code>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-secondary">{{key.statusLabel}}</span>
+                                        </td>
+                                    </tr>
+                                {{/each}}
+                                <tr data-filter-table-empty hidden>
+                                    <td class="cp-data-table-empty-cell" colspan="5">No TOML keys found.</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                {{else}}
+                    <div class="cp-data-table-empty">No TOML keys found.</div>
+                {{/if}}
+            </div>
+        </div>
+    </div>
+{{/with}}

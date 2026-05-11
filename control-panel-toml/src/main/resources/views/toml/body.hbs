@@ -1,0 +1,14 @@
+{{#with controlPanel.body }}
+    {{#if hasTomlSources}}
+        <p class="card-text">
+            <strong>{{summary.sourceCount}}</strong> TOML sources, <strong>{{summary.uniqueKeys}}</strong> unique keys.
+        </p>
+        <p class="card-text">
+            <span class="badge badge-primary">{{summary.effectiveRows}} effective</span>
+            <span class="badge badge-secondary">{{summary.overriddenRows}} overridden</span>
+            <span class="badge badge-secondary">{{summary.unknownRows}} unknown</span>
+        </p>
+    {{else}}
+        <p class="card-text">TOML support is available, but no TOML property sources are loaded.</p>
+    {{/if}}
+{{/with}}
