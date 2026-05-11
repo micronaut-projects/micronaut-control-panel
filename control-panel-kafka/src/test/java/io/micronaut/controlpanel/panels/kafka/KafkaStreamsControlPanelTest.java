@@ -418,6 +418,7 @@ final class KafkaStreamsControlPanelTest {
     @Test
     void testRuntimeStateModelExposesTemplateStateClasses() {
         KafkaStreamsRuntimeState down = KafkaStreamsRuntimeState.available("DOWN", null, List.of());
+        KafkaStreamsRuntimeState outOfService = KafkaStreamsRuntimeState.available("OUT_OF_SERVICE", null, List.of());
         KafkaStreamsRuntimeState unavailable = KafkaStreamsRuntimeState.unavailable("Health details hidden");
         KafkaStreamsRuntimeState.ThreadState rebalancing = new KafkaStreamsRuntimeState.ThreadState(
                 "orders-thread-1",
@@ -433,6 +434,9 @@ final class KafkaStreamsControlPanelTest {
         Assertions.assertEquals("badge-destructive", down.statusBadgeClass());
         Assertions.assertEquals("cp-kafka-runtime--error", down.sectionStateClass());
         Assertions.assertTrue(down.errorState());
+        Assertions.assertEquals("badge-destructive", outOfService.statusBadgeClass());
+        Assertions.assertEquals("cp-kafka-runtime--error", outOfService.sectionStateClass());
+        Assertions.assertTrue(outOfService.errorState());
         Assertions.assertEquals("badge-secondary", unavailable.statusBadgeClass());
         Assertions.assertEquals("cp-kafka-runtime--unavailable", unavailable.sectionStateClass());
         Assertions.assertEquals("cp-kafka-badge-warning", rebalancing.stateBadgeClass());
@@ -447,6 +451,7 @@ final class KafkaStreamsControlPanelTest {
         Assertions.assertTrue(template.contains("<tr tabindex=\"0\">"));
         Assertions.assertTrue(template.contains("data-label=\"Thread\""));
         Assertions.assertTrue(template.contains("data-label=\"Producer clients\""));
+        Assertions.assertTrue(template.contains("<span class=\"badge badge-secondary\">Unavailable</span>"));
         Assertions.assertTrue(template.contains("Runtime state unavailable."));
         Assertions.assertTrue(template.contains("Rendering topology..."));
         Assertions.assertFalse(template.contains("<ul>\n        {{#each body.runtimeState.threads"));

@@ -6,7 +6,11 @@
                 Source: Micronaut <code>HealthEndpoint</code> visible details. Hidden or disabled Health details render as unavailable.
             </p>
         </div>
-        <span class="badge {{body.runtimeState.statusBadgeClass}}">{{body.runtimeState.status}}</span>
+        {{#if body.runtimeState.available}}
+            <span class="badge {{body.runtimeState.statusBadgeClass}}">{{body.runtimeState.status}}</span>
+        {{else}}
+            <span class="badge badge-secondary">Unavailable</span>
+        {{/if}}
     </div>
 
     {{#if body.runtimeState.available}}

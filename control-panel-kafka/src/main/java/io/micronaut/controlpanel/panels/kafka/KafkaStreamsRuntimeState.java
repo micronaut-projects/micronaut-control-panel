@@ -55,8 +55,7 @@ public record KafkaStreamsRuntimeState(boolean available,
     public String statusBadgeClass() {
         return switch (emptyToUnknown(status).toUpperCase(Locale.ROOT)) {
             case "UP" -> "cp-kafka-badge-success";
-            case "DOWN" -> "badge-destructive";
-            case "OUT_OF_SERVICE" -> "cp-kafka-badge-warning";
+            case "DOWN", "OUT_OF_SERVICE" -> "badge-destructive";
             default -> "badge-secondary";
         };
     }
