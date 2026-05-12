@@ -48,12 +48,12 @@
 
     <div class="tabs mt-4" data-tabs>
         <div class="tabs-list" role="tablist" aria-label="GraalPy diagnostics">
-            <button type="button" class="tabs-trigger active" data-tab-target="graalpy-modules" role="tab" aria-selected="true">Module Interfaces</button>
-            <button type="button" class="tabs-trigger" data-tab-target="graalpy-vfs" role="tab" aria-selected="false">Python VFS</button>
-            <button type="button" class="tabs-trigger" data-tab-target="graalpy-runtime" role="tab" aria-selected="false">Runtime Notes</button>
+            <button type="button" class="tabs-trigger active" id="tab-graalpy-modules" data-tabs-trigger="graalpy-modules" role="tab" aria-selected="true" aria-controls="panel-graalpy-modules">Module Interfaces</button>
+            <button type="button" class="tabs-trigger" id="tab-graalpy-vfs" data-tabs-trigger="graalpy-vfs" role="tab" aria-selected="false" aria-controls="panel-graalpy-vfs">Python VFS</button>
+            <button type="button" class="tabs-trigger" id="tab-graalpy-runtime" data-tabs-trigger="graalpy-runtime" role="tab" aria-selected="false" aria-controls="panel-graalpy-runtime">Runtime Notes</button>
         </div>
 
-        <div id="graalpy-modules" class="tabs-panel active" role="tabpanel">
+        <div id="panel-graalpy-modules" class="tabs-panel active" role="tabpanel" aria-labelledby="tab-graalpy-modules" data-tabs-panel="graalpy-modules">
             {{#if hasModules}}
                 <div class="cp-data-table cp-data-table-paged" data-filter-table data-filter-table-page-size="12" data-filter-table-label="module interface" data-filter-table-label-plural="module interfaces">
                     <div class="cp-data-table-toolbar">
@@ -126,7 +126,7 @@
             {{/if}}
         </div>
 
-        <div id="graalpy-vfs" class="tabs-panel" role="tabpanel" hidden>
+        <div id="panel-graalpy-vfs" class="tabs-panel" role="tabpanel" aria-labelledby="tab-graalpy-vfs" data-tabs-panel="graalpy-vfs" hidden>
             {{#if vfs.hasWarnings}}
                 <div class="alert alert-warning" role="status">
                     {{#each vfs.warnings}}
@@ -208,7 +208,7 @@
             {{/if}}
         </div>
 
-        <div id="graalpy-runtime" class="tabs-panel" role="tabpanel" hidden>
+        <div id="panel-graalpy-runtime" class="tabs-panel" role="tabpanel" aria-labelledby="tab-graalpy-runtime" data-tabs-panel="graalpy-runtime" hidden>
             <div class="cp-data-table-container cp-vertical-table">
                 <table class="table cp-data-table-table">
                     <tbody>
