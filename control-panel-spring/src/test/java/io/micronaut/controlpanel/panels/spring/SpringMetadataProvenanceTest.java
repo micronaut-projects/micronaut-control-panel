@@ -44,8 +44,7 @@ final class SpringMetadataProvenanceTest {
 
             boolean routeHasSpringMapping = context.getBean(Router.class)
                 .uriRoutes()
-                .anyMatch(route -> (route.getTargetMethod().getDeclaringType().getName().equals(SpringController.class.getName())
-                    || route.getTargetMethod().getDeclaringType().getName().contains(SpringController.class.getSimpleName()))
+                .anyMatch(route -> SpringController.class.isAssignableFrom(route.getTargetMethod().getDeclaringType())
                     && route.getTargetMethod().getAnnotationMetadata().hasAnnotation(RestController.class.getName()));
             assertTrue(routeHasSpringMapping, () -> context.getBean(Router.class)
                 .uriRoutes()
