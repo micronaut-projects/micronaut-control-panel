@@ -27,8 +27,9 @@ import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -48,9 +49,9 @@ class ControlPanelSecurityRuleTest {
     void fallbackWriteAccessFilterOrderDoesNotDependOnSecurityClasses() throws IOException {
         assertEquals(ServerFilterPhase.SECURITY.after(), ControlPanelWriteAccessFilter.ORDER);
 
-        String filterBytecode = readClassBytes(ControlPanelWriteAccessFilter.class);
-        assertFalse(filterBytecode.contains("ControlPanelSecurityRule"));
-        assertFalse(filterBytecode.contains("io/micronaut/security"));
+        byte[] filterBytecode = readClassBytes(ControlPanelWriteAccessFilter.class);
+        assertFalse(containsAscii(filterBytecode, "ControlPanelSecurityRule"));
+        assertFalse(containsAscii(filterBytecode, "io/micronaut/security"));
     }
 
     @Test
@@ -270,10 +271,27 @@ class ControlPanelSecurityRuleTest {
         return Mono.from(rule.check(request, authentication)).block();
     }
 
-    private static String readClassBytes(Class<?> type) throws IOException {
+    private static byte[] readClassBytes(Class<?> type) throws IOException {
         String resourceName = type.getSimpleName() + ".class";
         try (InputStream inputStream = Objects.requireNonNull(type.getResourceAsStream(resourceName))) {
-            return new String(inputStream.readAllBytes());
+            return inputStream.readAllBytes();
         }
+    }
+
+    private static boolean containsAscii(byte[] bytes, String value) {
+        byte[] needle = value.getBytes(StandardCharsets.US_ASCII);
+        for (int i = 0; i <= bytes.length - needle.length; i++) {
+            boolean matches = true;
+            for (int j = 0; j < needle.length; j++) {
+                if (bytes[i + j] != needle[j]) {
+                    matches = false;
+                    break;
+                }
+            }
+            if (matches) {
+                return true;
+            }
+        }
+        return false;
     }
 }

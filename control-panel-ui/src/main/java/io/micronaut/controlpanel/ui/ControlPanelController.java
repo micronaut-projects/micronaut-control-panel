@@ -78,7 +78,7 @@ public class ControlPanelController implements ControlPanelApi {
         this.repository = repository;
         this.applicationName = applicationConfiguration.getName().orElse("(unnamed)");
         this.activeEnvironments = environment.getActiveNames();
-        this.canRefresh = EndpointUtils.canRefresh(refreshEndpoint, beanContext);
+        this.canRefresh = EndpointUtils.canRefresh(refreshEndpoint);
         this.canStop = stopEndpoint != null;
         this.refreshEndpoint = refreshEndpoint;
         this.stopEndpoint = stopEndpoint;

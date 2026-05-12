@@ -34,7 +34,7 @@ class EndpointUtilsTest {
         var endpoint = ctx.getBean(RefreshEndpoint.class);
 
         assertTrue(EndpointUtils.isSensitive(endpoint, ctx));
-        assertTrue(EndpointUtils.canRefresh(endpoint, ctx));
+        assertTrue(EndpointUtils.canRefresh(endpoint));
     }
 
     @Test

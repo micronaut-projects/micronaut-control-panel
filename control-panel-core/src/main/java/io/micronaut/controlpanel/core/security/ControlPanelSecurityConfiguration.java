@@ -104,6 +104,12 @@ public record ControlPanelSecurityConfiguration(
                 "Control panel security write role cannot be blank when configured"
             );
         }
+        String effectiveWriteRole = writeRole == null ? role : writeRole;
+        if (writeAccess == WriteAccess.AUTHORIZED && effectiveWriteRole.isBlank()) {
+            throw new IllegalArgumentException(
+                "Control panel security write role cannot be blank when authorized write access is enabled"
+            );
+        }
     }
 
     /**

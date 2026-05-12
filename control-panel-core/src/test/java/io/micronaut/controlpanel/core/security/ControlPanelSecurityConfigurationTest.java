@@ -126,4 +126,14 @@ class ControlPanelSecurityConfigurationTest {
             " "
         ));
     }
+
+    @Test
+    void rejectsBlankEffectiveWriteRoleWhenAuthorizedWriteAccessIsEnabled() {
+        assertThrows(IllegalArgumentException.class, () -> new ControlPanelSecurityConfiguration(
+            ControlPanelSecurityConfiguration.Access.ANONYMOUS,
+            " ",
+            ControlPanelSecurityConfiguration.WriteAccess.AUTHORIZED,
+            null
+        ));
+    }
 }
