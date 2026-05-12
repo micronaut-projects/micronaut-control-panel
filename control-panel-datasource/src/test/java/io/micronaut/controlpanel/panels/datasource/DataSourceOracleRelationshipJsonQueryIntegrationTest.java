@@ -196,7 +196,7 @@ class DataSourceOracleRelationshipJsonQueryIntegrationTest {
     private void dropTable(String tableName) {
         try {
             dataSourceService.executeQuery("DROP TABLE " + tableName, 0, 0);
-        } catch (RuntimeException ignored) {
+        } catch (RuntimeException _) {
             // Oracle has no DROP TABLE IF EXISTS.
         }
     }

@@ -71,7 +71,9 @@ public final class DataSourceController {
     private static final Logger LOG = LoggerFactory.getLogger(DataSourceController.class);
     private static final int DEFAULT_TABLE_PAGE_SIZE = 10;
     private static final List<Integer> TABLE_PAGE_SIZES = List.of(10, 25, 50);
-    private static final Pattern SIMPLE_SQL_IDENTIFIER = Pattern.compile("[A-Za-z_][A-Za-z0-9_]*");
+    private static final Pattern SIMPLE_SQL_IDENTIFIER = Pattern.compile("[A-Za-z_]\\w*");
+    private static final String NO_CONTROL_PANEL_LOG_MESSAGE = "No control panel found for dataSource='{}'";
+    private static final String SQL_WHERE = " WHERE ";
 
     private final Map<String, DataSourceService> services;
     private final Map<String, DataSourceControlPanel> panels;
@@ -108,7 +110,7 @@ public final class DataSourceController {
         var cachedSchema = schemas.get(dataSource);
         if (cachedSchema == null) {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("No control panel found for dataSource='{}'", dataSource);
+                LOG.debug(NO_CONTROL_PANEL_LOG_MESSAGE, dataSource);
             }
             return HttpResponse.notFound();
         }
@@ -123,7 +125,7 @@ public final class DataSourceController {
                      "window.codemirror.schema=" + schemaJson + ';' +
                      "window.codemirror.defaultSchema=" + defaultSchemaJson + ';';
             if (LOG.isDebugEnabled()) {
-                LOG.debug("schemaJs built for dataSource='{}' with defaultSchema='{}' and {} tables", dataSource, defaultSchema, ((Map<?, ?>) schema.getOrDefault(defaultSchema == null ? "" : defaultSchema, Map.of())).size());
+                LOG.debug("schemaJs built for dataSource='{}' with defaultSchema='{}' and {} tables", dataSource, defaultSchema, schema.getOrDefault(defaultSchema == null ? "" : defaultSchema, Map.of()).size());
             }
             return HttpResponse.ok(js)
                 .contentType(MediaType.of("application/javascript"))
@@ -147,15 +149,15 @@ public final class DataSourceController {
      * @return A server-rendered HTML fragment containing one table page
      */
     @Get(value = "/{dataSource}/tables", produces = MediaType.TEXT_HTML)
-    public HttpResponse<?> tables(String dataSource,
-                                  @Nullable @QueryValue Integer page,
-                                  @Nullable @QueryValue Integer size,
-                                  @Nullable @QueryValue String schema,
-                                  @Nullable @QueryValue String search) {
+    public HttpResponse<Object> tables(String dataSource,
+                                       @Nullable @QueryValue Integer page,
+                                       @Nullable @QueryValue Integer size,
+                                       @Nullable @QueryValue String schema,
+                                       @Nullable @QueryValue String search) {
         var panel = panels.get(dataSource);
         if (panel == null) {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("No control panel found for dataSource='{}'", dataSource);
+                LOG.debug(NO_CONTROL_PANEL_LOG_MESSAGE, dataSource);
             }
             return HttpResponse.notFound();
         }
@@ -170,7 +172,7 @@ public final class DataSourceController {
         int to = Math.min(total, from + pageSize);
         var pageTables = currentPage == 0 ? List.<Table>of() : filteredTables.subList(from, to);
         var databaseType = panel.getBody().dataSourceInfo().type();
-        return fragment("datasource/detail-tables-page", tablesPage(pageTables, tables, databaseType, currentPage, pageCount, pageSize, total, from, to));
+        return fragment("datasource/detail-tables-page", tablesPage(pageTables, tables, databaseType, new TablePageState(currentPage, pageCount, pageSize, total, from, to)));
     }
 
     /**
@@ -182,17 +184,17 @@ public final class DataSourceController {
      * @return A server-rendered HTML fragment for the selected table
      */
     @Get(value = "/{dataSource}/tables/detail", produces = MediaType.TEXT_HTML)
-    public HttpResponse<?> tableDetail(String dataSource,
-                                       @Nullable @QueryValue String schema,
-                                       @QueryValue("table") String tableName) {
+    public HttpResponse<Object> tableDetail(String dataSource,
+                                            @Nullable @QueryValue String schema,
+                                            @QueryValue("table") String tableName) {
         if (tableName == null || tableName.isBlank()) {
-            return HttpResponse.badRequest("Table name is required")
+            return HttpResponse.badRequest((Object) "Table name is required")
                 .contentType(MediaType.TEXT_HTML_TYPE);
         }
         var panel = panels.get(dataSource);
         if (panel == null) {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("No control panel found for dataSource='{}'", dataSource);
+                LOG.debug(NO_CONTROL_PANEL_LOG_MESSAGE, dataSource);
             }
             return HttpResponse.notFound();
         }
@@ -216,7 +218,7 @@ public final class DataSourceController {
      * @return A server-rendered HTML fragment for the current pool status
      */
     @Get(value = "/{dataSource}/pool/status", produces = MediaType.TEXT_HTML)
-    public HttpResponse<?> poolStatus(String dataSource) {
+    public HttpResponse<Object> poolStatus(String dataSource) {
         var service = services.get(dataSource);
         if (service == null) {
             if (LOG.isDebugEnabled()) {
@@ -242,7 +244,7 @@ public final class DataSourceController {
     @Post(value = "/{dataSource}/query", produces = MediaType.APPLICATION_JSON)
     public HttpResponse<QueryResponse> query(String dataSource, @Body QueryRequest body) {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("query requested for dataSource='{}' (start={}, length={}, draw={}) sql='{}'", dataSource, body.start, body.length, body.draw, body.sql);
+            LOG.debug("query requested for dataSource='{}' (start={}, length={}, draw={}) sql='{}'", dataSource, body.start(), body.length(), body.draw(), body.sql());
         }
         var service = services.get(dataSource);
         if (service == null) {
@@ -252,25 +254,16 @@ public final class DataSourceController {
             return HttpResponse.notFound();
         }
 
-        if (body.sql == null || body.sql.isBlank()) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Empty SQL received for dataSource='{}'", dataSource);
-            }
-            return HttpResponse.badRequest(QueryResponse.of(body.draw, "SQL must not be empty"));
+        return executeQuery(dataSource, body, service);
+    }
+
+    private static HttpResponse<QueryResponse> executeQuery(String dataSource, QueryRequest body, DataSourceService service) {
+        if (body.sql() == null || body.sql().isBlank()) {
+            return emptyQuery(dataSource, body);
         }
-
         try {
-            var result = service.executeQuery(body.sql, body.start == null ? 0 : body.start, body.length == null ? 10 : body.length);
-
-            var resp = new QueryResponse(
-                body.draw == null ? 1 : body.draw,
-                result.total(),
-                result.total(),
-                result.rows(),
-                result.cols(),
-                result.columns(),
-                null
-            );
+            var result = service.executeQuery(body.sql(), queryStart(body), queryLength(body));
+            var resp = queryResponse(body, result);
             if (LOG.isDebugEnabled()) {
                 LOG.debug("query completed for dataSource='{}' -> total={}, rowsPage={}, cols={}", dataSource, result.total(), result.rows().size(), result.cols().size());
             }
@@ -279,12 +272,12 @@ public final class DataSourceController {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Bad request for dataSource='{}': {}", dataSource, e.getMessage());
             }
-            return HttpResponse.badRequest(QueryResponse.of(body.draw, e.getMessage()));
-        } catch (Exception e) {
+            return HttpResponse.badRequest(QueryResponse.of(body.draw(), e.getMessage()));
+        } catch (RuntimeException e) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Query failed for dataSource='{}': {}", dataSource, e.getMessage());
             }
-            return HttpResponse.serverError(QueryResponse.of(body.draw, e.getMessage()));
+            return HttpResponse.serverError(QueryResponse.of(body.draw(), e.getMessage()));
         }
     }
 
@@ -292,7 +285,7 @@ public final class DataSourceController {
         Map<String, Schema> result = HashMap.newHashMap(panels.size());
         for (var panel : panels.values()) {
             var tables = panel.getBody().tables();
-            var schema = new LinkedHashMap<String, Object>();
+            var schema = new LinkedHashMap<String, Map<String, Object>>();
             var counts = new LinkedHashMap<String, Integer>();
 
             computeSchema(tables, counts, schema);
@@ -311,20 +304,14 @@ public final class DataSourceController {
         return result;
     }
 
-    @SuppressWarnings("unchecked")
-    private static void computeSchema(final List<Table> tables, final Map<String, Integer> counts, final Map<String, Object> schema) {
+    private static void computeSchema(final List<Table> tables, final Map<String, Integer> counts, final Map<String, Map<String, Object>> schema) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Computing schema for {} tables", tables.size());
         }
         for (var t : tables) {
             var schemaKey = (t.schema() == null) ? "" : t.schema();
             counts.put(schemaKey, counts.getOrDefault(schemaKey, 0) + 1);
-
-            var tablesInSchema = (LinkedHashMap<String, Object>) schema.get(schemaKey);
-            if (tablesInSchema == null) {
-                tablesInSchema = new LinkedHashMap<>();
-                schema.put(schemaKey, tablesInSchema);
-            }
+            var tablesInSchema = schema.computeIfAbsent(schemaKey, key -> new LinkedHashMap<>());
 
             var tableLabel = t.name();
 
@@ -354,8 +341,8 @@ public final class DataSourceController {
         return tableNode;
     }
 
-    private static HttpResponse<?> fragment(String view, Object model) {
-        return HttpResponse.ok(new ModelAndView<>(view, model))
+    private static HttpResponse<Object> fragment(String view, Object model) {
+        return HttpResponse.ok((Object) new ModelAndView<>(view, model))
             .contentType(MediaType.TEXT_HTML_TYPE);
     }
 
@@ -386,28 +373,23 @@ public final class DataSourceController {
     private static TablesPage tablesPage(List<Table> tables,
                                          List<Table> allTables,
                                          DatabaseType databaseType,
-                                         int page,
-                                         int pageCount,
-                                         int pageSize,
-                                         int total,
-                                         int from,
-                                         int to) {
+                                         TablePageState state) {
         var rows = tables.stream()
             .map(table -> tableRow(table, allTables, databaseType))
             .toList();
         var pageSizes = TABLE_PAGE_SIZES.stream()
-            .map(value -> new PageSizeOption(value, value == pageSize))
+            .map(value -> new PageSizeOption(value, value == state.pageSize()))
             .toList();
         return new TablesPage(
-            page,
-            pageCount,
-            tablePageSummary(page, total, from, to),
-            tablePageRange(page, total, from, to),
+            state.page(),
+            state.pageCount(),
+            tablePageSummary(state),
+            tablePageRange(state),
             pageSizes,
             rows,
             rows.isEmpty(),
-            page <= 1,
-            page == 0 || page >= pageCount
+            state.page() <= 1,
+            state.page() == 0 || state.page() >= state.pageCount()
         );
     }
 
@@ -472,18 +454,18 @@ public final class DataSourceController {
         );
     }
 
-    private static String tablePageSummary(int page, int total, int from, int to) {
-        if (page == 0) {
+    private static String tablePageSummary(TablePageState state) {
+        if (state.page() == 0) {
             return "No tables found.";
         }
-        return "Showing " + (from + 1) + "-" + to + " of " + total + " tables";
+        return "Showing " + (state.from() + 1) + "-" + state.to() + " of " + state.total() + " tables";
     }
 
-    private static String tablePageRange(int page, int total, int from, int to) {
-        if (page == 0) {
+    private static String tablePageRange(TablePageState state) {
+        if (state.page() == 0) {
             return "Showing 0 of 0 tables";
         }
-        return "Showing " + (from + 1) + "-" + to + " of " + total;
+        return "Showing " + (state.from() + 1) + "-" + state.to() + " of " + state.total();
     }
 
     private static List<Table> filterTables(List<Table> tables, @Nullable String schema, @Nullable String search) {
@@ -649,13 +631,13 @@ public final class DataSourceController {
 
     private static String postgresRelatedRowSql(RelationshipJsonProperty relationship, String alias) {
         return "(SELECT to_jsonb(" + alias + ") FROM " + sqlQualifiedName(relationship.table()) + " " + alias +
-            " WHERE " + qualifiedColumn(alias, relationship.foreignKey().pkColumn()) + " = " + qualifiedColumn("t", relationship.foreignKey().fkColumn()) +
+            SQL_WHERE + qualifiedColumn(alias, relationship.foreignKey().pkColumn()) + " = " + qualifiedColumn("t", relationship.foreignKey().fkColumn()) +
             " LIMIT 1)";
     }
 
     private static String postgresChildRowsSql(RelationshipJsonProperty relationship, String alias) {
         return "COALESCE((SELECT jsonb_agg(to_jsonb(" + alias + ")) FROM " + sqlQualifiedName(relationship.table()) + " " + alias +
-            " WHERE " + qualifiedColumn(alias, relationship.foreignKey().fkColumn()) + " = " + qualifiedColumn("t", relationship.foreignKey().pkColumn()) +
+            SQL_WHERE + qualifiedColumn(alias, relationship.foreignKey().fkColumn()) + " = " + qualifiedColumn("t", relationship.foreignKey().pkColumn()) +
             "), '[]'::jsonb)";
     }
 
@@ -680,13 +662,13 @@ public final class DataSourceController {
 
     private static String oracleRelatedRowSql(RelationshipJsonProperty relationship, String alias) {
         return "(SELECT " + oracleJsonObjectSql(alias) + " FROM " + sqlQualifiedName(relationship.table()) + " " + alias +
-            " WHERE " + qualifiedColumn(alias, relationship.foreignKey().pkColumn()) + " = " + qualifiedColumn("t", relationship.foreignKey().fkColumn()) +
+            SQL_WHERE + qualifiedColumn(alias, relationship.foreignKey().pkColumn()) + " = " + qualifiedColumn("t", relationship.foreignKey().fkColumn()) +
             " FETCH FIRST 1 ROW ONLY)";
     }
 
     private static String oracleChildRowsSql(RelationshipJsonProperty relationship, String alias) {
         return "COALESCE((SELECT JSON_ARRAYAGG(" + oracleJsonObjectSql(alias) + " RETURNING JSON) FROM " +
-            sqlQualifiedName(relationship.table()) + " " + alias + " WHERE " +
+            sqlQualifiedName(relationship.table()) + " " + alias + SQL_WHERE +
             qualifiedColumn(alias, relationship.foreignKey().fkColumn()) + " = " + qualifiedColumn("t", relationship.foreignKey().pkColumn()) +
             "), JSON_ARRAY(RETURNING JSON))";
     }
@@ -752,7 +734,37 @@ public final class DataSourceController {
         return value == null ? "" : value;
     }
 
+    private static int queryStart(QueryRequest body) {
+        return body.start() == null ? 0 : body.start();
+    }
+
+    private static int queryLength(QueryRequest body) {
+        return body.length() == null ? 10 : body.length();
+    }
+
+    private static HttpResponse<QueryResponse> emptyQuery(String dataSource, QueryRequest body) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Empty SQL received for dataSource='{}'", dataSource);
+        }
+        return HttpResponse.badRequest(QueryResponse.of(body.draw(), "SQL must not be empty"));
+    }
+
+    private static QueryResponse queryResponse(QueryRequest body, DataSourceService.QueryResult result) {
+        return new QueryResponse(
+            body.draw() == null ? 1 : body.draw(),
+            result.total(),
+            result.total(),
+            result.rows(),
+            result.cols(),
+            result.columns(),
+            null
+        );
+    }
+
     private record RelationshipJsonProperty(Table table, ForeignKey foreignKey, boolean toMany) {
+    }
+
+    private record TablePageState(int page, int pageCount, int pageSize, int total, int from, int to) {
     }
 
     /**
@@ -923,6 +935,6 @@ public final class DataSourceController {
         }
     }
 
-    record Schema(Map<String, Object> schema, String defaultSchema) {
+    record Schema(Map<String, Map<String, Object>> schema, String defaultSchema) {
     }
 }

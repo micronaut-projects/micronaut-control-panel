@@ -68,7 +68,7 @@ final class PoolInfoSupport {
         return String.join(", ", properties.stringPropertyNames().stream().sorted().toList());
     }
 
-    static String displayKeys(Map<?, ?> values) {
+    static <T> String displayKeys(Map<String, T> values) {
         if (values == null || values.isEmpty()) {
             return UNKNOWN;
         }
@@ -102,7 +102,7 @@ final class PoolInfoSupport {
     static int safeInt(SqlIntSupplier supplier) {
         try {
             return Math.max(0, supplier.getAsInt());
-        } catch (SQLException e) {
+        } catch (SQLException _) {
             return 0;
         }
     }
@@ -110,7 +110,7 @@ final class PoolInfoSupport {
     static long safeLong(SqlLongSupplier supplier) {
         try {
             return Math.max(0, supplier.getAsLong());
-        } catch (SQLException e) {
+        } catch (SQLException _) {
             return 0;
         }
     }
@@ -119,7 +119,7 @@ final class PoolInfoSupport {
         try {
             Duration duration = supplier.get();
             return duration == null ? Duration.ZERO : duration;
-        } catch (SQLException e) {
+        } catch (SQLException _) {
             return Duration.ZERO;
         }
     }
@@ -127,7 +127,7 @@ final class PoolInfoSupport {
     static boolean safeBoolean(SqlBooleanSupplier supplier) {
         try {
             return supplier.getAsBoolean();
-        } catch (SQLException e) {
+        } catch (SQLException _) {
             return false;
         }
     }
@@ -135,7 +135,7 @@ final class PoolInfoSupport {
     static String safeString(SqlStringSupplier supplier) {
         try {
             return display(supplier.get());
-        } catch (SQLException e) {
+        } catch (SQLException _) {
             return UNKNOWN;
         }
     }

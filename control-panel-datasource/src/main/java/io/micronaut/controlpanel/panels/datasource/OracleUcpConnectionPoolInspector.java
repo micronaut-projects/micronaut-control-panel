@@ -18,6 +18,7 @@ package io.micronaut.controlpanel.panels.datasource;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.controlpanel.panels.datasource.model.PoolInfo;
 import jakarta.inject.Singleton;
+import oracle.ucp.ShardConnectionStatistics;
 import oracle.ucp.UniversalConnectionPoolStatistics;
 import oracle.ucp.jdbc.PoolDataSource;
 
@@ -148,7 +149,7 @@ final class OracleUcpConnectionPoolInspector implements ConnectionPoolInspector 
                 option("Abandoned connections", statInt(stats, UniversalConnectionPoolStatistics::getAbandonedConnectionsCount)),
                 durationMillis("Average wait", statLong(stats, UniversalConnectionPoolStatistics::getAverageConnectionWaitTime)),
                 durationMillis("Peak wait", statLong(stats, UniversalConnectionPoolStatistics::getPeakConnectionWaitTime)),
-                option("Shard stats", PoolInfoSupport.displayKeys(statMap(stats, UniversalConnectionPoolStatistics::getShardConnectionStats)))
+                option("Shard stats", statKeys(stats, UniversalConnectionPoolStatistics::getShardConnectionStats))
             ),
             PoolInfoSupport.group(
                 "Cumulative statistics",
@@ -169,7 +170,7 @@ final class OracleUcpConnectionPoolInspector implements ConnectionPoolInspector 
     private static String safeType(Supplier<Object> supplier) {
         try {
             return PoolInfoSupport.displayType(supplier.get());
-        } catch (NoSuchMethodError e) {
+        } catch (NoSuchMethodError _) {
             return PoolInfoSupport.UNKNOWN;
         }
     }
@@ -180,7 +181,7 @@ final class OracleUcpConnectionPoolInspector implements ConnectionPoolInspector 
         }
         try {
             return supplier.getAsInt(stats);
-        } catch (NoSuchMethodError e) {
+        } catch (NoSuchMethodError _) {
             return 0;
         }
     }
@@ -191,19 +192,19 @@ final class OracleUcpConnectionPoolInspector implements ConnectionPoolInspector 
         }
         try {
             return supplier.getAsLong(stats);
-        } catch (NoSuchMethodError e) {
+        } catch (NoSuchMethodError _) {
             return 0;
         }
     }
 
-    private static Map<?, ?> statMap(UniversalConnectionPoolStatistics stats, StatMapSupplier supplier) {
+    private static String statKeys(UniversalConnectionPoolStatistics stats, StatMapSupplier supplier) {
         if (stats == null) {
-            return Map.of();
+            return PoolInfoSupport.UNKNOWN;
         }
         try {
-            return supplier.get(stats);
-        } catch (NoSuchMethodError e) {
-            return Map.of();
+            return PoolInfoSupport.displayKeys(supplier.get(stats));
+        } catch (NoSuchMethodError _) {
+            return PoolInfoSupport.UNKNOWN;
         }
     }
 
@@ -219,6 +220,6 @@ final class OracleUcpConnectionPoolInspector implements ConnectionPoolInspector 
 
     @FunctionalInterface
     private interface StatMapSupplier {
-        Map<?, ?> get(UniversalConnectionPoolStatistics stats);
+        Map<String, ShardConnectionStatistics> get(UniversalConnectionPoolStatistics stats);
     }
 }

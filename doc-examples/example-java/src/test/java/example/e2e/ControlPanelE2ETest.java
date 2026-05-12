@@ -269,35 +269,67 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         page.navigate(baseUrl());
         categoryLink(page, "Data Sources").click();
 
+        assertDatasourceList(page);
+        controlPanelDetails(page, "my-oracle").click();
+        assertDatasourceTablesInitialState(page);
+
+        String schema = filterDatasourceTables(page, "dept");
+        String expectedTableDetailSubtitle = expectedTableSubtitle(schema, "DEPT");
+        selectTable(page, "DEPT");
+        assertDepartmentTableDetail(page, expectedTableDetailSubtitle);
+
+        assertSelectedTableDeselects(page);
+        selectTable(page, "DEPT");
+        assertTableDetailToggle(page);
+        assertTablesListToggleDisabled(page);
+        assertRelationshipNavigation(page, schema, expectedTableDetailSubtitle);
+
+        executeSelectAllTableQuery(page);
+        assertTablesTabAfterBrowserBack(page);
+        executeDisplayTableAsJson(page);
+        assertTablesTabAfterBrowserBack(page);
+        assertDatasourcePoolTab(page);
+    }
+
+    private static void assertDatasourceList(Page page) {
         assertThat(body(page)).containsText("my-oracle");
         assertThat(body(page)).containsText("my-postgres");
+    }
 
-        controlPanelDetails(page, "my-oracle").click();
+    private static void assertDatasourceTablesInitialState(Page page) {
         assertThat(page.locator("#tablesPageContainer")).containsText("DEPT");
         assertThat(page.locator("#tablesPageContainer")).containsText("EMP");
         assertThat(page.locator("#tableDetailCard")).hasClass(Pattern.compile(".*collapsed-card.*"));
         assertThat(page.locator("#tableDetailCard")).hasClass(Pattern.compile(".*detail-rail-collapsed.*"));
+    }
 
+    private static String filterDatasourceTables(Page page, String search) {
         String schema = page.locator("[data-table-schema-filter] option:not([value='__all__'])").first().getAttribute("value");
         page.locator("[data-table-schema-filter]").selectOption(schema);
-        page.locator("[data-table-search]").fill("dept");
+        page.locator("[data-table-search]").fill(search);
         assertThat(page.locator("#tablesPageContainer")).containsText("DEPT");
         assertThat(page.locator("#tablesPageContainer")).not().containsText("EMP");
-        page.locator("#tablesPageContainer [data-table-row][data-table-name='DEPT']").click();
+        return schema;
+    }
+
+    private static void assertDepartmentTableDetail(Page page, String expectedTableDetailSubtitle) {
         assertThat(page.locator("#tableDetailCard")).not().hasClass(Pattern.compile(".*collapsed-card.*"));
-        String expectedTableDetailSubtitle = schema == null || schema.isBlank() ? "DEPT" : schema + ".DEPT";
         assertThat(page.locator("#tableDetailSubtitle")).containsText(expectedTableDetailSubtitle);
         assertThat(page.locator("#tableDetailContainer")).containsText("Entity Relationship Diagram");
         assertThat(page.locator("#tableErDiagramCode")).containsText("TEST_DEPT");
         assertThat(page.locator(".cp-datasource-table-browser")).not().hasClass(Pattern.compile(".*tables-collapsed.*"));
+    }
 
-        page.locator("#tablesPageContainer [data-table-row][data-table-name='DEPT']").click();
+    private static void assertSelectedTableDeselects(Page page) {
+        selectTable(page, "DEPT");
         assertThat(page.locator("#tableDetailCard")).hasClass(Pattern.compile(".*collapsed-card.*"));
         assertThat(page.locator("#tableDetailCard")).hasClass(Pattern.compile(".*detail-rail-collapsed.*"));
-        page.locator("#tablesPageContainer [data-table-row][data-table-name='DEPT']").click();
+        selectTable(page, "DEPT");
         assertThat(page.locator("#tableDetailCard")).not().hasClass(Pattern.compile(".*collapsed-card.*"));
         assertThat(page.locator(".cp-datasource-table-browser")).not().hasClass(Pattern.compile(".*tables-collapsed.*"));
+    }
 
+    private static void assertTableDetailToggle(Page page) {
         page.locator("#toggleTableDetail").click();
         assertThat(page.locator("#tableDetailCard")).hasClass(Pattern.compile(".*collapsed-card.*"));
         assertThat(page.locator("#tableDetailCard")).hasClass(Pattern.compile(".*detail-rail-collapsed.*"));
@@ -306,28 +338,37 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         assertThat(page.locator("#tableDetailCard")).not().hasClass(Pattern.compile(".*collapsed-card.*"));
         assertThat(page.locator("#tableDetailCard")).not().hasClass(Pattern.compile(".*detail-rail-collapsed.*"));
         assertThat(page.locator(".cp-datasource-table-browser")).not().hasClass(Pattern.compile(".*detail-collapsed.*"));
+    }
 
+    private static void assertTablesListToggleDisabled(Page page) {
         page.locator("#toggleTablesList").click();
         assertThat(page.locator(".cp-datasource-table-browser")).not().hasClass(Pattern.compile(".*tables-collapsed.*"));
+    }
 
+    private static void assertRelationshipNavigation(Page page, String schema, String expectedTableDetailSubtitle) {
         page.locator("[data-table-search]").fill("emp");
         assertThat(page.locator("#tablesPageContainer")).containsText("EMP");
-        page.locator("#tablesPageContainer [data-table-row][data-table-name='EMP']").click();
-        assertThat(page.locator("#tableDetailSubtitle")).containsText(schema == null || schema.isBlank() ? "EMP" : schema + ".EMP");
+        selectTable(page, "EMP");
+        assertThat(page.locator("#tableDetailSubtitle")).containsText(expectedTableSubtitle(schema, "EMP"));
         page.locator("#tableDetailContainer [data-table-detail-link][data-table-name='DEPT']").first().click();
         assertThat(page.locator("#tableDetailSubtitle")).containsText(expectedTableDetailSubtitle);
+    }
 
+    private static void executeSelectAllTableQuery(Page page) {
         page.locator("#tableDetailActions > summary").click();
         page.locator("#selectAllTableQuery").click();
         assertThat(page.locator("#sql-console").getByRole(AriaRole.TEXTBOX)).isVisible();
         executeQueryShortcut(page);
-
         assertThat(page.locator("#queryResultsContainer tbody")).containsText("ACCOUNTING");
+    }
 
+    private static void assertTablesTabAfterBrowserBack(Page page) {
         page.evaluate("history.back()");
         assertThat(page.locator("#datasourceTablesTab")).isVisible();
         assertThat(page.locator("#tablesPageContainer")).containsText("EMP");
+    }
 
+    private static void executeDisplayTableAsJson(Page page) {
         page.locator("#tableDetailActions > summary").click();
         page.locator("#displayTableAsJson").click();
         assertThat(page.locator("#datasourceQueryTab")).isVisible();
@@ -343,11 +384,9 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         jsonCell.click();
         assertThat(jsonCell).not().hasClass(Pattern.compile(".*cp-query-json-cell-formatted.*"));
         assertThat(jsonCell.locator("[data-query-json-raw]")).containsText("ACCOUNTING");
+    }
 
-        page.evaluate("history.back()");
-        assertThat(page.locator("#datasourceTablesTab")).isVisible();
-        assertThat(page.locator("#tablesPageContainer")).containsText("EMP");
-
+    private static void assertDatasourcePoolTab(Page page) {
         page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("Pool").setExact(true)).click();
         assertThat(page.locator("#datasourcePoolTab")).isVisible();
         assertThat(page.locator("#poolStatusCardContainer")).containsText("HikariCP");
@@ -363,6 +402,14 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         assertThat(page.locator("#datasourcePoolTab")).containsText("SELECT 1 FROM DUAL");
         page.locator("#poolStatusCardContainer [data-pool-status-refresh]").click();
         assertThat(page.locator("#poolStatusCardContainer")).containsText("Connection status");
+    }
+
+    private static void selectTable(Page page, String tableName) {
+        page.locator("#tablesPageContainer [data-table-row][data-table-name='" + tableName + "']").click();
+    }
+
+    private static String expectedTableSubtitle(String schema, String tableName) {
+        return schema == null || schema.isBlank() ? tableName : schema + "." + tableName;
     }
 
     @Test
