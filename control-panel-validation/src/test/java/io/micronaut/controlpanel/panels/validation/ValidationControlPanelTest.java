@@ -17,6 +17,7 @@ package io.micronaut.controlpanel.panels.validation;
 
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.annotation.ConfigurationProperties;
+import io.micronaut.core.annotation.AnnotationClassValue;
 import io.micronaut.core.annotation.AnnotationValue;
 import io.micronaut.core.annotation.Introspected;
 import io.micronaut.http.annotation.Body;
@@ -99,6 +100,21 @@ class ValidationControlPanelTest {
     }
 
     @Test
+    void reportsEmptyStateAndEmptyBadgeWhenFiltersHideApplicationMetadata() {
+        try (ApplicationContext context = ApplicationContext.run(Map.of(
+            "micronaut.control-panel.validation.include-packages[0]", "example.missing"
+        ))) {
+            ValidationControlPanel panel = context.getBean(ValidationControlPanel.class);
+            ValidationDiagnostics body = panel.getBody();
+
+            assertTrue(panel.getBadge().isEmpty());
+            assertTrue(body.messages().stream().anyMatch(message -> message.state().equals("empty")));
+            assertFalse(body.hasRoutes());
+            assertFalse(body.hasComponents());
+        }
+    }
+
+    @Test
     void packageFilterHonorsIncludesAndExcludes() {
         ValidationPackageFilter filter = new ValidationPackageFilter();
         ValidationConfiguration configuration = new ValidationConfiguration();
@@ -107,6 +123,21 @@ class ValidationControlPanelTest {
 
         assertTrue(filter.includes(ValidationControlPanelTest.class, configuration));
         assertFalse(filter.includes(String.class, configuration));
+        assertFalse(filter.includes(null, configuration));
+        assertTrue(filter.packageName(null).isEmpty());
+    }
+
+    @Test
+    void configurationSettersPreserveSafeDefaultsForNullValues() {
+        ValidationConfiguration configuration = new ValidationConfiguration();
+
+        configuration.setIncludePackages(null);
+        configuration.setExcludePackages(null);
+        configuration.setShowConstraintAttributes(null);
+
+        assertTrue(configuration.getIncludePackages().isEmpty());
+        assertTrue(configuration.getExcludePackages().isEmpty());
+        assertTrue(configuration.getShowConstraintAttributes() == ValidationConfiguration.AttributeMode.SAFE);
     }
 
     @Test
@@ -141,6 +172,69 @@ class ValidationControlPanelTest {
         assertTrue(rows.stream().anyMatch(row -> row.name().equals("pattern") && row.value().endsWith("[truncated]")));
         assertTrue(rows.stream().anyMatch(row -> row.name().equals("values") && row.value().contains("9 total")));
         assertTrue(rows.stream().anyMatch(row -> row.name().equals("custom") && row.redacted()));
+    }
+
+    @Test
+    void sanitizerFormatsClassesEnumsAndIterables() {
+        ValidationAttributeSanitizer sanitizer = new ValidationAttributeSanitizer();
+        Map<CharSequence, Object> values = Map.of(
+            "type", ValidationControlPanelTest.class,
+            "annotationClass", new AnnotationClassValue<>(ValidationController.class),
+            "mode", TestMode.ONE,
+            "flags", List.of(true, TestMode.TWO)
+        );
+        var rows = sanitizer.sanitize(values, ValidationConfiguration.AttributeMode.SAFE);
+
+        assertTrue(rows.stream().anyMatch(row -> row.name().equals("type")
+            && row.value().equals(ValidationControlPanelTest.class.getName())));
+        assertTrue(rows.stream().anyMatch(row -> row.name().equals("annotationClass")
+            && row.value().equals(ValidationController.class.getName())));
+        assertTrue(rows.stream().anyMatch(row -> row.name().equals("mode") && row.value().equals("ONE")));
+        assertTrue(rows.stream().anyMatch(row -> row.name().equals("flags") && row.value().equals("[true, TWO]")));
+    }
+
+    @Test
+    void diagnosticsHelperMethodsReportPresentSections() {
+        ValidationDiagnostics.ConstraintRow constraint = new ValidationDiagnostics.ConstraintRow(
+            "NotBlank",
+            "property name",
+            List.of(DefaultGroup.class.getName()),
+            true,
+            List.of(new ValidationDiagnostics.AttributeRow("min", "1", false)),
+            "test"
+        );
+        ValidationDiagnostics.ValidatedElementRow element = new ValidationDiagnostics.ValidatedElementRow(
+            "Class",
+            "example.Validated",
+            "test",
+            "example",
+            List.of(constraint),
+            true,
+            true
+        );
+        ValidationDiagnostics diagnostics = new ValidationDiagnostics(
+            true,
+            "Enabled",
+            "description",
+            List.of(new ValidationDiagnostics.SummaryItem("Runtime validation", "Enabled", "test", "available")),
+            List.of(new ValidationDiagnostics.ComponentRow("Validator", "example.Validator", "default", "singleton", "application", "test")),
+            List.of(element),
+            List.of(element),
+            List.of(element),
+            List.of(element),
+            List.of(new ValidationDiagnostics.StateMessage("partial", "title", "message")),
+            1
+        );
+
+        assertTrue(diagnostics.hasRoutes());
+        assertTrue(diagnostics.hasMethods());
+        assertTrue(diagnostics.hasConfigurationProperties());
+        assertTrue(diagnostics.hasClasses());
+        assertTrue(diagnostics.hasComponents());
+        assertTrue(diagnostics.hasMessages());
+        assertTrue(element.constraintCount() == 1);
+        assertTrue(constraint.hasGroups());
+        assertTrue(constraint.hasAttributes());
     }
 
     @Controller("/validation-test")
@@ -218,5 +312,13 @@ class ValidationControlPanelTest {
         public boolean isValid(String value, AnnotationValue<TenantCode> annotationMetadata, ConstraintValidatorContext context) {
             return value != null && value.matches("[A-Z][A-Z0-9_-]+");
         }
+    }
+
+    enum TestMode {
+        ONE,
+        TWO
+    }
+
+    interface DefaultGroup {
     }
 }
