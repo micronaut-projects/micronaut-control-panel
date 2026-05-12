@@ -50,6 +50,10 @@ public class FlywayStatusService {
 
     private static final Logger LOG = LoggerFactory.getLogger(FlywayStatusService.class);
     private static final DateTimeFormatter INSTALLED_ON_FORMAT = DateTimeFormatter.ISO_OFFSET_DATE_TIME.withZone(ZoneOffset.UTC);
+    private static final String BADGE_PRIMARY = "badge-primary";
+    private static final String BADGE_LIGHT = "badge-light";
+    private static final String BADGE_SECONDARY = "badge-secondary";
+    private static final String BADGE_DESTRUCTIVE = "badge-destructive";
     private static final List<StateGroup> STATE_GROUPS = List.of(
         StateGroup.SUCCESS,
         StateGroup.PENDING,
@@ -117,11 +121,12 @@ public class FlywayStatusService {
                 .toList();
             MigrationInfo current = info.current();
             List<FlywayStateSummary> stateSummaries = summarize(migrations);
+            ConfigurationStatus status = ConfigurationStatus.from(migrations.isEmpty(), stateSummaries);
             return new FlywayConfigurationStatus(
                 name,
                 true,
-                statusLabel(migrations),
-                statusBadgeClass(migrations),
+                status.label(),
+                status.badgeClass(),
                 displayVersion(current),
                 latestApplied(migrations),
                 migrations.size(),
@@ -135,7 +140,7 @@ public class FlywayStatusService {
                 name,
                 false,
                 "Unavailable",
-                "badge-destructive",
+                BADGE_DESTRUCTIVE,
                 "",
                 "",
                 0,
@@ -206,42 +211,6 @@ public class FlywayStatusService {
         return summarize(List.of());
     }
 
-    private static String statusLabel(List<FlywayMigration> migrations) {
-        if (migrations.isEmpty()) {
-            return "No migrations";
-        }
-        Map<String, Integer> counts = countByGroup(migrations);
-        if (counts.getOrDefault(StateGroup.FAILED.id(), 0) > 0) {
-            return "Failed";
-        }
-        if (counts.getOrDefault(StateGroup.PENDING.id(), 0) > 0) {
-            return "Pending";
-        }
-        if (counts.getOrDefault(StateGroup.FUTURE.id(), 0) > 0
-            || counts.getOrDefault(StateGroup.MISSING.id(), 0) > 0
-            || counts.getOrDefault(StateGroup.OUT_OF_ORDER.id(), 0) > 0) {
-            return "Attention";
-        }
-        if (counts.getOrDefault(StateGroup.UNKNOWN.id(), 0) > 0) {
-            return "Unknown";
-        }
-        return "Current";
-    }
-
-    private static String statusBadgeClass(List<FlywayMigration> migrations) {
-        return switch (statusLabel(migrations)) {
-            case "Failed" -> "badge-destructive";
-            case "Pending", "Attention" -> "badge-light";
-            case "Unknown", "No migrations" -> "badge-secondary";
-            default -> "badge-primary";
-        };
-    }
-
-    private static Map<String, Integer> countByGroup(List<FlywayMigration> migrations) {
-        return migrations.stream()
-            .collect(Collectors.groupingBy(FlywayMigration::stateGroup, Collectors.collectingAndThen(Collectors.counting(), Long::intValue)));
-    }
-
     private static String latestApplied(List<FlywayMigration> migrations) {
         return migrations.stream()
             .filter(migration -> !migration.installedRank().isBlank())
@@ -277,14 +246,14 @@ public class FlywayStatusService {
     }
 
     enum StateGroup {
-        SUCCESS("success", "Success", "badge-primary"),
-        PENDING("pending", "Pending", "badge-light"),
-        FAILED("failed", "Failed", "badge-destructive"),
-        FUTURE("future", "Future", "badge-light"),
-        MISSING("missing", "Missing", "badge-light"),
-        OUT_OF_ORDER("out-of-order", "Out of order", "badge-light"),
-        IGNORED("ignored", "Ignored", "badge-secondary"),
-        UNKNOWN("unknown", "Unknown", "badge-secondary");
+        SUCCESS("success", "Success", BADGE_PRIMARY),
+        PENDING("pending", "Pending", BADGE_LIGHT),
+        FAILED("failed", "Failed", BADGE_DESTRUCTIVE),
+        FUTURE("future", "Future", BADGE_LIGHT),
+        MISSING("missing", "Missing", BADGE_LIGHT),
+        OUT_OF_ORDER("out-of-order", "Out of order", BADGE_LIGHT),
+        IGNORED("ignored", "Ignored", BADGE_SECONDARY),
+        UNKNOWN("unknown", "Unknown", BADGE_SECONDARY);
 
         private final String id;
         private final String label;
@@ -298,6 +267,57 @@ public class FlywayStatusService {
 
         String id() {
             return id;
+        }
+
+        String label() {
+            return label;
+        }
+
+        String badgeClass() {
+            return badgeClass;
+        }
+    }
+
+    private enum ConfigurationStatus {
+        CURRENT("Current", BADGE_PRIMARY),
+        NO_MIGRATIONS("No migrations", BADGE_SECONDARY),
+        FAILED(StateGroup.FAILED.label(), BADGE_DESTRUCTIVE),
+        PENDING(StateGroup.PENDING.label(), BADGE_LIGHT),
+        ATTENTION("Attention", BADGE_LIGHT),
+        UNKNOWN(StateGroup.UNKNOWN.label(), BADGE_SECONDARY);
+
+        private final String label;
+        private final String badgeClass;
+
+        ConfigurationStatus(String label, String badgeClass) {
+            this.label = label;
+            this.badgeClass = badgeClass;
+        }
+
+        static ConfigurationStatus from(boolean empty, List<FlywayStateSummary> stateSummaries) {
+            if (empty) {
+                return NO_MIGRATIONS;
+            }
+            if (hasCount(stateSummaries, StateGroup.FAILED)) {
+                return FAILED;
+            }
+            if (hasCount(stateSummaries, StateGroup.PENDING)) {
+                return PENDING;
+            }
+            if (hasCount(stateSummaries, StateGroup.FUTURE)
+                || hasCount(stateSummaries, StateGroup.MISSING)
+                || hasCount(stateSummaries, StateGroup.OUT_OF_ORDER)) {
+                return ATTENTION;
+            }
+            if (hasCount(stateSummaries, StateGroup.UNKNOWN)) {
+                return UNKNOWN;
+            }
+            return CURRENT;
+        }
+
+        private static boolean hasCount(List<FlywayStateSummary> stateSummaries, StateGroup group) {
+            return stateSummaries.stream()
+                .anyMatch(summary -> summary.id().equals(group.id()) && summary.count() > 0);
         }
 
         String label() {

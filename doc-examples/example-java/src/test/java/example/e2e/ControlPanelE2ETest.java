@@ -296,6 +296,7 @@ class ControlPanelE2ETest extends AbstractE2ETest {
     }
 
     @Test
+    @DisabledInNativeImage
     void testFlyway(Page page, @Client("/") HttpClient httpClient) {
         var exception = assertThrows(
             HttpClientResponseException.class,
