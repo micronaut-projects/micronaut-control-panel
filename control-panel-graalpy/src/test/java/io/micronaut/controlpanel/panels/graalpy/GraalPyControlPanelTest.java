@@ -78,6 +78,35 @@ class GraalPyControlPanelTest {
         assertEquals("Unavailable", body.runtime().factoryStatus());
     }
 
+    @Test
+    void badgeCountsModulesWithoutBuildingMethodSignatures() {
+        BeanContext beanContext = mock(BeanContext.class);
+        BeanDefinition<?> firstModule = moduleDefinition("dealerService", DealerService.class, "dealer");
+        BeanDefinition<?> secondModule = moduleDefinition("auditService", AuditService.class, "audit");
+        when(firstModule.getExecutableMethods()).thenThrow(new AssertionError("Badge should not build method signatures."));
+        when(secondModule.getExecutableMethods()).thenThrow(new AssertionError("Badge should not build method signatures."));
+        doReturn(List.of(firstModule, secondModule, beanDefinition(String.class))).when(beanContext).getAllBeanDefinitions();
+
+        String badge = new GraalPyControlPanel(beanContext, new GraalPyVfsMetadataReader(), configuration()).getBadge();
+
+        assertEquals("2", badge);
+    }
+
+    @Test
+    void reportsAmbiguousContextBuilderFactories() {
+        BeanContext beanContext = mock(BeanContext.class);
+        doReturn(List.of()).when(beanContext).getAllBeanDefinitions();
+        doReturn(List.of(beanDefinition(ExplodingFactory.class), beanDefinition(SecondFactory.class)))
+            .when(beanContext).getBeanDefinitions(GraalPyContextBuilderFactory.class);
+
+        GraalPyControlPanel.Body body = getBodyWithEmptyVfs(
+            new GraalPyControlPanel(beanContext, new GraalPyVfsMetadataReader(), configuration()));
+
+        assertEquals("Ambiguous", body.runtime().factoryStatus());
+        assertFalse(body.runtime().hasActiveFactory());
+        assertTrue(body.runtime().hasFactoryCandidates());
+    }
+
     private static GraalPyControlPanel.Body getBodyWithEmptyVfs(GraalPyControlPanel panel) {
         ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
         try {
@@ -126,12 +155,25 @@ class GraalPyControlPanelTest {
         CompletableFuture<String> dealAsync();
     }
 
+    @GraalPyModule("audit")
+    interface AuditService {
+        void record(String name);
+    }
+
     static final class ExplodingFactory implements GraalPyContextBuilderFactory {
         static final AtomicInteger createBuilderCalls = new AtomicInteger();
 
         @Override
         public Context.Builder createBuilder() {
             createBuilderCalls.incrementAndGet();
+            throw new AssertionError("Panel rendering must not create GraalPy Context builders.");
+        }
+    }
+
+    static final class SecondFactory implements GraalPyContextBuilderFactory {
+
+        @Override
+        public Context.Builder createBuilder() {
             throw new AssertionError("Panel rendering must not create GraalPy Context builders.");
         }
     }

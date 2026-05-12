@@ -36,6 +36,7 @@ import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class GraalPyVfsMetadataReaderTest {
@@ -48,6 +49,7 @@ class GraalPyVfsMetadataReaderTest {
         writeFilesList("""
             /src/dealer.py
             venv/lib/python3.13/site-packages/termcolor/__init__.py
+            venv/bin/python
             pyproject.toml
             """);
 
@@ -55,9 +57,10 @@ class GraalPyVfsMetadataReaderTest {
 
         assertTrue(metadata.hasResources());
         assertEquals(1, metadata.resourceCount());
-        assertEquals(3, metadata.entryCount());
+        assertEquals(4, metadata.entryCount());
         assertTrue(metadata.entries().stream().anyMatch(entry -> entry.path().equals("src/dealer.py")));
         assertTrue(metadata.entries().stream().anyMatch(entry -> entry.group().equals("site-packages")));
+        assertTrue(metadata.entries().stream().anyMatch(entry -> entry.group().equals("venv")));
         assertFalse(metadata.truncated());
     }
 
@@ -90,6 +93,22 @@ class GraalPyVfsMetadataReaderTest {
     }
 
     @Test
+    void readsMultipleFilesListResources() throws IOException {
+        Path first = tempDir.resolve("first");
+        Path second = tempDir.resolve("second");
+        writeFilesList(first, "src/dealer.py\n");
+        writeFilesList(second, "venv/bin/python\n");
+
+        try (URLClassLoader classLoader = new URLClassLoader(new java.net.URL[] { first.toUri().toURL(), second.toUri().toURL() }, null)) {
+            var metadata = new GraalPyVfsMetadataReader().read(classLoader);
+
+            assertEquals(2, metadata.resourceCount());
+            assertEquals(2, metadata.entryCount());
+            assertFalse(metadata.truncated());
+        }
+    }
+
+    @Test
     void capsLargeFilesListMetadata() throws IOException {
         writeFilesList(IntStream.range(0, GraalPyVfsMetadataReader.MAX_ENTRIES + 2)
             .mapToObj(index -> "src/file" + index + ".py")
@@ -113,6 +132,28 @@ class GraalPyVfsMetadataReaderTest {
         assertEquals(GraalPyVfsMetadataReader.MAX_ENTRIES, metadata.entryCount());
         assertFalse(metadata.truncated());
         assertEquals(0, metadata.omittedEntries());
+    }
+
+    @Test
+    void capsOversizedMetadataFiles() throws IOException {
+        writeFilesList("src/dealer.py\n".repeat(90_000));
+
+        var metadata = read();
+
+        assertTrue(metadata.truncated());
+        assertTrue(metadata.warnings().stream().anyMatch(warning -> warning.contains("Stopped reading over-sized VFS metadata")));
+    }
+
+    @Test
+    void fallsBackToDefaultClassLoaderWhenThreadContextClassLoaderIsNull() {
+        ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(null);
+
+            assertNotNull(new GraalPyVfsMetadataReader().read());
+        } finally {
+            Thread.currentThread().setContextClassLoader(originalClassLoader);
+        }
     }
 
     @Test
@@ -164,7 +205,11 @@ class GraalPyVfsMetadataReaderTest {
     }
 
     private void writeFilesList(String content) throws IOException {
-        Path filesList = tempDir.resolve(GraalPyVfsMetadataReader.RESOURCE_PATH);
+        writeFilesList(tempDir, content);
+    }
+
+    private void writeFilesList(Path root, String content) throws IOException {
+        Path filesList = root.resolve(GraalPyVfsMetadataReader.RESOURCE_PATH);
         Files.createDirectories(filesList.getParent());
         Files.writeString(filesList, content);
     }

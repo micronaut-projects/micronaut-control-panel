@@ -19,7 +19,6 @@ import io.micronaut.core.annotation.ReflectiveAccess;
 import jakarta.inject.Singleton;
 
 import java.io.BufferedReader;
-import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -46,12 +45,6 @@ public final class GraalPyVfsMetadataReader {
     static final int MAX_ENTRIES = 500;
     private static final int MAX_LINE_CHARS = 4096;
     private static final int MAX_METADATA_CHARS = 1_000_000;
-
-    /**
-     * Constructor.
-     */
-    public GraalPyVfsMetadataReader() {
-    }
 
     GraalPyVfsMetadata read() {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -87,7 +80,7 @@ public final class GraalPyVfsMetadataReader {
                     break;
                 }
             }
-        } catch (IOException e) {
+        } catch (IOException _) {
             warnings.add("Unable to enumerate GraalPy VFS metadata resources.");
         }
 
@@ -108,59 +101,61 @@ public final class GraalPyVfsMetadataReader {
             return new ResourceRead(resource, entries, warnings, truncated, omittedEntries);
         }
 
-        try (Reader reader = new BufferedReader(new InputStreamReader(openLocalStream(url), StandardCharsets.UTF_8.newDecoder()
-            .onMalformedInput(CodingErrorAction.REPORT)
-            .onUnmappableCharacter(CodingErrorAction.REPORT)))) {
-            ParseResult result = parseMetadata(reader, resource, entries, warnings, truncated, remainingCapacity);
+        try {
+            ParseResult result = parseLocalResource(url, resource, entries, warnings, truncated, remainingCapacity);
             resource = new GraalPyVfsResource(resource.label(), resource.kind(), result.lineCount(), false);
             truncated = result.truncated();
             omittedEntries = result.omittedEntries();
-        } catch (IOException e) {
+        } catch (IOException _) {
             warnings.add("Unable to read " + resource.label() + "; partial GraalPy VFS metadata is shown when available.");
             resource = new GraalPyVfsResource(resource.label(), resource.kind(), 0, true);
         }
         return new ResourceRead(resource, entries, warnings, truncated, omittedEntries);
     }
 
-    private static InputStream openLocalStream(URL url) throws IOException {
+    private static ParseResult parseLocalResource(URL url,
+                                                  GraalPyVfsResource resource,
+                                                  List<GraalPyVfsEntry> entries,
+                                                  List<String> warnings,
+                                                  boolean truncated,
+                                                  int remainingCapacity) throws IOException {
         try {
             if ("file".equals(url.getProtocol())) {
-                return Files.newInputStream(Path.of(URI.create(url.toExternalForm())));
+                try (Reader reader = newReader(Files.newInputStream(Path.of(URI.create(url.toExternalForm()))))) {
+                    return parseMetadata(reader, resource, entries, warnings, truncated, remainingCapacity);
+                }
             }
-            return openLocalJarStream(url);
+            return parseLocalJarResource(url, resource, entries, warnings, truncated, remainingCapacity);
         } catch (IllegalArgumentException e) {
             throw new IOException("Invalid local resource URL", e);
         }
     }
 
-    private static InputStream openLocalJarStream(URL url) throws IOException {
+    private static ParseResult parseLocalJarResource(URL url,
+                                                     GraalPyVfsResource resource,
+                                                     List<GraalPyVfsEntry> entries,
+                                                     List<String> warnings,
+                                                     boolean truncated,
+                                                     int remainingCapacity) throws IOException {
         String file = url.getFile();
         int separator = file.indexOf("!/");
         Path jarPath = Path.of(URI.create(file.substring(0, separator)));
         String entryPath = file.substring(separator + 2);
-        JarFile jarFile = new JarFile(jarPath.toFile());
-        var entry = jarFile.getJarEntry(entryPath);
-        if (entry == null) {
-            jarFile.close();
-            throw new IOException("Missing jar entry");
-        }
-        InputStream entryStream;
-        try {
-            entryStream = jarFile.getInputStream(entry);
-        } catch (IOException e) {
-            jarFile.close();
-            throw e;
-        }
-        return new FilterInputStream(entryStream) {
-            @Override
-            public void close() throws IOException {
-                try {
-                    super.close();
-                } finally {
-                    jarFile.close();
-                }
+        try (JarFile jarFile = new JarFile(jarPath.toFile())) {
+            var entry = jarFile.getJarEntry(entryPath);
+            if (entry == null) {
+                throw new IOException("Missing jar entry");
             }
-        };
+            try (Reader reader = newReader(jarFile.getInputStream(entry))) {
+                return parseMetadata(reader, resource, entries, warnings, truncated, remainingCapacity);
+            }
+        }
+    }
+
+    private static Reader newReader(InputStream inputStream) {
+        return new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8.newDecoder()
+            .onMalformedInput(CodingErrorAction.REPORT)
+            .onUnmappableCharacter(CodingErrorAction.REPORT)));
     }
 
     private static ParseResult parseMetadata(Reader reader,
@@ -169,70 +164,7 @@ public final class GraalPyVfsMetadataReader {
                                              List<String> warnings,
                                              boolean truncated,
                                              int remainingCapacity) throws IOException {
-        char[] buffer = new char[8192];
-        StringBuilder line = new StringBuilder(Math.min(MAX_LINE_CHARS, 256));
-        boolean lineOversized = false;
-        int lineNumber = 0;
-        int metadataChars = 0;
-        int omittedEntries = 0;
-
-        int read;
-        while ((read = reader.read(buffer)) != -1) {
-            for (int i = 0; i < read; i++) {
-                metadataChars++;
-                if (metadataChars > MAX_METADATA_CHARS) {
-                    warnings.add("Stopped reading over-sized VFS metadata in " + resource.label() + ".");
-                    return new ParseResult(lineNumber, true, omittedEntries);
-                }
-                char character = buffer[i];
-                if (character == '\n') {
-                    lineNumber++;
-                    LineResult result = processLine(line, lineOversized, resource, entries, warnings, truncated, remainingCapacity, omittedEntries);
-                    truncated = result.truncated();
-                    omittedEntries = result.omittedEntries();
-                    line.setLength(0);
-                    lineOversized = false;
-                } else if (character != '\r') {
-                    if (line.length() < MAX_LINE_CHARS) {
-                        line.append(character);
-                    } else {
-                        lineOversized = true;
-                    }
-                }
-            }
-        }
-        if (!line.isEmpty() || lineOversized) {
-            lineNumber++;
-            LineResult result = processLine(line, lineOversized, resource, entries, warnings, truncated, remainingCapacity, omittedEntries);
-            truncated = result.truncated();
-            omittedEntries = result.omittedEntries();
-        }
-        return new ParseResult(lineNumber, truncated, omittedEntries);
-    }
-
-    private static LineResult processLine(StringBuilder line,
-                                          boolean lineOversized,
-                                          GraalPyVfsResource resource,
-                                          List<GraalPyVfsEntry> entries,
-                                          List<String> warnings,
-                                          boolean truncated,
-                                          int remainingCapacity,
-                                          int omittedEntries) {
-        if (lineOversized) {
-            warnings.add("Skipped an over-sized VFS metadata line in " + resource.label() + ".");
-            return new LineResult(truncated, omittedEntries);
-        }
-        String path = sanitizePath(line.toString());
-        if (path.isBlank()) {
-            return new LineResult(truncated, omittedEntries);
-        }
-        if (entries.size() < remainingCapacity) {
-            entries.add(new GraalPyVfsEntry(path, group(path), resource.label()));
-        } else {
-            truncated = true;
-            omittedEntries++;
-        }
-        return new LineResult(truncated, omittedEntries);
+        return new MetadataParser(reader, resource, entries, warnings, truncated, remainingCapacity).parse();
     }
 
     private static boolean isLocalClasspathResource(URL url) {
@@ -251,7 +183,7 @@ public final class GraalPyVfsMetadataReader {
         }
         try {
             return "file".equals(URI.create(file.substring(0, separator)).getScheme());
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException _) {
             return false;
         }
     }
@@ -296,9 +228,6 @@ public final class GraalPyVfsMetadataReader {
     }
 
     private record ParseResult(int lineCount, boolean truncated, int omittedEntries) {
-    }
-
-    private record LineResult(boolean truncated, int omittedEntries) {
     }
 
     /**
@@ -375,5 +304,99 @@ public final class GraalPyVfsMetadataReader {
      */
     @ReflectiveAccess
     public record GraalPyVfsEntry(String path, String group, String resource) {
+    }
+
+    private static final class MetadataParser {
+        private final Reader reader;
+        private final GraalPyVfsResource resource;
+        private final List<GraalPyVfsEntry> entries;
+        private final List<String> warnings;
+        private final int remainingCapacity;
+        private final StringBuilder line = new StringBuilder(Math.min(MAX_LINE_CHARS, 256));
+        private boolean truncated;
+        private boolean lineOversized;
+        private int lineNumber;
+        private int metadataChars;
+        private int omittedEntries;
+
+        private MetadataParser(Reader reader,
+                               GraalPyVfsResource resource,
+                               List<GraalPyVfsEntry> entries,
+                               List<String> warnings,
+                               boolean truncated,
+                               int remainingCapacity) {
+            this.reader = reader;
+            this.resource = resource;
+            this.entries = entries;
+            this.warnings = warnings;
+            this.truncated = truncated;
+            this.remainingCapacity = remainingCapacity;
+        }
+
+        private ParseResult parse() throws IOException {
+            char[] buffer = new char[8192];
+            int read;
+            while ((read = reader.read(buffer)) != -1) {
+                for (int i = 0; i < read; i++) {
+                    if (processCharacter(buffer[i])) {
+                        return result(true);
+                    }
+                }
+            }
+            if (!line.isEmpty() || lineOversized) {
+                lineNumber++;
+                processLine();
+            }
+            return result(truncated);
+        }
+
+        private boolean processCharacter(char character) {
+            metadataChars++;
+            if (metadataChars > MAX_METADATA_CHARS) {
+                warnings.add("Stopped reading over-sized VFS metadata in " + resource.label() + ".");
+                return true;
+            }
+            if (character == '\n') {
+                lineNumber++;
+                processLine();
+            } else if (character != '\r') {
+                appendCharacter(character);
+            }
+            return false;
+        }
+
+        private void appendCharacter(char character) {
+            if (line.length() < MAX_LINE_CHARS) {
+                line.append(character);
+            } else {
+                lineOversized = true;
+            }
+        }
+
+        private void processLine() {
+            if (lineOversized) {
+                warnings.add("Skipped an over-sized VFS metadata line in " + resource.label() + ".");
+            } else {
+                addPath(sanitizePath(line.toString()));
+            }
+            line.setLength(0);
+            lineOversized = false;
+        }
+
+        private void addPath(String path) {
+            if (path.isBlank()) {
+                return;
+            }
+            if (entries.size() < remainingCapacity) {
+                entries.add(new GraalPyVfsEntry(path, group(path), resource.label()));
+            } else {
+                truncated = true;
+                omittedEntries++;
+            }
+        }
+
+        private ParseResult result(boolean truncated) {
+            return new ParseResult(lineNumber, truncated, omittedEntries);
+        }
     }
 }

@@ -58,7 +58,7 @@ public class GraalPyControlPanel extends AbstractControlPanel<GraalPyControlPane
     /**
      * GraalPy category used by the sidebar.
      */
-    public static final ControlPanel.Category CATEGORY = new ControlPanel.Category("graalpy", "GraalPy", "fa-brands fa-python");
+    public static final ControlPanel.Category CATEGORY = new ControlPanel.Category(NAME, "GraalPy", "fa-brands fa-python");
 
     private static final String GRAALPY_CONTEXT_CLASS_NAME = "io.micronaut.graal.graalpy.GraalPyContext";
 
@@ -202,7 +202,7 @@ public class GraalPyControlPanel extends AbstractControlPanel<GraalPyControlPane
             .map(definition -> definition.getBeanType().getName())
             .sorted()
             .toList();
-        String factoryStatus = factoryCandidates.isEmpty() ? "Unavailable" : factoryCandidates.size() == 1 ? "Available" : "Ambiguous";
+        String factoryStatus = factoryStatus(factoryCandidates);
         String activeFactoryClass = factoryCandidates.size() == 1 ? factoryCandidates.get(0) : "";
         boolean sharedContextPresent = beanContext.getAllBeanDefinitions()
             .stream()
@@ -210,6 +210,16 @@ public class GraalPyControlPanel extends AbstractControlPanel<GraalPyControlPane
             .map(Class::getName)
             .anyMatch(GRAALPY_CONTEXT_CLASS_NAME::equals);
         return new RuntimeMetadata(factoryStatus, activeFactoryClass, factoryCandidates, sharedContextPresent);
+    }
+
+    private static String factoryStatus(List<String> factoryCandidates) {
+        if (factoryCandidates.isEmpty()) {
+            return "Unavailable";
+        }
+        if (factoryCandidates.size() == 1) {
+            return "Available";
+        }
+        return "Ambiguous";
     }
 
     /**
