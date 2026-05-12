@@ -44,6 +44,7 @@ import java.util.concurrent.CompletableFuture;
 import static io.micronaut.controlpanel.panels.elasticsearch.ElasticsearchDiagnostics.State.AUTHENTICATION_FAILED;
 import static io.micronaut.controlpanel.panels.elasticsearch.ElasticsearchDiagnostics.State.AUTHORIZATION_FAILED;
 import static io.micronaut.controlpanel.panels.elasticsearch.ElasticsearchDiagnostics.State.DELAYED;
+import static io.micronaut.controlpanel.panels.elasticsearch.ElasticsearchDiagnostics.State.ERROR;
 import static io.micronaut.controlpanel.panels.elasticsearch.ElasticsearchDiagnostics.State.NO_CLIENT;
 import static io.micronaut.controlpanel.panels.elasticsearch.ElasticsearchDiagnostics.State.NO_VISIBLE_INDICES;
 import static io.micronaut.controlpanel.panels.elasticsearch.ElasticsearchDiagnostics.State.PARTIAL;
@@ -64,6 +65,11 @@ class ElasticsearchDiagnosticsServiceTest {
         assertEquals("http://***@localhost:9200", ElasticsearchDiagnosticsService.sanitizeHost("http://elastic:secret@localhost:9200"));
         assertEquals("https://localhost:9200", ElasticsearchDiagnosticsService.sanitizeHost("https://localhost:9200?api_key=abc123"));
         assertEquals("http://***@example.com:9200/path", ElasticsearchDiagnosticsService.sanitizeHost("http://user:pass@example.com:9200/path?token=abc"));
+        assertEquals("", ElasticsearchDiagnosticsService.sanitizeHost(null));
+        assertEquals("", ElasticsearchDiagnosticsService.sanitizeHost(" "));
+        assertEquals("localhost:9200", ElasticsearchDiagnosticsService.sanitizeHost("localhost:9200?password=secret"));
+        assertEquals("localhost:9200", ElasticsearchDiagnosticsService.sanitizeHost("localhost:9200"));
+        assertEquals("http://***@exa mple:9200", ElasticsearchDiagnosticsService.sanitizeHost("http://user:pass@exa mple:9200"));
     }
 
     @Test
@@ -167,6 +173,25 @@ class ElasticsearchDiagnosticsServiceTest {
     }
 
     @Test
+    void mapsMappingFailureToPartialData() {
+        BeanContext beanContext = mock(BeanContext.class);
+        Environment environment = mock(Environment.class);
+        ElasticsearchAsyncClient client = mockClient();
+        ElasticsearchIndicesAsyncClient indicesClient = client.indices();
+        when(indicesClient.getMapping(any(java.util.function.Function.class))).thenReturn(CompletableFuture.failedFuture(elasticsearchException(403)));
+        when(beanContext.findBean(ElasticsearchAsyncClient.class)).thenReturn(Optional.of(client));
+        when(beanContext.findBean(DefaultElasticsearchConfiguration.class)).thenReturn(Optional.empty());
+        when(beanContext.findBean(org.elasticsearch.client.RestClient.class)).thenReturn(Optional.empty());
+        when(environment.getProperty("elasticsearch.http-hosts", String[].class)).thenReturn(Optional.empty());
+        when(environment.getProperty("elasticsearch.httpHosts", String[].class)).thenReturn(Optional.empty());
+
+        ElasticsearchDiagnostics diagnostics = service(beanContext, environment).diagnostics();
+
+        assertEquals(PARTIAL, diagnostics.state());
+        assertTrue(diagnostics.warnings().contains("Mappings are hidden or unavailable for the current Elasticsearch credentials."));
+    }
+
+    @Test
     void mapsNullCatIndicesToNoVisibleIndices() {
         BeanContext beanContext = mock(BeanContext.class);
         Environment environment = mock(Environment.class);
@@ -224,7 +249,9 @@ class ElasticsearchDiagnosticsServiceTest {
         when(environment.getProperty("elasticsearch.http-hosts", String[].class)).thenReturn(Optional.empty());
         when(environment.getProperty("elasticsearch.httpHosts", String[].class)).thenReturn(Optional.empty());
 
-        assertThrows(AssertionError.class, () -> service(beanContext, environment).diagnostics());
+        ElasticsearchDiagnosticsService diagnosticsService = service(beanContext, environment);
+
+        assertThrows(AssertionError.class, diagnosticsService::diagnostics);
     }
 
     @Test
@@ -258,6 +285,73 @@ class ElasticsearchDiagnosticsServiceTest {
 
         assertEquals(UNSUPPORTED, unsupported.state());
         assertFalse(unsupported.message().contains("security_exception"));
+    }
+
+    @Test
+    void mapsUnexpectedFailuresToSafeErrorState() {
+        BeanContext elasticsearchBeanContext = mock(BeanContext.class);
+        Environment elasticsearchEnvironment = mock(Environment.class);
+        ElasticsearchAsyncClient elasticsearchClient = mockClient();
+        when(elasticsearchClient.info()).thenReturn(CompletableFuture.failedFuture(elasticsearchException(500)));
+        when(elasticsearchBeanContext.findBean(ElasticsearchAsyncClient.class)).thenReturn(Optional.of(elasticsearchClient));
+        when(elasticsearchBeanContext.findBean(DefaultElasticsearchConfiguration.class)).thenReturn(Optional.empty());
+        when(elasticsearchBeanContext.findBean(org.elasticsearch.client.RestClient.class)).thenReturn(Optional.empty());
+        when(elasticsearchEnvironment.getProperty("elasticsearch.http-hosts", String[].class)).thenReturn(Optional.empty());
+        when(elasticsearchEnvironment.getProperty("elasticsearch.httpHosts", String[].class)).thenReturn(Optional.empty());
+
+        ElasticsearchDiagnostics elasticsearchFailure = service(elasticsearchBeanContext, elasticsearchEnvironment).diagnostics();
+
+        assertEquals(ERROR, elasticsearchFailure.state());
+        assertFalse(elasticsearchFailure.message().contains("security_exception"));
+
+        BeanContext runtimeBeanContext = mock(BeanContext.class);
+        Environment runtimeEnvironment = mock(Environment.class);
+        ElasticsearchAsyncClient runtimeClient = mockClient();
+        when(runtimeClient.info()).thenReturn(CompletableFuture.failedFuture(new IllegalStateException("secret failure")));
+        when(runtimeBeanContext.findBean(ElasticsearchAsyncClient.class)).thenReturn(Optional.of(runtimeClient));
+        when(runtimeBeanContext.findBean(DefaultElasticsearchConfiguration.class)).thenReturn(Optional.empty());
+        when(runtimeBeanContext.findBean(org.elasticsearch.client.RestClient.class)).thenReturn(Optional.empty());
+        when(runtimeEnvironment.getProperty("elasticsearch.http-hosts", String[].class)).thenReturn(Optional.empty());
+        when(runtimeEnvironment.getProperty("elasticsearch.httpHosts", String[].class)).thenReturn(Optional.empty());
+
+        ElasticsearchDiagnostics runtimeFailure = service(runtimeBeanContext, runtimeEnvironment).diagnostics();
+
+        assertEquals(ERROR, runtimeFailure.state());
+        assertFalse(runtimeFailure.message().contains("secret"));
+    }
+
+    @Test
+    void usesFallbackClusterAndHealthValues() {
+        BeanContext beanContext = mock(BeanContext.class);
+        Environment environment = mock(Environment.class);
+        ElasticsearchAsyncClient client = mockClient();
+        InfoResponse info = mock(InfoResponse.class);
+        HealthResponse health = mock(HealthResponse.class);
+        when(info.clusterName()).thenReturn("");
+        when(info.clusterUuid()).thenReturn(null);
+        when(info.name()).thenReturn(null);
+        when(info.version()).thenReturn(null);
+        when(info.tagline()).thenReturn(null);
+        when(health.clusterName()).thenReturn("health-cluster");
+        when(health.status()).thenReturn(null);
+        when(health.activeShardsPercent()).thenReturn(null);
+        when(client.info()).thenReturn(CompletableFuture.completedFuture(info));
+        when(client.cluster().health(any(java.util.function.Function.class))).thenReturn(CompletableFuture.completedFuture(health));
+        when(beanContext.findBean(ElasticsearchAsyncClient.class)).thenReturn(Optional.of(client));
+        when(beanContext.findBean(DefaultElasticsearchConfiguration.class)).thenReturn(Optional.empty());
+        when(beanContext.findBean(org.elasticsearch.client.RestClient.class)).thenReturn(Optional.empty());
+        when(environment.getProperty("elasticsearch.http-hosts", String[].class)).thenReturn(Optional.empty());
+        when(environment.getProperty("elasticsearch.httpHosts", String[].class)).thenReturn(Optional.empty());
+
+        ElasticsearchDiagnostics diagnostics = service(beanContext, environment).diagnostics();
+
+        assertEquals("health-cluster", diagnostics.cluster().name());
+        assertEquals("", diagnostics.cluster().uuid());
+        assertEquals("", diagnostics.cluster().nodeName());
+        assertEquals("", diagnostics.cluster().version());
+        assertEquals("unknown", diagnostics.health().status());
+        assertEquals(ElasticsearchDiagnostics.BADGE_SECONDARY, diagnostics.health().statusBadgeClass());
+        assertEquals("", diagnostics.health().activeShardsPercent());
     }
 
     @Test
