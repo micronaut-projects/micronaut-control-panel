@@ -46,6 +46,7 @@ public class R2dbcPanelConfiguration {
      * Creates the default R2DBC panel configuration.
      */
     public R2dbcPanelConfiguration() {
+        // Default constructor for configuration binding.
     }
 
     /**

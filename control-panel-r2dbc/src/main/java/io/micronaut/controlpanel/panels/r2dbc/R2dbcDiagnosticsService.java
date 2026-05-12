@@ -45,7 +45,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
 
@@ -59,8 +58,7 @@ import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
 public final class R2dbcDiagnosticsService {
 
     private static final String POOL_CLASS = "io.r2dbc.pool.ConnectionPool";
-    private static final Pattern SECRET_KEY = Pattern.compile(".*(secret|password|token|credential|access[-_.]?key|api[-_.]?key|private[-_.]?key).*", Pattern.CASE_INSENSITIVE);
-    private static final Pattern SECRET_QUERY_KEY = Pattern.compile(".*(secret|password|token|credential|key|access|auth|authorization).*", Pattern.CASE_INSENSITIVE);
+    private static final String STATUS_PARTIAL = "PARTIAL";
     private static final List<Option<?>> STANDARD_OPTIONS = List.of(
         ConnectionFactoryOptions.DRIVER,
         ConnectionFactoryOptions.PROTOCOL,
@@ -206,7 +204,7 @@ public final class R2dbcDiagnosticsService {
             String message = configuredPoolOptions.isEmpty()
                 ? "Pool metadata is not available for this connection factory."
                 : "Pool configuration was found, but runtime pool metrics are not exposed by this connection factory.";
-            return new R2dbcPoolDiagnostics("PARTIAL", "Partial support", message, List.of(), configuredPoolOptions);
+            return new R2dbcPoolDiagnostics(STATUS_PARTIAL, "Partial support", message, List.of(), configuredPoolOptions);
         }
         return poolMetrics(configuredPoolOptions);
     }
@@ -227,15 +225,15 @@ public final class R2dbcDiagnosticsService {
                 metric(value, "max allocated", "getMaxAllocatedSize"),
                 metric(value, "max pending acquire", "getMaxPendingAcquireSize")
             ), configuredPoolOptions);
-        } catch (ReflectiveOperationException | ClassCastException e) {
-            return new R2dbcPoolDiagnostics("PARTIAL", "Partial support", "The connection factory is pooled, but pool metrics could not be read safely.", List.of(), configuredPoolOptions);
+        } catch (ReflectiveOperationException | ClassCastException _) {
+            return new R2dbcPoolDiagnostics(STATUS_PARTIAL, "Partial support", "The connection factory is pooled, but pool metrics could not be read safely.", List.of(), configuredPoolOptions);
         }
     }
 
     private boolean isConnectionPool() {
         try {
             return Class.forName(POOL_CLASS).isInstance(connectionFactory);
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException _) {
             return false;
         }
     }
@@ -276,7 +274,7 @@ public final class R2dbcDiagnosticsService {
             .map(entry -> option(entry.getKey(), entry.getValue()))
             .toList());
         return deduplicateByName(optionList.stream()
-            .filter(option -> !SECRET_KEY.matcher(option.name()).matches())
+            .filter(option -> !isSecretKey(option.name()))
             .toList());
     }
 
@@ -305,17 +303,31 @@ public final class R2dbcDiagnosticsService {
         return environment.getProperties(propertyPrefix() + ".pool", StringConvention.RAW)
             .entrySet()
             .stream()
-            .filter(entry -> !SECRET_KEY.matcher(entry.getKey()).matches())
+            .filter(entry -> !isSecretKey(entry.getKey()))
             .map(entry -> option(entry.getKey(), entry.getValue()))
             .sorted(Comparator.comparing(R2dbcOption::name))
             .toList();
     }
 
     private R2dbcOption option(String key, Object value) {
-        if (!panelConfiguration.isShowOptionValues() || SECRET_KEY.matcher(key).matches() || !isSafeValueOptionName(key)) {
+        if (!panelConfiguration.isShowOptionValues() || isSecretKey(key) || !isSafeValueOptionName(key)) {
             return new R2dbcOption(key, EMPTY_STRING, true);
         }
         return new R2dbcOption(key, safeValue(value), false);
+    }
+
+    private static boolean isSecretKey(String key) {
+        String normalized = key.toLowerCase(Locale.ENGLISH)
+            .replace("-", EMPTY_STRING)
+            .replace("_", EMPTY_STRING)
+            .replace(".", EMPTY_STRING);
+        return normalized.contains("secret")
+            || normalized.contains("password")
+            || normalized.contains("token")
+            || normalized.contains("credential")
+            || normalized.contains("accesskey")
+            || normalized.contains("apikey")
+            || normalized.contains("privatekey");
     }
 
     private static boolean isSafeValueOptionName(String key) {
@@ -333,7 +345,7 @@ public final class R2dbcDiagnosticsService {
         } else if ("DOWN".equals(health.status()) || "TIMEOUT".equals(health.status())) {
             warnings.add("The connection factory is configured but currently unreachable by the validation probe.");
         }
-        if ("PARTIAL".equals(pool.status())) {
+        if (STATUS_PARTIAL.equals(pool.status())) {
             warnings.add("Pool diagnostics are partial because portable R2DBC pool metrics are unavailable.");
         }
         return warnings;
@@ -376,7 +388,7 @@ public final class R2dbcDiagnosticsService {
                 authority += ":" + uri.getPort();
             }
             return new URI(uri.getScheme(), authority, uri.getPath(), uri.getQuery(), uri.getFragment()).toString();
-        } catch (URISyntaxException e) {
+        } catch (URISyntaxException _) {
             return maskUrlUserInfoByDelimiter(value);
         }
     }
@@ -405,11 +417,23 @@ public final class R2dbcDiagnosticsService {
         for (int i = 0; i < parameters.length; i++) {
             int equals = parameters[i].indexOf('=');
             String name = equals < 0 ? parameters[i] : parameters[i].substring(0, equals);
-            if (SECRET_QUERY_KEY.matcher(name).matches()) {
+            if (isSecretQueryKey(name)) {
                 parameters[i] = equals < 0 ? name : name + "=***";
             }
         }
         return String.join("&", parameters);
+    }
+
+    private static boolean isSecretQueryKey(String key) {
+        String normalized = key.toLowerCase(Locale.ENGLISH);
+        return normalized.contains("secret")
+            || normalized.contains("password")
+            || normalized.contains("token")
+            || normalized.contains("credential")
+            || normalized.contains("key")
+            || normalized.contains("access")
+            || normalized.contains("auth")
+            || normalized.contains("authorization");
     }
 
     private static String maskUrlUserInfoByDelimiter(String value) {

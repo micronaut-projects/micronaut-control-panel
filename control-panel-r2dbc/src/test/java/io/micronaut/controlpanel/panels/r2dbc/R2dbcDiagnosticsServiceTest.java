@@ -147,8 +147,8 @@ class R2dbcDiagnosticsServiceTest {
     void deduplicatesOptionsByName() {
         var service = service(
             "default",
-            connectionFactory("PostgreSQL"),
-            options("postgresql", "postgresql", "localhost", 5432, "orders", "dbuser").build(),
+            connectionFactory("H2"),
+            options("postgresql", "postgresql", "localhost", 5432, "", "dbuser").build(),
             Map.of("database", "configured-orders"),
             Map.of()
         );
@@ -160,7 +160,41 @@ class R2dbcDiagnosticsServiceTest {
             .toList();
 
         assertEquals(1, databaseOptions.size());
-        assertEquals("orders", databaseOptions.getFirst().value());
+        assertEquals("configured-orders", databaseOptions.getFirst().value());
+    }
+
+    @Test
+    void buildsBodyWithWarningsForPartialDiagnostics() {
+        R2dbcHealthConfiguration healthConfiguration = mock(R2dbcHealthConfiguration.class);
+        when(healthConfiguration.isEnabled()).thenReturn(true);
+        when(healthConfiguration.getHealthQuery("")).thenReturn(Optional.empty());
+        var service = service("default", connectionFactory(""), null, Map.of(), Map.of(), healthConfiguration, panelConfiguration());
+
+        var body = service.getBody();
+
+        assertEquals("", body.summary().driverMetadataName());
+        assertEquals("NO_QUERY", body.health().status());
+        assertEquals("PARTIAL", body.pool().status());
+        assertTrue(body.warnings().contains("Only partial connection metadata is available for this factory."));
+        assertTrue(body.warnings().contains("Health validation is not configured for the reported driver metadata name."));
+        assertTrue(body.warnings().contains("Pool diagnostics are partial because portable R2DBC pool metrics are unavailable."));
+    }
+
+    @Test
+    void healthValidationCanBeDisabledByPanelOrHealthConfiguration() {
+        R2dbcPanelConfiguration panelConfiguration = panelConfiguration();
+        panelConfiguration.setHealthEnabled(false);
+        var panelDisabled = service("default", connectionFactory("H2"), null, Map.of(), Map.of(), healthConfiguration(), panelConfiguration);
+
+        assertEquals("DISABLED", panelDisabled.health("H2").status());
+        assertEquals("R2DBC validation is disabled for the Control Panel.", panelDisabled.health("H2").message());
+
+        R2dbcHealthConfiguration healthConfiguration = mock(R2dbcHealthConfiguration.class);
+        when(healthConfiguration.isEnabled()).thenReturn(false);
+        var healthDisabled = service("default", connectionFactory("H2"), null, Map.of(), Map.of(), healthConfiguration, panelConfiguration());
+
+        assertEquals("DISABLED", healthDisabled.health("H2").status());
+        assertEquals("The Micronaut R2DBC health endpoint is disabled.", healthDisabled.health("H2").message());
     }
 
     @Test
@@ -181,7 +215,7 @@ class R2dbcDiagnosticsServiceTest {
     @Test
     void healthValidationReportsDownWhenQueryFails() {
         ConnectionFactory connectionFactory = connectionFactory("H2");
-        when(connectionFactory.create()).thenReturn(Mono.error(new IllegalStateException("r2dbc://user:secret@localhost/db")));
+        when(connectionFactory.create()).thenReturn(Mono.error(new RuntimeException(new IllegalStateException("r2dbc://user:secret@localhost/db"))));
         var service = service("default", connectionFactory, null, Map.of(), Map.of());
 
         var health = service.health("H2");
@@ -189,6 +223,23 @@ class R2dbcDiagnosticsServiceTest {
         assertEquals("DOWN", health.status());
         assertEquals("IllegalStateException", health.errorType());
         assertEquals("Validation failed.", health.message());
+    }
+
+    @Test
+    void healthValidationReportsTimeout() {
+        ConnectionFactory connectionFactory = connectionFactory("H2");
+        Connection connection = mock(Connection.class);
+        Statement statement = mock(Statement.class);
+        doReturn(Mono.just(connection)).when(connectionFactory).create();
+        when(connection.createStatement("SELECT 1")).thenReturn(statement);
+        doReturn(Mono.never()).when(statement).execute();
+        when(connection.close()).thenReturn(Mono.empty());
+        R2dbcPanelConfiguration panelConfiguration = panelConfiguration();
+        panelConfiguration.setHealthTimeout(Duration.ofMillis(1));
+
+        var service = service("default", connectionFactory, null, Map.of(), Map.of(), healthConfiguration(), panelConfiguration);
+
+        assertEquals("TIMEOUT", service.health("H2").status());
     }
 
     @Test
@@ -221,6 +272,65 @@ class R2dbcDiagnosticsServiceTest {
         assertEquals("DETECTED", diagnostics.status());
         assertEquals(6, diagnostics.metrics().size());
         assertEquals("10", diagnostics.configuration().getFirst().value());
+    }
+
+    @Test
+    void poolDiagnosticsHandleUnavailableAndUnreadableMetrics() {
+        ConnectionPool unavailable = mock(ConnectionPool.class);
+        when(unavailable.getMetrics()).thenReturn(Optional.empty());
+        when(unavailable.getMetadata()).thenReturn(() -> "H2");
+        var unavailableService = service("default", unavailable, null, Map.of(), Map.of());
+
+        assertEquals("DETECTED", unavailableService.poolDiagnostics().status());
+        assertTrue(unavailableService.poolDiagnostics().metrics().isEmpty());
+
+        ConnectionPool unreadable = mock(ConnectionPool.class);
+        doReturn(Optional.of("not metrics")).when(unreadable).getMetrics();
+        when(unreadable.getMetadata()).thenReturn(() -> "H2");
+        var unreadableService = service("default", unreadable, null, Map.of(), Map.of());
+
+        assertEquals("PARTIAL", unreadableService.poolDiagnostics().status());
+        assertEquals("The connection factory is pooled, but pool metrics could not be read safely.", unreadableService.poolDiagnostics().message());
+    }
+
+    @Test
+    void sanitizesHierarchicalUrlsAndSafeQueryStrings() {
+        var service = service(
+            "default",
+            connectionFactory("PostgreSQL"),
+            null,
+            Map.of(
+                "url", "https://user:secret@example.com:8443/db?password=secret#frag",
+                "pool-url", "r2dbc:postgresql://localhost/db?ssl=true#frag",
+                "schema", " "
+            ),
+            Map.of("pool-url", "r2dbc:pool:postgresql://localhost/db?token&max-size=10")
+        );
+
+        var options = service.connectionSummary().options();
+        var poolOptions = service.poolDiagnostics().configuration();
+
+        assertTrue(options.stream().anyMatch(option -> option.name().equals("url") && option.value().equals("https://***@example.com:8443/db?password=***#frag")));
+        assertTrue(options.stream().anyMatch(option -> option.name().equals("pool-url") && option.value().equals("r2dbc:postgresql://localhost/db?ssl=true#frag")));
+        assertTrue(options.stream().anyMatch(option -> option.name().equals("schema") && option.value().isBlank()));
+        assertTrue(poolOptions.stream().anyMatch(option -> option.name().equals("pool-url") && option.value().equals("r2dbc:pool:postgresql://localhost/db?token&max-size=10")));
+    }
+
+    @Test
+    void panelConfigurationDefaultsAndSettersAreUsable() {
+        R2dbcPanelConfiguration configuration = new R2dbcPanelConfiguration();
+
+        assertEquals(Duration.ofSeconds(2), configuration.getHealthTimeout());
+        assertTrue(configuration.isHealthEnabled());
+        assertFalse(configuration.isShowOptionValues());
+
+        configuration.setHealthTimeout(Duration.ofMillis(5));
+        configuration.setHealthEnabled(false);
+        configuration.setShowOptionValues(true);
+
+        assertEquals(Duration.ofMillis(5), configuration.getHealthTimeout());
+        assertFalse(configuration.isHealthEnabled());
+        assertTrue(configuration.isShowOptionValues());
     }
 
     private static R2dbcDiagnosticsService service(String beanName,

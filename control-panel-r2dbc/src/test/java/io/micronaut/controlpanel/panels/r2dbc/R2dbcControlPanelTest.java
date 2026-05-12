@@ -18,6 +18,7 @@ package io.micronaut.controlpanel.panels.r2dbc;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.env.Environment;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
+import io.micronaut.controlpanel.panels.r2dbc.model.R2dbcBody;
 import io.r2dbc.spi.ConnectionFactory;
 import org.junit.jupiter.api.Test;
 
@@ -25,6 +26,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -49,9 +51,15 @@ class R2dbcControlPanelTest {
     void exposesExpectedPanelMetadata() {
         R2dbcDiagnosticsService service = mock(R2dbcDiagnosticsService.class);
         when(service.getBeanName()).thenReturn("default");
+        R2dbcBody body = mock(R2dbcBody.class);
+        when(service.getBody()).thenReturn(body);
         R2dbcControlPanel panel = new R2dbcControlPanel(service, new ControlPanelConfiguration(R2dbcControlPanel.NAME));
 
         assertEquals("r2dbc-default", panel.getName());
+        assertEquals("R2DBC: default", panel.getTitle());
+        assertEquals("", panel.getBadge());
+        assertEquals("fas fa-database", panel.getIcon());
+        assertSame(body, panel.getBody());
         assertEquals("/views/r2dbc/body", panel.getBodyView().file());
         assertEquals("/views/r2dbc/detail", panel.getDetailedView().file());
         assertEquals("R2DBC", panel.getCategory().name());
