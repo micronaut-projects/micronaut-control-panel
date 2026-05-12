@@ -14,6 +14,7 @@ dependency:io.micronaut.micrometer:micronaut-micrometer-core[scope=runtimeOnly]
 The following panels are available:
 
 * `health`: Application Health
+* `info`: Application Info
 * `env`: Environment Properties
 * `metrics`: Metrics
 * `beans`: Bean Definitions
@@ -84,6 +85,43 @@ endpoints:
 
 If you opt into `micronaut.control-panel.security.access=ANONYMOUS`, anonymous control-panel requests continue to see the
 anonymous health view.
+
+=== Application Info
+
+This panel displays application information, and relies on the
+https://docs.micronaut.io/latest/guide/#infoEndpoint[Info Endpoint] to display its information. The panel appears when
+the Info endpoint is available and can be disabled independently:
+
+.Disabling the Application Info panel
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      info:
+        enabled: false
+----
+
+The Info endpoint can expose configuration-backed `info.*` values, build and git metadata, and values from custom
+`InfoSource` beans. Configure it only in environments where the Control Panel should be available:
+
+IMPORTANT: Make sure this is done in an environment-specific configuration file, for example, `application-dev.yml` or
+`application-test.yml`.
+
+.Configuring the Info Endpoint
+[configuration]
+----
+endpoints:
+  info:
+    enabled: true
+
+info:
+  app:
+    name: my-service
+    version: 1.0.0
+----
+
+The panel renders nested maps and lists from `info.*`, git/build property files, and custom `InfoSource` output.
 
 === Environment Properties
 

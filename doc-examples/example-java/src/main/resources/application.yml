@@ -29,6 +29,13 @@ micronaut:
   application:
     name: myApplication
 
+info:
+  demo:
+    name: Micronaut Control Panel Example
+    environment:
+      purpose: Local development
+      owner: Micronaut
+
 ehcache:
   caches:
     my-ehcache:
@@ -49,6 +56,8 @@ endpoints:
     details-visible: ANONYMOUS
     rabbitmq:
       enabled: false
+  info:
+    enabled: true
 
 infinispan:
   enabled: false
