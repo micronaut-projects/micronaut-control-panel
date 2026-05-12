@@ -53,6 +53,7 @@ import org.mockito.ArgumentCaptor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -157,6 +158,34 @@ final class KafkaClusterServiceTest {
         ArgumentCaptor<Collection<ConfigResource>> captor = ArgumentCaptor.forClass((Class) Collection.class);
         verify(admin).describeConfigs(captor.capture(), any(DescribeConfigsOptions.class));
         assertEquals(List.of(topicResource("orders")), captor.getValue().stream().toList());
+    }
+
+    @Test
+    void topicsCapPageLengthBeforeFetchingConfigs() {
+        AdminClient admin = mock(AdminClient.class);
+        Map<String, TopicDescription> topics = new LinkedHashMap<>();
+        Map<ConfigResource, Config> configs = new LinkedHashMap<>();
+        for (int i = 0; i < 101; i++) {
+            String topicName = "topic-%03d".formatted(i);
+            topics.put(topicName, topic(topicName, false, partition(0, BROKER_0, List.of(BROKER_0), List.of(BROKER_0))));
+            configs.put(topicResource(topicName), config(entry("cleanup.policy", "delete")));
+        }
+        mockTopics(admin, topics);
+        mockConfigs(admin, configs);
+
+        var section = new KafkaClusterService(admin).topics(null, false, 0, 1_000);
+
+        assertNull(section.error());
+        assertNotNull(section.data());
+        assertEquals(100, section.data().length());
+        assertEquals(101, section.data().recordsTotal());
+        assertEquals(101, section.data().recordsFiltered());
+        assertEquals(100, section.data().topics().size());
+        @SuppressWarnings({"rawtypes", "unchecked"})
+        ArgumentCaptor<Collection<ConfigResource>> captor = ArgumentCaptor.forClass((Class) Collection.class);
+        verify(admin).describeConfigs(captor.capture(), any(DescribeConfigsOptions.class));
+        assertEquals(100, captor.getValue().size());
+        assertFalse(captor.getValue().contains(topicResource("topic-100")));
     }
 
     @Test

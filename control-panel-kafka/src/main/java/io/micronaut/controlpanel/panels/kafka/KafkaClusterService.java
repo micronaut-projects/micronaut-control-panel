@@ -73,6 +73,7 @@ final class KafkaClusterService {
 
     private static final Duration ADMIN_TIMEOUT = Duration.ofSeconds(5);
     private static final int DEFAULT_PAGE_LENGTH = 25;
+    private static final int MAX_PAGE_LENGTH = 100;
     private static final List<String> SECRET_NAME_PARTS = List.of(
         "password",
         "secret",
@@ -131,7 +132,7 @@ final class KafkaClusterService {
     Section<TopicPage> topics(@Nullable String search, boolean includeInternal, int start, int length) {
         return section(() -> {
             int safeStart = Math.max(start, 0);
-            int safeLength = length <= 0 ? DEFAULT_PAGE_LENGTH : length;
+            int safeLength = length <= 0 ? DEFAULT_PAGE_LENGTH : Math.min(length, MAX_PAGE_LENGTH);
             String normalizedSearch = search == null ? "" : search.toLowerCase(Locale.ROOT);
             Map<String, TopicDescription> descriptions = describeAllTopics();
             List<TopicDescription> allTopics = descriptions.values().stream()
