@@ -1,6 +1,32 @@
-= Kafka Streams Control Panel
+= Kafka Control Panel
 
-The Kafka Streams Control Panel provides a visual representation of your Kafka Streams topologies:
+The Kafka Control Panel provides read-only Kafka cluster inspection and Kafka Streams topology visualization.
+
+To get started, add the following module as a development-time dependency:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-kafka[scope=developmentOnly]
+
+== Kafka Cluster
+
+The Kafka Cluster panel is available when a Kafka `AdminClient` bean is configured by Micronaut Kafka.
+It uses Kafka AdminClient read APIs only.
+
+Features include:
+
+* View cluster id, controller broker, broker count, topic count, partition count, and consumer group count.
+* Inspect brokers, host/port/rack metadata, controller status, leader/replica partition counts, and under-replicated partition indicators.
+* Search and page topics, optionally showing internal topics.
+* View topic cleanup policy, retention settings, segment settings, partitions, leaders, replicas, ISR, and beginning/end offsets.
+* Display readable section-level errors when Kafka metadata, broker, topic, or offset calls are unavailable or unauthorized.
+
+Sensitive broker and topic configuration values are filtered.
+The panel removes values Kafka marks as sensitive and also filters obvious secret-bearing configuration names such as passwords, tokens, credentials, JAAS, SASL, keystore, and truststore entries.
+
+Consumer group detail, consumer lag, message browsing, topic management, message production, offset reset, and destructive operations are intentionally not part of this read-only panel.
+
+== Kafka Streams
+
+The Kafka Streams panel provides a visual representation of your Kafka Streams topologies:
 
 Features include:
 
@@ -9,25 +35,23 @@ Features include:
 * View Kafka Streams runtime state when Micronaut Management exposes Kafka Streams health details.
 * Automatically generated from the configured `ConfiguredStreamBuilder` beans.
 
-To get started, add the following module as a development-time dependency:
-
-dependency:io.micronaut.controlpanel:micronaut-control-panel-kafka[scope=developmentOnly]
-
 It is assumed that you already have Kafka Streams configured in your application. If not, you can check the following documentation:
 
 * https://micronaut-projects.github.io/micronaut-kafka/latest/guide/#kafkaStreams[Micronaut Kafka Streams Documentation]
 * https://guides.micronaut.io/latest/tag-kafka.html[Kafka Guides]
 
-=== Configuration
+== Configuration
 
-The Kafka Streams control panel is automatically enabled when you include the `micronaut-control-panel-kafka` module in your project.
-You can disable it by setting:
+The Kafka Cluster and Kafka Streams control panels are automatically enabled when you include the `micronaut-control-panel-kafka` module in your project and the required Kafka beans are available.
+You can disable either panel by setting:
 
 [configuration]
 ----
 micronaut:
   control-panel:
     panels:
+      kafka-cluster:
+        enabled: false
       kafka-streams:
         enabled: false
 ----

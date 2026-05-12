@@ -1,0 +1,289 @@
+{{#with controlPanel.body }}
+<div id="kafkaClusterAlerts"></div>
+
+<div class="row">
+    <div class="col-md-3">
+        <div class="small-box bg-info">
+            <div class="inner">
+                <h3 id="kafkaBrokerCount">-</h3>
+                <p>Brokers</p>
+            </div>
+            <div class="icon">
+                <i class="si si-apachekafka"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="small-box bg-success">
+            <div class="inner">
+                <h3 id="kafkaTopicCount">-</h3>
+                <p>Topics</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-layer-group"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="small-box bg-warning">
+            <div class="inner">
+                <h3 id="kafkaPartitionCount">-</h3>
+                <p>Partitions</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-diagram-project"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="small-box bg-secondary">
+            <div class="inner">
+                <h3 id="kafkaConsumerGroupCount">-</h3>
+                <p>Consumer groups</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-users"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<dl class="row">
+    <dt class="col-sm-2">Cluster id</dt>
+    <dd class="col-sm-10"><code id="kafkaClusterId">-</code></dd>
+    <dt class="col-sm-2">Controller broker</dt>
+    <dd class="col-sm-10"><code id="kafkaControllerBroker">-</code></dd>
+</dl>
+
+<h5>Cluster config summary</h5>
+<table id="kafkaClusterConfig" class="table table-bordered table-striped table-sm">
+    <thead>
+    <tr>
+        <th>Config</th>
+        <th>Value</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<h5>Brokers</h5>
+<table id="kafkaBrokers" class="table table-bordered table-striped">
+    <thead>
+    <tr>
+        <th>Broker</th>
+        <th>Host</th>
+        <th>Port</th>
+        <th>Rack</th>
+        <th>Controller</th>
+        <th>Leaders</th>
+        <th>Replicas</th>
+        <th>Under replicated</th>
+        <th>Config</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<div class="d-flex align-items-center mb-2">
+    <h5 class="mb-0">Topics</h5>
+    <div class="form-check ml-3">
+        <input class="form-check-input" type="checkbox" id="kafkaIncludeInternal">
+        <label class="form-check-label" for="kafkaIncludeInternal">Show internal topics</label>
+    </div>
+</div>
+<table id="kafkaTopics" class="table table-bordered table-striped">
+    <thead>
+    <tr>
+        <th>Topic</th>
+        <th>Internal</th>
+        <th>Partitions</th>
+        <th>Replication factor</th>
+        <th>Cleanup policy</th>
+        <th>Retention ms</th>
+        <th>Retention bytes</th>
+        <th>Segment bytes</th>
+        <th>Under replicated</th>
+        <th>Details</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<div id="kafkaTopicDetail" style="display: none;">
+    <h5>Topic detail: <code id="kafkaTopicDetailName"></code></h5>
+    <table id="kafkaTopicPartitions" class="table table-bordered table-striped">
+        <thead>
+        <tr>
+            <th>Partition</th>
+            <th>Leader</th>
+            <th>Replicas</th>
+            <th>ISR</th>
+            <th>Beginning offset</th>
+            <th>End offset</th>
+            <th>Size estimate</th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <h6>Topic config</h6>
+    <table id="kafkaTopicConfig" class="table table-bordered table-striped table-sm">
+        <thead>
+        <tr>
+            <th>Config</th>
+            <th>Value</th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<script>
+  (function() {
+    var baseUrl = '{{ ext.appPath }}{{ controllerPath }}';
+    var topicsTable;
+
+    function escapeHtml(value) {
+      return $('<div>').text(value == null ? '' : value).html();
+    }
+
+    function brokerLabel(broker) {
+      if (!broker) return '-';
+      return broker.id + ' (' + broker.host + ':' + broker.port + ')';
+    }
+
+    function renderConfig(selector, config) {
+      var tbody = $(selector + ' tbody');
+      tbody.empty();
+      var keys = Object.keys(config || {});
+      if (keys.length === 0) {
+        tbody.append('<tr><td colspan="2">No safe config values available</td></tr>');
+        return;
+      }
+      keys.forEach(function(key) {
+        tbody.append('<tr><td><code>' + escapeHtml(key) + '</code></td><td><code>' + escapeHtml(config[key]) + '</code></td></tr>');
+      });
+    }
+
+    function inlineConfig(config) {
+      var keys = Object.keys(config || {});
+      if (keys.length === 0) return '-';
+      return '<details><summary>' + keys.length + ' values</summary><dl>'
+        + keys.map(function(key) {
+          return '<dt><code>' + escapeHtml(key) + '</code></dt><dd><code>' + escapeHtml(config[key]) + '</code></dd>';
+        }).join('')
+        + '</dl></details>';
+    }
+
+    function alertSection(title, message) {
+      $('#kafkaClusterAlerts').append(
+        '<div class="alert alert-warning"><h5><i class="icon fas fa-triangle-exclamation"></i> '
+        + escapeHtml(title) + '</h5><span>' + escapeHtml(message) + '</span></div>'
+      );
+    }
+
+    function loadSection(url, title, success) {
+      $.getJSON(url)
+        .done(function(section) {
+          if (section.error) {
+            alertSection(title, section.error);
+            return;
+          }
+          success(section.data);
+        })
+        .fail(function(xhr) {
+          alertSection(title, xhr.statusText || 'Request failed');
+        });
+    }
+
+    function loadSummary() {
+      loadSection(baseUrl + '/summary', 'Kafka cluster overview unavailable', function(summary) {
+        $('#kafkaClusterId').text(summary.clusterId || '-');
+        $('#kafkaControllerBroker').text(brokerLabel(summary.controller));
+        $('#kafkaBrokerCount').text(summary.brokerCount);
+        $('#kafkaTopicCount').text(summary.topicCount);
+        $('#kafkaPartitionCount').text(summary.partitionCount);
+        $('#kafkaConsumerGroupCount').text(summary.consumerGroupCount);
+        renderConfig('#kafkaClusterConfig', summary.config);
+      });
+    }
+
+    function loadBrokers() {
+      loadSection(baseUrl + '/brokers', 'Kafka brokers unavailable', function(brokers) {
+        var tbody = $('#kafkaBrokers tbody');
+        tbody.empty();
+        brokers.forEach(function(broker) {
+          tbody.append('<tr>'
+            + '<td><code>' + broker.id + '</code></td>'
+            + '<td><code>' + escapeHtml(broker.host) + '</code></td>'
+            + '<td>' + broker.port + '</td>'
+            + '<td>' + escapeHtml(broker.rack || '-') + '</td>'
+            + '<td>' + (broker.controller ? '<span class="badge badge-primary">controller</span>' : '') + '</td>'
+            + '<td>' + broker.leaderPartitions + '</td>'
+            + '<td>' + broker.replicaPartitions + '</td>'
+            + '<td>' + broker.underReplicatedPartitions + '</td>'
+            + '<td>' + inlineConfig(broker.config) + '</td>'
+            + '</tr>');
+        });
+        new DataTable('#kafkaBrokers');
+      });
+    }
+
+    function loadTopics() {
+      var includeInternal = $('#kafkaIncludeInternal').is(':checked');
+      loadSection(baseUrl + '/topics?includeInternal=' + includeInternal + '&length=10000', 'Kafka topics unavailable', function(page) {
+        var tbody = $('#kafkaTopics tbody');
+        if (topicsTable) {
+          topicsTable.destroy();
+        }
+        tbody.empty();
+        page.topics.forEach(function(topic) {
+          tbody.append('<tr>'
+            + '<td><code>' + escapeHtml(topic.name) + '</code></td>'
+            + '<td>' + (topic.internal ? 'yes' : 'no') + '</td>'
+            + '<td>' + topic.partitions + '</td>'
+            + '<td>' + topic.replicationFactor + '</td>'
+            + '<td><code>' + escapeHtml(topic.cleanupPolicy || '-') + '</code></td>'
+            + '<td><code>' + escapeHtml(topic.retentionMs || '-') + '</code></td>'
+            + '<td><code>' + escapeHtml(topic.retentionBytes || '-') + '</code></td>'
+            + '<td><code>' + escapeHtml(topic.segmentBytes || '-') + '</code></td>'
+            + '<td>' + (topic.underReplicated ? '<span class="badge badge-warning">yes</span>' : 'no') + '</td>'
+            + '<td><button type="button" class="btn btn-secondary btn-xs kafka-topic-detail" data-topic="' + escapeHtml(topic.name) + '">Details</button></td>'
+            + '</tr>');
+        });
+        topicsTable = new DataTable('#kafkaTopics');
+      });
+    }
+
+    function loadTopicDetail(topicName) {
+      loadSection(baseUrl + '/topics/' + encodeURIComponent(topicName), 'Kafka topic detail unavailable', function(detail) {
+        $('#kafkaTopicDetail').show();
+        $('#kafkaTopicDetailName').text(detail.topic.name);
+        var tbody = $('#kafkaTopicPartitions tbody');
+        tbody.empty();
+        detail.partitions.forEach(function(partition) {
+          tbody.append('<tr>'
+            + '<td>' + partition.partition + '</td>'
+            + '<td><code>' + escapeHtml(brokerLabel(partition.leader)) + '</code></td>'
+            + '<td><code>' + escapeHtml((partition.replicas || []).map(brokerLabel).join(', ')) + '</code></td>'
+            + '<td><code>' + escapeHtml((partition.isr || []).map(brokerLabel).join(', ')) + '</code></td>'
+            + '<td>' + (partition.beginningOffset == null ? '-' : partition.beginningOffset) + '</td>'
+            + '<td>' + (partition.endOffset == null ? '-' : partition.endOffset) + '</td>'
+            + '<td>' + (partition.sizeEstimate == null ? '-' : partition.sizeEstimate) + '</td>'
+            + '</tr>');
+        });
+        renderConfig('#kafkaTopicConfig', detail.topic.config);
+      });
+    }
+
+    $('#kafkaIncludeInternal').on('change', loadTopics);
+    $('#kafkaTopics').on('click', '.kafka-topic-detail', function() {
+      loadTopicDetail($(this).data('topic'));
+    });
+
+    loadSummary();
+    loadBrokers();
+    loadTopics();
+  })();
+</script>
+{{/with}}
