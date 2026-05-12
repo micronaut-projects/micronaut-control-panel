@@ -17,6 +17,7 @@ package io.micronaut.controlpanel.ui;
 
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.annotation.Requires;
+import io.micronaut.cache.CacheManager;
 import io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration;
 import io.micronaut.controlpanel.core.security.ControlPanelSecurityConfiguration;
 import io.micronaut.controlpanel.core.security.ControlPanelSecurityPaths;
@@ -43,6 +44,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ControlPanelSecurityTest {
 
@@ -174,6 +176,44 @@ class ControlPanelSecurityTest {
                     "controlpanel",
                     "password"
                 )
+            ).status());
+
+            client.close();
+        }
+    }
+
+    @Test
+    void separateWriteRoleLeavesReadUiAvailableButDisablesWriteControls() {
+        try (EmbeddedServer server = ApplicationContext.run(EmbeddedServer.class, Map.ofEntries(
+            Map.entry("spec.name", "ControlPanelSecurityTest"),
+            Map.entry("micronaut.security.enabled", true),
+            Map.entry("micronaut.security.basic-auth.enabled", true),
+            Map.entry(ControlPanelSecurityConfiguration.PROPERTY_ACCESS, "AUTHORIZED"),
+            Map.entry(ControlPanelSecurityConfiguration.PROPERTY_WRITE_ACCESS, "AUTHORIZED"),
+            Map.entry(ControlPanelSecurityConfiguration.PROPERTY_WRITE_ROLE, "ROLE_CONTROL_PANEL_WRITE"),
+            Map.entry("micronaut.caches.demo.initial-capacity", 1)
+        ))) {
+            CacheManager<?> cacheManager = server.getApplicationContext().getBean(CacheManager.class);
+            cacheManager.getCache("demo").put("hello", "world");
+            HttpClient client = server.getApplicationContext().createBean(HttpClient.class, server.getURL());
+
+            String body = client.toBlocking().retrieve(
+                authenticatedRequest(HttpRequest.GET(ControlPanelModuleConfiguration.DEFAULT_PATH + "/cache-demo"), "controlpanel", "password"),
+                String.class
+            );
+            assertTrue(body.contains("Write operations are disabled for this control panel session."));
+            assertTrue(body.contains("id=\"invalidateAllConfirm\" disabled"));
+
+            HttpClientResponseException readerWrite = assertThrows(
+                HttpClientResponseException.class,
+                () -> client.toBlocking().exchange(
+                    authenticatedRequest(HttpRequest.DELETE(helperPath(ControlPanelSecurityPaths.CACHE_PATH, "/demo")), "controlpanel", "password")
+                )
+            );
+            assertEquals(HttpStatus.FORBIDDEN, readerWrite.getStatus());
+
+            assertEquals(HttpStatus.NO_CONTENT, client.toBlocking().exchange(
+                authenticatedRequest(HttpRequest.DELETE(helperPath(ControlPanelSecurityPaths.CACHE_PATH, "/demo")), "writer", "password")
             ).status());
 
             client.close();
@@ -365,6 +405,9 @@ class ControlPanelSecurityTest {
                 }
                 if ("controlpanel".equals(authRequest.getIdentity())) {
                     return AuthenticationResponse.success("controlpanel", List.of(ControlPanelSecurityConfiguration.DEFAULT_ROLE));
+                }
+                if ("writer".equals(authRequest.getIdentity())) {
+                    return AuthenticationResponse.success("writer", List.of("ROLE_CONTROL_PANEL_WRITE"));
                 }
                 if ("user".equals(authRequest.getIdentity())) {
                     return AuthenticationResponse.success("user", List.of("ROLE_USER"));

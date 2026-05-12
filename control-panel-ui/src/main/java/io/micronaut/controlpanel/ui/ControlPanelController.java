@@ -20,8 +20,10 @@ import io.micronaut.context.env.Environment;
 import io.micronaut.controlpanel.core.ControlPanel;
 import io.micronaut.controlpanel.core.ControlPanelRepository;
 import io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration;
+import io.micronaut.controlpanel.core.security.ControlPanelWriteAccessEvaluator;
 import io.micronaut.controlpanel.ui.util.EndpointUtils;
 import org.jspecify.annotations.Nullable;
+import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.server.HttpServerConfiguration;
@@ -60,12 +62,14 @@ public class ControlPanelController implements ControlPanelApi {
     private final boolean canStop;
     private final String appPath;
     private final String controlPanelPath;
+    private final ControlPanelWriteAccessEvaluator writeAccessEvaluator;
 
     @Inject
     public ControlPanelController(ControlPanelRepository repository, BeanContext beanContext,
                                   @Nullable RefreshEndpoint refreshEndpoint,
                                   @Nullable ServerStopEndpoint stopEndpoint,
-                                  ControlPanelModuleConfiguration configuration) {
+                                  ControlPanelModuleConfiguration configuration,
+                                  ControlPanelWriteAccessEvaluator writeAccessEvaluator) {
         ApplicationConfiguration applicationConfiguration = beanContext.getBean(ApplicationConfiguration.class);
         HttpServerConfiguration  serverConfiguration = beanContext.getBean(HttpServerConfiguration.class);
         Environment environment = beanContext.getBean(Environment.class);
@@ -76,16 +80,17 @@ public class ControlPanelController implements ControlPanelApi {
         this.canStop = stopEndpoint != null;
         this.appPath = Optional.ofNullable(serverConfiguration.getContextPath()).orElse("");
         this.controlPanelPath = computeControlPanelPath(appPath, configuration.getPath());
+        this.writeAccessEvaluator = writeAccessEvaluator;
     }
 
     @Override
-    public HttpResponse<ModelAndView<?>> index() {
-        return byCategory(ControlPanel.Category.MAIN.id());
+    public HttpResponse<ModelAndView<?>> index(HttpRequest<?> request) {
+        return byCategory(ControlPanel.Category.MAIN.id(), request);
     }
 
     @Override
-    public HttpResponse<ModelAndView<?>> byCategory(String categoryId) {
-        var common = buildCommonData();
+    public HttpResponse<ModelAndView<?>> byCategory(String categoryId, HttpRequest<?> request) {
+        var common = buildCommonData(request);
         var controlPanels = repository.findAllByCategory(categoryId);
         var optionalCategory = repository.findCategoryById(categoryId);
 
@@ -102,8 +107,8 @@ public class ControlPanelController implements ControlPanelApi {
     }
 
     @Override
-    public HttpResponse<ModelAndView<?>> detail(String controlPanelName) {
-        var common = buildCommonData();
+    public HttpResponse<ModelAndView<?>> detail(String controlPanelName, HttpRequest<?> request) {
+        var common = buildCommonData(request);
         var optionalControlPanel = repository.findByName(controlPanelName);
         if (optionalControlPanel.isPresent()) {
             var extraProperties = new HashMap<>(common.baseExtra());
@@ -118,7 +123,7 @@ public class ControlPanelController implements ControlPanelApi {
         }
     }
 
-    private CommonData buildCommonData() {
+    private CommonData buildCommonData(HttpRequest<?> request) {
         var categories = repository.findAllCategories();
         var categoryCount = categories
             .stream()
@@ -132,6 +137,7 @@ public class ControlPanelController implements ControlPanelApi {
         baseExtra.put("controlPanelPath", controlPanelPath);
         baseExtra.put("appPath", appPath);
         baseExtra.put("categoryCount", categoryCount);
+        baseExtra.put("writeAccess", writeAccessEvaluator.evaluate(request));
         repository.findByName("health")
             .map(ControlPanel::getBody)
             .ifPresent(body -> baseExtra.put("applicationHealth", body));

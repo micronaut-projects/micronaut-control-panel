@@ -17,6 +17,8 @@ package io.micronaut.controlpanel.core.security;
 
 import io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration;
 import io.micronaut.core.annotation.Internal;
+import io.micronaut.http.HttpMethod;
+import io.micronaut.http.HttpRequest;
 
 import java.util.List;
 
@@ -48,5 +50,50 @@ public final class ControlPanelSecurityPaths {
      */
     public static List<String> helperPaths() {
         return HELPER_PATHS;
+    }
+
+    /**
+     * Determines whether a request targets a control-panel-owned write operation.
+     *
+     * @param controlPanelPath the resolved control panel path, including any application context path
+     * @param request the HTTP request
+     * @return true if the request mutates application/runtime state
+     */
+    public static boolean isWriteRequest(String controlPanelPath, HttpRequest<?> request) {
+        String path = request.getPath();
+        HttpMethod method = request.getMethod();
+        if (method == HttpMethod.DELETE) {
+            return isHelperPath(controlPanelPath, CACHE_PATH, path)
+                || isHelperPath(controlPanelPath, HIBERNATE_PATH, path)
+                || isHelperPath(controlPanelPath, OBJECT_STORAGE_PATH, path);
+        }
+        if (method == HttpMethod.POST) {
+            return isHelperPath(controlPanelPath, LOGGERS_PATH, path)
+                || isObjectStorageUpload(controlPanelPath, path)
+                || isDatasourceQuery(controlPanelPath, path)
+                || isHibernateStatisticsToggle(controlPanelPath, path);
+        }
+        return false;
+    }
+
+    private static boolean isHelperPath(String controlPanelPath, String helperPath, String path) {
+        String prefix = controlPanelPath + helperPath;
+        return path.equals(prefix) || path.startsWith(prefix + "/");
+    }
+
+    private static boolean isObjectStorageUpload(String controlPanelPath, String path) {
+        if (!isHelperPath(controlPanelPath, OBJECT_STORAGE_PATH, path)) {
+            return false;
+        }
+        String remainder = path.substring((controlPanelPath + OBJECT_STORAGE_PATH).length());
+        return remainder.indexOf('/', 1) < 0;
+    }
+
+    private static boolean isDatasourceQuery(String controlPanelPath, String path) {
+        return isHelperPath(controlPanelPath, DATASOURCE_PATH, path) && path.endsWith("/query");
+    }
+
+    private static boolean isHibernateStatisticsToggle(String controlPanelPath, String path) {
+        return isHelperPath(controlPanelPath, HIBERNATE_PATH, path) && path.contains("/statistics/enabled/");
     }
 }

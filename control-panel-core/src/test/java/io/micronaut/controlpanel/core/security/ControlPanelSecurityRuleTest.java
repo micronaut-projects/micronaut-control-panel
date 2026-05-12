@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 
 import java.util.Map;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -109,6 +110,57 @@ class ControlPanelSecurityRuleTest {
     }
 
     @Test
+    void deniedWriteAccessRejectsWriteRequestsWhileAllowingReads() {
+        ControlPanelSecurityRule rule = newRule(
+            ControlPanelSecurityConfiguration.Access.ANONYMOUS,
+            null,
+            ControlPanelModuleConfiguration.DEFAULT_PATH,
+            ControlPanelSecurityConfiguration.DEFAULT_ROLE,
+            ControlPanelSecurityConfiguration.WriteAccess.DENIED,
+            null
+        );
+
+        assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.GET("/control-panel"), null));
+        assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.POST("/control-panel" + ControlPanelSecurityPaths.HIBERNATE_PATH + "/default/hql", "{}"), null));
+        for (HttpRequest<?> request : writeRequests("/control-panel")) {
+            assertEquals(SecurityRuleResult.REJECTED, check(rule, request, null));
+        }
+    }
+
+    @Test
+    void separateWriteRoleAllowsReadRoleToReadOnly() {
+        ControlPanelSecurityRule rule = newRule(
+            ControlPanelSecurityConfiguration.Access.AUTHORIZED,
+            null,
+            ControlPanelModuleConfiguration.DEFAULT_PATH,
+            ControlPanelSecurityConfiguration.DEFAULT_ROLE,
+            ControlPanelSecurityConfiguration.WriteAccess.AUTHORIZED,
+            "ROLE_CONTROL_PANEL_WRITE"
+        );
+        Authentication reader = Authentication.build("reader", Set.of(ControlPanelSecurityConfiguration.DEFAULT_ROLE), Map.of());
+        Authentication writer = Authentication.build("writer", Set.of("ROLE_CONTROL_PANEL_WRITE"), Map.of());
+
+        assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.GET("/control-panel"), reader));
+        assertEquals(SecurityRuleResult.REJECTED, check(rule, HttpRequest.DELETE("/control-panel" + ControlPanelSecurityPaths.CACHE_PATH + "/demo"), reader));
+        assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.DELETE("/control-panel" + ControlPanelSecurityPaths.CACHE_PATH + "/demo"), writer));
+    }
+
+    @Test
+    void authenticatedWriteAccessFailsClosedWithoutAuthentication() {
+        ControlPanelSecurityRule rule = newRule(
+            ControlPanelSecurityConfiguration.Access.ANONYMOUS,
+            null,
+            ControlPanelModuleConfiguration.DEFAULT_PATH,
+            ControlPanelSecurityConfiguration.DEFAULT_ROLE,
+            ControlPanelSecurityConfiguration.WriteAccess.AUTHENTICATED,
+            null
+        );
+
+        assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.GET("/control-panel"), null));
+        assertEquals(SecurityRuleResult.REJECTED, check(rule, HttpRequest.POST("/control-panel" + ControlPanelSecurityPaths.LOGGERS_PATH + "/ROOT", "{}"), null));
+    }
+
+    @Test
     void nonControlPanelRoutesRemainUnknown() {
         ControlPanelSecurityRule rule = newRule(ControlPanelSecurityConfiguration.Access.AUTHENTICATED, null);
 
@@ -143,7 +195,16 @@ class ControlPanelSecurityRuleTest {
                                                     String contextPath,
                                                     String controlPanelPath,
                                                     String role) {
-        ControlPanelSecurityConfiguration securityConfiguration = new ControlPanelSecurityConfiguration(access, role);
+        return newRule(access, contextPath, controlPanelPath, role, ControlPanelSecurityConfiguration.WriteAccess.INHERITED, null);
+    }
+
+    private static ControlPanelSecurityRule newRule(ControlPanelSecurityConfiguration.Access access,
+                                                    String contextPath,
+                                                    String controlPanelPath,
+                                                    String role,
+                                                    ControlPanelSecurityConfiguration.WriteAccess writeAccess,
+                                                    String writeRole) {
+        ControlPanelSecurityConfiguration securityConfiguration = new ControlPanelSecurityConfiguration(access, role, writeAccess, writeRole);
         ControlPanelModuleConfiguration moduleConfiguration = new ControlPanelModuleConfiguration() {
             @Override
             public boolean isEnabled() {
@@ -170,6 +231,21 @@ class ControlPanelSecurityRuleTest {
             serverConfiguration.setContextPath(contextPath);
         }
         return new ControlPanelSecurityRule(securityConfiguration, moduleConfiguration, serverConfiguration);
+    }
+
+    private static List<HttpRequest<?>> writeRequests(String controlPanelPath) {
+        return List.of(
+            HttpRequest.DELETE(controlPanelPath + ControlPanelSecurityPaths.CACHE_PATH + "/demo"),
+            HttpRequest.DELETE(controlPanelPath + ControlPanelSecurityPaths.CACHE_PATH + "/demo/key"),
+            HttpRequest.POST(controlPanelPath + ControlPanelSecurityPaths.DATASOURCE_PATH + "/default/query", "{}"),
+            HttpRequest.POST(controlPanelPath + ControlPanelSecurityPaths.HIBERNATE_PATH + "/default/statistics/enabled/true", ""),
+            HttpRequest.DELETE(controlPanelPath + ControlPanelSecurityPaths.HIBERNATE_PATH + "/default/statistics"),
+            HttpRequest.DELETE(controlPanelPath + ControlPanelSecurityPaths.HIBERNATE_PATH + "/default/cache"),
+            HttpRequest.DELETE(controlPanelPath + ControlPanelSecurityPaths.HIBERNATE_PATH + "/default/cache/region?region=books"),
+            HttpRequest.POST(controlPanelPath + ControlPanelSecurityPaths.LOGGERS_PATH + "/ROOT", "{}"),
+            HttpRequest.POST(controlPanelPath + ControlPanelSecurityPaths.OBJECT_STORAGE_PATH + "/default", ""),
+            HttpRequest.DELETE(controlPanelPath + ControlPanelSecurityPaths.OBJECT_STORAGE_PATH + "/default/hello.txt")
+        );
     }
 
     private static SecurityRuleResult check(ControlPanelSecurityRule rule,

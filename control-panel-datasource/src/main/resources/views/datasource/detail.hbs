@@ -61,7 +61,7 @@
                             <h3 class="card-title">SQL query</h3>
                         </div>
                         <div class="card-tools">
-                            <button type="button" class="btn btn-success btn-sm" id="executeQuery" title="Execute query (Cmd+Enter / Ctrl+Enter)">
+                            <button type="button" class="btn btn-success btn-sm" id="executeQuery" title="{{#if ext.writeAccess.allowed}}Execute query (Cmd+Enter / Ctrl+Enter){{else}}{{ ext.writeAccess.reason }}{{/if}}"{{#unless ext.writeAccess.allowed}} disabled aria-disabled="true"{{/unless}}>
                                 <i class="fas fa-play"></i>
                                 Run
                             </button>
@@ -154,6 +154,10 @@
                     const schemaConfig = { schema: cm.schema, defaultSchema: cm.defaultSchema };
                     const extensions = cm.getSQLExtensions(type, schemaConfig, {
                         executeQuery: function (view) {
+                            if (!{{ ext.writeAccess.allowed }}) {
+                                renderQueryState('Query execution disabled', '{{ ext.writeAccess.reason }}', 'error');
+                                return true;
+                            }
                             executeSqlQuery(view);
                             return true;
                         }
@@ -180,9 +184,13 @@
                 // Fallback init without schema
                 const schemaConfig = {};
                 const extensions = cm.getSQLExtensions(type, schemaConfig, {
-                    executeQuery: function (view) {
-                        executeSqlQuery(view);
-                        return true;
+                        executeQuery: function (view) {
+                            if (!{{ ext.writeAccess.allowed }}) {
+                                renderQueryState('Query execution disabled', '{{ ext.writeAccess.reason }}', 'error');
+                                return true;
+                            }
+                            executeSqlQuery(view);
+                            return true;
                     }
                 });
                 const state = cm.EditorState.create({
@@ -335,6 +343,10 @@
         }
 
         function loadQueryPage() {
+            if (!{{ ext.writeAccess.allowed }}) {
+                renderQueryState('Query execution disabled', '{{ ext.writeAccess.reason }}', 'error');
+                return;
+            }
             const controlPanelPath = '{{ ext.controlPanelPath }}';
             const ds = '{{ controlPanel.title }}';
             const url = controlPanelPath + '/datasource-control-panel-controller/' + encodeURIComponent(ds) + '/query';
@@ -406,6 +418,9 @@
 
         // Hook Play button
         $('#executeQuery').on('click', function() {
+            if (this.disabled) {
+                return;
+            }
             executeSqlQuery();
         });
     </script>
