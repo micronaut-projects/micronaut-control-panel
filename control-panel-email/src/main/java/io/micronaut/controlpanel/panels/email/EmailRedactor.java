@@ -79,31 +79,48 @@ public final class EmailRedactor {
         StringBuilder redacted = new StringBuilder(value.length());
         int index = 0;
         while (index < value.length()) {
-            char current = value.charAt(index);
-            if (!isKeyCharacter(current)) {
-                redacted.append(current);
-                index++;
-                continue;
-            }
-            int keyStart = index;
-            while (index < value.length() && isKeyCharacter(value.charAt(index))) {
-                index++;
-            }
-            String key = value.substring(keyStart, index);
-            if (isSecretMessageKey(key)) {
-                int valueStart = valueStart(value, index);
-                if (valueStart > index && valueStart < value.length() && !isValueDelimiter(value.charAt(valueStart))) {
-                    redacted.append(key).append('=').append(REDACTED);
-                    index = valueStart;
-                    while (index < value.length() && !isValueDelimiter(value.charAt(index))) {
-                        index++;
-                    }
-                    continue;
-                }
-            }
-            redacted.append(key);
+            index = appendNextToken(value, index, redacted);
         }
         return redacted.toString();
+    }
+
+    private int appendNextToken(String value, int index, StringBuilder redacted) {
+        if (!isKeyCharacter(value.charAt(index))) {
+            redacted.append(value.charAt(index));
+            return index + 1;
+        }
+        int keyEnd = keyEnd(value, index);
+        String key = value.substring(index, keyEnd);
+        int valueStart = valueStart(value, keyEnd);
+        if (hasSecretValue(value, key, keyEnd, valueStart)) {
+            redacted.append(key).append('=').append(REDACTED);
+            return valueEnd(value, valueStart);
+        }
+        redacted.append(key);
+        return keyEnd;
+    }
+
+    private int keyEnd(String value, int keyStart) {
+        int index = keyStart;
+        while (index < value.length() && isKeyCharacter(value.charAt(index))) {
+            index++;
+        }
+        return index;
+    }
+
+    private boolean hasSecretValue(String value, String key, int keyEnd, int valueStart) {
+        return isSecretMessageKey(key)
+            && valueStart > keyEnd
+            && valueStart < value.length()
+            && !isValueDelimiter(value.charAt(valueStart));
+    }
+
+    private int valueEnd(String value, int valueStart) {
+        int index = valueStart;
+        while (index < value.length() && !isValueDelimiter(value.charAt(index))) {
+            index++;
+        }
+        return index;
     }
 
     private boolean isSecretMessageKey(String key) {

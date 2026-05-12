@@ -168,7 +168,7 @@ class EmailDiagnosticsAnalyzer {
 
     private void addSafe(List<EmailDiagnosticModel.ConfigurationEntry> entries, String label, String key) {
         Optional<Object> value = environment.getProperty(key, Object.class);
-        value.ifPresent(object -> entries.add(new EmailDiagnosticModel.ConfigurationEntry(label, redactor.safeValue(key, object), "configured")));
+        value.ifPresent(object -> entries.add(new EmailDiagnosticModel.ConfigurationEntry(label, redactor.safeValue(key, object), CONFIGURED)));
     }
 
     private void addHiddenPresence(List<EmailDiagnosticModel.ConfigurationEntry> entries, String label, String key) {
