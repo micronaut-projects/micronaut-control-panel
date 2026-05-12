@@ -221,6 +221,39 @@ class ControlPanelSecurityTest {
     }
 
     @Test
+    void deniedWriteAccessIsEnforcedWhenSecurityIsDisabled() {
+        try (EmbeddedServer server = ApplicationContext.run(EmbeddedServer.class, Map.ofEntries(
+            Map.entry("spec.name", "ControlPanelSecurityTest"),
+            Map.entry("micronaut.security.enabled", false),
+            Map.entry(ControlPanelSecurityConfiguration.PROPERTY_WRITE_ACCESS, "DENIED"),
+            Map.entry("micronaut.caches.demo.initial-capacity", 1)
+        ))) {
+            CacheManager<?> cacheManager = server.getApplicationContext().getBean(CacheManager.class);
+            cacheManager.getCache("demo").put("hello", "world");
+            HttpClient client = server.getApplicationContext().createBean(HttpClient.class, server.getURL());
+
+            String body = client.toBlocking().retrieve(
+                HttpRequest.GET(ControlPanelModuleConfiguration.DEFAULT_PATH + "/cache-demo"),
+                String.class
+            );
+            assertTrue(body.contains("Write operations are disabled for this control panel session."));
+            assertTrue(body.contains("id=\"invalidateAllConfirm\" disabled"));
+
+            HttpClientResponseException deniedWrite = assertThrows(
+                HttpClientResponseException.class,
+                () -> client.toBlocking().exchange(HttpRequest.DELETE(helperPath(ControlPanelSecurityPaths.CACHE_PATH, "/demo")))
+            );
+            assertEquals(HttpStatus.FORBIDDEN, deniedWrite.getStatus());
+
+            assertEquals(HttpStatus.OK, client.toBlocking().exchange(
+                HttpRequest.GET(ControlPanelModuleConfiguration.DEFAULT_PATH)
+            ).status());
+
+            client.close();
+        }
+    }
+
+    @Test
     void separateWriteRoleDisablesApplicationRefreshAndStopControls() {
         try (EmbeddedServer server = ApplicationContext.run(EmbeddedServer.class, Map.ofEntries(
             Map.entry("spec.name", "ControlPanelSecurityTest"),
@@ -230,9 +263,7 @@ class ControlPanelSecurityTest {
             Map.entry(ControlPanelSecurityConfiguration.PROPERTY_WRITE_ACCESS, "AUTHORIZED"),
             Map.entry(ControlPanelSecurityConfiguration.PROPERTY_WRITE_ROLE, "ROLE_CONTROL_PANEL_WRITE"),
             Map.entry("endpoints.all.enabled", true),
-            Map.entry("endpoints.all.sensitive", false),
             Map.entry("endpoints.refresh.enabled", true),
-            Map.entry("endpoints.refresh.sensitive", false),
             Map.entry("endpoints.stop.enabled", true),
             Map.entry("endpoints.stop.sensitive", false)
         ))) {
@@ -269,9 +300,7 @@ class ControlPanelSecurityTest {
             Map.entry(ControlPanelSecurityConfiguration.PROPERTY_WRITE_ACCESS, "AUTHORIZED"),
             Map.entry(ControlPanelSecurityConfiguration.PROPERTY_WRITE_ROLE, "ROLE_CONTROL_PANEL_WRITE"),
             Map.entry("endpoints.all.enabled", true),
-            Map.entry("endpoints.all.sensitive", false),
             Map.entry("endpoints.refresh.enabled", true),
-            Map.entry("endpoints.refresh.sensitive", false),
             Map.entry("endpoints.stop.enabled", true),
             Map.entry("endpoints.stop.sensitive", false)
         ))) {

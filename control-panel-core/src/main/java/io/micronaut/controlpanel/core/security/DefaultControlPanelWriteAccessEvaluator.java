@@ -28,8 +28,19 @@ import jakarta.inject.Singleton;
 @Internal
 final class DefaultControlPanelWriteAccessEvaluator implements ControlPanelWriteAccessEvaluator {
 
+    private final ControlPanelSecurityConfiguration securityConfiguration;
+
+    DefaultControlPanelWriteAccessEvaluator(ControlPanelSecurityConfiguration securityConfiguration) {
+        this.securityConfiguration = securityConfiguration;
+    }
+
     @Override
     public ControlPanelWriteAccess evaluate(HttpRequest<?> request) {
-        return ControlPanelWriteAccess.allowedAccess();
+        ControlPanelSecurityConfiguration.WriteAccess writeAccess = securityConfiguration.writeAccess();
+        if (writeAccess == ControlPanelSecurityConfiguration.WriteAccess.INHERITED
+            || writeAccess == ControlPanelSecurityConfiguration.WriteAccess.ANONYMOUS) {
+            return ControlPanelWriteAccess.allowedAccess();
+        }
+        return ControlPanelWriteAccess.deniedAccess();
     }
 }
