@@ -40,7 +40,9 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import static io.micronaut.controlpanel.panels.elasticsearch.ElasticsearchDiagnostics.State.AUTHORIZATION_FAILED;
+import static io.micronaut.controlpanel.panels.elasticsearch.ElasticsearchDiagnostics.State.DELAYED;
 import static io.micronaut.controlpanel.panels.elasticsearch.ElasticsearchDiagnostics.State.NO_CLIENT;
+import static io.micronaut.controlpanel.panels.elasticsearch.ElasticsearchDiagnostics.State.NO_VISIBLE_INDICES;
 import static io.micronaut.controlpanel.panels.elasticsearch.ElasticsearchDiagnostics.State.PARTIAL;
 import static io.micronaut.controlpanel.panels.elasticsearch.ElasticsearchDiagnostics.State.UNAVAILABLE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -108,7 +110,7 @@ class ElasticsearchDiagnosticsServiceTest {
     void mapsUnavailableClusterToNonSecretState() {
         BeanContext beanContext = mock(BeanContext.class);
         Environment environment = mock(Environment.class);
-        ElasticsearchAsyncClient client = mock(ElasticsearchAsyncClient.class);
+        ElasticsearchAsyncClient client = mockClient();
         when(client.info()).thenReturn(CompletableFuture.failedFuture(new IOException("Connection refused at http://elastic:secret@localhost:9200")));
         when(beanContext.findBean(ElasticsearchAsyncClient.class)).thenReturn(Optional.of(client));
         when(beanContext.findBean(DefaultElasticsearchConfiguration.class)).thenReturn(Optional.empty());
@@ -126,7 +128,7 @@ class ElasticsearchDiagnosticsServiceTest {
     void mapsAuthorizationFailureToNonSecretState() {
         BeanContext beanContext = mock(BeanContext.class);
         Environment environment = mock(Environment.class);
-        ElasticsearchAsyncClient client = mock(ElasticsearchAsyncClient.class);
+        ElasticsearchAsyncClient client = mockClient();
         when(client.info()).thenReturn(CompletableFuture.failedFuture(elasticsearchException(403)));
         when(beanContext.findBean(ElasticsearchAsyncClient.class)).thenReturn(Optional.of(client));
         when(beanContext.findBean(DefaultElasticsearchConfiguration.class)).thenReturn(Optional.empty());
@@ -160,9 +162,59 @@ class ElasticsearchDiagnosticsServiceTest {
         assertEquals("orders", diagnostics.indices().get(0).name());
     }
 
+    @Test
+    void mapsNullCatIndicesToNoVisibleIndices() {
+        BeanContext beanContext = mock(BeanContext.class);
+        Environment environment = mock(Environment.class);
+        ElasticsearchAsyncClient client = mockClient();
+        ElasticsearchCatAsyncClient catClient = client.cat();
+        IndicesResponse indicesResponse = mock(IndicesResponse.class);
+        when(indicesResponse.indices()).thenReturn(null);
+        when(catClient.indices(any(java.util.function.Function.class))).thenReturn(CompletableFuture.completedFuture(indicesResponse));
+        when(beanContext.findBean(ElasticsearchAsyncClient.class)).thenReturn(Optional.of(client));
+        when(beanContext.findBean(DefaultElasticsearchConfiguration.class)).thenReturn(Optional.empty());
+        when(beanContext.findBean(org.elasticsearch.client.RestClient.class)).thenReturn(Optional.empty());
+        when(environment.getProperty(eq("elasticsearch.http-hosts"), eq(String[].class))).thenReturn(Optional.empty());
+        when(environment.getProperty(eq("elasticsearch.httpHosts"), eq(String[].class))).thenReturn(Optional.empty());
+
+        ElasticsearchDiagnostics diagnostics = service(beanContext, environment).diagnostics();
+
+        assertEquals(NO_VISIBLE_INDICES, diagnostics.state());
+        assertFalse(diagnostics.hasIndices());
+    }
+
+    @Test
+    void cancelsTimedOutProbe() {
+        BeanContext beanContext = mock(BeanContext.class);
+        Environment environment = mock(Environment.class);
+        ElasticsearchAsyncClient client = mock(ElasticsearchAsyncClient.class);
+        ElasticsearchClusterAsyncClient clusterClient = mock(ElasticsearchClusterAsyncClient.class);
+        ElasticsearchCatAsyncClient catClient = mock(ElasticsearchCatAsyncClient.class);
+        CompletableFuture<InfoResponse> slowInfo = new CompletableFuture<>();
+        when(client.info()).thenReturn(slowInfo);
+        when(client.cluster()).thenReturn(clusterClient);
+        when(client.cat()).thenReturn(catClient);
+        when(clusterClient.health(any(java.util.function.Function.class))).thenReturn(CompletableFuture.completedFuture(healthResponse()));
+        when(catClient.indices(any(java.util.function.Function.class))).thenReturn(CompletableFuture.completedFuture(indicesResponse()));
+        when(beanContext.findBean(ElasticsearchAsyncClient.class)).thenReturn(Optional.of(client));
+        when(beanContext.findBean(DefaultElasticsearchConfiguration.class)).thenReturn(Optional.empty());
+        when(beanContext.findBean(org.elasticsearch.client.RestClient.class)).thenReturn(Optional.empty());
+        when(environment.getProperty(eq("elasticsearch.http-hosts"), eq(String[].class))).thenReturn(Optional.empty());
+        when(environment.getProperty(eq("elasticsearch.httpHosts"), eq(String[].class))).thenReturn(Optional.empty());
+
+        ElasticsearchDiagnostics diagnostics = service(beanContext, environment, Duration.ofMillis(10)).diagnostics();
+
+        assertEquals(DELAYED, diagnostics.state());
+        assertTrue(slowInfo.isCancelled());
+    }
+
     private static ElasticsearchDiagnosticsService service(BeanContext beanContext, Environment environment) {
+        return service(beanContext, environment, Duration.ofSeconds(1));
+    }
+
+    private static ElasticsearchDiagnosticsService service(BeanContext beanContext, Environment environment, Duration timeout) {
         ElasticsearchControlPanelConfiguration configuration = new ElasticsearchControlPanelConfiguration();
-        configuration.setProbeTimeout(Duration.ofSeconds(1));
+        configuration.setProbeTimeout(timeout);
         return new ElasticsearchDiagnosticsService(beanContext, environment, configuration);
     }
 

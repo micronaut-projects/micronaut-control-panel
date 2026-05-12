@@ -117,18 +117,20 @@ public record ElasticsearchDiagnostics(State state,
      *
      * @param clientBean client bean name
      * @param hosts configured hosts without secrets
-     * @param hasHosts whether any hosts are known
      */
     @ReflectiveAccess
-    public record ConnectionContext(String clientBean, List<String> hosts, boolean hasHosts) {
+    public record ConnectionContext(String clientBean, List<String> hosts) {
         public ConnectionContext {
             clientBean = clientBean == null || clientBean.isBlank() ? "default" : clientBean;
             hosts = hosts == null ? List.of() : List.copyOf(hosts);
-            hasHosts = !hosts.isEmpty();
         }
 
         static ConnectionContext empty() {
-            return new ConnectionContext("default", List.of(), false);
+            return new ConnectionContext("default", List.of());
+        }
+
+        public boolean hasHosts() {
+            return !hosts.isEmpty();
         }
     }
 

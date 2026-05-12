@@ -97,20 +97,30 @@ class ElasticsearchDiagnosticsService {
         }
         try {
             return collect(optionalClient.get(), connection);
-        } catch (Throwable throwable) {
-            State state = classify(throwable);
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+            State state = State.DELAYED;
+            return ElasticsearchDiagnostics.unavailable(connection, state, messageFor(state));
+        } catch (Exception exception) {
+            State state = classify(exception);
             return ElasticsearchDiagnostics.unavailable(connection, state, messageFor(state));
         }
     }
 
     private ElasticsearchDiagnostics collect(ElasticsearchAsyncClient client, ConnectionContext connection) throws Exception {
-        InfoResponse info = await(client.info());
-        HealthResponse health = await(client.cluster().health(h -> h
+        long deadline = deadline();
+        CompletableFuture<InfoResponse> infoFuture = client.info();
+        CompletableFuture<HealthResponse> healthFuture = client.cluster().health(h -> h
             .timeout(t -> t.time(timeoutString()))
-            .masterTimeout(t -> t.time(timeoutString()))));
-        List<IndicesRecord> records = await(client.cat().indices(i -> i
+            .masterTimeout(t -> t.time(timeoutString())));
+        CompletableFuture<List<IndicesRecord>> recordsFuture = client.cat().indices(i -> i
             .h("health", "status", "index", "pri", "rep", "docs.count", "store.size")
-            .s("index"))).indices();
+            .s("index"))
+            .thenApply(response -> response == null || response.indices() == null ? List.of() : response.indices());
+
+        InfoResponse info = await(infoFuture, deadline);
+        HealthResponse health = await(healthFuture, deadline);
+        List<IndicesRecord> records = await(recordsFuture, deadline);
 
         ClusterInfo cluster = clusterInfo(info, health);
         HealthSummary healthSummary = healthSummary(health);
@@ -142,7 +152,10 @@ class ElasticsearchDiagnosticsService {
     private GetAliasResponse readAliases(ElasticsearchAsyncClient client, List<String> names, List<String> warnings) throws Exception {
         try {
             return await(client.indices().getAlias(a -> a.index(names).ignoreUnavailable(true).allowNoIndices(true).masterTimeout(t -> t.time(timeoutString()))));
-        } catch (Throwable throwable) {
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+            throw exception;
+        } catch (Exception exception) {
             warnings.add("Aliases are hidden or unavailable for the current Elasticsearch credentials.");
             return null;
         }
@@ -151,7 +164,10 @@ class ElasticsearchDiagnosticsService {
     private GetMappingResponse readMappings(ElasticsearchAsyncClient client, List<String> names, List<String> warnings) throws Exception {
         try {
             return await(client.indices().getMapping(m -> m.index(names).ignoreUnavailable(true).allowNoIndices(true).masterTimeout(t -> t.time(timeoutString()))));
-        } catch (Throwable throwable) {
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+            throw exception;
+        } catch (Exception exception) {
             warnings.add("Mappings are hidden or unavailable for the current Elasticsearch credentials.");
             return null;
         }
@@ -240,7 +256,7 @@ class ElasticsearchDiagnosticsService {
             });
         beanContext.findBean(RestClient.class)
             .ifPresent(client -> client.getNodes().forEach(node -> hosts.add(sanitizeHost(node.getHost().toURI()))));
-        return new ConnectionContext(DEFAULT_CLIENT_BEAN, hosts.stream().filter(host -> !host.isBlank()).toList(), !hosts.isEmpty());
+        return new ConnectionContext(DEFAULT_CLIENT_BEAN, hosts.stream().filter(host -> !host.isBlank()).toList());
     }
 
     private static void addHosts(Set<String> hosts, String[] values) {
@@ -276,15 +292,34 @@ class ElasticsearchDiagnosticsService {
     }
 
     private <T> T await(CompletableFuture<T> future) throws Exception {
+        return await(future, deadline());
+    }
+
+    private <T> T await(CompletableFuture<T> future, long deadlineNanos) throws Exception {
         try {
-            return future.get(configuration.getProbeTimeout().toMillis(), TimeUnit.MILLISECONDS);
+            long remaining = deadlineNanos - System.nanoTime();
+            if (remaining <= 0) {
+                future.cancel(true);
+                throw new TimeoutException();
+            }
+            return future.get(remaining, TimeUnit.NANOSECONDS);
+        } catch (TimeoutException | InterruptedException e) {
+            future.cancel(true);
+            throw e;
         } catch (ExecutionException e) {
             Throwable cause = e.getCause();
             if (cause instanceof Exception exception) {
                 throw exception;
             }
+            if (cause instanceof Error error) {
+                throw error;
+            }
             throw e;
         }
+    }
+
+    private long deadline() {
+        return System.nanoTime() + configuration.getProbeTimeout().toNanos();
     }
 
     private String timeoutString() {
@@ -392,20 +427,22 @@ class ElasticsearchDiagnosticsService {
             if (properties == null || properties.isEmpty()) {
                 return;
             }
-            properties.entrySet().stream()
-                .sorted(Map.Entry.comparingByKey())
-                .forEach(entry -> {
-                    String path = prefix.isEmpty() ? entry.getKey() : prefix + "." + entry.getKey();
-                    Property property = entry.getValue();
-                    if (displayed < limit) {
-                        fields.add(new MappingField(path, propertyType(property)));
-                        displayed++;
-                    } else {
-                        truncated = true;
-                    }
-                    collectFields(path, nestedProperties(property), fields);
-                    collectFields(path, multiFields(property), fields);
-                });
+            if (displayed >= limit) {
+                truncated = true;
+                return;
+            }
+            for (Map.Entry<String, Property> entry : properties.entrySet().stream().sorted(Map.Entry.comparingByKey()).toList()) {
+                if (displayed >= limit) {
+                    truncated = true;
+                    return;
+                }
+                String path = prefix.isEmpty() ? entry.getKey() : prefix + "." + entry.getKey();
+                Property property = entry.getValue();
+                fields.add(new MappingField(path, propertyType(property)));
+                displayed++;
+                collectFields(path, nestedProperties(property), fields);
+                collectFields(path, multiFields(property), fields);
+            }
         }
 
         private int countFields(TypeMapping mapping) {
