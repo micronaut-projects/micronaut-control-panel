@@ -124,14 +124,14 @@ final class SyncMongoDbDiagnosticService extends AbstractMongoDbDiagnosticServic
             count = String.valueOf(collection.estimatedDocumentCount(new EstimatedDocumentCountOptions()
                 .maxTime(timeout(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS)));
         } catch (RuntimeException e) {
-            errors.addAll(error("collection " + database.getName() + "." + name + " count", e));
+            errors.addAll(error(COLLECTION_ERROR_PREFIX + database.getName() + "." + name + " count", e));
         }
         List<MongoDbModels.IndexInfo> indexes = List.of();
         try {
             indexes = indexes(limitDocuments(collection.listIndexes(Document.class)
                 .maxTime(timeout(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS), positiveLimit(configuration.getMaxIndexesPerCollection())));
         } catch (RuntimeException e) {
-            errors.addAll(error("collection " + database.getName() + "." + name + " indexes", e));
+            errors.addAll(error(COLLECTION_ERROR_PREFIX + database.getName() + "." + name + " indexes", e));
         }
         MongoDbModels.SchemaSummary schema = schemaAnalyzer.disabled();
         if (schemaSamplingBudget.tryAcquire()) {
@@ -140,7 +140,7 @@ final class SyncMongoDbDiagnosticService extends AbstractMongoDbDiagnosticServic
                     .limit(positiveLimit(configuration.getSchema().getSampleSize()))
                     .maxTime(timeout(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS), positiveLimit(configuration.getSchema().getSampleSize())));
             } catch (RuntimeException e) {
-                schema = new MongoDbModels.SchemaSummary(true, 0, false, List.of(), error("collection " + database.getName() + "." + name + " schema", e));
+                schema = new MongoDbModels.SchemaSummary(true, 0, false, List.of(), error(COLLECTION_ERROR_PREFIX + database.getName() + "." + name + " schema", e));
             }
         }
         return new MongoDbModels.CollectionInfo(

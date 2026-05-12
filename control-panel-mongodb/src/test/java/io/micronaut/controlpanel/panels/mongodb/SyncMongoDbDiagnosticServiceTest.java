@@ -216,6 +216,7 @@ class SyncMongoDbDiagnosticServiceTest {
 
         @Override
         public void close() {
+            // No resources to release for the list-backed test cursor.
         }
 
         @Override

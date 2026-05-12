@@ -31,6 +31,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 @EachBean(MongoClient.class)
@@ -120,14 +121,14 @@ final class ReactiveMongoDbDiagnosticService extends AbstractMongoDbDiagnosticSe
             count = String.valueOf(single(collection.estimatedDocumentCount(new EstimatedDocumentCountOptions()
                 .maxTime(timeout(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS))));
         } catch (RuntimeException e) {
-            errors.addAll(error("collection " + database.getName() + "." + name + " count", e));
+            errors.addAll(error(COLLECTION_ERROR_PREFIX + database.getName() + "." + name + " count", e));
         }
         List<MongoDbModels.IndexInfo> indexes = List.of();
         try {
             indexes = indexes(many(collection.listIndexes(Document.class)
                 .maxTime(timeout(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS), positiveLimit(configuration.getMaxIndexesPerCollection())));
         } catch (RuntimeException e) {
-            errors.addAll(error("collection " + database.getName() + "." + name + " indexes", e));
+            errors.addAll(error(COLLECTION_ERROR_PREFIX + database.getName() + "." + name + " indexes", e));
         }
         MongoDbModels.SchemaSummary schema = schemaAnalyzer.disabled();
         if (schemaSamplingBudget.tryAcquire()) {
@@ -136,7 +137,7 @@ final class ReactiveMongoDbDiagnosticService extends AbstractMongoDbDiagnosticSe
                     .limit(positiveLimit(configuration.getSchema().getSampleSize()))
                     .maxTime(timeout(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS), positiveLimit(configuration.getSchema().getSampleSize())));
             } catch (RuntimeException e) {
-                schema = new MongoDbModels.SchemaSummary(true, 0, false, List.of(), error("collection " + database.getName() + "." + name + " schema", e));
+                schema = new MongoDbModels.SchemaSummary(true, 0, false, List.of(), error(COLLECTION_ERROR_PREFIX + database.getName() + "." + name + " schema", e));
             }
         }
         return new MongoDbModels.CollectionInfo(
@@ -152,17 +153,17 @@ final class ReactiveMongoDbDiagnosticService extends AbstractMongoDbDiagnosticSe
     }
 
     private <T> T single(org.reactivestreams.Publisher<T> publisher) {
-        return Mono.from(publisher)
+        return Objects.requireNonNull(Mono.from(publisher)
             .timeout(timeoutDuration())
-            .block(timeoutDuration());
+            .block(timeoutDuration()));
     }
 
     private <T> List<T> many(org.reactivestreams.Publisher<T> publisher, int limit) {
-        return Flux.from(publisher)
+        return Objects.requireNonNull(Flux.from(publisher)
             .timeout(timeoutDuration())
             .take(limit)
             .collectList()
-            .block(timeoutDuration());
+            .block(timeoutDuration()));
     }
 
     private Duration timeoutDuration() {

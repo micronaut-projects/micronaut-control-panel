@@ -21,6 +21,7 @@ import io.micronaut.configuration.mongo.core.AbstractMongoConfiguration;
 import io.micronaut.configuration.mongo.core.NamedMongoConfiguration;
 import org.bson.Document;
 import org.bson.types.ObjectId;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +37,8 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 abstract class AbstractMongoDbDiagnosticService implements MongoDbDiagnosticService {
+
+    protected static final String COLLECTION_ERROR_PREFIX = "collection ";
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractMongoDbDiagnosticService.class);
 
@@ -258,7 +261,7 @@ abstract class AbstractMongoDbDiagnosticService implements MongoDbDiagnosticServ
         return name == null ? "" : String.valueOf(name);
     }
 
-    protected static String value(Object value) {
+    protected static String value(@Nullable Object value) {
         return value == null ? "" : String.valueOf(value);
     }
 
@@ -275,7 +278,7 @@ abstract class AbstractMongoDbDiagnosticService implements MongoDbDiagnosticServ
         return result;
     }
 
-    protected static String bsonType(Object value) {
+    protected static String bsonType(@Nullable Object value) {
         if (value == null) {
             return "null";
         }

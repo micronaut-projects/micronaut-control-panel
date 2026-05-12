@@ -16,6 +16,7 @@
 package io.micronaut.controlpanel.panels.mongodb;
 
 import org.bson.Document;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.Locale;
@@ -36,7 +37,7 @@ final class MongoDbSanitizer {
         "certificate"
     );
 
-    String redactText(String value) {
+    String redactText(@Nullable String value) {
         if (value == null) {
             return "";
         }
@@ -51,7 +52,7 @@ final class MongoDbSanitizer {
         return redacted;
     }
 
-    Object redactValue(String key, Object value) {
+    @Nullable Object redactValue(String key, @Nullable Object value) {
         if (sensitive(key)) {
             return REDACTED;
         }
@@ -69,7 +70,7 @@ final class MongoDbSanitizer {
         return value;
     }
 
-    String toJson(Object value) {
+    String toJson(@Nullable Object value) {
         if (value == null) {
             return "";
         }
