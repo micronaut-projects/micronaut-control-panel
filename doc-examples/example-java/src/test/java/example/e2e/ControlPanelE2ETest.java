@@ -33,6 +33,7 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         assertThat(body).containsText("Control Panel");
         assertThat(body).containsText("my-application");
         assertThat(body).containsText("Application Health");
+        assertThat(body).containsText("Application Info");
         assertThat(body).containsText("Environment Properties");
         assertThat(body).containsText("Metrics");
         assertThat(body).containsText("HTTP Routes");
@@ -70,6 +71,21 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         // Sensitive data is still masked
         assertThat(body(page)).containsText("test.password");
         assertThat(body(page)).containsText("*****");
+    }
+
+    @Test
+    void testApplicationInfo(Page page) {
+        page.navigate(baseUrl());
+        controlPanelDetails(page, "Application Info").click();
+
+        assertThat(body(page)).containsText("InfoEndpoint available");
+        assertThat(body(page)).containsText("Demo");
+        assertThat(body(page)).containsText("Micronaut Control Panel Example");
+        assertThat(body(page)).containsText("Local development");
+
+        page.setViewportSize(390, 844);
+        assertThat(page.locator(".cp-info-table td[data-label='Section']").first()).isVisible();
+        assertTrue((Boolean) page.evaluate("() => document.documentElement.scrollWidth <= document.documentElement.clientWidth"));
     }
 
     @Test
