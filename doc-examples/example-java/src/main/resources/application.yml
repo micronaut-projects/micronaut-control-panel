@@ -48,6 +48,13 @@ jpa:
   flyway-demo:
     enabled: false
 
+info:
+  demo:
+    name: Micronaut Control Panel Example
+    environment:
+      purpose: Local development
+      owner: Micronaut
+
 ehcache:
   caches:
     my-ehcache:
@@ -68,6 +75,8 @@ endpoints:
     enabled: false
   health:
     details-visible: ANONYMOUS
+  info:
+    enabled: true
 
 infinispan:
   enabled: false

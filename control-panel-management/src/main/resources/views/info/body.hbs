@@ -1,0 +1,38 @@
+{{#with controlPanel.body }}
+    {{#if sections}}
+        <div class="cp-info-card-summary">
+            <div>
+                <strong>{{sections.size}}</strong>
+                <span>info sections</span>
+            </div>
+            <div>
+                <strong>{{rows.size}}</strong>
+                <span>values</span>
+            </div>
+        </div>
+        {{#if summaryItems}}
+            <dl class="cp-info-summary-list cp-info-summary-list-compact">
+                {{#each summaryItems}}
+                    <div>
+                        <dt>{{label}}</dt>
+                        <dd>
+                            {{#if code}}
+                                <code class="cp-table-code">{{value}}</code>
+                            {{else}}
+                                {{value}}
+                            {{/if}}
+                        </dd>
+                    </div>
+                {{/each}}
+            </dl>
+        {{else}}
+            <p class="card-text text-muted">
+                Open details to inspect configuration, build, git, and custom InfoSource values.
+            </p>
+        {{/if}}
+    {{else}}
+        <p class="card-text">
+            No application info is available. Add an InfoSource bean or configure `info.*` values.
+        </p>
+    {{/if}}
+{{/with}}
