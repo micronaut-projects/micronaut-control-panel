@@ -128,7 +128,7 @@ public class ControlPanelController implements ControlPanelApi {
     }
 
     @Override
-    public HttpResponse<?> refresh(@Nullable RefreshRequest request) {
+    public HttpResponse<Object> refresh(@Nullable RefreshRequest request) {
         if (refreshEndpoint == null || !canRefresh) {
             return HttpResponse.notFound();
         }
@@ -136,7 +136,7 @@ public class ControlPanelController implements ControlPanelApi {
     }
 
     @Override
-    public HttpResponse<?> stop() {
+    public HttpResponse<Object> stop() {
         if (stopEndpoint == null || !canStop) {
             return HttpResponse.notFound();
         }

@@ -204,11 +204,9 @@ class ControlPanelSecurityTest {
             assertTrue(body.contains("Write operations are disabled for this control panel session."));
             assertTrue(body.contains("id=\"invalidateAllConfirm\" disabled"));
 
-            HttpClientResponseException readerWrite = assertThrows(
-                HttpClientResponseException.class,
-                () -> client.toBlocking().exchange(
-                    authenticatedRequest(HttpRequest.DELETE(helperPath(ControlPanelSecurityPaths.CACHE_PATH, "/demo")), "controlpanel", "password")
-                )
+            HttpClientResponseException readerWrite = assertExchangeRejected(
+                client,
+                authenticatedRequest(HttpRequest.DELETE(helperPath(ControlPanelSecurityPaths.CACHE_PATH, "/demo")), "controlpanel", "password")
             );
             assertEquals(HttpStatus.FORBIDDEN, readerWrite.getStatus());
 
@@ -239,9 +237,9 @@ class ControlPanelSecurityTest {
             assertTrue(body.contains("Write operations are disabled for this control panel session."));
             assertTrue(body.contains("id=\"invalidateAllConfirm\" disabled"));
 
-            HttpClientResponseException deniedWrite = assertThrows(
-                HttpClientResponseException.class,
-                () -> client.toBlocking().exchange(HttpRequest.DELETE(helperPath(ControlPanelSecurityPaths.CACHE_PATH, "/demo")))
+            HttpClientResponseException deniedWrite = assertExchangeRejected(
+                client,
+                HttpRequest.DELETE(helperPath(ControlPanelSecurityPaths.CACHE_PATH, "/demo"))
             );
             assertEquals(HttpStatus.FORBIDDEN, deniedWrite.getStatus());
 
@@ -308,15 +306,15 @@ class ControlPanelSecurityTest {
             String refreshPath = helperPath(ControlPanelSecurityPaths.APPLICATION_PATH, "/refresh");
             String stopPath = helperPath(ControlPanelSecurityPaths.APPLICATION_PATH, "/stop");
 
-            HttpClientResponseException readerRefresh = assertThrows(
-                HttpClientResponseException.class,
-                () -> client.toBlocking().exchange(authenticatedRequest(HttpRequest.POST(refreshPath, "{}"), "controlpanel", "password"))
+            HttpClientResponseException readerRefresh = assertExchangeRejected(
+                client,
+                authenticatedRequest(HttpRequest.POST(refreshPath, "{}"), "controlpanel", "password")
             );
             assertEquals(HttpStatus.FORBIDDEN, readerRefresh.getStatus());
 
-            HttpClientResponseException readerStop = assertThrows(
-                HttpClientResponseException.class,
-                () -> client.toBlocking().exchange(authenticatedRequest(HttpRequest.POST(stopPath, ""), "controlpanel", "password"))
+            HttpClientResponseException readerStop = assertExchangeRejected(
+                client,
+                authenticatedRequest(HttpRequest.POST(stopPath, ""), "controlpanel", "password")
             );
             assertEquals(HttpStatus.FORBIDDEN, readerStop.getStatus());
 
@@ -352,11 +350,9 @@ class ControlPanelSecurityTest {
                 authenticatedRequest(HttpRequest.GET(ControlPanelModuleConfiguration.DEFAULT_PATH), "controlpanel", "password")
             ).status());
 
-            HttpClientResponseException readerWrite = assertThrows(
-                HttpClientResponseException.class,
-                () -> client.toBlocking().exchange(
-                    authenticatedRequest(HttpRequest.DELETE(helperPath(ControlPanelSecurityPaths.CACHE_PATH, "/demo")), "controlpanel", "password")
-                )
+            HttpClientResponseException readerWrite = assertExchangeRejected(
+                client,
+                authenticatedRequest(HttpRequest.DELETE(helperPath(ControlPanelSecurityPaths.CACHE_PATH, "/demo")), "controlpanel", "password")
             );
             assertEquals(HttpStatus.FORBIDDEN, readerWrite.getStatus());
 
@@ -530,6 +526,11 @@ class ControlPanelSecurityTest {
                                                              String username,
                                                              String password) {
         return request.header("Authorization", basicAuthorization(username, password));
+    }
+
+    private static HttpClientResponseException assertExchangeRejected(HttpClient client, MutableHttpRequest<?> request) {
+        var blockingClient = client.toBlocking();
+        return assertThrows(HttpClientResponseException.class, () -> blockingClient.exchange(request));
     }
 
     private static String basicAuthorization(String username, String password) {

@@ -73,7 +73,7 @@ public interface ControlPanelApi {
      * @return the refresh result
      */
     @Post(ControlPanelSecurityPaths.APPLICATION_PATH + "/refresh")
-    HttpResponse<?> refresh(@Nullable @Body RefreshRequest request);
+    HttpResponse<Object> refresh(@Nullable @Body RefreshRequest request);
 
     /**
      * Stops the host application through a control-panel-owned write route.
@@ -81,7 +81,7 @@ public interface ControlPanelApi {
      * @return the stop result
      */
     @Post(ControlPanelSecurityPaths.APPLICATION_PATH + "/stop")
-    HttpResponse<?> stop();
+    HttpResponse<Object> stop();
 
     /**
      * @param force whether refresh should run regardless of environment changes

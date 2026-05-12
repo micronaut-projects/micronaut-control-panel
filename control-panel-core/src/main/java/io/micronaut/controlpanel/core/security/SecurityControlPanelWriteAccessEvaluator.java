@@ -22,6 +22,7 @@ import io.micronaut.http.HttpRequest;
 import io.micronaut.security.authentication.Authentication;
 import io.micronaut.security.filters.SecurityFilter;
 import jakarta.inject.Singleton;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Evaluates write access from Micronaut Security authentication.
@@ -45,14 +46,14 @@ final class SecurityControlPanelWriteAccessEvaluator implements ControlPanelWrit
             .orElseGet(() -> evaluateAuthentication(null));
     }
 
-    private ControlPanelWriteAccess evaluateAuthentication(Authentication authentication) {
+    private ControlPanelWriteAccess evaluateAuthentication(@Nullable Authentication authentication) {
         if (isAllowed(authentication)) {
             return ControlPanelWriteAccess.allowedAccess();
         }
         return ControlPanelWriteAccess.deniedAccess();
     }
 
-    private boolean isAllowed(Authentication authentication) {
+    private boolean isAllowed(@Nullable Authentication authentication) {
         ControlPanelSecurityConfiguration.WriteAccess writeAccess = securityConfiguration.writeAccess();
         if (writeAccess == ControlPanelSecurityConfiguration.WriteAccess.INHERITED) {
             return isReadAllowed(authentication);
@@ -69,7 +70,7 @@ final class SecurityControlPanelWriteAccessEvaluator implements ControlPanelWrit
         return false;
     }
 
-    private boolean isReadAllowed(Authentication authentication) {
+    private boolean isReadAllowed(@Nullable Authentication authentication) {
         if (securityConfiguration.access() == ControlPanelSecurityConfiguration.Access.ANONYMOUS) {
             return true;
         }

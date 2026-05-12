@@ -16,6 +16,7 @@
 package io.micronaut.controlpanel.core.security;
 
 import io.micronaut.core.annotation.Internal;
+import io.micronaut.core.annotation.ReflectiveAccess;
 
 /**
  * UI-facing write access state for the current request.
@@ -24,16 +25,17 @@ import io.micronaut.core.annotation.Internal;
  * @param reason reason to show when write operations are disabled
  */
 @Internal
+@ReflectiveAccess
 public record ControlPanelWriteAccess(boolean allowed, String reason) {
 
-    private static final ControlPanelWriteAccess ALLOWED = new ControlPanelWriteAccess(true, "");
+    private static final ControlPanelWriteAccess ALLOWED_ACCESS = new ControlPanelWriteAccess(true, "");
     private static final String DEFAULT_DENIED_REASON = "Write operations are disabled for this control panel session.";
 
     /**
      * @return allowed write access
      */
     public static ControlPanelWriteAccess allowedAccess() {
-        return ALLOWED;
+        return ALLOWED_ACCESS;
     }
 
     /**

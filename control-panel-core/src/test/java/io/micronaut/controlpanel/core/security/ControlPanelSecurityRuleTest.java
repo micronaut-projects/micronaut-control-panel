@@ -47,7 +47,7 @@ class ControlPanelSecurityRuleTest {
 
     @Test
     void fallbackWriteAccessFilterOrderDoesNotDependOnSecurityClasses() throws IOException {
-        assertEquals(ServerFilterPhase.SECURITY.after(), ControlPanelWriteAccessFilter.ORDER);
+        assertEquals(ControlPanelWriteAccessFilter.ORDER, ServerFilterPhase.SECURITY.after());
 
         byte[] filterBytecode = readClassBytes(ControlPanelWriteAccessFilter.class);
         assertFalse(containsAscii(filterBytecode, "ControlPanelSecurityRule"));
