@@ -799,6 +799,9 @@ Micronaut Endpoints require having the <code>io.micronaut:micronaut-management</
 <p><code>health</code>: Application Health</p>
 </li>
 <li>
+<p><code>info</code>: Application Info</p>
+</li>
+<li>
 <p><code>env</code>: Environment Properties</p>
 </li>
 <li>
@@ -1200,6 +1203,189 @@ Make sure this is done in an environment-specific configuration file, for exampl
 <div class="paragraph">
 <p>If you opt into <code>micronaut.control-panel.security.access=ANONYMOUS</code>, anonymous control-panel requests continue to see the
 anonymous health view.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_application_info">Application Info</h3>
+<div class="paragraph">
+<p>This panel displays application information, and relies on the
+<a href="https://docs.micronaut.io/latest/guide/#infoEndpoint">Info Endpoint</a> to display its information. The panel appears when
+the Info endpoint is available and can be disabled independently:</p>
+</div>
+<div class="openblock">
+<div class="title">Disabling the Application Info panel</div>
+<div class="content">
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">micronaut.control-panel.panels.info.enabled=false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">micronaut:
+  control-panel:
+    panels:
+      info:
+        enabled: false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[micronaut]
+  [micronaut.control-panel]
+    [micronaut.control-panel.panels]
+      [micronaut.control-panel.panels.info]
+        enabled=false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-groovy-config hljs" data-lang="groovy-config">micronaut {
+  controlPanel {
+    panels {
+      info {
+        enabled = false
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-hocon hljs" data-lang="hocon">{
+  micronaut {
+    control-panel {
+      panels {
+        info {
+          enabled = false
+        }
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json-config hljs" data-lang="json-config">{
+  "micronaut": {
+    "control-panel": {
+      "panels": {
+        "info": {
+          "enabled": false
+        }
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>The Info endpoint can expose configuration-backed <code>info.*</code> values, build and git metadata, and values from custom
+<code>InfoSource</code> beans. Configure it only in environments where the Control Panel should be available:</p>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+Make sure this is done in an environment-specific configuration file, for example, <code>application-dev.yml</code> or
+<code>application-test.yml</code>.
+</td>
+</tr>
+</table>
+</div>
+<div class="openblock">
+<div class="title">Configuring the Info Endpoint</div>
+<div class="content">
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">endpoints.info.enabled=true
+info.app.name=my-service
+info.app.version=1.0.0</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">endpoints:
+  info:
+    enabled: true
+
+info:
+  app:
+    name: my-service
+    version: 1.0.0</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[endpoints]
+  [endpoints.info]
+    enabled=true
+[info]
+  [info.app]
+    name="my-service"
+    version="1.0.0"</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-groovy-config hljs" data-lang="groovy-config">endpoints {
+  info {
+    enabled = true
+  }
+}
+info {
+  app {
+    name = "my-service"
+    version = "1.0.0"
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-hocon hljs" data-lang="hocon">{
+  endpoints {
+    info {
+      enabled = true
+    }
+  }
+  info {
+    app {
+      name = "my-service"
+      version = "1.0.0"
+    }
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json-config hljs" data-lang="json-config">{
+  "endpoints": {
+    "info": {
+      "enabled": true
+    }
+  },
+  "info": {
+    "app": {
+      "name": "my-service",
+      "version": "1.0.0"
+    }
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>The panel renders nested maps and lists from <code>info.*</code>, git/build property files, and custom <code>InfoSource</code> output.</p>
 </div>
 </div>
 <div class="sect2">
