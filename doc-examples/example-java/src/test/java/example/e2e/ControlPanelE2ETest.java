@@ -442,7 +442,7 @@ class ControlPanelE2ETest extends AbstractE2ETest {
 
         page.navigate(baseUrl());
         categoryLink(page, "Data Sources").click();
-        controlPanelDetails(page, "Flyway").click();
+        controlPanelDetailsByTitle(page, "Flyway").click();
 
         assertThat(body(page)).containsText("Migration status");
         assertThat(body(page)).containsText("flyway-demo");
