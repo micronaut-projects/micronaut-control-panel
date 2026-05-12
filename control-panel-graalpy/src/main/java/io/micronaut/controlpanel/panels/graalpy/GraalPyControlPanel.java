@@ -90,7 +90,7 @@ public class GraalPyControlPanel extends AbstractControlPanel<GraalPyControlPane
 
     @Override
     public String getBadge() {
-        return String.valueOf(discoverModules().size());
+        return String.valueOf(countModules());
     }
 
     @Override
@@ -101,10 +101,21 @@ public class GraalPyControlPanel extends AbstractControlPanel<GraalPyControlPane
     private List<ModuleInterface> discoverModules() {
         return beanContext.getAllBeanDefinitions()
             .stream()
-            .filter(definition -> definition.hasStereotype(GraalPyModule.class) || definition.hasDeclaredStereotype(GraalPyModule.class))
+            .filter(GraalPyControlPanel::isGraalPyModule)
             .map(this::moduleInterface)
             .sorted(Comparator.comparing(ModuleInterface::javaType).thenComparing(ModuleInterface::beanName))
             .toList();
+    }
+
+    private long countModules() {
+        return beanContext.getAllBeanDefinitions()
+            .stream()
+            .filter(GraalPyControlPanel::isGraalPyModule)
+            .count();
+    }
+
+    private static boolean isGraalPyModule(BeanDefinition<?> definition) {
+        return definition.hasStereotype(GraalPyModule.class) || definition.hasDeclaredStereotype(GraalPyModule.class);
     }
 
     private ModuleInterface moduleInterface(BeanDefinition<?> definition) {
@@ -182,8 +193,7 @@ public class GraalPyControlPanel extends AbstractControlPanel<GraalPyControlPane
 
     private static String displayType(Type type) {
         return type.getTypeName()
-            .replace("java.lang.", "")
-            .replace("java.util.", "");
+            .replace("java.lang.", "");
     }
 
     private RuntimeMetadata discoverRuntimeMetadata() {

@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -46,8 +47,8 @@ class GraalPyControlPanelTest {
         doReturn(List.of(moduleDefinition)).when(beanContext).getAllBeanDefinitions();
         doReturn(List.of(factoryDefinition)).when(beanContext).getBeanDefinitions(GraalPyContextBuilderFactory.class);
 
-        GraalPyControlPanel panel = new GraalPyControlPanel(beanContext, emptyVfsReader(), configuration);
-        GraalPyControlPanel.Body body = panel.getBody();
+        GraalPyControlPanel panel = new GraalPyControlPanel(beanContext, new GraalPyVfsMetadataReader(), configuration);
+        GraalPyControlPanel.Body body = getBodyWithEmptyVfs(panel);
 
         assertEquals(1, body.moduleCount());
         GraalPyControlPanel.ModuleInterface module = body.modules().get(0);
@@ -56,6 +57,8 @@ class GraalPyControlPanelTest {
         assertEquals("dealer", module.pythonModule());
         assertEquals("Unknown", module.instantiated());
         assertTrue(module.methods().stream().anyMatch(method -> method.signature().startsWith("String deal(String, int)")));
+        assertTrue(module.methods().stream()
+            .anyMatch(method -> method.signature().startsWith("java.util.concurrent.CompletableFuture<String> dealAsync()")));
         assertEquals("Available", body.runtime().factoryStatus());
         assertEquals(ExplodingFactory.class.getName(), body.runtime().activeFactoryClass());
         assertEquals(0, ExplodingFactory.createBuilderCalls.get());
@@ -67,22 +70,23 @@ class GraalPyControlPanelTest {
         doReturn(List.of(beanDefinition(String.class))).when(beanContext).getAllBeanDefinitions();
         doReturn(List.of()).when(beanContext).getBeanDefinitions(GraalPyContextBuilderFactory.class);
 
-        GraalPyControlPanel.Body body = new GraalPyControlPanel(beanContext, emptyVfsReader(), configuration()).getBody();
+        GraalPyControlPanel.Body body = getBodyWithEmptyVfs(
+            new GraalPyControlPanel(beanContext, new GraalPyVfsMetadataReader(), configuration()));
 
         assertFalse(body.hasModules());
         assertEquals(0, body.moduleCount());
         assertEquals("Unavailable", body.runtime().factoryStatus());
     }
 
-    private static GraalPyVfsMetadataReader emptyVfsReader() {
-        ClassLoader emptyClassLoader = new ClassLoader(null) {
-        };
-        return new GraalPyVfsMetadataReader() {
-            @Override
-            GraalPyVfsMetadata read() {
-                return super.read(emptyClassLoader);
-            }
-        };
+    private static GraalPyControlPanel.Body getBodyWithEmptyVfs(GraalPyControlPanel panel) {
+        ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(new ClassLoader(null) {
+            });
+            return panel.getBody();
+        } finally {
+            Thread.currentThread().setContextClassLoader(originalClassLoader);
+        }
     }
 
     private static ControlPanelConfiguration configuration() {
@@ -118,6 +122,8 @@ class GraalPyControlPanelTest {
     @GraalPyModule("dealer")
     interface DealerService {
         String deal(String name, int count);
+
+        CompletableFuture<String> dealAsync();
     }
 
     static final class ExplodingFactory implements GraalPyContextBuilderFactory {

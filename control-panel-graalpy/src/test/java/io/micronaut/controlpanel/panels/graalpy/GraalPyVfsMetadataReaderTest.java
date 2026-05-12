@@ -103,6 +103,19 @@ class GraalPyVfsMetadataReaderTest {
     }
 
     @Test
+    void exactEntryCapIsNotReportedAsTruncatedWhenNoEntriesAreOmitted() throws IOException {
+        writeFilesList(IntStream.range(0, GraalPyVfsMetadataReader.MAX_ENTRIES)
+            .mapToObj(index -> "src/file" + index + ".py")
+            .collect(Collectors.joining("\n")));
+
+        var metadata = read();
+
+        assertEquals(GraalPyVfsMetadataReader.MAX_ENTRIES, metadata.entryCount());
+        assertFalse(metadata.truncated());
+        assertEquals(0, metadata.omittedEntries());
+    }
+
+    @Test
     @SuppressWarnings("deprecation")
     void skipsNonLocalMetadataResourcesWithoutOpeningThem() throws IOException {
         AtomicBoolean opened = new AtomicBoolean();

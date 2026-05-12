@@ -40,7 +40,7 @@ import java.util.jar.JarFile;
  * Reads GraalPy virtual filesystem metadata without opening any listed Python files.
  */
 @Singleton
-public class GraalPyVfsMetadataReader {
+public final class GraalPyVfsMetadataReader {
 
     static final String RESOURCE_PATH = "org.graalvm.python.vfs/fileslist.txt";
     static final int MAX_ENTRIES = 500;
@@ -81,7 +81,10 @@ public class GraalPyVfsMetadataReader {
                 truncated = truncated || read.truncated();
                 omittedEntries += read.omittedEntries();
                 if (entries.size() >= MAX_ENTRIES) {
-                    truncated = true;
+                    if (resourceUrls.hasMoreElements()) {
+                        truncated = true;
+                    }
+                    break;
                 }
             }
         } catch (IOException e) {
@@ -141,7 +144,13 @@ public class GraalPyVfsMetadataReader {
             jarFile.close();
             throw new IOException("Missing jar entry");
         }
-        InputStream entryStream = jarFile.getInputStream(entry);
+        InputStream entryStream;
+        try {
+            entryStream = jarFile.getInputStream(entry);
+        } catch (IOException e) {
+            jarFile.close();
+            throw e;
+        }
         return new FilterInputStream(entryStream) {
             @Override
             public void close() throws IOException {
