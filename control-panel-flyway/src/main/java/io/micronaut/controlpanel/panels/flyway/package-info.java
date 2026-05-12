@@ -16,4 +16,14 @@
 /**
  * Flyway migration status control panel.
  */
+@Configuration
+@Requires(classes = Flyway.class)
+@Requires(property = FlywayControlPanel.ENABLED_PROPERTY, notEquals = StringUtils.FALSE)
+@Requires(condition = ControlPanelEnabledCondition.class)
 package io.micronaut.controlpanel.panels.flyway;
+
+import io.micronaut.context.annotation.Configuration;
+import io.micronaut.context.annotation.Requires;
+import io.micronaut.controlpanel.core.config.ControlPanelEnabledCondition;
+import io.micronaut.core.util.StringUtils;
+import org.flywaydb.core.Flyway;

@@ -60,6 +60,17 @@ class FlywayControlPanelTest {
     }
 
     @Test
+    void flywayPanelIsAbsentWhenControlPanelIsDisabled() {
+        try (ApplicationContext context = ApplicationContext.run(Map.of(
+            "micronaut.control-panel.enabled", "false"
+        ))) {
+            assertFalse(context.containsBean(FlywayControlPanel.class));
+            assertFalse(context.containsBean(FlywayStatusService.class));
+            assertFalse(context.containsBean(FlywayPanelConfiguration.class));
+        }
+    }
+
+    @Test
     void flywayPanelUsesDataSourceCategory() {
         try (ApplicationContext context = ApplicationContext.run()) {
             ControlPanel.Category category = context.getBean(FlywayControlPanel.class).getCategory();
