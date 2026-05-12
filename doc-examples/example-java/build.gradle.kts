@@ -51,9 +51,10 @@ dependencies {
     implementation(libs.avro.serde)
 
     // MongoDB
-    implementation(projects.micronautControlPanelMongodb)
-    implementation(mnMongo.micronaut.mongo.sync)
-    implementation(mnMongo.micronaut.mongo.reactive)
+    compileOnly(mnMongo.micronaut.mongo.sync)
+    developmentOnly(projects.micronautControlPanelMongodb)
+    developmentOnly(mnMongo.micronaut.mongo.sync)
+    developmentOnly(mnMongo.micronaut.mongo.reactive)
 
     // OpenAPI + Swagger UI (views generated at compile-time)
     annotationProcessor(mnOpenapi.micronaut.openapi)
