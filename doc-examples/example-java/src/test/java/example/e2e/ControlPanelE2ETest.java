@@ -279,7 +279,6 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         assertDepartmentTableDetail(page, expectedTableDetailSubtitle);
 
         assertSelectedTableDeselects(page);
-        selectTable(page, "DEPT");
         assertTableDetailToggle(page);
         assertTablesListToggleDisabled(page);
         assertRelationshipNavigation(page, schema, expectedTableDetailSubtitle);
