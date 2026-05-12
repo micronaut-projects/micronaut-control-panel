@@ -15,10 +15,13 @@
  */
 package io.micronaut.controlpanel.panels.kafka;
 
+import io.micronaut.controlpanel.core.security.ControlPanelSecurityPaths;
 import io.micronaut.http.annotation.Delete;
+import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Patch;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.http.annotation.Put;
+import io.micronaut.http.annotation.Controller;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.Config;
 import org.apache.kafka.clients.admin.ConfigEntry;
@@ -45,8 +48,10 @@ import org.apache.kafka.common.TopicPartitionInfo;
 import org.apache.kafka.common.Uuid;
 import org.apache.kafka.common.config.ConfigResource;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +66,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 final class KafkaClusterServiceTest {
@@ -147,6 +153,10 @@ final class KafkaClusterServiceTest {
         assertEquals(4, section.data().recordsTotal());
         assertEquals(2, section.data().recordsFiltered());
         assertEquals(List.of("orders"), section.data().topics().stream().map(KafkaClusterResponse.TopicSummary::name).toList());
+        @SuppressWarnings({"rawtypes", "unchecked"})
+        ArgumentCaptor<Collection<ConfigResource>> captor = ArgumentCaptor.forClass((Class) Collection.class);
+        verify(admin).describeConfigs(captor.capture(), any(DescribeConfigsOptions.class));
+        assertEquals(List.of(topicResource("orders")), captor.getValue().stream().toList());
     }
 
     @Test
@@ -191,12 +201,27 @@ final class KafkaClusterServiceTest {
     }
 
     @Test
+    void topicDetailReportsMissingTopicClearly() {
+        AdminClient admin = mock(AdminClient.class);
+        mockTopicDetail(admin, Map.of());
+
+        var section = new KafkaClusterService(admin).topic("missing-topic");
+
+        assertNull(section.data());
+        assertEquals("Topic not found or not authorized: missing-topic", section.error());
+    }
+
+    @Test
     void controllerIntroducesOnlyGetEndpoints() {
+        assertEquals(ControlPanelSecurityPaths.KAFKA, KafkaClusterController.class.getAnnotation(Controller.class).value());
         for (Method method : KafkaClusterController.class.getDeclaredMethods()) {
             assertFalse(method.isAnnotationPresent(Post.class), method.getName());
             assertFalse(method.isAnnotationPresent(Put.class), method.getName());
             assertFalse(method.isAnnotationPresent(Patch.class), method.getName());
             assertFalse(method.isAnnotationPresent(Delete.class), method.getName());
+            if (method.isAnnotationPresent(Get.class)) {
+                assertTrue(Modifier.isPublic(method.getModifiers()), method.getName());
+            }
         }
     }
 
@@ -221,9 +246,13 @@ final class KafkaClusterServiceTest {
     }
 
     private static void mockTopicDetail(AdminClient admin, TopicDescription topic) {
+        mockTopicDetail(admin, Map.of(topic.name(), topic));
+    }
+
+    private static void mockTopicDetail(AdminClient admin, Map<String, TopicDescription> topics) {
         DescribeTopicsResult describeTopicsResult = mock(DescribeTopicsResult.class);
         when(admin.describeTopics(any(TopicCollection.class), any(DescribeTopicsOptions.class))).thenReturn(describeTopicsResult);
-        when(describeTopicsResult.allTopicNames()).thenReturn(KafkaFuture.completedFuture(Map.of(topic.name(), topic)));
+        when(describeTopicsResult.allTopicNames()).thenReturn(KafkaFuture.completedFuture(topics));
     }
 
     private static void mockConsumerGroups(AdminClient admin, int count) {

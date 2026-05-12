@@ -105,7 +105,7 @@
         <label class="form-check-label" for="kafkaIncludeInternal">Show internal topics</label>
     </div>
 </div>
-<div class="cp-data-table cp-data-table-paged" id="kafkaTopicsTable" data-filter-table data-filter-table-page-size="10" data-filter-table-label="topic" data-filter-table-label-plural="topics">
+<div class="cp-data-table cp-data-table-paged" id="kafkaTopicsTable" data-kafka-topics-table>
     <div class="cp-data-table-toolbar">
         <div class="cp-data-table-summary" data-filter-table-summary>0 topics</div>
         <div class="cp-data-table-search">
@@ -184,7 +184,12 @@
 
 <script>
   (function() {
-    var baseUrl = '{{ ext.appPath }}{{ controllerPath }}';
+    var baseUrl = '{{ ext.controlPanelPath }}{{ controllerPath }}';
+    var topicsState = {
+      start: 0,
+      length: 10,
+      search: ''
+    };
 
     function escapeHtml(value) {
       return $('<div>').text(value == null ? '' : value).html();
@@ -243,6 +248,34 @@
       $(selector).find('[data-filter-table-search]').trigger('input');
     }
 
+    function pluralize(count, singular, plural) {
+      return count === 1 ? singular : plural;
+    }
+
+    function updateTopicsSummary(page) {
+      var total = page.recordsTotal || 0;
+      var filtered = page.recordsFiltered || 0;
+      var pageNumber = filtered === 0 ? 0 : Math.floor(topicsState.start / topicsState.length) + 1;
+      var totalPages = filtered === 0 ? 0 : Math.ceil(filtered / topicsState.length);
+      var label = pluralize(filtered, 'topic', 'topics');
+      var summary;
+      if (filtered === 0) {
+        summary = total === 0 ? '0 topics' : '0 of ' + total + ' topics';
+      } else {
+        var end = Math.min(topicsState.start + page.topics.length, filtered);
+        summary = 'Showing ' + (topicsState.start + 1) + '-' + end + ' of ' + filtered + ' ' + label;
+        if (topicsState.search !== '' && filtered !== total) {
+          summary += ' filtered from ' + total;
+        }
+      }
+      $('#kafkaTopicsTable [data-filter-table-summary]').text(summary);
+      $('#kafkaTopicsTable [data-filter-table-page]').text(filtered === 0 ? 'Page 0 of 0' : 'Page ' + pageNumber + ' of ' + totalPages);
+      $('#kafkaTopicsTable [data-filter-table-prev]').prop('disabled', topicsState.start <= 0 || filtered === 0);
+      $('#kafkaTopicsTable [data-filter-table-next]').prop('disabled', filtered === 0 || topicsState.start + topicsState.length >= filtered);
+      $('#kafkaTopicsTable [data-filter-table-page-size-select]').val(String(topicsState.length));
+      $('#kafkaTopicsTable [data-filter-table-empty]').prop('hidden', filtered !== 0);
+    }
+
     function loadSummary() {
       loadSection(baseUrl + '/summary', 'Kafka cluster overview unavailable', function(summary) {
         $('#kafkaClusterId').text(summary.clusterId || '-');
@@ -279,7 +312,13 @@
 
     function loadTopics() {
       var includeInternal = $('#kafkaIncludeInternal').is(':checked');
-      loadSection(baseUrl + '/topics?includeInternal=' + includeInternal + '&length=10000', 'Kafka topics unavailable', function(page) {
+      var query = $.param({
+        includeInternal: includeInternal,
+        search: topicsState.search,
+        start: topicsState.start,
+        length: topicsState.length
+      });
+      loadSection(baseUrl + '/topics?' + query, 'Kafka topics unavailable', function(page) {
         var tbody = $('#kafkaTopics tbody');
         tbody.find('[data-filter-table-row]').remove();
         page.topics.forEach(function(topic) {
@@ -297,7 +336,7 @@
             + '</tr>');
           tbody.find('tr:last').attr('data-filter-table-row', '');
         });
-        refreshFilterTable('#kafkaTopicsTable');
+        updateTopicsSummary(page);
       });
     }
 
@@ -322,7 +361,28 @@
       });
     }
 
-    $('#kafkaIncludeInternal').on('change', loadTopics);
+    $('#kafkaIncludeInternal').on('change', function() {
+      topicsState.start = 0;
+      loadTopics();
+    });
+    $('#kafkaTopicsTable [data-filter-table-search]').on('input', function() {
+      topicsState.search = $(this).val().trim();
+      topicsState.start = 0;
+      loadTopics();
+    });
+    $('#kafkaTopicsTable [data-filter-table-page-size-select]').on('change', function() {
+      topicsState.length = Number($(this).val()) || 10;
+      topicsState.start = 0;
+      loadTopics();
+    });
+    $('#kafkaTopicsTable [data-filter-table-prev]').on('click', function() {
+      topicsState.start = Math.max(0, topicsState.start - topicsState.length);
+      loadTopics();
+    });
+    $('#kafkaTopicsTable [data-filter-table-next]').on('click', function() {
+      topicsState.start += topicsState.length;
+      loadTopics();
+    });
     $('#kafkaTopics').on('click', '.kafka-topic-detail', function() {
       loadTopicDetail($(this).data('topic'));
     });

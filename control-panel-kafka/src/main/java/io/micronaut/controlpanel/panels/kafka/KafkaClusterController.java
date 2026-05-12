@@ -16,6 +16,7 @@
 package io.micronaut.controlpanel.panels.kafka;
 
 import io.micronaut.context.annotation.Requires;
+import io.micronaut.controlpanel.core.security.ControlPanelSecurityPaths;
 import io.micronaut.core.annotation.Internal;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.http.annotation.Controller;
@@ -37,14 +38,14 @@ import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.TopicP
 /**
  * GET-only JSON endpoints used by the Kafka Cluster control panel.
  */
-@Controller(KafkaClusterController.PATH)
+@Controller(ControlPanelSecurityPaths.KAFKA)
 @ExecuteOn(TaskExecutors.BLOCKING)
 @Internal
 @Requires(beans = AdminClient.class)
 @Requires(property = KafkaClusterControlPanel.ENABLED_PROPERTY, notEquals = StringUtils.FALSE)
 public final class KafkaClusterController {
 
-    static final String PATH = "/kafka-control-panel-controller";
+    static final String PATH = ControlPanelSecurityPaths.KAFKA_PATH;
 
     private final KafkaClusterService service;
 
@@ -53,25 +54,25 @@ public final class KafkaClusterController {
     }
 
     @Get("/summary")
-    Section<Overview> summary() {
+    public Section<Overview> summary() {
         return service.overview();
     }
 
     @Get("/brokers")
-    Section<List<Broker>> brokers() {
+    public Section<List<Broker>> brokers() {
         return service.brokers();
     }
 
     @Get("/topics{?search,includeInternal,start,length}")
-    Section<TopicPage> topics(@Nullable @QueryValue String search,
-                              @QueryValue(defaultValue = "false") boolean includeInternal,
-                              @QueryValue(defaultValue = "0") int start,
-                              @QueryValue(defaultValue = "25") int length) {
+    public Section<TopicPage> topics(@Nullable @QueryValue String search,
+                                     @QueryValue(defaultValue = "false") boolean includeInternal,
+                                     @QueryValue(defaultValue = "0") int start,
+                                     @QueryValue(defaultValue = "25") int length) {
         return service.topics(search, includeInternal, start, length);
     }
 
     @Get("/topics/{topic}")
-    Section<TopicDetail> topic(String topic) {
+    public Section<TopicDetail> topic(String topic) {
         return service.topic(topic);
     }
 }

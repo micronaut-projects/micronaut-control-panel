@@ -134,19 +134,23 @@ final class KafkaClusterService {
             int safeLength = length <= 0 ? DEFAULT_PAGE_LENGTH : length;
             String normalizedSearch = search == null ? "" : search.toLowerCase(Locale.ROOT);
             Map<String, TopicDescription> descriptions = describeAllTopics();
-            Map<String, Map<String, String>> configs = topicConfigs(descriptions.keySet());
-            List<TopicSummary> allTopics = descriptions.values().stream()
-                .map(topic -> toTopicSummary(topic, configs.getOrDefault(topic.name(), Map.of())))
-                .sorted(Comparator.comparing(TopicSummary::name))
+            List<TopicDescription> allTopics = descriptions.values().stream()
+                .sorted(Comparator.comparing(TopicDescription::name))
                 .toList();
-            List<TopicSummary> filtered = allTopics.stream()
-                .filter(topic -> includeInternal || !topic.internal())
+            List<TopicDescription> filtered = allTopics.stream()
+                .filter(topic -> includeInternal || !topic.isInternal())
                 .filter(topic -> normalizedSearch.isBlank()
                     || topic.name().toLowerCase(Locale.ROOT).contains(normalizedSearch))
                 .toList();
-            List<TopicSummary> page = filtered.stream()
+            List<TopicDescription> pageDescriptions = filtered.stream()
                 .skip(safeStart)
                 .limit(safeLength)
+                .toList();
+            Map<String, Map<String, String>> configs = topicConfigs(pageDescriptions.stream()
+                .map(TopicDescription::name)
+                .toList());
+            List<TopicSummary> page = pageDescriptions.stream()
+                .map(topic -> toTopicSummary(topic, configs.getOrDefault(topic.name(), Map.of())))
                 .toList();
             return new TopicPage(safeStart, safeLength, allTopics.size(), filtered.size(), page);
         });
@@ -157,6 +161,9 @@ final class KafkaClusterService {
             TopicDescription description = await(adminClient
                 .describeTopics(TopicCollection.ofTopicNames(List.of(topicName)), new DescribeTopicsOptions())
                 .allTopicNames()).get(topicName);
+            if (description == null) {
+                throw new IllegalArgumentException("Topic not found or not authorized: " + topicName);
+            }
             Map<String, String> config = topicConfigs(List.of(topicName)).getOrDefault(topicName, Map.of());
             Map<TopicPartition, ListOffsetsResult.ListOffsetsResultInfo> beginningOffsets =
                 listOffsets(description, OffsetSpec.earliest());
