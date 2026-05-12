@@ -55,6 +55,9 @@ final class ValidationDiagnosticsCollector {
 
     private static final String CONSTRAINT_STEREOTYPE = "jakarta.validation.Constraint";
     private static final String VALIDATED_ELEMENT = "io.micronaut.validation.annotation.ValidatedElement";
+    private static final String STATE_AVAILABLE = "available";
+    private static final String STATE_CONFIGURED = "configured";
+    private static final String STATE_ERROR = "error";
 
     private final BeanContext beanContext;
     private final Environment environment;
@@ -113,14 +116,14 @@ final class ValidationDiagnosticsCollector {
 
     private List<ValidationDiagnostics.SummaryItem> collectSummary(boolean validationEnabled, List<ValidationDiagnostics.StateMessage> messages) {
         List<ValidationDiagnostics.SummaryItem> rows = new ArrayList<>();
-        rows.add(new ValidationDiagnostics.SummaryItem("Runtime validation", validationEnabled ? "Enabled" : "Disabled", "Environment", validationEnabled ? "configured" : "disabled"));
-        rows.add(new ValidationDiagnostics.SummaryItem("Attribute mode", configuration.getShowConstraintAttributes().name().toLowerCase(), ValidationConfiguration.PREFIX + ".show-constraint-attributes", "configured"));
-        rows.add(new ValidationDiagnostics.SummaryItem("Include packages", configuration.getIncludePackages().isEmpty() ? "Application packages" : String.join(", ", configuration.getIncludePackages()), ValidationConfiguration.PREFIX + ".include-packages", "configured"));
-        rows.add(new ValidationDiagnostics.SummaryItem("Exclude packages", configuration.getExcludePackages().isEmpty() ? "Framework defaults" : String.join(", ", configuration.getExcludePackages()), ValidationConfiguration.PREFIX + ".exclude-packages", "configured"));
+        rows.add(new ValidationDiagnostics.SummaryItem("Runtime validation", validationEnabled ? "Enabled" : "Disabled", "Environment", validationEnabled ? STATE_CONFIGURED : "disabled"));
+        rows.add(new ValidationDiagnostics.SummaryItem("Attribute mode", configuration.getShowConstraintAttributes().name().toLowerCase(), ValidationConfiguration.PREFIX + ".show-constraint-attributes", STATE_CONFIGURED));
+        rows.add(new ValidationDiagnostics.SummaryItem("Include packages", configuration.getIncludePackages().isEmpty() ? "Application packages" : String.join(", ", configuration.getIncludePackages()), ValidationConfiguration.PREFIX + ".include-packages", STATE_CONFIGURED));
+        rows.add(new ValidationDiagnostics.SummaryItem("Exclude packages", configuration.getExcludePackages().isEmpty() ? "Framework defaults" : String.join(", ", configuration.getExcludePackages()), ValidationConfiguration.PREFIX + ".exclude-packages", STATE_CONFIGURED));
         beanContext.findBean(ValidatorConfiguration.class).ifPresentOrElse(
             cfg -> {
-                rows.add(new ValidationDiagnostics.SummaryItem("Validator configuration", cfg.getClass().getName(), "ValidatorConfiguration bean", "available"));
-                rows.add(new ValidationDiagnostics.SummaryItem("Prepend property path", String.valueOf(cfg.isPrependPropertyPath()), "ValidatorConfiguration", "available"));
+                rows.add(new ValidationDiagnostics.SummaryItem("Validator configuration", cfg.getClass().getName(), "ValidatorConfiguration bean", STATE_AVAILABLE));
+                rows.add(new ValidationDiagnostics.SummaryItem("Prepend property path", String.valueOf(cfg.isPrependPropertyPath()), "ValidatorConfiguration", STATE_AVAILABLE));
             },
             () -> messages.add(new ValidationDiagnostics.StateMessage("partial", "Validator configuration bean unavailable", "Provider configuration could not be read, but compile-time validation metadata can still be shown."))
         );
@@ -138,7 +141,7 @@ final class ValidationDiagnosticsCollector {
                                  String label) {
         Optional<T> bean = beanContext.findBean(beanType);
         if (bean.isPresent()) {
-            rows.add(new ValidationDiagnostics.SummaryItem(label, bean.get().getClass().getName(), "BeanContext", "available"));
+            rows.add(new ValidationDiagnostics.SummaryItem(label, bean.get().getClass().getName(), "BeanContext", STATE_AVAILABLE));
         } else {
             rows.add(new ValidationDiagnostics.SummaryItem(label, "Not configured", "BeanContext", "unavailable"));
             messages.add(new ValidationDiagnostics.StateMessage("partial", label + " unavailable", "The bean is not configured or is hidden by the current provider. Provider-specific metadata is unavailable."));
@@ -186,7 +189,7 @@ final class ValidationDiagnosticsCollector {
                 .sorted(Comparator.comparing(ValidationDiagnostics.ValidatedElementRow::name))
                 .toList();
         } catch (RuntimeException e) {
-            messages.add(new ValidationDiagnostics.StateMessage("error", "Route metadata unavailable", e.getMessage()));
+            messages.add(new ValidationDiagnostics.StateMessage(STATE_ERROR, "Route metadata unavailable", e.getMessage()));
             return List.of();
         }
     }
@@ -207,7 +210,7 @@ final class ValidationDiagnosticsCollector {
                 .sorted(Comparator.comparing(ValidationDiagnostics.ValidatedElementRow::name))
                 .toList();
         } catch (RuntimeException e) {
-            messages.add(new ValidationDiagnostics.StateMessage("error", "Bean method metadata unavailable", e.getMessage()));
+            messages.add(new ValidationDiagnostics.StateMessage(STATE_ERROR, "Bean method metadata unavailable", e.getMessage()));
             return List.of();
         }
     }
@@ -250,7 +253,7 @@ final class ValidationDiagnosticsCollector {
                 .sorted(Comparator.comparing(ValidationDiagnostics.ValidatedElementRow::name))
                 .toList();
         } catch (RuntimeException e) {
-            messages.add(new ValidationDiagnostics.StateMessage("error", "Configuration property metadata unavailable", e.getMessage()));
+            messages.add(new ValidationDiagnostics.StateMessage(STATE_ERROR, "Configuration property metadata unavailable", e.getMessage()));
             return List.of();
         }
     }
@@ -273,15 +276,19 @@ final class ValidationDiagnosticsCollector {
                     types.add(definition.getBeanType());
                 }
             }
+            Set<String> configurationPropertyNames = new LinkedHashSet<>();
+            for (ValidationDiagnostics.ValidatedElementRow property : configurationProperties) {
+                configurationPropertyNames.add(property.name());
+            }
             return types.stream()
                 .map(type -> inspectClass(type, "Class", "BeanIntrospection"))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .filter(row -> configurationProperties.stream().noneMatch(configuration -> configuration.name().equals(row.name())))
+                .filter(row -> !configurationPropertyNames.contains(row.name()))
                 .sorted(Comparator.comparing(ValidationDiagnostics.ValidatedElementRow::name))
                 .toList();
         } catch (RuntimeException e) {
-            messages.add(new ValidationDiagnostics.StateMessage("error", "Class metadata unavailable", e.getMessage()));
+            messages.add(new ValidationDiagnostics.StateMessage(STATE_ERROR, "Class metadata unavailable", e.getMessage()));
             return List.of();
         }
     }
@@ -310,7 +317,7 @@ final class ValidationDiagnosticsCollector {
                 cascaded,
                 validatedElement
             ));
-        } catch (IntrospectionException e) {
+        } catch (IntrospectionException _) {
             return Optional.empty();
         }
     }
