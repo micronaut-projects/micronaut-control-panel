@@ -307,8 +307,7 @@ final class KafkaClusterService {
                 if (containsBroker(partition.replicas(), node.id())) {
                     replicaPartitions++;
                 }
-                if (containsBroker(partition.replicas(), node.id())
-                    && partition.isr().size() < partition.replicas().size()) {
+                if (isUnderReplicatedBrokerPartition(partition, node.id())) {
                     underReplicatedPartitions++;
                 }
             }
@@ -328,6 +327,11 @@ final class KafkaClusterService {
 
     private static boolean containsBroker(Collection<Node> nodes, int brokerId) {
         return nodes.stream().anyMatch(node -> node.id() == brokerId);
+    }
+
+    private static boolean isUnderReplicatedBrokerPartition(TopicPartitionInfo partition, int brokerId) {
+        return containsBroker(partition.replicas(), brokerId)
+            && partition.isr().size() < partition.replicas().size();
     }
 
     private static TopicSummary toTopicSummary(TopicDescription topic, Map<String, String> config) {
