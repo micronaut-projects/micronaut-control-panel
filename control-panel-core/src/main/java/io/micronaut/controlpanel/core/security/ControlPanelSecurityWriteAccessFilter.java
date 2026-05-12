@@ -26,9 +26,11 @@ import io.micronaut.http.HttpStatus;
 import io.micronaut.http.MutableHttpResponse;
 import io.micronaut.http.annotation.Filter;
 import io.micronaut.http.filter.HttpServerFilter;
-import io.micronaut.http.filter.ServerFilterPhase;
 import io.micronaut.http.filter.ServerFilterChain;
+import io.micronaut.http.filter.ServerFilterPhase;
 import io.micronaut.http.server.HttpServerConfiguration;
+import io.micronaut.security.authentication.Authentication;
+import io.micronaut.security.filters.SecurityFilter;
 import jakarta.inject.Singleton;
 import org.reactivestreams.Publisher;
 
@@ -37,39 +39,49 @@ import java.util.Optional;
 import static io.micronaut.controlpanel.util.ControlPanelUtils.computeControlPanelPath;
 
 /**
- * Fails explicit write-protection modes closed when Micronaut Security is not active.
+ * Enforces explicit write-protection modes after Micronaut Security has accepted a request.
  */
-@Requires(condition = MissingSecurityFilterCondition.class)
+@Requires(beans = SecurityFilter.class)
 @Filter(Filter.MATCH_ALL_PATTERN)
 @Singleton
 @Internal
-final class ControlPanelWriteAccessFilter implements HttpServerFilter, Ordered {
+final class ControlPanelSecurityWriteAccessFilter implements HttpServerFilter, Ordered {
 
-    static final int ORDER = ServerFilterPhase.SECURITY.after();
+    private static final int ORDER = ServerFilterPhase.SECURITY.after();
 
     private final ControlPanelSecurityConfiguration.WriteAccess writeAccess;
+    private final String writeRole;
     private final String controlPanelPath;
 
-    ControlPanelWriteAccessFilter(ControlPanelSecurityConfiguration securityConfiguration,
-                                  ControlPanelModuleConfiguration moduleConfiguration,
-                                  HttpServerConfiguration serverConfiguration) {
+    ControlPanelSecurityWriteAccessFilter(ControlPanelSecurityConfiguration securityConfiguration,
+                                          ControlPanelModuleConfiguration moduleConfiguration,
+                                          HttpServerConfiguration serverConfiguration) {
         this.writeAccess = securityConfiguration.writeAccess();
+        this.writeRole = securityConfiguration.effectiveWriteRole();
         String applicationPath = Optional.ofNullable(serverConfiguration.getContextPath()).orElse("");
         this.controlPanelPath = computeControlPanelPath(applicationPath, moduleConfiguration.getPath());
     }
 
     @Override
     public Publisher<MutableHttpResponse<?>> doFilter(HttpRequest<?> request, ServerFilterChain chain) {
-        if (isDeniedWrite(request)) {
+        if (isRejectedWrite(request)) {
             return Publishers.just(HttpResponse.status(HttpStatus.FORBIDDEN));
         }
         return chain.proceed(request);
     }
 
-    private boolean isDeniedWrite(HttpRequest<?> request) {
-        return writeAccess != ControlPanelSecurityConfiguration.WriteAccess.INHERITED
-            && writeAccess != ControlPanelSecurityConfiguration.WriteAccess.ANONYMOUS
-            && ControlPanelSecurityPaths.isWriteRequest(controlPanelPath, request);
+    private boolean isRejectedWrite(HttpRequest<?> request) {
+        if (writeAccess == ControlPanelSecurityConfiguration.WriteAccess.INHERITED
+            || writeAccess == ControlPanelSecurityConfiguration.WriteAccess.ANONYMOUS
+            || !ControlPanelSecurityPaths.isWriteRequest(controlPanelPath, request)) {
+            return false;
+        }
+        Optional<Authentication> authentication = request.getUserPrincipal(Authentication.class);
+        if (writeAccess == ControlPanelSecurityConfiguration.WriteAccess.AUTHENTICATED) {
+            return authentication.isEmpty();
+        }
+        return writeAccess != ControlPanelSecurityConfiguration.WriteAccess.AUTHORIZED
+            || authentication.map(auth -> !auth.getRoles().contains(writeRole)).orElse(true);
     }
 
     @Override

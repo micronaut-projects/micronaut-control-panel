@@ -332,6 +332,39 @@ class ControlPanelSecurityTest {
     }
 
     @Test
+    void writeAccessFilterRejectsWritesAfterHostInterceptUrlMapAllowsReadRole() {
+        try (EmbeddedServer server = ApplicationContext.run(EmbeddedServer.class, Map.ofEntries(
+            Map.entry("spec.name", "ControlPanelSecurityTest"),
+            Map.entry("micronaut.security.enabled", true),
+            Map.entry("micronaut.security.basic-auth.enabled", true),
+            Map.entry(ControlPanelSecurityConfiguration.PROPERTY_WRITE_ACCESS, "DENIED"),
+            Map.entry("micronaut.security.intercept-url-map[0].pattern", ControlPanelModuleConfiguration.DEFAULT_PATH + "/**"),
+            Map.entry("micronaut.security.intercept-url-map[0].access[0]", ControlPanelSecurityConfiguration.DEFAULT_ROLE),
+            Map.entry("micronaut.security.intercept-url-map[1].pattern", helperPath(ControlPanelSecurityPaths.CACHE_PATH, "/**")),
+            Map.entry("micronaut.security.intercept-url-map[1].access[0]", ControlPanelSecurityConfiguration.DEFAULT_ROLE),
+            Map.entry("micronaut.caches.demo.initial-capacity", 1)
+        ))) {
+            CacheManager<?> cacheManager = server.getApplicationContext().getBean(CacheManager.class);
+            cacheManager.getCache("demo").put("hello", "world");
+            HttpClient client = server.getApplicationContext().createBean(HttpClient.class, server.getURL());
+
+            assertEquals(HttpStatus.OK, client.toBlocking().exchange(
+                authenticatedRequest(HttpRequest.GET(ControlPanelModuleConfiguration.DEFAULT_PATH), "controlpanel", "password")
+            ).status());
+
+            HttpClientResponseException readerWrite = assertThrows(
+                HttpClientResponseException.class,
+                () -> client.toBlocking().exchange(
+                    authenticatedRequest(HttpRequest.DELETE(helperPath(ControlPanelSecurityPaths.CACHE_PATH, "/demo")), "controlpanel", "password")
+                )
+            );
+            assertEquals(HttpStatus.FORBIDDEN, readerWrite.getStatus());
+
+            client.close();
+        }
+    }
+
+    @Test
     void anonymousAccessCanUseLoggersHelperWhenConfigured() {
         try (EmbeddedServer server = ApplicationContext.run(EmbeddedServer.class, Map.of(
             "spec.name", "ControlPanelSecurityTest",

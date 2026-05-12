@@ -17,6 +17,7 @@ package io.micronaut.controlpanel.core.security;
 
 import io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration;
 import io.micronaut.http.HttpRequest;
+import io.micronaut.http.filter.ServerFilterPhase;
 import io.micronaut.http.server.HttpServerConfiguration;
 import io.micronaut.security.authentication.Authentication;
 import io.micronaut.security.rules.ConfigurationInterceptUrlMapRule;
@@ -24,11 +25,15 @@ import io.micronaut.security.rules.SecurityRuleResult;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class ControlPanelSecurityRuleTest {
 
@@ -37,6 +42,15 @@ class ControlPanelSecurityRuleTest {
         ControlPanelSecurityRule rule = newRule(ControlPanelSecurityConfiguration.Access.AUTHENTICATED, null);
 
         assertEquals(ConfigurationInterceptUrlMapRule.ORDER + 50, rule.getOrder());
+    }
+
+    @Test
+    void fallbackWriteAccessFilterOrderDoesNotDependOnSecurityClasses() throws IOException {
+        assertEquals(ServerFilterPhase.SECURITY.after(), ControlPanelWriteAccessFilter.ORDER);
+
+        String filterBytecode = readClassBytes(ControlPanelWriteAccessFilter.class);
+        assertFalse(filterBytecode.contains("ControlPanelSecurityRule"));
+        assertFalse(filterBytecode.contains("io/micronaut/security"));
     }
 
     @Test
@@ -254,5 +268,12 @@ class ControlPanelSecurityRuleTest {
                                             HttpRequest<?> request,
                                             Authentication authentication) {
         return Mono.from(rule.check(request, authentication)).block();
+    }
+
+    private static String readClassBytes(Class<?> type) throws IOException {
+        String resourceName = type.getSimpleName() + ".class";
+        try (InputStream inputStream = Objects.requireNonNull(type.getResourceAsStream(resourceName))) {
+            return new String(inputStream.readAllBytes());
+        }
     }
 }
