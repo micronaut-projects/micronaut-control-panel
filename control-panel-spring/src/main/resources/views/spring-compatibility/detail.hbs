@@ -101,33 +101,33 @@
 
         <div class="tabs" data-tabs data-tabs-storage-key="spring-compatibility-tabs">
             <div class="tabs-list" role="tablist" aria-label="Spring compatibility details">
-                <button type="button" class="tabs-trigger active" role="tab" aria-selected="true" data-tabs-trigger="beans">
+                <button type="button" class="tabs-trigger active" id="tab-spring-beans" role="tab" aria-selected="true" aria-controls="panel-spring-beans" data-tabs-trigger="beans">
                     <i class="fas fa-mug-saucer"></i>
                     Beans
                 </button>
-                <button type="button" class="tabs-trigger" role="tab" aria-selected="false" data-tabs-trigger="routes">
+                <button type="button" class="tabs-trigger" id="tab-spring-routes" role="tab" aria-selected="false" aria-controls="panel-spring-routes" data-tabs-trigger="routes">
                     <i class="fas fa-route"></i>
                     Routes
                 </button>
-                <button type="button" class="tabs-trigger" role="tab" aria-selected="false" data-tabs-trigger="conditions">
+                <button type="button" class="tabs-trigger" id="tab-spring-conditions" role="tab" aria-selected="false" aria-controls="panel-spring-conditions" data-tabs-trigger="conditions">
                     <i class="fas fa-filter"></i>
                     Conditions
                 </button>
-                <button type="button" class="tabs-trigger" role="tab" aria-selected="false" data-tabs-trigger="endpoints">
+                <button type="button" class="tabs-trigger" id="tab-spring-endpoints" role="tab" aria-selected="false" aria-controls="panel-spring-endpoints" data-tabs-trigger="endpoints">
                     <i class="fas fa-plug"></i>
                     Actuator Endpoints
                 </button>
-                <button type="button" class="tabs-trigger" role="tab" aria-selected="false" data-tabs-trigger="annotations">
+                <button type="button" class="tabs-trigger" id="tab-spring-annotations" role="tab" aria-selected="false" aria-controls="panel-spring-annotations" data-tabs-trigger="annotations">
                     <i class="fas fa-tags"></i>
                     Annotation Support
                 </button>
-                <button type="button" class="tabs-trigger" role="tab" aria-selected="false" data-tabs-trigger="warnings">
+                <button type="button" class="tabs-trigger" id="tab-spring-warnings" role="tab" aria-selected="false" aria-controls="panel-spring-warnings" data-tabs-trigger="warnings">
                     <i class="fas fa-triangle-exclamation"></i>
                     Warnings
                 </button>
             </div>
 
-            <div class="tabs-panel active" role="tabpanel" data-tabs-panel="beans">
+            <div class="tabs-panel active" id="panel-spring-beans" role="tabpanel" aria-labelledby="tab-spring-beans" data-tabs-panel="beans">
                 <div class="alert alert-info" role="status">
                     Compare Spring-origin bean rows with the
                     <a href="{{../ext.controlPanelPath}}/beans">Beans panel</a>; disabled entries can be checked in
@@ -167,7 +167,7 @@
                 {{/if}}
             </div>
 
-            <div class="tabs-panel" role="tabpanel" data-tabs-panel="routes">
+            <div class="tabs-panel" id="panel-spring-routes" role="tabpanel" aria-labelledby="tab-spring-routes" data-tabs-panel="routes">
                 <div class="alert alert-info" role="status">
                     Compare Spring-origin route rows with the complete
                     <a href="{{../ext.controlPanelPath}}/routes">Routes panel</a>.
@@ -204,7 +204,7 @@
                 {{/if}}
             </div>
 
-            <div class="tabs-panel" role="tabpanel" data-tabs-panel="conditions">
+            <div class="tabs-panel" id="panel-spring-conditions" role="tabpanel" aria-labelledby="tab-spring-conditions" data-tabs-panel="conditions">
                 <div class="alert alert-info" role="status">
                     Compare Spring Boot condition mappings with the
                     <a href="{{../ext.controlPanelPath}}/disabled-beans">Disabled Beans panel</a> for full Micronaut requirement reasons.
@@ -241,7 +241,7 @@
                 {{/if}}
             </div>
 
-            <div class="tabs-panel" role="tabpanel" data-tabs-panel="endpoints">
+            <div class="tabs-panel" id="panel-spring-endpoints" role="tabpanel" aria-labelledby="tab-spring-endpoints" data-tabs-panel="endpoints">
                 {{#if endpoints}}
                     <div class="cp-data-table">
                         <div class="cp-data-table-container">
@@ -274,7 +274,7 @@
                 {{/if}}
             </div>
 
-            <div class="tabs-panel" role="tabpanel" data-tabs-panel="annotations">
+            <div class="tabs-panel" id="panel-spring-annotations" role="tabpanel" aria-labelledby="tab-spring-annotations" data-tabs-panel="annotations">
                 <div class="cp-data-table">
                     <div class="cp-data-table-container">
                         <table class="table cp-data-table-table">
@@ -301,7 +301,7 @@
                 </div>
             </div>
 
-            <div class="tabs-panel" role="tabpanel" data-tabs-panel="warnings">
+            <div class="tabs-panel" id="panel-spring-warnings" role="tabpanel" aria-labelledby="tab-spring-warnings" data-tabs-panel="warnings">
                 {{#if warnings}}
                     <div class="cp-data-table">
                         <div class="cp-data-table-container">
