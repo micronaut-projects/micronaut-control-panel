@@ -47,6 +47,10 @@ public record ElasticsearchDiagnostics(State state,
                                        boolean indicesTruncated,
                                        boolean mappingFieldsTruncated) {
 
+    static final String BADGE_PRIMARY = "badge-primary";
+    static final String BADGE_SECONDARY = "badge-secondary";
+    static final String BADGE_DESTRUCTIVE = "badge-destructive";
+
     public ElasticsearchDiagnostics {
         connection = connection == null ? ConnectionContext.empty() : connection;
         cluster = cluster == null ? ClusterInfo.empty() : cluster;
@@ -84,16 +88,16 @@ public record ElasticsearchDiagnostics(State state,
      */
     @ReflectiveAccess
     public enum State {
-        AVAILABLE("Available", "badge-primary"),
-        NO_CLIENT("No client", "badge-secondary"),
-        UNAVAILABLE("Unavailable", "badge-destructive"),
-        AUTHENTICATION_FAILED("Authentication failed", "badge-destructive"),
-        AUTHORIZATION_FAILED("Authorization failed", "badge-destructive"),
-        UNSUPPORTED("Unsupported response", "badge-secondary"),
-        DELAYED("Delayed", "badge-secondary"),
-        PARTIAL("Partial", "badge-secondary"),
-        NO_VISIBLE_INDICES("No visible indices", "badge-secondary"),
-        ERROR("Error", "badge-destructive");
+        AVAILABLE("Available", BADGE_PRIMARY),
+        NO_CLIENT("No client", BADGE_SECONDARY),
+        UNAVAILABLE("Unavailable", BADGE_DESTRUCTIVE),
+        AUTHENTICATION_FAILED("Authentication failed", BADGE_DESTRUCTIVE),
+        AUTHORIZATION_FAILED("Authorization failed", BADGE_DESTRUCTIVE),
+        UNSUPPORTED("Unsupported response", BADGE_SECONDARY),
+        DELAYED("Delayed", BADGE_SECONDARY),
+        PARTIAL("Partial", BADGE_SECONDARY),
+        NO_VISIBLE_INDICES("No visible indices", BADGE_SECONDARY),
+        ERROR("Error", BADGE_DESTRUCTIVE);
 
         private final String displayName;
         private final String badgeClass;
@@ -182,7 +186,7 @@ public record ElasticsearchDiagnostics(State state,
                                 int pendingTasks,
                                 String activeShardsPercent) {
         static HealthSummary empty() {
-            return new HealthSummary("unknown", "badge-secondary", false, 0, 0, 0, 0, 0, 0, 0, 0, 0, "");
+            return new HealthSummary("unknown", BADGE_SECONDARY, false, 0, 0, 0, 0, 0, 0, 0, 0, 0, "");
         }
     }
 

@@ -30,26 +30,30 @@ import co.elastic.clients.elasticsearch.indices.GetMappingResponse;
 import co.elastic.clients.util.DateTime;
 import io.micronaut.context.BeanContext;
 import io.micronaut.context.env.Environment;
+import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.elasticsearch.DefaultElasticsearchConfiguration;
 import org.apache.http.HttpHost;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
+import static io.micronaut.controlpanel.panels.elasticsearch.ElasticsearchDiagnostics.State.AUTHENTICATION_FAILED;
 import static io.micronaut.controlpanel.panels.elasticsearch.ElasticsearchDiagnostics.State.AUTHORIZATION_FAILED;
 import static io.micronaut.controlpanel.panels.elasticsearch.ElasticsearchDiagnostics.State.DELAYED;
 import static io.micronaut.controlpanel.panels.elasticsearch.ElasticsearchDiagnostics.State.NO_CLIENT;
 import static io.micronaut.controlpanel.panels.elasticsearch.ElasticsearchDiagnostics.State.NO_VISIBLE_INDICES;
 import static io.micronaut.controlpanel.panels.elasticsearch.ElasticsearchDiagnostics.State.PARTIAL;
+import static io.micronaut.controlpanel.panels.elasticsearch.ElasticsearchDiagnostics.State.UNSUPPORTED;
 import static io.micronaut.controlpanel.panels.elasticsearch.ElasticsearchDiagnostics.State.UNAVAILABLE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -71,8 +75,8 @@ class ElasticsearchDiagnosticsServiceTest {
         when(beanContext.findBean(DefaultElasticsearchConfiguration.class)).thenReturn(Optional.of(elasticsearchConfiguration));
         when(elasticsearchConfiguration.getHttpHosts()).thenReturn(new HttpHost[] { new HttpHost("localhost", 9200, "https") });
         when(beanContext.findBean(org.elasticsearch.client.RestClient.class)).thenReturn(Optional.empty());
-        when(environment.getProperty(eq("elasticsearch.http-hosts"), eq(String[].class))).thenReturn(Optional.empty());
-        when(environment.getProperty(eq("elasticsearch.httpHosts"), eq(String[].class))).thenReturn(Optional.empty());
+        when(environment.getProperty("elasticsearch.http-hosts", String[].class)).thenReturn(Optional.empty());
+        when(environment.getProperty("elasticsearch.httpHosts", String[].class)).thenReturn(Optional.empty());
 
         ElasticsearchDiagnostics diagnostics = service(beanContext, environment).diagnostics();
 
@@ -89,8 +93,8 @@ class ElasticsearchDiagnosticsServiceTest {
         when(beanContext.findBean(ElasticsearchAsyncClient.class)).thenReturn(Optional.of(client));
         when(beanContext.findBean(DefaultElasticsearchConfiguration.class)).thenReturn(Optional.empty());
         when(beanContext.findBean(org.elasticsearch.client.RestClient.class)).thenReturn(Optional.empty());
-        when(environment.getProperty(eq("elasticsearch.http-hosts"), eq(String[].class))).thenReturn(Optional.of(new String[] { "http://elastic:secret@localhost:9200" }));
-        when(environment.getProperty(eq("elasticsearch.httpHosts"), eq(String[].class))).thenReturn(Optional.empty());
+        when(environment.getProperty("elasticsearch.http-hosts", String[].class)).thenReturn(Optional.of(new String[] { "http://elastic:secret@localhost:9200" }));
+        when(environment.getProperty("elasticsearch.httpHosts", String[].class)).thenReturn(Optional.empty());
 
         ElasticsearchDiagnostics diagnostics = service(beanContext, environment).diagnostics();
 
@@ -115,8 +119,8 @@ class ElasticsearchDiagnosticsServiceTest {
         when(beanContext.findBean(ElasticsearchAsyncClient.class)).thenReturn(Optional.of(client));
         when(beanContext.findBean(DefaultElasticsearchConfiguration.class)).thenReturn(Optional.empty());
         when(beanContext.findBean(org.elasticsearch.client.RestClient.class)).thenReturn(Optional.empty());
-        when(environment.getProperty(eq("elasticsearch.http-hosts"), eq(String[].class))).thenReturn(Optional.empty());
-        when(environment.getProperty(eq("elasticsearch.httpHosts"), eq(String[].class))).thenReturn(Optional.empty());
+        when(environment.getProperty("elasticsearch.http-hosts", String[].class)).thenReturn(Optional.empty());
+        when(environment.getProperty("elasticsearch.httpHosts", String[].class)).thenReturn(Optional.empty());
 
         ElasticsearchDiagnostics diagnostics = service(beanContext, environment).diagnostics();
 
@@ -133,8 +137,8 @@ class ElasticsearchDiagnosticsServiceTest {
         when(beanContext.findBean(ElasticsearchAsyncClient.class)).thenReturn(Optional.of(client));
         when(beanContext.findBean(DefaultElasticsearchConfiguration.class)).thenReturn(Optional.empty());
         when(beanContext.findBean(org.elasticsearch.client.RestClient.class)).thenReturn(Optional.empty());
-        when(environment.getProperty(eq("elasticsearch.http-hosts"), eq(String[].class))).thenReturn(Optional.empty());
-        when(environment.getProperty(eq("elasticsearch.httpHosts"), eq(String[].class))).thenReturn(Optional.empty());
+        when(environment.getProperty("elasticsearch.http-hosts", String[].class)).thenReturn(Optional.empty());
+        when(environment.getProperty("elasticsearch.httpHosts", String[].class)).thenReturn(Optional.empty());
 
         ElasticsearchDiagnostics diagnostics = service(beanContext, environment).diagnostics();
 
@@ -152,8 +156,8 @@ class ElasticsearchDiagnosticsServiceTest {
         when(beanContext.findBean(ElasticsearchAsyncClient.class)).thenReturn(Optional.of(client));
         when(beanContext.findBean(DefaultElasticsearchConfiguration.class)).thenReturn(Optional.empty());
         when(beanContext.findBean(org.elasticsearch.client.RestClient.class)).thenReturn(Optional.empty());
-        when(environment.getProperty(eq("elasticsearch.http-hosts"), eq(String[].class))).thenReturn(Optional.empty());
-        when(environment.getProperty(eq("elasticsearch.httpHosts"), eq(String[].class))).thenReturn(Optional.empty());
+        when(environment.getProperty("elasticsearch.http-hosts", String[].class)).thenReturn(Optional.empty());
+        when(environment.getProperty("elasticsearch.httpHosts", String[].class)).thenReturn(Optional.empty());
 
         ElasticsearchDiagnostics diagnostics = service(beanContext, environment).diagnostics();
 
@@ -174,8 +178,8 @@ class ElasticsearchDiagnosticsServiceTest {
         when(beanContext.findBean(ElasticsearchAsyncClient.class)).thenReturn(Optional.of(client));
         when(beanContext.findBean(DefaultElasticsearchConfiguration.class)).thenReturn(Optional.empty());
         when(beanContext.findBean(org.elasticsearch.client.RestClient.class)).thenReturn(Optional.empty());
-        when(environment.getProperty(eq("elasticsearch.http-hosts"), eq(String[].class))).thenReturn(Optional.empty());
-        when(environment.getProperty(eq("elasticsearch.httpHosts"), eq(String[].class))).thenReturn(Optional.empty());
+        when(environment.getProperty("elasticsearch.http-hosts", String[].class)).thenReturn(Optional.empty());
+        when(environment.getProperty("elasticsearch.httpHosts", String[].class)).thenReturn(Optional.empty());
 
         ElasticsearchDiagnostics diagnostics = service(beanContext, environment).diagnostics();
 
@@ -199,13 +203,186 @@ class ElasticsearchDiagnosticsServiceTest {
         when(beanContext.findBean(ElasticsearchAsyncClient.class)).thenReturn(Optional.of(client));
         when(beanContext.findBean(DefaultElasticsearchConfiguration.class)).thenReturn(Optional.empty());
         when(beanContext.findBean(org.elasticsearch.client.RestClient.class)).thenReturn(Optional.empty());
-        when(environment.getProperty(eq("elasticsearch.http-hosts"), eq(String[].class))).thenReturn(Optional.empty());
-        when(environment.getProperty(eq("elasticsearch.httpHosts"), eq(String[].class))).thenReturn(Optional.empty());
+        when(environment.getProperty("elasticsearch.http-hosts", String[].class)).thenReturn(Optional.empty());
+        when(environment.getProperty("elasticsearch.httpHosts", String[].class)).thenReturn(Optional.empty());
 
         ElasticsearchDiagnostics diagnostics = service(beanContext, environment, Duration.ofMillis(10)).diagnostics();
 
         assertEquals(DELAYED, diagnostics.state());
         assertTrue(slowInfo.isCancelled());
+    }
+
+    @Test
+    void doesNotNormalizeFatalErrors() {
+        BeanContext beanContext = mock(BeanContext.class);
+        Environment environment = mock(Environment.class);
+        ElasticsearchAsyncClient client = mockClient();
+        when(client.info()).thenReturn(CompletableFuture.failedFuture(new AssertionError("fatal")));
+        when(beanContext.findBean(ElasticsearchAsyncClient.class)).thenReturn(Optional.of(client));
+        when(beanContext.findBean(DefaultElasticsearchConfiguration.class)).thenReturn(Optional.empty());
+        when(beanContext.findBean(org.elasticsearch.client.RestClient.class)).thenReturn(Optional.empty());
+        when(environment.getProperty("elasticsearch.http-hosts", String[].class)).thenReturn(Optional.empty());
+        when(environment.getProperty("elasticsearch.httpHosts", String[].class)).thenReturn(Optional.empty());
+
+        assertThrows(AssertionError.class, () -> service(beanContext, environment).diagnostics());
+    }
+
+    @Test
+    void mapsAuthenticationAndUnsupportedFailuresToSafeStates() {
+        BeanContext authenticationBeanContext = mock(BeanContext.class);
+        Environment authenticationEnvironment = mock(Environment.class);
+        ElasticsearchAsyncClient authenticationClient = mockClient();
+        when(authenticationClient.info()).thenReturn(CompletableFuture.failedFuture(elasticsearchException(401)));
+        when(authenticationBeanContext.findBean(ElasticsearchAsyncClient.class)).thenReturn(Optional.of(authenticationClient));
+        when(authenticationBeanContext.findBean(DefaultElasticsearchConfiguration.class)).thenReturn(Optional.empty());
+        when(authenticationBeanContext.findBean(org.elasticsearch.client.RestClient.class)).thenReturn(Optional.empty());
+        when(authenticationEnvironment.getProperty("elasticsearch.http-hosts", String[].class)).thenReturn(Optional.empty());
+        when(authenticationEnvironment.getProperty("elasticsearch.httpHosts", String[].class)).thenReturn(Optional.empty());
+
+        ElasticsearchDiagnostics authentication = service(authenticationBeanContext, authenticationEnvironment).diagnostics();
+
+        assertEquals(AUTHENTICATION_FAILED, authentication.state());
+        assertFalse(authentication.message().contains("security_exception"));
+
+        BeanContext unsupportedBeanContext = mock(BeanContext.class);
+        Environment unsupportedEnvironment = mock(Environment.class);
+        ElasticsearchAsyncClient unsupportedClient = mockClient();
+        when(unsupportedClient.info()).thenReturn(CompletableFuture.failedFuture(elasticsearchException(400)));
+        when(unsupportedBeanContext.findBean(ElasticsearchAsyncClient.class)).thenReturn(Optional.of(unsupportedClient));
+        when(unsupportedBeanContext.findBean(DefaultElasticsearchConfiguration.class)).thenReturn(Optional.empty());
+        when(unsupportedBeanContext.findBean(org.elasticsearch.client.RestClient.class)).thenReturn(Optional.empty());
+        when(unsupportedEnvironment.getProperty("elasticsearch.http-hosts", String[].class)).thenReturn(Optional.empty());
+        when(unsupportedEnvironment.getProperty("elasticsearch.httpHosts", String[].class)).thenReturn(Optional.empty());
+
+        ElasticsearchDiagnostics unsupported = service(unsupportedBeanContext, unsupportedEnvironment).diagnostics();
+
+        assertEquals(UNSUPPORTED, unsupported.state());
+        assertFalse(unsupported.message().contains("security_exception"));
+    }
+
+    @Test
+    void appliesConfiguredDisplayLimits() {
+        BeanContext beanContext = mock(BeanContext.class);
+        Environment environment = mock(Environment.class);
+        ElasticsearchAsyncClient client = mockClient();
+        ElasticsearchClusterAsyncClient clusterClient = client.cluster();
+        ElasticsearchCatAsyncClient catClient = client.cat();
+        ElasticsearchIndicesAsyncClient indicesClient = client.indices();
+        when(clusterClient.health(any(java.util.function.Function.class))).thenReturn(CompletableFuture.completedFuture(healthResponse(HealthStatus.Yellow)));
+        when(catClient.indices(any(java.util.function.Function.class))).thenReturn(CompletableFuture.completedFuture(IndicesResponse.of(response -> response
+            .indices(index -> index.index("orders-2").health("green").status("open").pri("1").rep("1").docsCount("20").storeSize("16kb"))
+            .indices(index -> index.index("orders-1").health("yellow").status("open").pri("1").rep("1").docsCount("10").storeSize("8kb")))));
+        when(indicesClient.getAlias(any(java.util.function.Function.class))).thenReturn(CompletableFuture.completedFuture(GetAliasResponse.of(response -> response
+            .aliases("orders-1", aliases -> aliases
+                .aliases("orders-read", alias -> alias.isWriteIndex(false))
+                .aliases("orders-search", alias -> alias.isWriteIndex(false))))));
+        when(indicesClient.getMapping(any(java.util.function.Function.class))).thenReturn(CompletableFuture.completedFuture(mappingResponse("orders-1")));
+        when(beanContext.findBean(ElasticsearchAsyncClient.class)).thenReturn(Optional.of(client));
+        when(beanContext.findBean(DefaultElasticsearchConfiguration.class)).thenReturn(Optional.empty());
+        when(beanContext.findBean(org.elasticsearch.client.RestClient.class)).thenReturn(Optional.empty());
+        when(environment.getProperty("elasticsearch.http-hosts", String[].class)).thenReturn(Optional.empty());
+        when(environment.getProperty("elasticsearch.httpHosts", String[].class)).thenReturn(Optional.empty());
+
+        ElasticsearchControlPanelConfiguration configuration = new ElasticsearchControlPanelConfiguration();
+        configuration.setMaxIndices(1);
+        configuration.setMaxAliasesPerIndex(1);
+        configuration.setMaxMappingFields(1);
+        ElasticsearchDiagnostics diagnostics = new ElasticsearchDiagnosticsService(beanContext, environment, configuration).diagnostics();
+
+        assertEquals(2, diagnostics.indexCount());
+        assertEquals(1, diagnostics.displayedIndexCount());
+        assertTrue(diagnostics.indicesTruncated());
+        assertTrue(diagnostics.mappingFieldsTruncated());
+        assertEquals("yellow", diagnostics.health().status());
+        assertEquals(ElasticsearchDiagnostics.BADGE_SECONDARY, diagnostics.health().statusBadgeClass());
+        ElasticsearchDiagnostics.IndexSummary index = diagnostics.indices().get(0);
+        assertEquals("orders-1", index.name());
+        assertEquals(List.of("orders-read"), index.aliases());
+        assertTrue(index.aliasesTruncated());
+        assertEquals(3, index.mappingFieldCount());
+        assertEquals(1, index.mappingPreview().size());
+    }
+
+    @Test
+    void normalizesConfigurationAndViewModelDefaults() {
+        ElasticsearchControlPanelConfiguration configuration = new ElasticsearchControlPanelConfiguration();
+        assertEquals(50, configuration.getMaxIndices());
+        assertEquals(10, configuration.getMaxAliasesPerIndex());
+        assertEquals(50, configuration.getMaxMappingFields());
+        assertEquals(Duration.ofSeconds(5), configuration.getProbeTimeout());
+
+        configuration.setMaxIndices(2);
+        configuration.setMaxAliasesPerIndex(3);
+        configuration.setMaxMappingFields(4);
+        configuration.setProbeTimeout(Duration.ofMillis(250));
+        assertEquals(2, configuration.getMaxIndices());
+        assertEquals(3, configuration.getMaxAliasesPerIndex());
+        assertEquals(4, configuration.getMaxMappingFields());
+        assertEquals(Duration.ofMillis(250), configuration.getProbeTimeout());
+
+        configuration.setMaxIndices(0);
+        configuration.setMaxAliasesPerIndex(-1);
+        configuration.setMaxMappingFields(0);
+        configuration.setProbeTimeout(Duration.ZERO);
+        assertEquals(50, configuration.getMaxIndices());
+        assertEquals(10, configuration.getMaxAliasesPerIndex());
+        assertEquals(50, configuration.getMaxMappingFields());
+        assertEquals(Duration.ofSeconds(5), configuration.getProbeTimeout());
+
+        ElasticsearchDiagnostics diagnostics = new ElasticsearchDiagnostics(
+            PARTIAL,
+            "partial",
+            null,
+            null,
+            null,
+            null,
+            null,
+            0,
+            0,
+            false,
+            false);
+        assertTrue(diagnostics.available());
+        assertFalse(diagnostics.hasIndices());
+        assertFalse(diagnostics.hasWarnings());
+        assertEquals("Partial", diagnostics.stateLabel());
+        assertEquals(ElasticsearchDiagnostics.BADGE_SECONDARY, diagnostics.badgeClass());
+
+        ElasticsearchDiagnostics.ConnectionContext defaultConnection = new ElasticsearchDiagnostics.ConnectionContext("", null);
+        assertEquals("default", defaultConnection.clientBean());
+        assertFalse(defaultConnection.hasHosts());
+
+        ElasticsearchDiagnostics.ConnectionContext configuredConnection = new ElasticsearchDiagnostics.ConnectionContext("search", List.of("https://localhost:9200"));
+        assertTrue(configuredConnection.hasHosts());
+
+        ElasticsearchDiagnostics.IndexSummary indexSummary = new ElasticsearchDiagnostics.IndexSummary("orders", "", "", "", "", "", "", null, false, 0, null);
+        assertFalse(indexSummary.hasAliases());
+        assertFalse(indexSummary.hasMappingPreview());
+    }
+
+    @Test
+    void controlPanelDelegatesConfigurationAndBody() {
+        BeanContext beanContext = mock(BeanContext.class);
+        Environment environment = mock(Environment.class);
+        when(beanContext.findBean(ElasticsearchAsyncClient.class)).thenReturn(Optional.empty());
+        when(beanContext.findBean(DefaultElasticsearchConfiguration.class)).thenReturn(Optional.empty());
+        when(beanContext.findBean(org.elasticsearch.client.RestClient.class)).thenReturn(Optional.empty());
+        when(environment.getProperty("elasticsearch.http-hosts", String[].class)).thenReturn(Optional.empty());
+        when(environment.getProperty("elasticsearch.httpHosts", String[].class)).thenReturn(Optional.empty());
+
+        ControlPanelConfiguration controlPanelConfiguration = new ControlPanelConfiguration(ElasticsearchControlPanel.NAME);
+        controlPanelConfiguration.setTitle("Elasticsearch");
+        controlPanelConfiguration.setIcon("si si-elasticsearch");
+        controlPanelConfiguration.setOrder(25);
+        ElasticsearchControlPanel panel = new ElasticsearchControlPanel(service(beanContext, environment), controlPanelConfiguration);
+
+        assertEquals(ElasticsearchControlPanel.NAME, panel.getName());
+        assertEquals("Elasticsearch", panel.getTitle());
+        assertEquals("si si-elasticsearch", panel.getIcon());
+        assertEquals(25, panel.getOrder());
+        assertTrue(panel.isEnabled());
+        assertEquals(ElasticsearchControlPanel.CATEGORY, panel.getCategory());
+        assertEquals("Inspect", panel.getDetailLinkName());
+        assertEquals(NO_CLIENT, panel.getBody().state());
     }
 
     private static ElasticsearchDiagnosticsService service(BeanContext beanContext, Environment environment) {
@@ -253,9 +430,13 @@ class ElasticsearchDiagnosticsServiceTest {
     }
 
     private static HealthResponse healthResponse() {
+        return healthResponse(HealthStatus.Green);
+    }
+
+    private static HealthResponse healthResponse(HealthStatus status) {
         return HealthResponse.of(health -> health
             .clusterName("orders")
-            .status(HealthStatus.Green)
+            .status(status)
             .numberOfNodes(1)
             .numberOfDataNodes(1)
             .numberOfInFlightFetch(0)
@@ -289,7 +470,11 @@ class ElasticsearchDiagnosticsServiceTest {
     }
 
     private static GetMappingResponse mappingResponse() {
-        return GetMappingResponse.of(response -> response.mappings("orders", mapping -> mapping.mappings(type -> type
+        return mappingResponse("orders");
+    }
+
+    private static GetMappingResponse mappingResponse(String index) {
+        return GetMappingResponse.of(response -> response.mappings(index, mapping -> mapping.mappings(type -> type
             .properties("id", property -> property.keyword(keyword -> keyword))
             .properties("customer", property -> property.object(object -> object.properties("name", nested -> nested.text(text -> text)))))));
     }

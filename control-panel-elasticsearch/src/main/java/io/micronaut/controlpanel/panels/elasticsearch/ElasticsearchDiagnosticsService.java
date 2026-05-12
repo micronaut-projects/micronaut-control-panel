@@ -125,7 +125,7 @@ class ElasticsearchDiagnosticsService {
         ClusterInfo cluster = clusterInfo(info, health);
         HealthSummary healthSummary = healthSummary(health);
         List<IndicesRecord> visibleRecords = records.stream()
-            .filter(record -> record.index() != null && !record.index().isBlank())
+            .filter(indexRecord -> indexRecord.index() != null && !indexRecord.index().isBlank())
             .sorted(Comparator.comparing(IndicesRecord::index))
             .toList();
         if (visibleRecords.isEmpty()) {
@@ -141,7 +141,7 @@ class ElasticsearchDiagnosticsService {
 
         MappingCollector mappingCollector = new MappingCollector(configuration.getMaxMappingFields());
         List<IndexSummary> indices = displayedRecords.stream()
-            .map(record -> indexSummary(record, aliasResponse, mappingResponse, mappingCollector))
+            .map(indexRecord -> indexSummary(indexRecord, aliasResponse, mappingResponse, mappingCollector))
             .toList();
 
         State state = warnings.isEmpty() ? State.AVAILABLE : State.PARTIAL;
@@ -173,11 +173,11 @@ class ElasticsearchDiagnosticsService {
         }
     }
 
-    private IndexSummary indexSummary(IndicesRecord record,
+    private IndexSummary indexSummary(IndicesRecord indexRecord,
                                       GetAliasResponse aliasResponse,
                                       GetMappingResponse mappingResponse,
                                       MappingCollector mappingCollector) {
-        String index = record.index();
+        String index = indexRecord.index();
         List<String> aliases = aliases(index, aliasResponse);
         boolean aliasesTruncated = aliases.size() > configuration.getMaxAliasesPerIndex();
         List<String> displayedAliases = aliases.stream().limit(configuration.getMaxAliasesPerIndex()).toList();
@@ -185,12 +185,12 @@ class ElasticsearchDiagnosticsService {
         int fieldCount = mappingCollector.fieldCount(index, mappingResponse);
         return new IndexSummary(
             index,
-            safe(record.health()),
-            safe(record.status()),
-            safe(record.pri()),
-            safe(record.rep()),
-            safe(record.docsCount()),
-            safe(record.storeSize()),
+            safe(indexRecord.health()),
+            safe(indexRecord.status()),
+            safe(indexRecord.pri()),
+            safe(indexRecord.rep()),
+            safe(indexRecord.docsCount()),
+            safe(indexRecord.storeSize()),
             displayedAliases,
             aliasesTruncated,
             fieldCount,
@@ -375,10 +375,10 @@ class ElasticsearchDiagnosticsService {
 
     private static String healthBadgeClass(String status) {
         return switch (status.toLowerCase(Locale.ENGLISH)) {
-            case "green" -> "badge-primary";
-            case "yellow" -> "badge-secondary";
-            case "red" -> "badge-destructive";
-            default -> "badge-secondary";
+            case "green" -> ElasticsearchDiagnostics.BADGE_PRIMARY;
+            case "yellow" -> ElasticsearchDiagnostics.BADGE_SECONDARY;
+            case "red" -> ElasticsearchDiagnostics.BADGE_DESTRUCTIVE;
+            default -> ElasticsearchDiagnostics.BADGE_SECONDARY;
         };
     }
 
