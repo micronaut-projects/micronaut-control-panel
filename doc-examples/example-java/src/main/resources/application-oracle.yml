@@ -12,3 +12,8 @@ datasources:
     keepalive-time: 300000
     connection-test-query: SELECT 1 FROM DUAL
     allow-pool-suspension: true
+
+test-resources:
+  containers:
+    oracle:
+      startup-timeout: 180s
