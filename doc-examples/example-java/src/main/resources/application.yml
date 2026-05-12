@@ -57,6 +57,7 @@ hazelcast:
 kafka:
   enabled: false
 rabbitmq:
+  enabled: false
   host: localhost
   port: 5672
   username: guest

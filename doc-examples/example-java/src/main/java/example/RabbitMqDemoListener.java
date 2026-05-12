@@ -1,6 +1,7 @@
 package example;
 
 import io.micronaut.context.annotation.Replaces;
+import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.processor.ExecutableMethodProcessor;
 import io.micronaut.inject.BeanDefinition;
 import io.micronaut.inject.ExecutableMethod;
@@ -11,6 +12,7 @@ import io.micronaut.rabbitmq.intercept.RabbitMQConsumerAdvice;
 import jakarta.inject.Singleton;
 
 @RabbitListener
+@Requires(env = "rabbitmq")
 class RabbitMqDemoListener {
 
     @Queue(value = "orders.created", numberOfConsumers = "2", prefetch = 25, reQueue = true)
