@@ -60,6 +60,8 @@ public class ControlPanelController implements ControlPanelApi {
     private final Set<String> activeEnvironments;
     private final boolean canRefresh;
     private final boolean canStop;
+    private final @Nullable RefreshEndpoint refreshEndpoint;
+    private final @Nullable ServerStopEndpoint stopEndpoint;
     private final String appPath;
     private final String controlPanelPath;
     private final ControlPanelWriteAccessEvaluator writeAccessEvaluator;
@@ -78,6 +80,8 @@ public class ControlPanelController implements ControlPanelApi {
         this.activeEnvironments = environment.getActiveNames();
         this.canRefresh = EndpointUtils.canRefresh(refreshEndpoint, beanContext);
         this.canStop = stopEndpoint != null;
+        this.refreshEndpoint = refreshEndpoint;
+        this.stopEndpoint = stopEndpoint;
         this.appPath = Optional.ofNullable(serverConfiguration.getContextPath()).orElse("");
         this.controlPanelPath = computeControlPanelPath(appPath, configuration.getPath());
         this.writeAccessEvaluator = writeAccessEvaluator;
@@ -121,6 +125,22 @@ public class ControlPanelController implements ControlPanelApi {
         } else {
             return HttpResponse.notFound();
         }
+    }
+
+    @Override
+    public HttpResponse<?> refresh(@Nullable RefreshRequest request) {
+        if (refreshEndpoint == null || !canRefresh) {
+            return HttpResponse.notFound();
+        }
+        return HttpResponse.ok(refreshEndpoint.refresh(request != null && request.force()));
+    }
+
+    @Override
+    public HttpResponse<?> stop() {
+        if (stopEndpoint == null || !canStop) {
+            return HttpResponse.notFound();
+        }
+        return HttpResponse.ok(stopEndpoint.stop());
     }
 
     private CommonData buildCommonData(HttpRequest<?> request) {

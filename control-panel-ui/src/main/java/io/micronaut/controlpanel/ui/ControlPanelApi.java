@@ -16,10 +16,15 @@
 package io.micronaut.controlpanel.ui;
 
 import io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration;
+import io.micronaut.controlpanel.core.security.ControlPanelSecurityPaths;
+import io.micronaut.core.annotation.Introspected;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
+import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Get;
+import io.micronaut.http.annotation.Post;
 import io.micronaut.views.ModelAndView;
+import org.jspecify.annotations.Nullable;
 
 /**
  * HTTP API for the control panel UI.
@@ -60,4 +65,28 @@ public interface ControlPanelApi {
      */
     @Get("/{controlPanelName}")
     HttpResponse<ModelAndView<?>> detail(String controlPanelName, HttpRequest<?> request);
+
+    /**
+     * Refreshes the host application through a control-panel-owned write route.
+     *
+     * @param request the optional refresh request
+     * @return the refresh result
+     */
+    @Post(ControlPanelSecurityPaths.APPLICATION_PATH + "/refresh")
+    HttpResponse<?> refresh(@Nullable @Body RefreshRequest request);
+
+    /**
+     * Stops the host application through a control-panel-owned write route.
+     *
+     * @return the stop result
+     */
+    @Post(ControlPanelSecurityPaths.APPLICATION_PATH + "/stop")
+    HttpResponse<?> stop();
+
+    /**
+     * @param force whether refresh should run regardless of environment changes
+     */
+    @Introspected
+    record RefreshRequest(boolean force) {
+    }
 }

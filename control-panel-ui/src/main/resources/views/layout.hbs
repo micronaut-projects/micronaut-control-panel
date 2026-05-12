@@ -291,7 +291,7 @@
             return;
         }
         $.ajax({
-            url: '{{ ext.appPath }}/stop',
+            url: '{{ ext.controlPanelPath }}/application-control-panel-controller/stop',
             type: 'POST',
             success: function(result) {
                 $('#stopRefreshModal').modal('hide')
@@ -305,7 +305,7 @@
             return;
         }
         $.ajax({
-            url: '{{ ext.appPath }}/refresh',
+            url: '{{ ext.controlPanelPath }}/application-control-panel-controller/refresh',
             type: 'POST',
             success: function(result) {
                 $('#stopRefreshModal').modal('hide')
@@ -319,7 +319,7 @@
             return;
         }
         $.ajax({
-            url: '{{ ext.appPath }}/refresh',
+            url: '{{ ext.controlPanelPath }}/application-control-panel-controller/refresh',
             data: JSON.stringify({force: true}),
             contentType: "application/json; charset=utf-8",
             type: 'POST',

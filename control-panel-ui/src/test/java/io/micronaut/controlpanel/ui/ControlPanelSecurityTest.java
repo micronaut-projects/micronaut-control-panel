@@ -252,6 +252,51 @@ class ControlPanelSecurityTest {
             assertTrue(body.contains("id=\"refreshForce\" disabled aria-disabled=\"true\" title=\"" + reason + "\""));
             assertTrue(body.contains("if (!false || this.disabled)"));
             assertTrue(body.contains("if (!false || button.prop('disabled'))"));
+            assertTrue(body.contains("url: '" + ControlPanelModuleConfiguration.DEFAULT_PATH + ControlPanelSecurityPaths.APPLICATION_PATH + "/refresh'"));
+            assertTrue(body.contains("url: '" + ControlPanelModuleConfiguration.DEFAULT_PATH + ControlPanelSecurityPaths.APPLICATION_PATH + "/stop'"));
+
+            client.close();
+        }
+    }
+
+    @Test
+    void separateWriteRoleProtectsApplicationHelperRoutes() {
+        try (EmbeddedServer server = ApplicationContext.run(EmbeddedServer.class, Map.ofEntries(
+            Map.entry("spec.name", "ControlPanelSecurityTest"),
+            Map.entry("micronaut.security.enabled", true),
+            Map.entry("micronaut.security.basic-auth.enabled", true),
+            Map.entry(ControlPanelSecurityConfiguration.PROPERTY_ACCESS, "AUTHORIZED"),
+            Map.entry(ControlPanelSecurityConfiguration.PROPERTY_WRITE_ACCESS, "AUTHORIZED"),
+            Map.entry(ControlPanelSecurityConfiguration.PROPERTY_WRITE_ROLE, "ROLE_CONTROL_PANEL_WRITE"),
+            Map.entry("endpoints.all.enabled", true),
+            Map.entry("endpoints.all.sensitive", false),
+            Map.entry("endpoints.refresh.enabled", true),
+            Map.entry("endpoints.refresh.sensitive", false),
+            Map.entry("endpoints.stop.enabled", true),
+            Map.entry("endpoints.stop.sensitive", false)
+        ))) {
+            HttpClient client = server.getApplicationContext().createBean(HttpClient.class, server.getURL());
+            String refreshPath = helperPath(ControlPanelSecurityPaths.APPLICATION_PATH, "/refresh");
+            String stopPath = helperPath(ControlPanelSecurityPaths.APPLICATION_PATH, "/stop");
+
+            HttpClientResponseException readerRefresh = assertThrows(
+                HttpClientResponseException.class,
+                () -> client.toBlocking().exchange(authenticatedRequest(HttpRequest.POST(refreshPath, "{}"), "controlpanel", "password"))
+            );
+            assertEquals(HttpStatus.FORBIDDEN, readerRefresh.getStatus());
+
+            HttpClientResponseException readerStop = assertThrows(
+                HttpClientResponseException.class,
+                () -> client.toBlocking().exchange(authenticatedRequest(HttpRequest.POST(stopPath, ""), "controlpanel", "password"))
+            );
+            assertEquals(HttpStatus.FORBIDDEN, readerStop.getStatus());
+
+            assertEquals(HttpStatus.OK, client.toBlocking().exchange(
+                authenticatedRequest(HttpRequest.POST(refreshPath, "{}"), "writer", "password")
+            ).status());
+            assertEquals(HttpStatus.OK, client.toBlocking().exchange(
+                authenticatedRequest(HttpRequest.POST(stopPath, ""), "writer", "password")
+            ).status());
 
             client.close();
         }

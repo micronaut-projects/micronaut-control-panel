@@ -243,6 +243,8 @@ class ControlPanelSecurityRuleTest {
             HttpRequest.DELETE(controlPanelPath + ControlPanelSecurityPaths.HIBERNATE_PATH + "/default/cache"),
             HttpRequest.DELETE(controlPanelPath + ControlPanelSecurityPaths.HIBERNATE_PATH + "/default/cache/region?region=books"),
             HttpRequest.POST(controlPanelPath + ControlPanelSecurityPaths.LOGGERS_PATH + "/ROOT", "{}"),
+            HttpRequest.POST(controlPanelPath + ControlPanelSecurityPaths.APPLICATION_PATH + "/refresh", "{}"),
+            HttpRequest.POST(controlPanelPath + ControlPanelSecurityPaths.APPLICATION_PATH + "/stop", ""),
             HttpRequest.POST(controlPanelPath + ControlPanelSecurityPaths.OBJECT_STORAGE_PATH + "/default", ""),
             HttpRequest.DELETE(controlPanelPath + ControlPanelSecurityPaths.OBJECT_STORAGE_PATH + "/default/hello.txt")
         );
