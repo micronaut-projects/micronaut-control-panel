@@ -24,12 +24,15 @@ When creating custom control panel views, follow these conventions:
 The categories are used to group the control panels in the UI. Categories are rendered as left side menu items. There is
 a default category called `Dashboard` that is used for all control panels that don't specify a category.
 
-=== Control Panel Implementation
+== Control Panel Implementation
 
 The easiest way to implement a custom panel is to extend from
 api:controlpanel.core.AbstractControlPanel[]. For example:
 
-snippet::example.MyApplicationControlPanel[project-base="doc-examples/example", source="main", indent="0", tags="class"]
+[source,java]
+----
+include::doc-examples/example-java/src/main/java/example/MyApplicationControlPanel.java[tags=class]
+----
 
 <1> The type parameter indicates the object type of the body. You can use your own classes or records to return
     custom data to the view.
@@ -42,7 +45,7 @@ snippet::example.MyApplicationControlPanel[project-base="doc-examples/example", 
 Check the api:controlpanel.core.ControlPanel[] interface to see the other methods that can be overridden, for example,
 to display a badge in the control panel header.
 
-=== Configuration
+== Configuration
 
 There are some values for the UI that can be configured:
 
@@ -51,17 +54,13 @@ There are some values for the UI that can be configured:
 include::doc-examples/example-java/src/main/resources/application.yml[tags=control-panel]
 ----
 
-<1> Title to be displayed in the control panel header.
-<2> Icon class (from Font Awesome) of the control panel.
-<3> The order in which the control panel will be displayed in the UI.
-
-=== Views
+== Views
 
 For rendering the views, the Control Panel uses
 https://micronaut-projects.github.io/micronaut-views/latest/guide/[Micronaut Views] with
 https://micronaut-projects.github.io/micronaut-views/latest/guide/#handlebars[Handlebars.java] templates.
 
-Each control panel needs to provide 2 views: one for the control panel list, that can contain a summary of the
+Each control panel needs to provide two views: one for the control panel list, that can contain a summary of the
 information to be displayed, and another one for the detailed view. They must be placed in a `views/<panel-name>` directory
 on the classpath, and named `body.hbs` and `detail.hbs`, respectively. For example, in the above example:
 

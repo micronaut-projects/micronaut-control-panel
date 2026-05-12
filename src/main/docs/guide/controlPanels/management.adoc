@@ -18,9 +18,10 @@ The following panels are available:
 * `env`: Environment Properties
 * `metrics`: Metrics
 * `beans`: Bean Definitions
+* `disabled-beans`: Disabled Beans
 * `loggers`: Logging Configuration
 
-=== Protecting The Control Panel
+== Protecting The Control Panel
 
 When Micronaut Security is active, control panel routes are protected by default. The default access mode is
 `micronaut.control-panel.security.access=AUTHORIZED`, which requires an authenticated user with
@@ -99,7 +100,7 @@ micronaut:
 Host `intercept-url-map` rules run before the control-panel fallback rule, so host rules can still be stricter than the
 configured control panel access mode.
 
-=== Application Health
+== Application Health
 
 This panel displays the health information of your application, and relies on the
 https://docs.micronaut.io/latest/guide/#healthEndpoint[Health Endpoint] to display its information. By default, the
@@ -119,7 +120,7 @@ endpoints:
 If you opt into `micronaut.control-panel.security.access=ANONYMOUS`, anonymous control-panel requests continue to see the
 anonymous health view.
 
-=== Application Info
+== Application Info
 
 This panel displays application information, and relies on the
 https://docs.micronaut.io/latest/guide/#infoEndpoint[Info Endpoint] to display its information. The panel appears when
@@ -156,7 +157,7 @@ info:
 
 The panel renders nested maps and lists from `info.*`, git/build property files, and custom `InfoSource` output.
 
-=== Environment Properties
+== Environment Properties
 
 This panel displays all the configuration properties resolved, and relies on the
 https://docs.micronaut.io/latest/guide/#environmentEndpoint[Environment Endpoint] to display all the properties. This
@@ -188,7 +189,7 @@ micronaut:
 This will show all values apart from those that contain the words `password`, `credential`, `certificate`, `key`,
 `secret` or `token` anywhere in their name.
 
-=== Metrics
+== Metrics
 
 This panel displays a searchable, read-only view of Micrometer metrics. It relies on the
 https://micronaut-projects.github.io/micronaut-micrometer/latest/guide/[Micronaut Micrometer] module and the Metrics
@@ -213,19 +214,19 @@ micronaut:
         enabled: false
 ----
 
-=== Bean Definitions
+== Bean Definitions
 
 This panel displays all the beans, and their relationships, grouped by packages. It relies on the
 https://docs.micronaut.io/latest/guide/#beansEndpoint[Beans Endpoint] to display all the bean definitions. Keep the
 role-protected control-panel access when you do not want to expose that information to anonymous users.
 
-=== Disabled Beans
+== Disabled Beans
 
 This panel shows all disabled beans, i.e., beans that have not met any of their
 https://docs.micronaut.io/latest/guide/#conditionalBeans[requirement conditions]. For each disabled bean, you can see
 the reasons why the bean was not loaded.
 
-=== Logging Configuration
+== Logging Configuration
 
 This panel allows you to view and re-configure the logging levels without restarting the application. It relies on the
 https://docs.micronaut.io/latest/guide/#loggersEndpoint[Loggers Endpoint] to display the logging levels. The control
