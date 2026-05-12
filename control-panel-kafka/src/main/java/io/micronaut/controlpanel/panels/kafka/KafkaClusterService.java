@@ -25,7 +25,7 @@ import org.apache.kafka.clients.admin.ConfigEntry;
 import org.apache.kafka.clients.admin.DescribeClusterOptions;
 import org.apache.kafka.clients.admin.DescribeConfigsOptions;
 import org.apache.kafka.clients.admin.DescribeTopicsOptions;
-import org.apache.kafka.clients.admin.ListConsumerGroupsOptions;
+import org.apache.kafka.clients.admin.ListGroupsOptions;
 import org.apache.kafka.clients.admin.ListOffsetsOptions;
 import org.apache.kafka.clients.admin.ListOffsetsResult;
 import org.apache.kafka.clients.admin.ListTopicsOptions;
@@ -100,7 +100,7 @@ final class KafkaClusterService {
             String clusterId = await(cluster.clusterId());
             Map<String, TopicDescription> topics = describeAllTopics();
             int partitionCount = topics.values().stream().mapToInt(topic -> topic.partitions().size()).sum();
-            int consumerGroupCount = await(adminClient.listConsumerGroups(new ListConsumerGroupsOptions()).all()).size();
+            int consumerGroupCount = await(adminClient.listGroups(new ListGroupsOptions()).all()).size();
             Map<String, String> config = firstBrokerConfig(nodes);
             return new Overview(
                 clusterId,

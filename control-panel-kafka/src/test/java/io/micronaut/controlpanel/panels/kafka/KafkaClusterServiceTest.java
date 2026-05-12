@@ -28,8 +28,9 @@ import org.apache.kafka.clients.admin.DescribeConfigsOptions;
 import org.apache.kafka.clients.admin.DescribeConfigsResult;
 import org.apache.kafka.clients.admin.DescribeTopicsOptions;
 import org.apache.kafka.clients.admin.DescribeTopicsResult;
-import org.apache.kafka.clients.admin.ListConsumerGroupsOptions;
-import org.apache.kafka.clients.admin.ListConsumerGroupsResult;
+import org.apache.kafka.clients.admin.GroupListing;
+import org.apache.kafka.clients.admin.ListGroupsOptions;
+import org.apache.kafka.clients.admin.ListGroupsResult;
 import org.apache.kafka.clients.admin.ListOffsetsOptions;
 import org.apache.kafka.clients.admin.ListOffsetsResult;
 import org.apache.kafka.clients.admin.ListTopicsOptions;
@@ -226,11 +227,12 @@ final class KafkaClusterServiceTest {
     }
 
     private static void mockConsumerGroups(AdminClient admin, int count) {
-        ListConsumerGroupsResult result = mock(ListConsumerGroupsResult.class);
-        when(admin.listConsumerGroups(any(ListConsumerGroupsOptions.class))).thenReturn(result);
-        Collection<?> groups = java.util.Collections.nCopies(count, new Object());
-        @SuppressWarnings({"rawtypes", "unchecked"})
-        KafkaFuture<Collection<org.apache.kafka.clients.admin.ConsumerGroupListing>> future = (KafkaFuture) KafkaFuture.completedFuture(groups);
+        ListGroupsResult result = mock(ListGroupsResult.class);
+        when(admin.listGroups(any(ListGroupsOptions.class))).thenReturn(result);
+        Collection<GroupListing> groups = java.util.stream.IntStream.range(0, count)
+            .mapToObj(index -> new GroupListing("group-" + index, Optional.empty(), "", Optional.empty()))
+            .toList();
+        KafkaFuture<Collection<GroupListing>> future = KafkaFuture.completedFuture(groups);
         when(result.all()).thenReturn(future);
     }
 

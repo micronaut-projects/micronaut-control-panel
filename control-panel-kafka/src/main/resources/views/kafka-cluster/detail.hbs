@@ -67,22 +67,36 @@
 </table>
 
 <h5>Brokers</h5>
-<table id="kafkaBrokers" class="table table-bordered table-striped">
-    <thead>
-    <tr>
-        <th>Broker</th>
-        <th>Host</th>
-        <th>Port</th>
-        <th>Rack</th>
-        <th>Controller</th>
-        <th>Leaders</th>
-        <th>Replicas</th>
-        <th>Under replicated</th>
-        <th>Config</th>
-    </tr>
-    </thead>
-    <tbody></tbody>
-</table>
+<div class="cp-data-table" id="kafkaBrokersTable" data-filter-table data-filter-table-unpaged data-filter-table-label="broker" data-filter-table-label-plural="brokers">
+    <div class="cp-data-table-toolbar">
+        <div class="cp-data-table-summary" data-filter-table-summary>0 brokers</div>
+        <div class="cp-data-table-search">
+            <input type="search" class="form-control" data-filter-table-search placeholder="Search brokers" aria-label="Search brokers">
+        </div>
+    </div>
+    <div class="cp-data-table-container">
+        <table id="kafkaBrokers" class="table cp-data-table-table table-bordered table-striped">
+            <thead>
+            <tr>
+                <th>Broker</th>
+                <th>Host</th>
+                <th>Port</th>
+                <th>Rack</th>
+                <th>Controller</th>
+                <th>Leaders</th>
+                <th>Replicas</th>
+                <th>Under replicated</th>
+                <th>Config</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr data-filter-table-empty hidden>
+                <td class="cp-data-table-empty-cell" colspan="9">No brokers found.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
 
 <div class="d-flex align-items-center mb-2">
     <h5 class="mb-0">Topics</h5>
@@ -91,23 +105,53 @@
         <label class="form-check-label" for="kafkaIncludeInternal">Show internal topics</label>
     </div>
 </div>
-<table id="kafkaTopics" class="table table-bordered table-striped">
-    <thead>
-    <tr>
-        <th>Topic</th>
-        <th>Internal</th>
-        <th>Partitions</th>
-        <th>Replication factor</th>
-        <th>Cleanup policy</th>
-        <th>Retention ms</th>
-        <th>Retention bytes</th>
-        <th>Segment bytes</th>
-        <th>Under replicated</th>
-        <th>Details</th>
-    </tr>
-    </thead>
-    <tbody></tbody>
-</table>
+<div class="cp-data-table cp-data-table-paged" id="kafkaTopicsTable" data-filter-table data-filter-table-page-size="10" data-filter-table-label="topic" data-filter-table-label-plural="topics">
+    <div class="cp-data-table-toolbar">
+        <div class="cp-data-table-summary" data-filter-table-summary>0 topics</div>
+        <div class="cp-data-table-search">
+            <input type="search" class="form-control" data-filter-table-search placeholder="Search topics" aria-label="Search topics">
+        </div>
+    </div>
+    <div class="cp-data-table-container">
+        <table id="kafkaTopics" class="table cp-data-table-table table-bordered table-striped">
+            <thead>
+            <tr>
+                <th>Topic</th>
+                <th>Internal</th>
+                <th>Partitions</th>
+                <th>Replication factor</th>
+                <th>Cleanup policy</th>
+                <th>Retention ms</th>
+                <th>Retention bytes</th>
+                <th>Segment bytes</th>
+                <th>Under replicated</th>
+                <th>Details</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr data-filter-table-empty hidden>
+                <td class="cp-data-table-empty-cell" colspan="10">No topics found.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="cp-data-table-footer">
+        <label class="cp-data-table-page-size">
+            Rows per page
+            <select class="form-control" data-filter-table-page-size-select aria-label="Topics per page">
+                <option value="10" selected>10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+            </select>
+        </label>
+        <div class="cp-data-table-pagination">
+            <span class="cp-data-table-page" data-filter-table-page>Page 1 of 1</span>
+            <button type="button" class="btn btn-secondary btn-sm" data-filter-table-prev>Previous</button>
+            <button type="button" class="btn btn-secondary btn-sm" data-filter-table-next>Next</button>
+        </div>
+    </div>
+</div>
 
 <div id="kafkaTopicDetail" style="display: none;">
     <h5>Topic detail: <code id="kafkaTopicDetailName"></code></h5>
@@ -141,7 +185,6 @@
 <script>
   (function() {
     var baseUrl = '{{ ext.appPath }}{{ controllerPath }}';
-    var topicsTable;
 
     function escapeHtml(value) {
       return $('<div>').text(value == null ? '' : value).html();
@@ -193,7 +236,11 @@
         })
         .fail(function(xhr) {
           alertSection(title, xhr.statusText || 'Request failed');
-        });
+      });
+    }
+
+    function refreshFilterTable(selector) {
+      $(selector).find('[data-filter-table-search]').trigger('input');
     }
 
     function loadSummary() {
@@ -211,7 +258,7 @@
     function loadBrokers() {
       loadSection(baseUrl + '/brokers', 'Kafka brokers unavailable', function(brokers) {
         var tbody = $('#kafkaBrokers tbody');
-        tbody.empty();
+        tbody.find('[data-filter-table-row]').remove();
         brokers.forEach(function(broker) {
           tbody.append('<tr>'
             + '<td><code>' + broker.id + '</code></td>'
@@ -224,8 +271,9 @@
             + '<td>' + broker.underReplicatedPartitions + '</td>'
             + '<td>' + inlineConfig(broker.config) + '</td>'
             + '</tr>');
+          tbody.find('tr:last').attr('data-filter-table-row', '');
         });
-        new DataTable('#kafkaBrokers');
+        refreshFilterTable('#kafkaBrokersTable');
       });
     }
 
@@ -233,10 +281,7 @@
       var includeInternal = $('#kafkaIncludeInternal').is(':checked');
       loadSection(baseUrl + '/topics?includeInternal=' + includeInternal + '&length=10000', 'Kafka topics unavailable', function(page) {
         var tbody = $('#kafkaTopics tbody');
-        if (topicsTable) {
-          topicsTable.destroy();
-        }
-        tbody.empty();
+        tbody.find('[data-filter-table-row]').remove();
         page.topics.forEach(function(topic) {
           tbody.append('<tr>'
             + '<td><code>' + escapeHtml(topic.name) + '</code></td>'
@@ -250,8 +295,9 @@
             + '<td>' + (topic.underReplicated ? '<span class="badge badge-warning">yes</span>' : 'no') + '</td>'
             + '<td><button type="button" class="btn btn-secondary btn-xs kafka-topic-detail" data-topic="' + escapeHtml(topic.name) + '">Details</button></td>'
             + '</tr>');
+          tbody.find('tr:last').attr('data-filter-table-row', '');
         });
-        topicsTable = new DataTable('#kafkaTopics');
+        refreshFilterTable('#kafkaTopicsTable');
       });
     }
 

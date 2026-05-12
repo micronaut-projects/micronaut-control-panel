@@ -437,7 +437,11 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         assertThat(body(page)).containsText("Cluster id");
         assertThat(body(page)).containsText("Brokers");
         assertThat(body(page)).containsText("Topics");
+        assertThat(page.getByLabel("Search topics")).isVisible();
         assertThat(page.locator("#kafkaTopics")).containsText("product_description_v1");
+        page.getByLabel("Search topics").fill("product_description");
+        assertThat(page.locator("#kafkaTopicsTable [data-filter-table-summary]")).containsText("filtered from");
+        assertThat(page.getByRole(AriaRole.ROW, new Page.GetByRoleOptions().setName(Pattern.compile("product_description_v1")))).isVisible();
 
         page.navigate(baseUrl());
         categoryLink(page, "Kafka").click();
