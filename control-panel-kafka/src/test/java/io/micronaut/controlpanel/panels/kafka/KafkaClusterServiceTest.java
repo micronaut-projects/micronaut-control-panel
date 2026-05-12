@@ -41,6 +41,7 @@ import org.apache.kafka.common.Node;
 import org.apache.kafka.common.TopicCollection;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.TopicPartitionInfo;
+import org.apache.kafka.common.Uuid;
 import org.apache.kafka.common.config.ConfigResource;
 import org.junit.jupiter.api.Test;
 
@@ -210,7 +211,7 @@ final class KafkaClusterServiceTest {
         ListTopicsResult listTopicsResult = mock(ListTopicsResult.class);
         when(admin.listTopics(any(ListTopicsOptions.class))).thenReturn(listTopicsResult);
         when(listTopicsResult.listings()).thenReturn(KafkaFuture.completedFuture(topics.values().stream()
-            .map(topic -> new TopicListing(topic.name(), topic.isInternal()))
+            .map(topic -> new TopicListing(topic.name(), Uuid.randomUuid(), topic.isInternal()))
             .toList()));
 
         DescribeTopicsResult describeTopicsResult = mock(DescribeTopicsResult.class);
