@@ -50,6 +50,11 @@ dependencies {
     implementation(libs.avro)
     implementation(libs.avro.serde)
 
+    // MongoDB
+    implementation(projects.micronautControlPanelMongodb)
+    implementation(mnMongo.micronaut.mongo.sync)
+    implementation(mnMongo.micronaut.mongo.reactive)
+
     // OpenAPI + Swagger UI (views generated at compile-time)
     annotationProcessor(mnOpenapi.micronaut.openapi)
     testAnnotationProcessor(mnOpenapi.micronaut.openapi)
@@ -72,6 +77,7 @@ micronaut {
         additionalModules.add(KnownModules.JDBC_ORACLE_FREE)
         additionalModules.add(KnownModules.JDBC_POSTGRESQL)
         additionalModules.add(KnownModules.KAFKA)
+        additionalModules.add("mongodb")
         additionalModules.add("infinispan")
         additionalModules.add("hazelcast")
     }
