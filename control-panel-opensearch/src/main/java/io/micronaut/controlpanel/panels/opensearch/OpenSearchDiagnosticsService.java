@@ -103,7 +103,7 @@ final class OpenSearchDiagnosticsService {
         List<IndicesRecord> records = client.cat().indices(i -> i.headers("health", "status", "index", "pri", "rep", "docs.count", "store.size"))
             .valueBody()
             .stream()
-            .filter(record -> valuePresent(record.index()))
+            .filter(indexRecord -> valuePresent(indexRecord.index()))
             .sorted(Comparator.comparing(IndicesRecord::index))
             .toList();
 
@@ -117,7 +117,7 @@ final class OpenSearchDiagnosticsService {
 
         List<IndexSummary> summaries = records.stream()
             .limit(maxIndices)
-            .map(record -> indexSummary(record, aliases, mappings))
+            .map(indexRecord -> indexSummary(indexRecord, aliases, mappings))
             .toList();
         boolean truncated = records.size() > summaries.size();
         return new IndexResult(summaries, null, truncated);
@@ -189,17 +189,17 @@ final class OpenSearchDiagnosticsService {
         return Map.of();
     }
 
-    private static IndexSummary indexSummary(IndicesRecord record, Map<String, List<String>> aliases, Map<String, MappingSummary> mappings) {
-        MappingSummary mapping = mappings.getOrDefault(record.index(), MappingSummary.EMPTY);
+    private static IndexSummary indexSummary(IndicesRecord indexRecord, Map<String, List<String>> aliases, Map<String, MappingSummary> mappings) {
+        MappingSummary mapping = mappings.getOrDefault(indexRecord.index(), MappingSummary.EMPTY);
         return new IndexSummary(
-            value(record.index()),
-            value(record.health()),
-            value(record.status()),
-            value(record.pri()),
-            value(record.rep()),
-            value(record.docsCount()),
-            value(record.storeSize()),
-            aliases.getOrDefault(record.index(), List.of()),
+            value(indexRecord.index()),
+            value(indexRecord.health()),
+            value(indexRecord.status()),
+            value(indexRecord.pri()),
+            value(indexRecord.rep()),
+            value(indexRecord.docsCount()),
+            value(indexRecord.storeSize()),
+            aliases.getOrDefault(indexRecord.index(), List.of()),
             mapping.fields(),
             mapping.truncated()
         );
@@ -208,7 +208,7 @@ final class OpenSearchDiagnosticsService {
     private ClusterHealth clusterHealth(HealthResponse response) {
         return new ClusterHealth(
             value(response.clusterName()),
-            response.status() == null ? "unknown" : response.status().name().toLowerCase(Locale.ENGLISH),
+            response.status().name().toLowerCase(Locale.ENGLISH),
             response.timedOut(),
             response.numberOfNodes(),
             response.numberOfDataNodes(),
@@ -315,7 +315,7 @@ final class OpenSearchDiagnosticsService {
     }
 
     private static int bounded(int configured, int hardMax) {
-        return Math.max(1, Math.min(configured, hardMax));
+        return Math.clamp(configured, 1, hardMax);
     }
 
     private static String value(String value) {

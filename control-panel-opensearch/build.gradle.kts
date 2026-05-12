@@ -17,16 +17,16 @@ dependencies {
 
     compileOnly(mnOpensearch.micronaut.opensearch)
 
+    testAnnotationProcessor(mn.micronaut.inject.java)
     testImplementation(mnTest.micronaut.test.junit5)
     testImplementation(mnTest.mockito.core)
     testImplementation(mnTest.mockito.junit.jupiter)
-    testRuntimeOnly(mnTest.junit.jupiter.engine)
-    testRuntimeOnly(mnTest.bytebuddy.agent)
-    testAnnotationProcessor(mn.micronaut.inject.java)
     testImplementation(mn.micronaut.http.server.netty)
     testImplementation(mn.micronaut.http.client)
     testImplementation(mnSerde.micronaut.serde.jackson)
     testImplementation(mnOpensearch.micronaut.opensearch)
+    testRuntimeOnly(mnTest.junit.jupiter.engine)
+    testRuntimeOnly(mnTest.bytebuddy.agent)
 }
 
 micronautBuild {
