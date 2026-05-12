@@ -32,6 +32,7 @@ class ControlPanelRenderingTest {
         assertTrue(body.contains("configured"));
         assertTrue(body.contains("ops"));
         assertTrue(body.contains("SupportTelegramHandler"));
+        assertTrue(body.contains("data-tabs-panel=\"handlers\""));
         assertTrue(body.contains("lookup configuration error"));
         assertTrue(!body.contains("sample-telegram-webhook-secret"));
         assertTrue(!body.contains("123456:bot-api-token-value"));

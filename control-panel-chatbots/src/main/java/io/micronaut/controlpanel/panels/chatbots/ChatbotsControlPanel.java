@@ -65,14 +65,13 @@ public class ChatbotsControlPanel extends AbstractControlPanel<ChatbotsControlPa
 
     @Override
     public String getBadge() {
-        Body body = getBody();
-        return body.summary().totalBots() + " bots / " + body.summary().handlerCount() + " handlers";
+        ChatbotsDiagnostics diagnostics = diagnostics(false);
+        return diagnostics.bots.size() + " bots / " + diagnostics.handlers.size() + " handlers";
     }
 
     @Override
     public Body getBody() {
-        ChatbotsDiagnostics diagnostics = new ChatbotsDiagnostics();
-        contributors.forEach(contributor -> contributor.contribute(diagnostics));
+        ChatbotsDiagnostics diagnostics = diagnostics(true);
         List<BotRow> bots = diagnostics.bots.stream()
             .sorted(Comparator.comparing(BotRow::channel).thenComparing(BotRow::name))
             .toList();
@@ -93,6 +92,12 @@ public class ChatbotsControlPanel extends AbstractControlPanel<ChatbotsControlPa
             handlers.size(),
             webhookSummary(webhooks)
         ), bots, endpoints, handlers, webhooks, diagnostics.setupHints);
+    }
+
+    private ChatbotsDiagnostics diagnostics(boolean includeWebhookLookup) {
+        ChatbotsDiagnostics diagnostics = new ChatbotsDiagnostics(includeWebhookLookup);
+        contributors.forEach(contributor -> contributor.contribute(diagnostics));
+        return diagnostics;
     }
 
     private static String webhookSummary(List<WebhookRow> webhooks) {

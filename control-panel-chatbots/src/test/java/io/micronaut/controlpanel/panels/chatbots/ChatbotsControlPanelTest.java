@@ -38,6 +38,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 final class ChatbotsControlPanelTest {
@@ -157,6 +158,53 @@ final class ChatbotsControlPanelTest {
             }
         } finally {
             server.stop(0);
+        }
+    }
+
+    @Test
+    void badgeDoesNotPerformWebhookLookup() throws IOException {
+        AtomicInteger requests = new AtomicInteger();
+        HttpServer server = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
+        server.createContext("/bot" + BOT_API_TOKEN + "/getWebhookInfo", exchange -> {
+            requests.incrementAndGet();
+            byte[] bytes = """
+                {"ok":true,"result":{"url":"https://dev.example.test/custom-telegram","pending_update_count":0}}
+                """.getBytes(StandardCharsets.UTF_8);
+            exchange.sendResponseHeaders(200, bytes.length);
+            try (OutputStream out = exchange.getResponseBody()) {
+                out.write(bytes);
+            }
+        });
+        server.start();
+        try {
+            Map<String, Object> properties = properties();
+            properties.put("micronaut.control-panel.chatbots.telegram.webhook-status.enabled", true);
+            properties.put("micronaut.control-panel.chatbots.telegram.webhook-status.base-url", "http://localhost:" + server.getAddress().getPort());
+            properties.put("micronaut.control-panel.chatbots.telegram.webhook-status.api-tokens.support", BOT_API_TOKEN);
+            try (ApplicationContext context = ApplicationContext.run(properties)) {
+                ChatbotsControlPanel controlPanel = context.getBean(ChatbotsControlPanel.class);
+
+                Assertions.assertEquals("2 bots / 3 handlers", controlPanel.getBadge());
+                Assertions.assertEquals(0, requests.get());
+
+                controlPanel.getBody();
+                Assertions.assertEquals(1, requests.get());
+            }
+        } finally {
+            server.stop(0);
+        }
+    }
+
+    @Test
+    void setupHintUsesConfiguredEndpointPathWhenPublicUrlIsMissing() {
+        Map<String, Object> properties = properties();
+        properties.remove("micronaut.control-panel.chatbots.public-url");
+        try (ApplicationContext context = ApplicationContext.run(properties)) {
+            ChatbotsControlPanel.Body body = context.getBean(ChatbotsControlPanel.class).getBody();
+
+            Assertions.assertTrue(body.setupHints().stream()
+                .filter(hint -> hint.label().equals("setWebhook for support"))
+                .anyMatch(hint -> hint.command().contains("https://example.test/custom-telegram")));
         }
     }
 

@@ -1,21 +1,21 @@
 {{#with controlPanel.body as |body|}}
     <div class="tabs" data-tabs>
         <div class="tabs-list" role="tablist" aria-label="Chatbots diagnostics">
-            <button type="button" class="tabs-trigger active" role="tab" aria-selected="true" data-tabs-trigger="overview">
+            <button type="button" class="tabs-trigger active" id="tab-chatbots-overview" role="tab" aria-selected="true" aria-controls="panel-chatbots-overview" data-tabs-trigger="overview">
                 Overview
             </button>
-            <button type="button" class="tabs-trigger" role="tab" aria-selected="false" data-tabs-trigger="bots">
+            <button type="button" class="tabs-trigger" id="tab-chatbots-bots" role="tab" aria-selected="false" aria-controls="panel-chatbots-bots" data-tabs-trigger="bots">
                 Bots
             </button>
-            <button type="button" class="tabs-trigger" role="tab" aria-selected="false" data-tabs-trigger="handlers">
+            <button type="button" class="tabs-trigger" id="tab-chatbots-handlers" role="tab" aria-selected="false" aria-controls="panel-chatbots-handlers" data-tabs-trigger="handlers">
                 Handlers
             </button>
-            <button type="button" class="tabs-trigger" role="tab" aria-selected="false" data-tabs-trigger="webhooks">
+            <button type="button" class="tabs-trigger" id="tab-chatbots-webhooks" role="tab" aria-selected="false" aria-controls="panel-chatbots-webhooks" data-tabs-trigger="webhooks">
                 Webhook
             </button>
         </div>
 
-        <div class="tabs-content active" role="tabpanel" data-tabs-content="overview">
+        <div class="tabs-panel" id="panel-chatbots-overview" role="tabpanel" aria-labelledby="tab-chatbots-overview" data-tabs-panel="overview">
             <div class="cp-detail-card-grid">
                 <div class="card card-light">
                     <div class="card-header">
@@ -97,7 +97,7 @@
             </div>
         </div>
 
-        <div class="tabs-content" role="tabpanel" data-tabs-content="bots" hidden>
+        <div class="tabs-panel" id="panel-chatbots-bots" role="tabpanel" aria-labelledby="tab-chatbots-bots" data-tabs-panel="bots" hidden>
             <div class="card card-light">
                 <div class="card-header">
                     <div class="cp-card-heading">
@@ -146,7 +146,7 @@
             </div>
         </div>
 
-        <div class="tabs-content" role="tabpanel" data-tabs-content="handlers" hidden>
+        <div class="tabs-panel" id="panel-chatbots-handlers" role="tabpanel" aria-labelledby="tab-chatbots-handlers" data-tabs-panel="handlers" hidden>
             <div class="card card-light">
                 <div class="card-header">
                     <div class="cp-card-heading">
@@ -195,7 +195,7 @@
             </div>
         </div>
 
-        <div class="tabs-content" role="tabpanel" data-tabs-content="webhooks" hidden>
+        <div class="tabs-panel" id="panel-chatbots-webhooks" role="tabpanel" aria-labelledby="tab-chatbots-webhooks" data-tabs-panel="webhooks" hidden>
             <div class="cp-detail-card-grid">
                 <div class="card card-light">
                     <div class="card-header">

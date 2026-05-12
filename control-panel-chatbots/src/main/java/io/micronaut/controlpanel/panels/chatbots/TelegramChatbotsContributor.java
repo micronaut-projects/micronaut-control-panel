@@ -77,11 +77,13 @@ final class TelegramChatbotsContributor implements ChatbotsContributor {
                 tokenStatus(bot.getToken())
             ));
             String expectedUrl = expectedUrl(endpoint.path());
-            diagnostics.webhooks.add(webhookRow(bot.getName(), expectedUrl));
+            if (diagnostics.includeWebhookLookup()) {
+                diagnostics.webhooks.add(webhookRow(bot.getName(), expectedUrl));
+            }
             diagnostics.setupHints.add(new ChatbotsControlPanel.SetupHint(
                 CHANNEL,
                 "setWebhook for " + bot.getName(),
-                setupCommand(expectedUrl)
+                setupCommand(expectedUrl, endpoint.path())
             ));
         }
     }
@@ -118,8 +120,8 @@ final class TelegramChatbotsContributor implements ChatbotsContributor {
             .orElse("");
     }
 
-    private static String setupCommand(String expectedUrl) {
-        String url = expectedUrl == null || expectedUrl.isBlank() ? "https://example.test/telegram" : expectedUrl;
+    private static String setupCommand(String expectedUrl, String endpointPath) {
+        String url = expectedUrl == null || expectedUrl.isBlank() ? "https://example.test" + normalizePath(endpointPath) : expectedUrl;
         return "curl -X POST \"https://api.telegram.org/bot" + API_TOKEN_PLACEHOLDER + "/setWebhook\" "
             + "-d \"url=" + url + "\" "
             + "-d \"secret_token=" + SECRET_PLACEHOLDER + "\"";
@@ -131,5 +133,12 @@ final class TelegramChatbotsContributor implements ChatbotsContributor {
 
     private static String trimTrailingSlash(String url) {
         return url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
+    }
+
+    private static String normalizePath(String path) {
+        if (path == null || path.isBlank()) {
+            return DEFAULT_PATH;
+        }
+        return path.startsWith("/") ? path : "/" + path;
     }
 }

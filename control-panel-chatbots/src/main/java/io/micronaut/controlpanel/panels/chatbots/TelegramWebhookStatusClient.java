@@ -34,23 +34,21 @@ final class TelegramWebhookStatusClient {
     private static final Argument<Map<String, Object>> MAP_ARGUMENT = Argument.mapOf(String.class, Object.class);
 
     private final JsonMapper jsonMapper;
+    private final HttpClient client;
 
     TelegramWebhookStatusClient(JsonMapper jsonMapper) {
         this.jsonMapper = jsonMapper;
+        this.client = HttpClient.newHttpClient();
     }
 
     ChatbotsControlPanel.WebhookRow resolve(String botName,
                                             String apiToken,
                                             String expectedUrl,
                                             ChatbotsPanelConfiguration.WebhookStatus configuration) {
-        HttpClient client;
         HttpRequest request;
         try {
             Duration timeout = timeout(configuration);
             URI uri = URI.create(trimTrailingSlash(configuration.getBaseUrl()) + "/bot" + apiToken + "/getWebhookInfo");
-            client = HttpClient.newBuilder()
-                .connectTimeout(timeout)
-                .build();
             request = HttpRequest.newBuilder(uri)
                 .timeout(timeout)
                 .GET()
