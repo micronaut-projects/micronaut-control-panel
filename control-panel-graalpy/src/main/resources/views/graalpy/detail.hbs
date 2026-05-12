@@ -46,7 +46,7 @@
         </div>
     </div>
 
-    <div class="tabs mt-4" data-tabs>
+    <div class="tabs mt-4 cp-graalpy-tabs" data-tabs>
         <div class="tabs-list" role="tablist" aria-label="GraalPy diagnostics">
             <button type="button" class="tabs-trigger active" id="tab-graalpy-modules" data-tabs-trigger="graalpy-modules" role="tab" aria-selected="true" aria-controls="panel-graalpy-modules">Module Interfaces</button>
             <button type="button" class="tabs-trigger" id="tab-graalpy-vfs" data-tabs-trigger="graalpy-vfs" role="tab" aria-selected="false" aria-controls="panel-graalpy-vfs">Python VFS</button>
@@ -63,7 +63,7 @@
                         </div>
                     </div>
                     <div class="cp-data-table-container">
-                        <table class="table cp-data-table-table cp-data-table-fixed">
+                        <table class="table cp-data-table-table cp-graalpy-module-table">
                             <thead>
                             <tr>
                                 <th>Bean</th>
@@ -82,9 +82,9 @@
                                     <td><code class="cp-table-code" title="{{javaType}}">{{javaType}}</code></td>
                                     <td>
                                         {{#if hasMethods}}
-                                            <ul class="mb-0">
+                                            <ul class="cp-data-table-list cp-graalpy-method-list">
                                                 {{#each methods}}
-                                                    <li><code class="cp-table-code" title="{{signature}}">{{signature}}</code></li>
+                                                    <li><code class="cp-table-code cp-graalpy-method-code" title="{{signature}}">{{signature}}</code></li>
                                                 {{/each}}
                                             </ul>
                                         {{else}}
@@ -164,7 +164,7 @@
                         </div>
                     </div>
                     <div class="cp-data-table-container">
-                        <table class="table cp-data-table-table cp-data-table-fixed">
+                        <table class="table cp-data-table-table cp-graalpy-vfs-table">
                             <thead>
                             <tr>
                                 <th>Group</th>
