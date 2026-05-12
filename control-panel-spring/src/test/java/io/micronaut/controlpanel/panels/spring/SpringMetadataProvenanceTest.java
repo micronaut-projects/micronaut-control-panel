@@ -69,6 +69,30 @@ final class SpringMetadataProvenanceTest {
             assertTrue(body.routeCount() >= 1);
             assertTrue(body.conditionCount() >= 1);
             assertTrue(body.endpointCount() >= 1);
+            assertTrue(body.conditions().stream().allMatch(row -> row.annotationValues().isEmpty()));
+        }
+    }
+
+    @Test
+    void enabledAnnotationValuesAreSanitizedInDiagnostics() {
+        try (ApplicationContext context = ApplicationContext.run(Map.of(
+            "spec.name", "SpringMetadataProvenanceTest",
+            "feature.enabled", "true",
+            "feature.clientSecret", "safe",
+            "feature.client-secret", "safe",
+            "micronaut.control-panel.panels.spring-compatibility.show-annotation-values", "true"
+        ))) {
+            SpringCompatibilityBody body = context.getBean(SpringCompatibilityControlPanel.class).getBody();
+            var valueRows = body.conditions().stream()
+                .flatMap(row -> row.annotationValues().stream())
+                .toList();
+
+            assertTrue(valueRows.stream().anyMatch(row -> SpringAnnotationValueSanitizer.REDACTED.equals(row.valueSummary())),
+                valueRows.toString());
+            assertTrue(valueRows.stream().anyMatch(row -> !SpringAnnotationValueSanitizer.REDACTED.equals(row.valueSummary())
+                && !row.valueSummary().isBlank()), valueRows.toString());
+            assertTrue(valueRows.stream().noneMatch(row -> row.valueSummary().contains("clientSecret")),
+                valueRows.toString());
         }
     }
 
@@ -79,6 +103,11 @@ final class SpringMetadataProvenanceTest {
     @Service
     @ConditionalOnProperty(prefix = "feature", name = "enabled", havingValue = "true")
     public static class ConditionalSpringService {
+    }
+
+    @Service
+    @ConditionalOnProperty(prefix = "feature", name = "clientSecret", havingValue = "safe")
+    public static class SensitiveConditionalSpringService {
     }
 
     @RestController

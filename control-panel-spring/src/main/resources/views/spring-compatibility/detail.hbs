@@ -144,6 +144,7 @@
                                     <th>Scope</th>
                                     <th>Spring annotations</th>
                                     <th>Mapped Micronaut annotations</th>
+                                    {{#if annotationValuesVisible}}<th>Annotation values</th>{{/if}}
                                     <th>Requirements</th>
                                 </tr>
                                 </thead>
@@ -155,6 +156,13 @@
                                         <td>{{ scope }}</td>
                                         <td>{{#each springAnnotations}}<code class="cp-table-code">{{ this }}</code> {{/each}}</td>
                                         <td>{{#each mappedAnnotations}}<code class="cp-table-code">{{ this }}</code> {{/each}}</td>
+                                        {{#if ../annotationValuesVisible}}
+                                            <td>
+                                                {{#each annotationValues}}
+                                                    <div><code class="cp-table-code">{{ annotationName }}</code> <code class="cp-table-code">{{ memberName }}</code>: {{ valueSummary }}</div>
+                                                {{/each}}
+                                            </td>
+                                        {{/if}}
                                         <td>{{ requirementSummary }}</td>
                                     </tr>
                                 {{/each}}
@@ -183,6 +191,7 @@
                                     <th>Declaring method</th>
                                     <th>Spring annotations</th>
                                     <th>Mapped Micronaut annotations</th>
+                                    {{#if annotationValuesVisible}}<th>Annotation values</th>{{/if}}
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -193,6 +202,13 @@
                                         <td><code class="cp-table-code">{{ declaringMethod }}</code></td>
                                         <td>{{#each springAnnotations}}<code class="cp-table-code">{{ this }}</code> {{/each}}</td>
                                         <td>{{#each mappedAnnotations}}<code class="cp-table-code">{{ this }}</code> {{/each}}</td>
+                                        {{#if ../annotationValuesVisible}}
+                                            <td>
+                                                {{#each annotationValues}}
+                                                    <div><code class="cp-table-code">{{ annotationName }}</code> <code class="cp-table-code">{{ memberName }}</code>: {{ valueSummary }}</div>
+                                                {{/each}}
+                                            </td>
+                                        {{/if}}
                                     </tr>
                                 {{/each}}
                                 </tbody>
@@ -219,6 +235,7 @@
                                     <th>State</th>
                                     <th>Spring condition</th>
                                     <th>Mapped annotation</th>
+                                    {{#if annotationValuesVisible}}<th>Annotation values</th>{{/if}}
                                     <th>Requirement summary</th>
                                 </tr>
                                 </thead>
@@ -229,6 +246,13 @@
                                         <td>{{ state }}</td>
                                         <td><code class="cp-table-code">{{ springAnnotation }}</code></td>
                                         <td><code class="cp-table-code">{{ mappedAnnotation }}</code></td>
+                                        {{#if ../annotationValuesVisible}}
+                                            <td>
+                                                {{#each annotationValues}}
+                                                    <div><code class="cp-table-code">{{ memberName }}</code>: {{ valueSummary }}</div>
+                                                {{/each}}
+                                            </td>
+                                        {{/if}}
                                         <td>{{ requirementSummary }}</td>
                                     </tr>
                                 {{/each}}
@@ -253,6 +277,7 @@
                                     <th>Path</th>
                                     <th>Declaring method</th>
                                     <th>Spring annotations</th>
+                                    {{#if annotationValuesVisible}}<th>Annotation values</th>{{/if}}
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -263,6 +288,13 @@
                                         <td><code class="cp-table-code">{{ managementPath }}</code></td>
                                         <td><code class="cp-table-code">{{ declaringMethod }}</code></td>
                                         <td>{{#each springAnnotations}}<code class="cp-table-code">{{ this }}</code> {{/each}}</td>
+                                        {{#if ../annotationValuesVisible}}
+                                            <td>
+                                                {{#each annotationValues}}
+                                                    <div><code class="cp-table-code">{{ annotationName }}</code> <code class="cp-table-code">{{ memberName }}</code>: {{ valueSummary }}</div>
+                                                {{/each}}
+                                            </td>
+                                        {{/if}}
                                     </tr>
                                 {{/each}}
                                 </tbody>

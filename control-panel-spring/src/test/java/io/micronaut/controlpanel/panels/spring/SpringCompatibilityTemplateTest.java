@@ -42,6 +42,21 @@ final class SpringCompatibilityTemplateTest {
         assertTrue(html.contains("Compare with generic diagnostics"));
     }
 
+    @Test
+    void detailTemplateRendersSanitizedAnnotationValues() throws IOException {
+        var handlebars = new Handlebars(new ClassPathTemplateLoader("/", ".hbs"));
+        var template = handlebars.compile("views/spring-compatibility/detail");
+        String html = template.apply(Map.of(
+            "ext", Map.of("controlPanelPath", "/control-panel"),
+            "controlPanel", Map.of("body", bodyWithAnnotationValues())
+        ));
+
+        assertTrue(html.contains("havingValue"));
+        assertTrue(html.contains("enabled"));
+        assertTrue(html.contains(SpringAnnotationValueSanitizer.REDACTED));
+        assertTrue(html.contains("&lt;script&gt;"));
+    }
+
     private SpringCompatibilityBody emptyBody() {
         return new SpringCompatibilityBody(
             List.of(),
@@ -54,6 +69,44 @@ final class SpringCompatibilityTemplateTest {
             false,
             false,
             "No Spring-origin metadata was detected."
+        );
+    }
+
+    private SpringCompatibilityBody bodyWithAnnotationValues() {
+        return new SpringCompatibilityBody(
+            List.of(),
+            List.of(),
+            List.of(),
+            List.of(new SpringCompatibilityBody.ConditionRow(
+                "example.ConditionalBean",
+                "active",
+                "org.springframework.boot.autoconfigure.condition.ConditionalOnProperty",
+                "io.micronaut.context.annotation.Requires",
+                List.of(
+                    new SpringCompatibilityBody.AnnotationValueRow(
+                        "org.springframework.boot.autoconfigure.condition.ConditionalOnProperty",
+                        "name",
+                        "enabled"
+                    ),
+                    new SpringCompatibilityBody.AnnotationValueRow(
+                        "org.springframework.boot.autoconfigure.condition.ConditionalOnProperty",
+                        "havingValue",
+                        SpringAnnotationValueSanitizer.REDACTED
+                    ),
+                    new SpringCompatibilityBody.AnnotationValueRow(
+                        "org.springframework.boot.autoconfigure.condition.ConditionalOnProperty",
+                        "prefix",
+                        "<script>"
+                    )
+                ),
+                "Mapped to @Requires"
+            )),
+            List.of(),
+            List.of(),
+            List.of(),
+            false,
+            true,
+            "Spring-origin metadata is derived from Micronaut annotation metadata."
         );
     }
 }
