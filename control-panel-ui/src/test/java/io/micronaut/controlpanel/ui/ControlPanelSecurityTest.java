@@ -221,6 +221,43 @@ class ControlPanelSecurityTest {
     }
 
     @Test
+    void separateWriteRoleDisablesApplicationRefreshAndStopControls() {
+        try (EmbeddedServer server = ApplicationContext.run(EmbeddedServer.class, Map.ofEntries(
+            Map.entry("spec.name", "ControlPanelSecurityTest"),
+            Map.entry("micronaut.security.enabled", true),
+            Map.entry("micronaut.security.basic-auth.enabled", true),
+            Map.entry(ControlPanelSecurityConfiguration.PROPERTY_ACCESS, "AUTHORIZED"),
+            Map.entry(ControlPanelSecurityConfiguration.PROPERTY_WRITE_ACCESS, "AUTHORIZED"),
+            Map.entry(ControlPanelSecurityConfiguration.PROPERTY_WRITE_ROLE, "ROLE_CONTROL_PANEL_WRITE"),
+            Map.entry("endpoints.all.enabled", true),
+            Map.entry("endpoints.all.sensitive", false),
+            Map.entry("endpoints.refresh.enabled", true),
+            Map.entry("endpoints.refresh.sensitive", false),
+            Map.entry("endpoints.stop.enabled", true),
+            Map.entry("endpoints.stop.sensitive", false)
+        ))) {
+            HttpClient client = server.getApplicationContext().createBean(HttpClient.class, server.getURL());
+
+            String body = client.toBlocking().retrieve(
+                authenticatedRequest(HttpRequest.GET(ControlPanelModuleConfiguration.DEFAULT_PATH), "controlpanel", "password"),
+                String.class
+            );
+            String reason = "Write operations are disabled for this control panel session.";
+            assertTrue(body.contains("id=\"refreshButton\""));
+            assertTrue(body.contains("id=\"stopButton\""));
+            assertTrue(body.contains("id=\"refreshButton\" type=\"button\" data-toggle=\"modal\" data-target=\"#stopRefreshModal\" data-action=\"refresh\" title=\"" + reason + "\" disabled aria-disabled=\"true\""));
+            assertTrue(body.contains("id=\"stopButton\" type=\"button\" data-toggle=\"modal\" data-target=\"#stopRefreshModal\" data-action=\"shutdown\" title=\"" + reason + "\" disabled aria-disabled=\"true\""));
+            assertTrue(body.contains("id=\"stopConfirm\" disabled aria-disabled=\"true\" title=\"" + reason + "\""));
+            assertTrue(body.contains("id=\"refreshConfirm\" disabled aria-disabled=\"true\" title=\"" + reason + "\""));
+            assertTrue(body.contains("id=\"refreshForce\" disabled aria-disabled=\"true\" title=\"" + reason + "\""));
+            assertTrue(body.contains("if (!false || this.disabled)"));
+            assertTrue(body.contains("if (!false || button.prop('disabled'))"));
+
+            client.close();
+        }
+    }
+
+    @Test
     void anonymousAccessCanUseLoggersHelperWhenConfigured() {
         try (EmbeddedServer server = ApplicationContext.run(EmbeddedServer.class, Map.of(
             "spec.name", "ControlPanelSecurityTest",
