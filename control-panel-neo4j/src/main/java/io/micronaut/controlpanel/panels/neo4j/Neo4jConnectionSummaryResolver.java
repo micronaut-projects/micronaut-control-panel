@@ -35,6 +35,7 @@ public class Neo4jConnectionSummaryResolver {
 
     private static final String DEFAULT_BEAN_NAME = "default";
     private static final String CUSTOM_DRIVER = "custom Driver bean";
+    private static final String NEO4J_PROPERTY_PREFIX = "neo4j.";
     private static final Set<String> SECRET_TERMS = Set.of("password", "passwd", "pwd", "token", "secret", "credential", "credentials", "key");
     private static final Pattern QUERY_PAIR_SEPARATOR = Pattern.compile("&");
 
@@ -72,10 +73,10 @@ public class Neo4jConnectionSummaryResolver {
 
     private Optional<String> property(String name) {
         if (DEFAULT_BEAN_NAME.equals(beanName)) {
-            return environment.getProperty("neo4j." + name, String.class);
+            return environment.getProperty(NEO4J_PROPERTY_PREFIX + name, String.class);
         }
-        return environment.getProperty("neo4j." + beanName + "." + name, String.class)
-            .or(() -> environment.getProperty("neo4j." + name, String.class));
+        return environment.getProperty(NEO4J_PROPERTY_PREFIX + beanName + "." + name, String.class)
+            .or(() -> environment.getProperty(NEO4J_PROPERTY_PREFIX + name, String.class));
     }
 
     static String maskUri(String value) {

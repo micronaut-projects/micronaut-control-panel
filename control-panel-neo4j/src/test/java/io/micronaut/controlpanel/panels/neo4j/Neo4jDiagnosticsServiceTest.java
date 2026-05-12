@@ -46,6 +46,8 @@ import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class Neo4jDiagnosticsServiceTest {
@@ -54,7 +56,7 @@ class Neo4jDiagnosticsServiceTest {
     void resolvesConnectedDriverServerInfoAndBoundedMetadata() {
         Driver driver = mock(Driver.class);
         Session session = mock(Session.class);
-        Result serverResult = serverResult();
+        Result serverResult = serverResult(serverInfo());
         Result labelResult = metadataResult("label", "Movie", "Person");
         Result relationshipTypeResult = metadataResult("relationshipType", "ACTED_IN");
         Result propertyKeyResult = metadataResult("propertyKey", "title", "released");
@@ -80,6 +82,20 @@ class Neo4jDiagnosticsServiceTest {
     }
 
     @Test
+    void resolvesNamedDriverBean() {
+        Driver driver = mock(Driver.class);
+        Session session = mock(Session.class);
+        Result serverResult = serverResult(serverInfo());
+        when(driver.session(any(SessionConfig.class))).thenReturn(session);
+        when(session.run("RETURN 1 AS ok")).thenReturn(serverResult);
+
+        Neo4jBody body = service("orders", driver).getBody();
+
+        assertTrue(body.connected());
+        assertEquals("Neo4j/5.26", body.server().agent());
+    }
+
+    @Test
     void connectivityFailureBecomesNonFatalDiagnostic() {
         Driver driver = mock(Driver.class);
         doThrow(new ServiceUnavailableException("bolt://user:secret@localhost failed")).when(driver).verifyConnectivity();
@@ -97,7 +113,7 @@ class Neo4jDiagnosticsServiceTest {
     void permissionFailureHidesOnlyThatMetadataSection() {
         Driver driver = mock(Driver.class);
         Session session = mock(Session.class);
-        Result serverResult = serverResult();
+        Result serverResult = serverResult(serverInfo());
         Result relationshipTypeResult = metadataResult("relationshipType", "ACTED_IN");
         Result propertyKeyResult = metadataResult("propertyKey", "name");
         when(driver.session(any(SessionConfig.class))).thenReturn(session);
@@ -120,6 +136,67 @@ class Neo4jDiagnosticsServiceTest {
     }
 
     @Test
+    void serverInfoFailureDoesNotHideMetadata() {
+        Driver driver = mock(Driver.class);
+        Session session = mock(Session.class);
+        Result labelResult = metadataResult("label", "Movie");
+        Result relationshipTypeResult = metadataResult("relationshipType", "ACTED_IN");
+        Result propertyKeyResult = metadataResult("propertyKey", "title");
+        when(driver.session(any(SessionConfig.class))).thenReturn(session);
+        when(session.run("RETURN 1 AS ok")).thenThrow(new RuntimeException("server password=secret"));
+        when(session.run(eq("CALL db.labels() YIELD label RETURN label ORDER BY label LIMIT $limit"), anyMap()))
+            .thenReturn(labelResult);
+        when(session.run(eq("CALL db.relationshipTypes() YIELD relationshipType RETURN relationshipType ORDER BY relationshipType LIMIT $limit"), anyMap()))
+            .thenReturn(relationshipTypeResult);
+        when(session.run(eq("CALL db.propertyKeys() YIELD propertyKey RETURN propertyKey ORDER BY propertyKey LIMIT $limit"), anyMap()))
+            .thenReturn(propertyKeyResult);
+
+        Neo4jBody body = service(driver).getBody();
+
+        assertTrue(body.connected());
+        assertFalse(body.hasServerInfo());
+        assertEquals(List.of("Movie"), body.labels());
+        assertEquals(1, body.diagnostics().size());
+        assertEquals("Server info", body.diagnostics().get(0).area());
+        assertFalse(body.toString().contains("secret"));
+    }
+
+    @Test
+    void emptyServerInfoIsHandled() {
+        Driver driver = mock(Driver.class);
+        Session session = mock(Session.class);
+        Result serverResult = serverResult(null);
+        when(driver.session(any(SessionConfig.class))).thenReturn(session);
+        when(session.run("RETURN 1 AS ok")).thenReturn(serverResult);
+
+        Neo4jBody body = service(driver).getBody();
+
+        assertTrue(body.connected());
+        assertFalse(body.hasServerInfo());
+    }
+
+    @Test
+    void zeroMetadataLimitsSkipMetadataQueries() {
+        Driver driver = mock(Driver.class);
+        Session session = mock(Session.class);
+        Neo4jPanelConfiguration configuration = new Neo4jPanelConfiguration();
+        configuration.setMaxLabels(0);
+        configuration.setMaxRelationshipTypes(0);
+        configuration.setMaxPropertyKeys(0);
+        Result serverResult = serverResult(serverInfo());
+        when(driver.session(any(SessionConfig.class))).thenReturn(session);
+        when(session.run("RETURN 1 AS ok")).thenReturn(serverResult);
+
+        Neo4jBody body = service(driver, configuration).getBody();
+
+        assertTrue(body.connected());
+        assertTrue(body.labels().isEmpty());
+        assertTrue(body.relationshipTypes().isEmpty());
+        assertTrue(body.propertyKeys().isEmpty());
+        verify(session, never()).run(eq("CALL db.labels() YIELD label RETURN label ORDER BY label LIMIT $limit"), anyMap());
+    }
+
+    @Test
     void sanitizesAuthenticationMessages() {
         Neo4jDiagnostic diagnostic = Neo4jDiagnosticsService.toDiagnostic(
             "Connectivity",
@@ -130,25 +207,71 @@ class Neo4jDiagnosticsServiceTest {
         assertFalse(diagnostic.message().contains("hunter2"));
     }
 
-    private static Neo4jDiagnosticsService service(Driver driver) {
-        Neo4jPanelConfiguration configuration = new Neo4jPanelConfiguration();
-        BeanContext beanContext = mock(BeanContext.class);
-        when(beanContext.getBean(Driver.class)).thenReturn(driver);
-        Neo4jConnectionSummaryResolver resolver = mock(Neo4jConnectionSummaryResolver.class);
-        when(resolver.resolve()).thenReturn(new Neo4jConnectionInfo("default", "bolt://localhost:7687", "neo4j", "", ""));
-        return new Neo4jDiagnosticsService("default", beanContext, configuration, resolver);
+    @Test
+    void classifiesPermissionDiagnosticsByCodeAndMessage() {
+        Neo4jDiagnostic byCode = Neo4jDiagnosticsService.toDiagnostic(
+            "Labels",
+            new ClientException("Neo.ClientError.Security.Forbidden", "hidden")
+        );
+        Neo4jDiagnostic byMessage = Neo4jDiagnosticsService.toDiagnostic(
+            "Labels",
+            new ClientException("Neo.ClientError.Schema.ConstraintValidationFailed", "permission denied")
+        );
+
+        assertTrue(byCode.permission());
+        assertTrue(byMessage.permission());
+        assertEquals("Metadata is hidden because the current Neo4j user does not have permission to read it.", byCode.message());
     }
 
-    private static Result serverResult() {
+    @Test
+    void diagnosticMessageUsesNeo4jCodeOrExceptionType() {
+        Neo4jDiagnostic coded = Neo4jDiagnosticsService.toDiagnostic(
+            "Labels",
+            new ClientException("Neo.ClientError.Statement.SyntaxError", "password secret")
+        );
+        Neo4jDiagnostic generic = Neo4jDiagnosticsService.toDiagnostic("Labels", new IllegalStateException("password secret"));
+
+        assertEquals("Neo4j returned Neo.ClientError.Statement.SyntaxError.", coded.message());
+        assertEquals("Neo4j probe failed with IllegalStateException.", generic.message());
+        assertFalse(coded.message().contains("secret"));
+        assertFalse(generic.message().contains("secret"));
+    }
+
+    private static Neo4jDiagnosticsService service(Driver driver) {
+        return service(driver, new Neo4jPanelConfiguration());
+    }
+
+    private static Neo4jDiagnosticsService service(Driver driver, Neo4jPanelConfiguration configuration) {
+        return service("default", driver, configuration);
+    }
+
+    private static Neo4jDiagnosticsService service(String beanName, Driver driver) {
+        return service(beanName, driver, new Neo4jPanelConfiguration());
+    }
+
+    private static Neo4jDiagnosticsService service(String beanName, Driver driver, Neo4jPanelConfiguration configuration) {
+        BeanContext beanContext = mock(BeanContext.class);
+        when(beanContext.getBean(Driver.class)).thenReturn(driver);
+        when(beanContext.getBean(eq(Driver.class), any())).thenReturn(driver);
+        Neo4jConnectionSummaryResolver resolver = mock(Neo4jConnectionSummaryResolver.class);
+        when(resolver.resolve()).thenReturn(new Neo4jConnectionInfo(beanName, "bolt://localhost:7687", "neo4j", "", ""));
+        return new Neo4jDiagnosticsService(beanName, beanContext, configuration, resolver);
+    }
+
+    private static Result serverResult(ServerInfo serverInfo) {
         Result result = mock(Result.class);
         ResultSummary summary = mock(ResultSummary.class);
+        when(summary.server()).thenReturn(serverInfo);
+        when(result.consume()).thenReturn(summary);
+        return result;
+    }
+
+    private static ServerInfo serverInfo() {
         ServerInfo server = mock(ServerInfo.class);
         when(server.agent()).thenReturn("Neo4j/5.26");
         when(server.address()).thenReturn("localhost:7687");
         when(server.protocolVersion()).thenReturn("5.4");
-        when(summary.server()).thenReturn(server);
-        when(result.consume()).thenReturn(summary);
-        return result;
+        return server;
     }
 
     private static Result metadataResult(String column, String... values) {

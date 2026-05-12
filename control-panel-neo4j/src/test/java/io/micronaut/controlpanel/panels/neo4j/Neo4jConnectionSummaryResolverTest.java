@@ -15,13 +15,67 @@
  */
 package io.micronaut.controlpanel.panels.neo4j;
 
+import io.micronaut.context.ApplicationContext;
+import io.micronaut.controlpanel.panels.neo4j.model.Neo4jConnectionInfo;
 import org.junit.jupiter.api.Test;
+
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class Neo4jConnectionSummaryResolverTest {
+
+    @Test
+    void resolvesDefaultConnectionProperties() {
+        try (ApplicationContext context = ApplicationContext.run(Map.of(
+            "neo4j.uri", "neo4j://user:password@localhost:7687?token=abc",
+            "neo4j.username", "neo4j",
+            "neo4j.encrypted", "true",
+            "neo4j.trust-strategy", "TRUST_CUSTOM_CA_SIGNED_CERTIFICATES; password=secret"
+        ))) {
+            Neo4jConnectionInfo info = new Neo4jConnectionSummaryResolver("default", context.getEnvironment()).resolve();
+
+            assertEquals("default", info.beanName());
+            assertEquals("neo4j://***@localhost:7687?token=***", info.uri());
+            assertEquals("neo4j", info.username());
+            assertEquals("true", info.encryption());
+            assertEquals("TRUST_CUSTOM_CA_SIGNED_CERTIFICATES; password=***", info.trustStrategy());
+            assertFalse(info.toString().contains("secret"));
+        }
+    }
+
+    @Test
+    void namedConnectionFallsBackToDefaultProperties() {
+        try (ApplicationContext context = ApplicationContext.run(Map.of(
+            "neo4j.uri", "bolt://localhost:7687",
+            "neo4j.orders.username", "orders",
+            "neo4j.encryption", "false",
+            "neo4j.trustStrategy", "token=abc"
+        ))) {
+            Neo4jConnectionInfo info = new Neo4jConnectionSummaryResolver("orders", context.getEnvironment()).resolve();
+
+            assertEquals("orders", info.beanName());
+            assertEquals("bolt://localhost:7687", info.uri());
+            assertEquals("orders", info.username());
+            assertEquals("false", info.encryption());
+            assertEquals("token=***", info.trustStrategy());
+        }
+    }
+
+    @Test
+    void returnsCustomDriverSummaryWhenNoPropertiesAreAvailable() {
+        try (ApplicationContext context = ApplicationContext.run(Map.of())) {
+            Neo4jConnectionInfo info = new Neo4jConnectionSummaryResolver("custom", context.getEnvironment()).resolve();
+
+            assertEquals("custom", info.beanName());
+            assertEquals("custom Driver bean", info.uri());
+            assertEquals("", info.username());
+            assertEquals("", info.encryption());
+            assertEquals("", info.trustStrategy());
+        }
+    }
 
     @Test
     void masksUriUserInfoAndSecretQueryParameters() {
@@ -33,6 +87,12 @@ class Neo4jConnectionSummaryResolverTest {
         assertFalse(masked.contains("password"));
         assertFalse(masked.contains("abc"));
         assertFalse(masked.contains("secret"));
+    }
+
+    @Test
+    void masksBlankUriAsEmptyValue() {
+        assertEquals("", Neo4jConnectionSummaryResolver.maskUri(null));
+        assertEquals("", Neo4jConnectionSummaryResolver.maskUri(" "));
     }
 
     @Test
