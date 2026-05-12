@@ -22,6 +22,17 @@ import java.util.List;
 /**
  * Sanitized R2DBC connection summary.
  *
+ * @param name the connection factory bean name
+ * @param driver the configured driver
+ * @param protocol the configured protocol
+ * @param host the configured host
+ * @param port the configured port
+ * @param database the configured database
+ * @param user the configured username
+ * @param ssl the configured SSL flag
+ * @param connectTimeout the configured connect timeout
+ * @param driverMetadataName the driver metadata name
+ * @param options safe option names and values
  * @author Sergio del Amo
  * @since 2.0.0
  */

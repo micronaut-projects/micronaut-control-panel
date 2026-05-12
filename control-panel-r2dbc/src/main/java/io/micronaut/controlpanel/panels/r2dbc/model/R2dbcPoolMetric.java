@@ -20,6 +20,8 @@ import io.micronaut.core.annotation.ReflectiveAccess;
 /**
  * R2DBC pool metric.
  *
+ * @param name the metric name
+ * @param value the metric value
  * @author Sergio del Amo
  * @since 2.0.0
  */

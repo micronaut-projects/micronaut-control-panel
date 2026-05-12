@@ -20,6 +20,9 @@ import io.micronaut.core.annotation.ReflectiveAccess;
 /**
  * A safe option key and optional rendered value.
  *
+ * @param name the option name
+ * @param value the sanitized option value
+ * @param redacted whether the value was intentionally hidden
  * @author Sergio del Amo
  * @since 2.0.0
  */

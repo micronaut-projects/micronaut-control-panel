@@ -22,6 +22,11 @@ import java.util.List;
 /**
  * R2DBC pool diagnostics.
  *
+ * @param status the machine-readable status
+ * @param label the display label
+ * @param message the display message
+ * @param metrics live pool metrics
+ * @param configuration configured pool options
  * @author Sergio del Amo
  * @since 2.0.0
  */

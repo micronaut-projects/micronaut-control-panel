@@ -20,6 +20,11 @@ import io.micronaut.core.annotation.ReflectiveAccess;
 /**
  * R2DBC health validation status.
  *
+ * @param status the machine-readable status
+ * @param label the display label
+ * @param query the validation query
+ * @param message the display message
+ * @param errorType the sanitized error category
  * @author Sergio del Amo
  * @since 2.0.0
  */

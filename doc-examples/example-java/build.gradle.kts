@@ -38,12 +38,6 @@ dependencies {
     runtimeOnly(mnSql.ojdbc11)
     runtimeOnly(mnSql.postgresql)
 
-    // R2DBC
-    implementation(projects.micronautControlPanelR2dbc)
-    implementation(mnR2dbc.micronaut.r2dbc.core)
-    runtimeOnly(mnR2dbc.r2dbc.h2)
-    runtimeOnly(mnR2dbc.r2dbc.pool)
-
     // Hibernate
     implementation(projects.micronautControlPanelHibernate)
     implementation(mnSql.micronaut.hibernate.jpa)

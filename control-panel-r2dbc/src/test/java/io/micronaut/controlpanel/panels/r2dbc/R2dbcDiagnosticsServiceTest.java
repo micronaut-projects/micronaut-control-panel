@@ -144,6 +144,26 @@ class R2dbcDiagnosticsServiceTest {
     }
 
     @Test
+    void deduplicatesOptionsByName() {
+        var service = service(
+            "default",
+            connectionFactory("PostgreSQL"),
+            options("postgresql", "postgresql", "localhost", 5432, "orders", "dbuser").build(),
+            Map.of("database", "configured-orders"),
+            Map.of()
+        );
+
+        var databaseOptions = service.connectionSummary()
+            .options()
+            .stream()
+            .filter(option -> option.name().equals("database"))
+            .toList();
+
+        assertEquals(1, databaseOptions.size());
+        assertEquals("orders", databaseOptions.getFirst().value());
+    }
+
+    @Test
     void healthValidationReportsUpWhenConfiguredQuerySucceeds() {
         ConnectionFactory connectionFactory = connectionFactory("H2");
         Connection connection = mock(Connection.class);

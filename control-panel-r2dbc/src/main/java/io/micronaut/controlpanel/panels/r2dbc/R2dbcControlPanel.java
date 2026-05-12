@@ -22,6 +22,8 @@ import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.controlpanel.panels.r2dbc.model.R2dbcBody;
 import jakarta.inject.Named;
 
+import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
+
 /**
  * Control panel for R2DBC connection factory diagnostics.
  *
@@ -31,12 +33,27 @@ import jakarta.inject.Named;
 @EachBean(R2dbcDiagnosticsService.class)
 public class R2dbcControlPanel extends AbstractEachBeanControlPanel<R2dbcBody> {
 
+    /**
+     * R2DBC panel configuration name.
+     */
     public static final String NAME = "r2dbc";
+    /**
+     * R2DBC panel enablement property.
+     */
     public static final String ENABLED_PROPERTY = ControlPanelConfiguration.PREFIX + "." + NAME + ".enabled";
+    /**
+     * Default R2DBC panel icon class.
+     */
     public static final String DEFAULT_ICON_CLASS = "fas fa-database";
 
     private final R2dbcDiagnosticsService diagnosticsService;
 
+    /**
+     * Creates an R2DBC control panel for one connection factory.
+     *
+     * @param diagnosticsService the diagnostics service for one connection factory
+     * @param configuration the panel configuration
+     */
     public R2dbcControlPanel(@Parameter R2dbcDiagnosticsService diagnosticsService,
                              @Named(NAME) ControlPanelConfiguration configuration) {
         super(NAME, configuration);
@@ -65,7 +82,7 @@ public class R2dbcControlPanel extends AbstractEachBeanControlPanel<R2dbcBody> {
 
     @Override
     public String getBadge() {
-        return getBody().health().label();
+        return EMPTY_STRING;
     }
 
     @Override

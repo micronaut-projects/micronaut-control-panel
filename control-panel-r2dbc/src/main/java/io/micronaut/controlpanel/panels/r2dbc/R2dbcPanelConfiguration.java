@@ -29,12 +29,24 @@ import java.time.Duration;
 @ConfigurationProperties(R2dbcPanelConfiguration.PREFIX)
 public class R2dbcPanelConfiguration {
 
+    /**
+     * R2DBC panel configuration prefix.
+     */
     public static final String PREFIX = ControlPanelConfiguration.PREFIX + "." + R2dbcControlPanel.NAME;
+    /**
+     * Default timeout for R2DBC health probes.
+     */
     public static final Duration DEFAULT_HEALTH_TIMEOUT = Duration.ofSeconds(2);
 
     private Duration healthTimeout = DEFAULT_HEALTH_TIMEOUT;
     private boolean healthEnabled = true;
     private boolean showOptionValues;
+
+    /**
+     * Creates the default R2DBC panel configuration.
+     */
+    public R2dbcPanelConfiguration() {
+    }
 
     /**
      * Timeout for a validation query executed while rendering the panel.

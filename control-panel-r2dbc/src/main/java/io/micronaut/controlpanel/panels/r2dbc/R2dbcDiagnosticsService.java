@@ -38,12 +38,11 @@ import reactor.core.publisher.Mono;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -57,7 +56,7 @@ import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
  * @since 2.0.0
  */
 @EachBean(ConnectionFactory.class)
-public class R2dbcDiagnosticsService {
+public final class R2dbcDiagnosticsService {
 
     private static final String POOL_CLASS = "io.r2dbc.pool.ConnectionPool";
     private static final Pattern SECRET_KEY = Pattern.compile(".*(secret|password|token|credential|access[-_.]?key|api[-_.]?key|private[-_.]?key).*", Pattern.CASE_INSENSITIVE);
@@ -108,6 +107,16 @@ public class R2dbcDiagnosticsService {
     private final R2dbcHealthConfiguration healthConfiguration;
     private final R2dbcPanelConfiguration panelConfiguration;
 
+    /**
+     * Creates an R2DBC diagnostics service for one connection factory.
+     *
+     * @param beanName the connection factory bean name
+     * @param connectionFactory the connection factory
+     * @param beanContext the bean context
+     * @param environment the environment
+     * @param healthConfiguration the R2DBC health configuration
+     * @param panelConfiguration the R2DBC panel configuration
+     */
     public R2dbcDiagnosticsService(@Parameter String beanName,
                                    @Parameter ConnectionFactory connectionFactory,
                                    BeanContext beanContext,
@@ -123,6 +132,8 @@ public class R2dbcDiagnosticsService {
     }
 
     /**
+     * The bean name backing this diagnostics service.
+     *
      * @return the bean name backing this diagnostics service
      */
     public String getBeanName() {
@@ -130,6 +141,8 @@ public class R2dbcDiagnosticsService {
     }
 
     /**
+     * Builds the current diagnostics body.
+     *
      * @return a fresh diagnostics body
      */
     public R2dbcBody getBody() {
@@ -262,11 +275,30 @@ public class R2dbcDiagnosticsService {
             .stream()
             .map(entry -> option(entry.getKey(), entry.getValue()))
             .toList());
-        return optionList.stream()
+        return deduplicateByName(optionList.stream()
             .filter(option -> !SECRET_KEY.matcher(option.name()).matches())
+            .toList());
+    }
+
+    private static List<R2dbcOption> deduplicateByName(List<R2dbcOption> options) {
+        LinkedHashMap<String, R2dbcOption> byName = new LinkedHashMap<>();
+        for (R2dbcOption option : options) {
+            byName.merge(option.name(), option, R2dbcDiagnosticsService::preferredOption);
+        }
+        return byName.values()
+            .stream()
             .sorted(Comparator.comparing(R2dbcOption::name))
-            .distinct()
             .toList();
+    }
+
+    private static R2dbcOption preferredOption(R2dbcOption current, R2dbcOption candidate) {
+        if (current.redacted() && !candidate.redacted()) {
+            return candidate;
+        }
+        if (current.value().isBlank() && !candidate.value().isBlank()) {
+            return candidate;
+        }
+        return current;
     }
 
     private List<R2dbcOption> configuredPoolOptions() {
