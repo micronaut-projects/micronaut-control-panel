@@ -72,39 +72,55 @@ final class ValidationAttributeSanitizer {
             return enumValue.name();
         }
         if (value instanceof CharSequence sequence) {
-            String s = sequence.toString();
-            if (mode == ValidationConfiguration.AttributeMode.SAFE && s.length() > MAX_STRING_LENGTH) {
-                return s.substring(0, MAX_STRING_LENGTH) + "... [truncated]";
-            }
-            return s;
+            return formatString(sequence, mode);
         }
         if (value.getClass().isArray()) {
-            int length = Array.getLength(value);
-            int limit = mode == ValidationConfiguration.AttributeMode.SAFE ? Math.min(length, MAX_ARRAY_ITEMS) : length;
-            List<String> parts = new ArrayList<>(limit);
-            for (int i = 0; i < limit; i++) {
-                parts.add(toDisplayValue(Array.get(value, i), mode));
-            }
-            String suffix = length > limit ? ", ... (" + length + " total)" : "";
-            return "[" + String.join(", ", parts) + suffix + "]";
+            return formatArray(value, mode);
         }
         if (value instanceof Iterable<?> iterable) {
-            List<String> parts = new ArrayList<>();
-            int count = 0;
-            for (Object item : iterable) {
-                if (mode == ValidationConfiguration.AttributeMode.SAFE && count >= MAX_ARRAY_ITEMS) {
-                    parts.add("...");
-                    break;
-                }
-                parts.add(toDisplayValue(item, mode));
-                count++;
-            }
-            return "[" + String.join(", ", parts) + "]";
+            return formatIterable(iterable, mode);
         }
         if (value instanceof Number || value instanceof Boolean) {
             return value.toString();
         }
         return mode == ValidationConfiguration.AttributeMode.SAFE ? value.getClass().getName() + " [redacted]" : value.toString();
+    }
+
+    private static String formatString(CharSequence sequence, ValidationConfiguration.AttributeMode mode) {
+        String s = sequence.toString();
+        if (mode == ValidationConfiguration.AttributeMode.SAFE && s.length() > MAX_STRING_LENGTH) {
+            return s.substring(0, MAX_STRING_LENGTH) + "... [truncated]";
+        }
+        return s;
+    }
+
+    private static String formatArray(Object value, ValidationConfiguration.AttributeMode mode) {
+        int length = Array.getLength(value);
+        int limit = displayLimit(length, mode);
+        List<String> parts = new ArrayList<>(limit);
+        for (int i = 0; i < limit; i++) {
+            parts.add(toDisplayValue(Array.get(value, i), mode));
+        }
+        String suffix = length > limit ? ", ... (" + length + " total)" : "";
+        return "[" + String.join(", ", parts) + suffix + "]";
+    }
+
+    private static String formatIterable(Iterable<?> iterable, ValidationConfiguration.AttributeMode mode) {
+        List<String> parts = new ArrayList<>();
+        int count = 0;
+        for (Object item : iterable) {
+            if (mode == ValidationConfiguration.AttributeMode.SAFE && count >= MAX_ARRAY_ITEMS) {
+                parts.add("...");
+                break;
+            }
+            parts.add(toDisplayValue(item, mode));
+            count++;
+        }
+        return "[" + String.join(", ", parts) + "]";
+    }
+
+    private static int displayLimit(int length, ValidationConfiguration.AttributeMode mode) {
+        return mode == ValidationConfiguration.AttributeMode.SAFE ? Math.min(length, MAX_ARRAY_ITEMS) : length;
     }
 
     private static boolean isStandardMember(String name) {

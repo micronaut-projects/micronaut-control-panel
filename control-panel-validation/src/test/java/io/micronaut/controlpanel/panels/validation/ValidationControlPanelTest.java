@@ -37,13 +37,13 @@ import org.junit.jupiter.api.Test;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
+import java.util.List;
 import java.util.Map;
 
 import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -62,11 +62,17 @@ class ValidationControlPanelTest {
             assertTrue(body.totalConstraints() >= 4);
             assertTrue(body.routes().stream().anyMatch(row -> row.name().contains("/validation-test/orders")));
             assertTrue(body.classes().stream().anyMatch(row -> row.name().endsWith("ValidationRequest")));
+            assertFalse(body.classes().stream().anyMatch(row -> row.name().endsWith("ValidationSettings")));
             assertTrue(body.configurationProperties().stream().anyMatch(row -> row.name().endsWith("ValidationSettings")));
             assertTrue(body.components().stream().anyMatch(row -> row.beanType().endsWith("TenantCodeValidator")));
             assertTrue(body.routes().stream()
                 .flatMap(row -> row.constraints().stream())
                 .anyMatch(row -> row.target().startsWith("parameter") || row.target().equals("method")));
+            assertTrue(body.classes().stream()
+                .filter(row -> row.name().endsWith("ValidationRequest"))
+                .flatMap(row -> row.constraints().stream())
+                .anyMatch(row -> row.target().contains("nestedTags")
+                    && row.target().indexOf("type argument") != row.target().lastIndexOf("type argument")));
         }
     }
 
@@ -112,6 +118,31 @@ class ValidationControlPanelTest {
         assertTrue(rows.stream().anyMatch(row -> row.name().equals("min") && row.value().equals("2")));
     }
 
+    @Test
+    void sanitizerSupportsHiddenAndVerboseModes() {
+        ValidationAttributeSanitizer sanitizer = new ValidationAttributeSanitizer();
+        Map<CharSequence, Object> values = Map.of("pattern", "abcdefghijklmnopqrstuvwxyz", "values", new int[] {1, 2, 3});
+
+        assertTrue(sanitizer.sanitize(values, ValidationConfiguration.AttributeMode.NONE).isEmpty());
+        assertTrue(sanitizer.sanitize(values, ValidationConfiguration.AttributeMode.ALL).stream()
+            .anyMatch(row -> row.name().equals("values") && row.value().equals("[1, 2, 3]")));
+    }
+
+    @Test
+    void sanitizerTruncatesLargeSafeValues() {
+        ValidationAttributeSanitizer sanitizer = new ValidationAttributeSanitizer();
+        Map<CharSequence, Object> values = Map.of(
+            "pattern", "x".repeat(140),
+            "values", new int[] {1, 2, 3, 4, 5, 6, 7, 8, 9},
+            "custom", new Object()
+        );
+        var rows = sanitizer.sanitize(values, ValidationConfiguration.AttributeMode.SAFE);
+
+        assertTrue(rows.stream().anyMatch(row -> row.name().equals("pattern") && row.value().endsWith("[truncated]")));
+        assertTrue(rows.stream().anyMatch(row -> row.name().equals("values") && row.value().contains("9 total")));
+        assertTrue(rows.stream().anyMatch(row -> row.name().equals("custom") && row.redacted()));
+    }
+
     @Controller("/validation-test")
     static class ValidationController {
 
@@ -131,7 +162,9 @@ class ValidationControlPanelTest {
         String email,
 
         @Valid
-        Nested nested
+        Nested nested,
+
+        List<List<@NotBlank String>> nestedTags
     ) {
     }
 
