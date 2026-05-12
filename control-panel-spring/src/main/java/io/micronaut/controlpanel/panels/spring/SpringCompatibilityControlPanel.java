@@ -54,7 +54,8 @@ public class SpringCompatibilityControlPanel extends AbstractControlPanel<Spring
 
     @Override
     public String getBadge() {
-        return Integer.toString(getBody().beanCount() + getBody().routeCount() + getBody().endpointCount());
+        SpringCompatibilityBody body = getBody();
+        return Integer.toString(body.beanCount() + body.routeCount() + body.endpointCount());
     }
 
     @Override

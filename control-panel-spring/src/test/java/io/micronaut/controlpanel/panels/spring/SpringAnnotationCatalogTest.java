@@ -20,7 +20,8 @@ import org.junit.jupiter.api.Test;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class SpringAnnotationCatalogTest {
@@ -49,9 +50,9 @@ final class SpringAnnotationCatalogTest {
     void sanitizerHidesValuesByDefaultAndRedactsSensitiveNames() {
         SpringAnnotationValueSanitizer sanitizer = new SpringAnnotationValueSanitizer();
 
-        assertTrue(sanitizer.summarize("name", "value", false).equals(SpringAnnotationValueSanitizer.HIDDEN));
-        assertTrue(sanitizer.summarize("clientSecret", "value", true).equals(SpringAnnotationValueSanitizer.REDACTED));
-        assertTrue(sanitizer.summarize("name", "password=value", true).equals(SpringAnnotationValueSanitizer.REDACTED));
-        assertFalse(sanitizer.summarize("name", "safe", true).equals(SpringAnnotationValueSanitizer.REDACTED));
+        assertEquals(SpringAnnotationValueSanitizer.HIDDEN, sanitizer.summarize("name", "value", false));
+        assertEquals(SpringAnnotationValueSanitizer.REDACTED, sanitizer.summarize("clientSecret", "value", true));
+        assertEquals(SpringAnnotationValueSanitizer.REDACTED, sanitizer.summarize("name", "password=value", true));
+        assertNotEquals(SpringAnnotationValueSanitizer.REDACTED, sanitizer.summarize("name", "safe", true));
     }
 }

@@ -38,7 +38,7 @@ public final class SpringCompatibilityAvailableCondition implements Condition {
 
     @Override
     public boolean matches(ConditionContext context) {
-        if (isMicronautSpringPresent(SpringCompatibilityAvailableCondition.class.getClassLoader())) {
+        if (isMicronautSpringPresent(context.getBeanContext().getClassLoader())) {
             return true;
         }
         context.fail("Micronaut Spring integration classes are not present");

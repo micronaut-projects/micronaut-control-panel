@@ -118,7 +118,7 @@ public final class SpringCompatibilityDiagnostics {
             beanDefinition.getName(),
             beanDefinition.getBeanType().getName(),
             beanDefinition.getScopeName().orElse("default"),
-            String.valueOf(beanDefinition.getDeclaredQualifier()),
+            Optional.ofNullable(beanDefinition.getDeclaredQualifier()).map(Object::toString).orElse(""),
             state,
             springAnnotations,
             mappedAnnotations(beanDefinition.getAnnotationMetadata(), null),
@@ -203,8 +203,8 @@ public final class SpringCompatibilityDiagnostics {
     }
 
     private List<SpringCompatibilityBody.WarningRow> warnings(List<SpringCompatibilityBody.RouteRow> routes) {
-        List<SpringCompatibilityBody.WarningRow> rows = new ArrayList<>();
-        ClassLoader classLoader = SpringCompatibilityDiagnostics.class.getClassLoader();
+        Set<SpringCompatibilityBody.WarningRow> rows = new LinkedHashSet<>();
+        ClassLoader classLoader = beanContext.getClassLoader();
         if (ClassUtils.isPresent("org.aspectj.lang.annotation.Aspect", classLoader)) {
             rows.add(new SpringCompatibilityBody.WarningRow("warning", "classpath", "AspectJ annotations are present. Micronaut Spring does not support AspectJ weaving semantics."));
         }
@@ -219,7 +219,7 @@ public final class SpringCompatibilityDiagnostics {
         if (routes.isEmpty()) {
             rows.add(new SpringCompatibilityBody.WarningRow("info", "routes", "No Spring MVC route metadata was detected."));
         }
-        return rows;
+        return List.copyOf(rows);
     }
 
     private List<SpringCompatibilityBody.DetectedModule> detectedModules() {
@@ -232,7 +232,7 @@ public final class SpringCompatibilityDiagnostics {
     }
 
     private SpringCompatibilityBody.DetectedModule module(String name, String markerClass) {
-        return new SpringCompatibilityBody.DetectedModule(name, markerClass, ClassUtils.isPresent(markerClass, SpringCompatibilityDiagnostics.class.getClassLoader()));
+        return new SpringCompatibilityBody.DetectedModule(name, markerClass, ClassUtils.isPresent(markerClass, beanContext.getClassLoader()));
     }
 
     private List<SpringCompatibilityBody.AnnotationSupportRow> annotationRows() {
