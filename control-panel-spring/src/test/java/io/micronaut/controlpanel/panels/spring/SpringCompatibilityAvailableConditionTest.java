@@ -17,10 +17,13 @@ package io.micronaut.controlpanel.panels.spring;
 
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.charset.StandardCharsets;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class SpringCompatibilityAvailableConditionTest {
@@ -36,6 +39,18 @@ final class SpringCompatibilityAvailableConditionTest {
             assertFalse(SpringCompatibilityAvailableCondition.isMicronautSpringPresent(classLoader));
         } catch (Exception e) {
             throw new AssertionError(e);
+        }
+    }
+
+    @Test
+    void conditionIsInitializedAtBuildTimeForNativeImage() throws IOException {
+        String resourceName = "META-INF/native-image/io.micronaut.controlpanel/micronaut-control-panel-spring/native-image.properties";
+        URL resource = getClass().getClassLoader().getResource(resourceName);
+
+        assertNotNull(resource);
+        try (var input = resource.openStream()) {
+            String properties = new String(input.readAllBytes(), StandardCharsets.UTF_8);
+            assertTrue(properties.contains("--initialize-at-build-time=" + SpringCompatibilityAvailableCondition.class.getName()));
         }
     }
 }
