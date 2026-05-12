@@ -41,6 +41,10 @@ class EmailControlPanelLoaderTest {
             assertEquals("javamail", body.senderName());
             assertTrue(body.supportedInterfaces().contains("EmailSender"));
             assertTrue(body.supportedInterfaces().contains("TransactionalEmailSender"));
+            assertEquals("Email: javamail", mockPanel.getTitle());
+            assertEquals("", mockPanel.getBadge());
+            assertEquals(EmailControlPanel.CATEGORY, mockPanel.getCategory());
+            assertEquals(EmailControlPanel.DEFAULT_ICON_CLASS, mockPanel.getIcon());
         }
     }
 
@@ -65,10 +69,37 @@ class EmailControlPanelLoaderTest {
             ControlPanelRepository repository = context.getBean(ControlPanelRepository.class);
 
             assertTrue(repository.findByName("email").isPresent());
-            EmailDiagnosticModel body = (EmailDiagnosticModel) repository.findByName("email").orElseThrow().getBody();
+            EmptyEmailControlPanel panel = (EmptyEmailControlPanel) repository.findByName("email").orElseThrow();
+            EmailDiagnosticModel body = panel.getBody();
             assertTrue(body.empty());
             assertEquals("no-senders", body.senderName());
+            assertFalse(body.hasConfiguration());
+            assertTrue(body.hasChecklist());
+            assertEquals("Email", panel.getTitle());
+            assertEquals("/views/email/body", panel.getBodyView().file());
+            assertEquals("/views/email/detail", panel.getDetailedView().file());
+            assertEquals(EmailControlPanel.CATEGORY, panel.getCategory());
+            assertEquals(EmailControlPanel.DEFAULT_ICON_CLASS, panel.getIcon());
         }
+    }
+
+    @Test
+    void configurationPropertiesAreMutable() {
+        EmailControlPanelConfiguration configuration = new EmailControlPanelConfiguration();
+        EmailControlPanelConfiguration.TestSendConfiguration testSend = new EmailControlPanelConfiguration.TestSendConfiguration();
+
+        testSend.setEnabled(true);
+        testSend.setRecipient("safe@example.test");
+        testSend.setSubjectPrefix("[Test]");
+        testSend.setAllowArbitraryRecipient(true);
+        testSend.setIncludeConfigurationSummary(true);
+        configuration.setTestSend(testSend);
+
+        assertTrue(configuration.getTestSend().isEnabled());
+        assertEquals("safe@example.test", configuration.getTestSend().getRecipient());
+        assertEquals("[Test]", configuration.getTestSend().getSubjectPrefix());
+        assertTrue(configuration.getTestSend().isAllowArbitraryRecipient());
+        assertTrue(configuration.getTestSend().isIncludeConfigurationSummary());
     }
 
     private static Map<String, Object> properties() {
