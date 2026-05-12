@@ -22,6 +22,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -45,14 +46,16 @@ public final class SpringAnnotationCatalog {
 
     private static final String SUPPORTED = "supported";
     private static final String WARNING = "warning";
+    private static final String JAKARTA_SINGLETON = "jakarta.inject.Singleton";
+    private static final String MICRONAUT_REQUIRES = "io.micronaut.context.annotation.Requires";
 
     private final Map<String, SpringAnnotationInfo> annotations;
 
     public SpringAnnotationCatalog() {
         Map<String, SpringAnnotationInfo> entries = new LinkedHashMap<>();
-        add(entries, "org.springframework.stereotype.Component", GROUP_STEREOTYPE, SUPPORTED, "jakarta.inject.Singleton");
-        add(entries, "org.springframework.stereotype.Service", GROUP_STEREOTYPE, SUPPORTED, "jakarta.inject.Singleton");
-        add(entries, "org.springframework.stereotype.Repository", GROUP_STEREOTYPE, SUPPORTED, "jakarta.inject.Singleton");
+        add(entries, "org.springframework.stereotype.Component", GROUP_STEREOTYPE, SUPPORTED, JAKARTA_SINGLETON);
+        add(entries, "org.springframework.stereotype.Service", GROUP_STEREOTYPE, SUPPORTED, JAKARTA_SINGLETON);
+        add(entries, "org.springframework.stereotype.Repository", GROUP_STEREOTYPE, SUPPORTED, JAKARTA_SINGLETON);
         add(entries, "org.springframework.context.annotation.Configuration", GROUP_STEREOTYPE, SUPPORTED, "io.micronaut.context.annotation.Factory");
         add(entries, "org.springframework.context.annotation.Bean", GROUP_STEREOTYPE, SUPPORTED, "io.micronaut.context.annotation.Bean");
         add(entries, "org.springframework.beans.factory.annotation.Autowired", GROUP_STEREOTYPE, SUPPORTED, "jakarta.inject.Inject");
@@ -60,7 +63,7 @@ public final class SpringAnnotationCatalog {
         add(entries, "org.springframework.beans.factory.annotation.Qualifier", GROUP_STEREOTYPE, SUPPORTED, "jakarta.inject.Qualifier");
         add(entries, "org.springframework.context.annotation.Primary", GROUP_STEREOTYPE, SUPPORTED, "io.micronaut.context.annotation.Primary");
         add(entries, "org.springframework.context.annotation.Fallback", GROUP_STEREOTYPE, SUPPORTED, "io.micronaut.context.annotation.Secondary");
-        add(entries, "org.springframework.context.annotation.Profile", GROUP_STEREOTYPE, SUPPORTED, "io.micronaut.context.annotation.Requires");
+        add(entries, "org.springframework.context.annotation.Profile", GROUP_STEREOTYPE, SUPPORTED, MICRONAUT_REQUIRES);
         add(entries, "org.springframework.context.annotation.Import", GROUP_STEREOTYPE, SUPPORTED, "io.micronaut.context.annotation.Import");
 
         add(entries, "org.springframework.web.bind.annotation.RestController", GROUP_WEB, SUPPORTED, "io.micronaut.http.annotation.Controller");
@@ -78,15 +81,15 @@ public final class SpringAnnotationCatalog {
         add(entries, "org.springframework.web.bind.annotation.ResponseStatus", GROUP_WEB, SUPPORTED, "io.micronaut.http.annotation.Status");
         add(entries, "org.springframework.web.service.annotation.HttpExchange", GROUP_WEB, SUPPORTED, "io.micronaut.http.annotation.HttpMethodMapping");
 
-        add(entries, "org.springframework.boot.autoconfigure.condition.ConditionalOnBean", GROUP_CONDITIONS, SUPPORTED, "io.micronaut.context.annotation.Requires");
-        add(entries, "org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean", GROUP_CONDITIONS, SUPPORTED, "io.micronaut.context.annotation.Requires");
-        add(entries, "org.springframework.boot.autoconfigure.condition.ConditionalOnClass", GROUP_CONDITIONS, SUPPORTED, "io.micronaut.context.annotation.Requires");
-        add(entries, "org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass", GROUP_CONDITIONS, SUPPORTED, "io.micronaut.context.annotation.Requires");
-        add(entries, "org.springframework.boot.autoconfigure.condition.ConditionalOnProperty", GROUP_CONDITIONS, SUPPORTED, "io.micronaut.context.annotation.Requires");
+        add(entries, "org.springframework.boot.autoconfigure.condition.ConditionalOnBean", GROUP_CONDITIONS, SUPPORTED, MICRONAUT_REQUIRES);
+        add(entries, "org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean", GROUP_CONDITIONS, SUPPORTED, MICRONAUT_REQUIRES);
+        add(entries, "org.springframework.boot.autoconfigure.condition.ConditionalOnClass", GROUP_CONDITIONS, SUPPORTED, MICRONAUT_REQUIRES);
+        add(entries, "org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass", GROUP_CONDITIONS, SUPPORTED, MICRONAUT_REQUIRES);
+        add(entries, "org.springframework.boot.autoconfigure.condition.ConditionalOnProperty", GROUP_CONDITIONS, SUPPORTED, MICRONAUT_REQUIRES);
         add(entries, "org.springframework.boot.autoconfigure.condition.ConditionalOnProperties", GROUP_CONDITIONS, SUPPORTED, "io.micronaut.context.annotation.Requirements");
-        add(entries, "org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication", GROUP_CONDITIONS, SUPPORTED, "io.micronaut.context.annotation.Requires");
-        add(entries, "org.springframework.boot.autoconfigure.condition.ConditionalOnNotWebApplication", GROUP_CONDITIONS, SUPPORTED, "io.micronaut.context.annotation.Requires");
-        add(entries, "org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate", GROUP_CONDITIONS, SUPPORTED, "io.micronaut.context.annotation.Requires");
+        add(entries, "org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication", GROUP_CONDITIONS, SUPPORTED, MICRONAUT_REQUIRES);
+        add(entries, "org.springframework.boot.autoconfigure.condition.ConditionalOnNotWebApplication", GROUP_CONDITIONS, SUPPORTED, MICRONAUT_REQUIRES);
+        add(entries, "org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate", GROUP_CONDITIONS, SUPPORTED, MICRONAUT_REQUIRES);
 
         add(entries, "org.springframework.boot.actuate.endpoint.annotation.Endpoint", GROUP_ACTUATOR, SUPPORTED, "io.micronaut.management.endpoint.annotation.Endpoint");
         add(entries, "org.springframework.boot.actuate.endpoint.annotation.WebEndpoint", GROUP_ACTUATOR, SUPPORTED, "io.micronaut.management.endpoint.annotation.Endpoint");
@@ -114,7 +117,7 @@ public final class SpringAnnotationCatalog {
     List<SpringAnnotationInfo> findAll(Collection<String> annotationNames) {
         return annotationNames.stream()
             .map(annotations::get)
-            .filter(annotation -> annotation != null)
+            .filter(Objects::nonNull)
             .sorted(Comparator.comparing(SpringAnnotationInfo::group).thenComparing(SpringAnnotationInfo::simpleName))
             .toList();
     }
