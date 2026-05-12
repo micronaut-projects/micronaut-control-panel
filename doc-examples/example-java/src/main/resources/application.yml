@@ -37,6 +37,13 @@ jackson:
     generator:
       write-xml-declaration: true
 
+info:
+  demo:
+    name: Micronaut Control Panel Example
+    environment:
+      purpose: Local development
+      owner: Micronaut
+
 ehcache:
   caches:
     my-ehcache:
@@ -55,6 +62,8 @@ endpoints:
     sensitive: false
   health:
     details-visible: ANONYMOUS
+  info:
+    enabled: true
 
 infinispan:
   enabled: false
