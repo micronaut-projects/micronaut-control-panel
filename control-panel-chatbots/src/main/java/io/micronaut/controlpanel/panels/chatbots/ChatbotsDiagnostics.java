@@ -20,13 +20,13 @@ import java.util.List;
 
 final class ChatbotsDiagnostics {
 
-    private final boolean includeWebhookLookup;
-
     final List<ChatbotsControlPanel.BotRow> bots = new ArrayList<>();
     final List<ChatbotsControlPanel.EndpointRow> endpoints = new ArrayList<>();
     final List<ChatbotsControlPanel.HandlerRow> handlers = new ArrayList<>();
     final List<ChatbotsControlPanel.WebhookRow> webhooks = new ArrayList<>();
     final List<ChatbotsControlPanel.SetupHint> setupHints = new ArrayList<>();
+
+    private final boolean includeWebhookLookup;
 
     ChatbotsDiagnostics(boolean includeWebhookLookup) {
         this.includeWebhookLookup = includeWebhookLookup;

@@ -111,6 +111,16 @@ public class ChatbotsControlPanel extends AbstractControlPanel<ChatbotsControlPa
         return webhooks.get(0).state();
     }
 
+    /**
+     * Body returned by the Chatbots control panel.
+     *
+     * @param summary    summary counts
+     * @param bots       configured bot rows
+     * @param endpoints  endpoint rows
+     * @param handlers   handler rows
+     * @param webhooks   Telegram webhook status rows
+     * @param setupHints setup command hints
+     */
     @ReflectiveAccess
     public record Body(Summary summary,
                        List<BotRow> bots,
@@ -119,6 +129,16 @@ public class ChatbotsControlPanel extends AbstractControlPanel<ChatbotsControlPa
                        List<WebhookRow> webhooks,
                        List<SetupHint> setupHints) { }
 
+    /**
+     * Summary counts for the Chatbots control panel.
+     *
+     * @param totalBots               total configured bots
+     * @param enabledBots             total enabled bots
+     * @param endpointCount           total inspected endpoints
+     * @param registeredEndpointCount total registered endpoints
+     * @param handlerCount            total discovered handlers
+     * @param webhookLookupState      webhook lookup summary state
+     */
     @ReflectiveAccess
     public record Summary(int totalBots,
                           int enabledBots,
@@ -127,6 +147,15 @@ public class ChatbotsControlPanel extends AbstractControlPanel<ChatbotsControlPa
                           int handlerCount,
                           String webhookLookupState) { }
 
+    /**
+     * Configured bot row for the Chatbots control panel.
+     *
+     * @param channel     bot channel
+     * @param name        bot name
+     * @param username    bot username
+     * @param enabled     whether the bot is enabled
+     * @param tokenStatus redacted token status
+     */
     @ReflectiveAccess
     public record BotRow(String channel,
                          String name,
@@ -134,6 +163,17 @@ public class ChatbotsControlPanel extends AbstractControlPanel<ChatbotsControlPa
                          boolean enabled,
                          String tokenStatus) { }
 
+    /**
+     * HTTP endpoint row for the Chatbots control panel.
+     *
+     * @param channel           endpoint channel
+     * @param modulePresent     whether the HTTP module is present
+     * @param configuredEnabled whether the endpoint is enabled by configuration
+     * @param routeRegistered   whether the endpoint route is registered
+     * @param path              effective endpoint path
+     * @param state             endpoint state label
+     * @param source            endpoint path source
+     */
     @ReflectiveAccess
     public record EndpointRow(String channel,
                               boolean modulePresent,
@@ -143,6 +183,16 @@ public class ChatbotsControlPanel extends AbstractControlPanel<ChatbotsControlPa
                               String state,
                               String source) { }
 
+    /**
+     * Handler bean row for the Chatbots control panel.
+     *
+     * @param beanName        bean name
+     * @param className       handler class name
+     * @param channel         handler channel
+     * @param order           handler order
+     * @param outputType      handler output type
+     * @param sourceInterface handler source interface
+     */
     @ReflectiveAccess
     public record HandlerRow(String beanName,
                              String className,
@@ -151,6 +201,21 @@ public class ChatbotsControlPanel extends AbstractControlPanel<ChatbotsControlPa
                              String outputType,
                              String sourceInterface) { }
 
+    /**
+     * Telegram webhook status row for the Chatbots control panel.
+     *
+     * @param botName           bot name
+     * @param state             webhook lookup state
+     * @param available         whether webhook status is available
+     * @param expectedUrl       expected webhook URL
+     * @param returnedUrl       returned webhook URL
+     * @param matchStatus       webhook URL match status
+     * @param pendingUpdates    pending update count
+     * @param lastError         last Telegram webhook error
+     * @param maxConnections    configured maximum connections
+     * @param allowedUpdates    allowed update types
+     * @param customCertificate custom certificate status
+     */
     @ReflectiveAccess
     public record WebhookRow(String botName,
                              String state,
@@ -164,6 +229,13 @@ public class ChatbotsControlPanel extends AbstractControlPanel<ChatbotsControlPa
                              String allowedUpdates,
                              String customCertificate) { }
 
+    /**
+     * Setup hint row for the Chatbots control panel.
+     *
+     * @param channel setup channel
+     * @param label   setup hint label
+     * @param command setup command with placeholders
+     */
     @ReflectiveAccess
     public record SetupHint(String channel,
                             String label,
