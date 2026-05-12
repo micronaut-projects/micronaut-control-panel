@@ -1712,16 +1712,39 @@ access outside the control panel.</p>
 <div class="ulist">
 <ul>
 <li>
-<p>Database schema discovery, inspecting tables, columns, primary/foreign keys and indexes.</p>
+<p>Database schema discovery with connection, database, and driver details grouped on the datasource card.</p>
 </li>
 <li>
-<p>Visualize relationships in an E/R diagram.</p>
+<p>A table browser that loads tables page by page, with schema and name filters.</p>
 </li>
 <li>
-<p>SQL console with schema autocompletion and client-side SQL linting.</p>
+<p>Table detail for columns, keys, relationships, and a focused E/R diagram.</p>
+</li>
+<li>
+<p>SQL console with schema autocompletion, client-side SQL linting, and paginated query results.</p>
+</li>
+<li>
+<p>JSON display actions for supported databases.</p>
+</li>
+<li>
+<p>Optional connection pool status and options for supported pool implementations.</p>
 </li>
 </ul>
 </div>
+<div class="sect2">
+<h3 id="_browsing_tables">Browsing Tables</h3>
+<div class="paragraph">
+<p>The <code>Tables</code> tab lists tables without rendering the full datasource schema at once. Use the schema filter and table search field to narrow the current page, then click a table row to open its detail panel.</p>
+</div>
+<div class="paragraph">
+<p>The table detail panel shows the selected table name and schema, columns, primary keys, foreign keys, unique keys, relationship links, and an E/R diagram for the selected table. Relationship links open the related table detail so you can move through the schema without returning to the datasource list.</p>
+</div>
+<div class="paragraph">
+<p>The table list and detail panel are separated by a resizable divider. The detail panel can also be collapsed from the table detail icon when you need more room for the table list.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_sql_and_json_results">SQL and JSON Results</h3>
 <div class="paragraph">
 <p>The SQL console can execute ad hoc queries and displays the result set in a paginated table:</p>
 </div>
@@ -1730,6 +1753,33 @@ access outside the control panel.</p>
 <img src="../img/datasource-query.png" alt="Datasource SQL query browser">
 </div>
 <div class="title">Figure 1. Datasource SQL query browser</div>
+</div>
+<div class="paragraph">
+<p>Table actions can insert a <code>SELECT *</code> query or a database-specific JSON query for the selected table. PostgreSQL datasources use <code>to_json</code>/<code>to_jsonb</code> queries, and Oracle datasources use <code>JSON_OBJECT(&#8230;&#8203; RETURNING JSON)</code> so the returned column metadata identifies JSON values.</p>
+</div>
+<div class="paragraph">
+<p>When a query result column is JSON, the cell is highlighted as JSON. Click the cell to format the JSON in place; click it again to return to the compact value. Non-JSON columns continue to render as regular table cells.</p>
+</div>
+<div class="paragraph">
+<p>If the selected table has relationships, the table actions also include a JSON-with-relationships query. The generated JSON contains all table properties plus relationship properties named after the foreign key or relationship name.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_connection_pools">Connection Pools</h3>
+<div class="paragraph">
+<p>When a supported pool implementation is present on the classpath and the datasource uses that pool, the datasource detail includes a <code>Pool</code> tab:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../img/datasource-pool.png" alt="Datasource connection pool details">
+</div>
+<div class="title">Figure 2. Datasource connection pool details</div>
+</div>
+<div class="paragraph">
+<p>The pool tab shows a refreshable connection status card with active, idle, remaining, total, min, max, and waiting connection counts. It also lists pool options such as JDBC URL, user, sizing, timeouts, validation SQL, and behavior flags.</p>
+</div>
+<div class="paragraph">
+<p>HikariCP pools are detected when <code>micronaut-jdbc-hikari</code>/HikariCP is present. Oracle UCP pools are detected when <code>micronaut-jdbc-ucp</code>/Oracle UCP is present. The tab is omitted when no supported pool inspector is available for the datasource.</p>
 </div>
 <div class="paragraph">
 <p>To get started, add the following module as a development-time dependency:</p>
@@ -1768,6 +1818,7 @@ check the following documentation:</p>
 <p><a href="https://guides.micronaut.io/latest/micronaut-jpa-hibernate.html">Access a database with JPA and Hibernate using Micronaut Data</a></p>
 </li>
 </ul>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_configuration">Configuration</h3>

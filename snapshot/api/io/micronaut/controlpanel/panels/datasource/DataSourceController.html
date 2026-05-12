@@ -65,6 +65,9 @@ loadScripts(document, 'script');</script>
 <li><a href="#method-detail" tabindex="0">Method Details</a>
 <ol class="toc-list">
 <li><a href="#schemaJs(java.lang.String)" tabindex="0">schemaJs(String)</a></li>
+<li><a href="#tables(java.lang.String,java.lang.Integer,java.lang.Integer,java.lang.String,java.lang.String)" tabindex="0">tables(String, Integer, Integer, String, String)</a></li>
+<li><a href="#tableDetail(java.lang.String,java.lang.String,java.lang.String)" tabindex="0">tableDetail(String, String, String)</a></li>
+<li><a href="#poolStatus(java.lang.String)" tabindex="0">poolStatus(String)</a></li>
 <li><a href="#query(java.lang.String,io.micronaut.controlpanel.panels.datasource.DataSourceController.QueryRequest)" tabindex="0">query(String, DataSourceController.QueryRequest)</a></li>
 </ol>
 </li>
@@ -108,6 +111,16 @@ Designed to return paged query results for the Control Panel table renderer.</di
 <div class="table-header col-second">Class</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><code>static final record&nbsp;</code></div>
+<div class="col-second even-row-color"><code><a href="DataSourceController.ColumnDetail.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.datasource">DataSourceController.ColumnDetail</a></code></div>
+<div class="col-last even-row-color">
+<div class="block">View model for a selected table column.</div>
+</div>
+<div class="col-first odd-row-color"><code>static final record&nbsp;</code></div>
+<div class="col-second odd-row-color"><code><a href="DataSourceController.PageSizeOption.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.datasource">DataSourceController.PageSizeOption</a></code></div>
+<div class="col-last odd-row-color">
+<div class="block">View model for a table page-size option.</div>
+</div>
+<div class="col-first even-row-color"><code>static final record&nbsp;</code></div>
 <div class="col-second even-row-color"><code><a href="DataSourceController.QueryRequest.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.datasource">DataSourceController.QueryRequest</a></code></div>
 <div class="col-last even-row-color">
 <div class="block">Request DTO for query execution.</div>
@@ -116,6 +129,26 @@ Designed to return paged query results for the Control Panel table renderer.</di
 <div class="col-second odd-row-color"><code><a href="DataSourceController.QueryResponse.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.datasource">DataSourceController.QueryResponse</a></code></div>
 <div class="col-last odd-row-color">
 <div class="block">Response DTO for paged query results with column labels.</div>
+</div>
+<div class="col-first even-row-color"><code>static final record&nbsp;</code></div>
+<div class="col-second even-row-color"><code><a href="DataSourceController.RelationshipDetail.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.datasource">DataSourceController.RelationshipDetail</a></code></div>
+<div class="col-last even-row-color">
+<div class="block">View model for a selected table relationship.</div>
+</div>
+<div class="col-first odd-row-color"><code>static final record&nbsp;</code></div>
+<div class="col-second odd-row-color"><code><a href="DataSourceController.TableDetail.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.datasource">DataSourceController.TableDetail</a></code></div>
+<div class="col-last odd-row-color">
+<div class="block">View model for the selected datasource table detail.</div>
+</div>
+<div class="col-first even-row-color"><code>static final record&nbsp;</code></div>
+<div class="col-second even-row-color"><code><a href="DataSourceController.TableRow.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.datasource">DataSourceController.TableRow</a></code></div>
+<div class="col-last even-row-color">
+<div class="block">View model for a datasource table row.</div>
+</div>
+<div class="col-first odd-row-color"><code>static final record&nbsp;</code></div>
+<div class="col-second odd-row-color"><code><a href="DataSourceController.TablesPage.html" class="type-name-link" title="class in io.micronaut.controlpanel.panels.datasource">DataSourceController.TablesPage</a></code></div>
+<div class="col-last odd-row-color">
+<div class="block">View model for one page of datasource tables.</div>
 </div>
 </div>
 </section>
@@ -145,16 +178,37 @@ Designed to return paged query results for the Control Panel table renderer.</di
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>io.micronaut.http.HttpResponse<wbr>&lt;<a href="DataSourceController.QueryResponse.html" title="class in io.micronaut.controlpanel.panels.datasource">DataSourceController.QueryResponse</a>&gt;</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#query(java.lang.String,io.micronaut.controlpanel.panels.datasource.DataSourceController.QueryRequest)" class="member-name-link">query</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;dataSource,
- <a href="DataSourceController.QueryRequest.html" title="class in io.micronaut.controlpanel.panels.datasource">DataSourceController.QueryRequest</a>&nbsp;body)</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>io.micronaut.http.HttpResponse<wbr>&lt;<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&gt;</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#poolStatus(java.lang.String)" class="member-name-link">poolStatus</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;dataSource)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Renders current datasource pool status as an HTML fragment.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>io.micronaut.http.HttpResponse<wbr>&lt;<a href="DataSourceController.QueryResponse.html" title="class in io.micronaut.controlpanel.panels.datasource">DataSourceController.QueryResponse</a>&gt;</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#query(java.lang.String,io.micronaut.controlpanel.panels.datasource.DataSourceController.QueryRequest)" class="member-name-link">query</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;dataSource,
+ <a href="DataSourceController.QueryRequest.html" title="class in io.micronaut.controlpanel.panels.datasource">DataSourceController.QueryRequest</a>&nbsp;body)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Execute a SQL query against the specified datasource.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>io.micronaut.http.HttpResponse<wbr>&lt;<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#schemaJs(java.lang.String)" class="member-name-link">schemaJs</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;dataSource)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>io.micronaut.http.HttpResponse<wbr>&lt;<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#schemaJs(java.lang.String)" class="member-name-link">schemaJs</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;dataSource)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Build CodeMirror SQLNamespace with normalized lowercase keys for matching.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>io.micronaut.http.HttpResponse<wbr>&lt;<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&gt;</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#tableDetail(java.lang.String,java.lang.String,java.lang.String)" class="member-name-link">tableDetail</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;dataSource,
+ @Nullable <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;schema,
+ <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;tableName)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Renders a single datasource table detail as an HTML fragment.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>io.micronaut.http.HttpResponse<wbr>&lt;<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&gt;</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#tables(java.lang.String,java.lang.Integer,java.lang.Integer,java.lang.String,java.lang.String)" class="member-name-link">tables</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;dataSource,
+ @Nullable <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Integer.html" title="class or interface in java.lang" class="external-link">Integer</a>&nbsp;page,
+ @Nullable <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Integer.html" title="class or interface in java.lang" class="external-link">Integer</a>&nbsp;size,
+ @Nullable <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;schema,
+ @Nullable <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;search)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Renders one page of datasource tables as an HTML fragment.</div>
 </div>
 </div>
 </div>
@@ -207,6 +261,75 @@ Designed to return paged query results for the Control Panel table renderer.</di
 <dd><code>dataSource</code> - The name of the datasource</dd>
 <dt>Returns:</dt>
 <dd>HttpResponse containing the generated schema.js JavaScript</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="tables(java.lang.String,java.lang.Integer,java.lang.Integer,java.lang.String,java.lang.String)">
+<h3>tables</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="annotations">@Get(value="/{dataSource}/tables",
+     produces="text/html")
+</span><span class="modifiers">public</span>&nbsp;<span class="return-type">io.micronaut.http.HttpResponse&lt;<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&gt;</span>&nbsp;<span class="element-name">tables</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;dataSource,
+ @QueryValue
+ @Nullable <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Integer.html" title="class or interface in java.lang" class="external-link">Integer</a>&nbsp;page,
+ @QueryValue
+ @Nullable <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Integer.html" title="class or interface in java.lang" class="external-link">Integer</a>&nbsp;size,
+ @QueryValue
+ @Nullable <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;schema,
+ @QueryValue
+ @Nullable <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;search)</span></div>
+<div class="block">Renders one page of datasource tables as an HTML fragment.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>dataSource</code> - The name of the datasource</dd>
+<dd><code>page</code> - The 1-based page number</dd>
+<dd><code>size</code> - The number of tables per page</dd>
+<dd><code>schema</code> - The schema to filter by, or null for all schemas</dd>
+<dd><code>search</code> - The table search term, or null for all table names</dd>
+<dt>Returns:</dt>
+<dd>A server-rendered HTML fragment containing one table page</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="tableDetail(java.lang.String,java.lang.String,java.lang.String)">
+<h3>tableDetail</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="annotations">@Get(value="/{dataSource}/tables/detail",
+     produces="text/html")
+</span><span class="modifiers">public</span>&nbsp;<span class="return-type">io.micronaut.http.HttpResponse&lt;<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&gt;</span>&nbsp;<span class="element-name">tableDetail</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;dataSource,
+ @QueryValue
+ @Nullable <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;schema,
+ @QueryValue("table")
+ <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;tableName)</span></div>
+<div class="block">Renders a single datasource table detail as an HTML fragment.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>dataSource</code> - The name of the datasource</dd>
+<dd><code>schema</code> - The table schema</dd>
+<dd><code>tableName</code> - The table name</dd>
+<dt>Returns:</dt>
+<dd>A server-rendered HTML fragment for the selected table</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="poolStatus(java.lang.String)">
+<h3>poolStatus</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="annotations">@Get(value="/{dataSource}/pool/status",
+     produces="text/html")
+</span><span class="modifiers">public</span>&nbsp;<span class="return-type">io.micronaut.http.HttpResponse&lt;<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&gt;</span>&nbsp;<span class="element-name">poolStatus</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;dataSource)</span></div>
+<div class="block">Renders current datasource pool status as an HTML fragment.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>dataSource</code> - The name of the datasource</dd>
+<dt>Returns:</dt>
+<dd>A server-rendered HTML fragment for the current pool status</dd>
 </dl>
 </div>
 </section>

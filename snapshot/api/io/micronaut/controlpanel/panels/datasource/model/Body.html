@@ -59,16 +59,19 @@ loadScripts(document, 'script');</script>
 <li><a href="#constructor-detail" tabindex="0">Constructor Details</a>
 <ol class="toc-list">
 <li><a href="#%3Cinit%3E(io.micronaut.controlpanel.panels.datasource.model.DataSourceInfo,java.util.List,java.lang.String)" tabindex="0">Body(DataSourceInfo, List, String)</a></li>
+<li><a href="#%3Cinit%3E(io.micronaut.controlpanel.panels.datasource.model.DataSourceInfo,java.util.List,java.lang.String,io.micronaut.controlpanel.panels.datasource.model.PoolInfo)" tabindex="0">Body(DataSourceInfo, List, String, PoolInfo)</a></li>
 </ol>
 </li>
 <li><a href="#method-detail" tabindex="0">Method Details</a>
 <ol class="toc-list">
+<li><a href="#tableSchemas()" tabindex="0">tableSchemas()</a></li>
 <li><a href="#toString()" tabindex="0">toString()</a></li>
 <li><a href="#hashCode()" tabindex="0">hashCode()</a></li>
 <li><a href="#equals(java.lang.Object)" tabindex="0">equals(Object)</a></li>
 <li><a href="#dataSourceInfo()" tabindex="0">dataSourceInfo()</a></li>
 <li><a href="#tables()" tabindex="0">tables()</a></li>
 <li><a href="#mermaidEr()" tabindex="0">mermaidEr()</a></li>
+<li><a href="#poolInfo()" tabindex="0">poolInfo()</a></li>
 </ol>
 </li>
 </ol>
@@ -89,10 +92,11 @@ loadScripts(document, 'script');</script>
 <dd><code><span id="param-dataSourceInfo">dataSourceInfo</span></code> - The DataSource information</dd>
 <dd><code><span id="param-tables">tables</span></code> - The list of tables</dd>
 <dd><code><span id="param-mermaidEr">mermaidEr</span></code> - The Mermaid ER diagram code generated from the datasource</dd>
+<dd><code><span id="param-poolInfo">poolInfo</span></code> - The datasource connection pool metadata, if a supported pool is present</dd>
 </dl>
 <hr>
 <div class="horizontal-scroll">
-<div class="type-signature"><span class="modifiers">public record </span><span class="element-name type-name-label">Body</span>(<a href="DataSourceInfo.html" title="class in io.micronaut.controlpanel.panels.datasource.model">DataSourceInfo</a>&nbsp;dataSourceInfo, <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="Table.html" title="class in io.micronaut.controlpanel.panels.datasource.model">Table</a>&gt;&nbsp;tables, <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;mermaidEr)
+<div class="type-signature"><span class="modifiers">public record </span><span class="element-name type-name-label">Body</span>(<a href="DataSourceInfo.html" title="class in io.micronaut.controlpanel.panels.datasource.model">DataSourceInfo</a>&nbsp;dataSourceInfo, <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="Table.html" title="class in io.micronaut.controlpanel.panels.datasource.model">Table</a>&gt;&nbsp;tables, <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;mermaidEr, <a href="PoolInfo.html" title="class in io.micronaut.controlpanel.panels.datasource.model">PoolInfo</a>&nbsp;poolInfo)
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Record.html" title="class or interface in java.lang" class="external-link">Record</a></span></div>
 <div class="block">Body of the control panel containing DataSource info and tables.</div>
 </div>
@@ -110,7 +114,12 @@ loadScripts(document, 'script');</script>
 <div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(io.micronaut.controlpanel.panels.datasource.model.DataSourceInfo,java.util.List,java.lang.String)" class="member-name-link">Body</a><wbr>(<a href="DataSourceInfo.html" title="class in io.micronaut.controlpanel.panels.datasource.model">DataSourceInfo</a>&nbsp;dataSourceInfo,
  <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="Table.html" title="class in io.micronaut.controlpanel.panels.datasource.model">Table</a>&gt;&nbsp;tables,
  <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;mermaidEr)</code></div>
-<div class="col-last even-row-color">
+<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-constructor-name odd-row-color"><code><a href="#%3Cinit%3E(io.micronaut.controlpanel.panels.datasource.model.DataSourceInfo,java.util.List,java.lang.String,io.micronaut.controlpanel.panels.datasource.model.PoolInfo)" class="member-name-link">Body</a><wbr>(<a href="DataSourceInfo.html" title="class in io.micronaut.controlpanel.panels.datasource.model">DataSourceInfo</a>&nbsp;dataSourceInfo,
+ <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="Table.html" title="class in io.micronaut.controlpanel.panels.datasource.model">Table</a>&gt;&nbsp;tables,
+ <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;mermaidEr,
+ <a href="PoolInfo.html" title="class in io.micronaut.controlpanel.panels.datasource.model">PoolInfo</a>&nbsp;poolInfo)</code></div>
+<div class="col-last odd-row-color">
 <div class="block">Creates an instance of a <code>Body</code> record class.</div>
 </div>
 </div>
@@ -147,11 +156,19 @@ loadScripts(document, 'script');</script>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns the value of the <a href="#param-mermaidEr"><code>mermaidEr</code></a> record component.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a><wbr>&lt;<a href="Table.html" title="class in io.micronaut.controlpanel.panels.datasource.model">Table</a>&gt;</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#tables()" class="member-name-link">tables</a>()</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="PoolInfo.html" title="class in io.micronaut.controlpanel.panels.datasource.model">PoolInfo</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#poolInfo()" class="member-name-link">poolInfo</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Returns the value of the <a href="#param-poolInfo"><code>poolInfo</code></a> record component.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a><wbr>&lt;<a href="Table.html" title="class in io.micronaut.controlpanel.panels.datasource.model">Table</a>&gt;</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#tables()" class="member-name-link">tables</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns the value of the <a href="#param-tables"><code>tables</code></a> record component.</div>
 </div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a><wbr>&lt;<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#tableSchemas()" class="member-name-link">tableSchemas</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#toString()" class="member-name-link">toString</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
@@ -181,12 +198,24 @@ loadScripts(document, 'script');</script>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">Body</span><wbr><span class="parameters">(<a href="DataSourceInfo.html" title="class in io.micronaut.controlpanel.panels.datasource.model">DataSourceInfo</a>&nbsp;dataSourceInfo,
  <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="Table.html" title="class in io.micronaut.controlpanel.panels.datasource.model">Table</a>&gt;&nbsp;tables,
  <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;mermaidEr)</span></div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="&lt;init&gt;(io.micronaut.controlpanel.panels.datasource.model.DataSourceInfo,java.util.List,java.lang.String,io.micronaut.controlpanel.panels.datasource.model.PoolInfo)">
+<h3>Body</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">Body</span><wbr><span class="parameters">(<a href="DataSourceInfo.html" title="class in io.micronaut.controlpanel.panels.datasource.model">DataSourceInfo</a>&nbsp;dataSourceInfo,
+ <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="Table.html" title="class in io.micronaut.controlpanel.panels.datasource.model">Table</a>&gt;&nbsp;tables,
+ <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;mermaidEr,
+ <a href="PoolInfo.html" title="class in io.micronaut.controlpanel.panels.datasource.model">PoolInfo</a>&nbsp;poolInfo)</span></div>
 <div class="block">Creates an instance of a <code>Body</code> record class.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
 <dd><code>dataSourceInfo</code> - the value for the <a href="#param-dataSourceInfo"><code>dataSourceInfo</code></a> record component</dd>
 <dd><code>tables</code> - the value for the <a href="#param-tables"><code>tables</code></a> record component</dd>
 <dd><code>mermaidEr</code> - the value for the <a href="#param-mermaidEr"><code>mermaidEr</code></a> record component</dd>
+<dd><code>poolInfo</code> - the value for the <a href="#param-poolInfo"><code>poolInfo</code></a> record component</dd>
 </dl>
 </div>
 </section>
@@ -199,6 +228,18 @@ loadScripts(document, 'script');</script>
 <section class="method-details" id="method-detail">
 <h2>Method Details</h2>
 <ul class="member-list">
+<li>
+<section class="detail" id="tableSchemas()">
+<h3>tableSchemas</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</span>&nbsp;<span class="element-name">tableSchemas</span>()</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>The distinct table schemas in datasource metadata order.</dd>
+</dl>
+</div>
+</section>
+</li>
 <li>
 <section class="detail" id="toString()">
 <h3>toString</h3>
@@ -281,6 +322,19 @@ loadScripts(document, 'script');</script>
 <dl class="notes">
 <dt>Returns:</dt>
 <dd>the value of the <a href="#param-mermaidEr"><code>mermaidEr</code></a> record component</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="poolInfo()">
+<h3>poolInfo</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="PoolInfo.html" title="class in io.micronaut.controlpanel.panels.datasource.model">PoolInfo</a></span>&nbsp;<span class="element-name">poolInfo</span>()</div>
+<div class="block">Returns the value of the <a href="#param-poolInfo"><code>poolInfo</code></a> record component.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the value of the <a href="#param-poolInfo"><code>poolInfo</code></a> record component</dd>
 </dl>
 </div>
 </section>
