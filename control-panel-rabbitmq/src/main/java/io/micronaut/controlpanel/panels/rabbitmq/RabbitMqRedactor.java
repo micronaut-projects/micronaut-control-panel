@@ -33,7 +33,7 @@ final class RabbitMqRedactor {
 
     static final String REDACTED = "redacted";
 
-    private static final Pattern SECRET_KEY = Pattern.compile("(?i).*(password|passwd|pwd|secret|token|credential|key).*");
+    private static final Pattern NON_KEY_CHARS = Pattern.compile("[^a-z0-9]");
 
     private RabbitMqRedactor() {
     }
@@ -54,7 +54,7 @@ final class RabbitMqRedactor {
     }
 
     static String redactKeyValue(String key, @Nullable Object value) {
-        if (SECRET_KEY.matcher(key).matches()) {
+        if (isSensitiveKey(key)) {
             return REDACTED;
         }
         return redact(value == null ? null : String.valueOf(value));
@@ -73,6 +73,20 @@ final class RabbitMqRedactor {
             || lower.startsWith("passwd=")
             || lower.startsWith("token=")
             || lower.startsWith("secret=");
+    }
+
+    private static boolean isSensitiveKey(String key) {
+        String compact = NON_KEY_CHARS.matcher(key.toLowerCase(Locale.ROOT)).replaceAll("");
+        return compact.contains("password")
+            || compact.contains("passwd")
+            || compact.contains("secret")
+            || compact.contains("token")
+            || compact.contains("credential")
+            || compact.equals("key")
+            || compact.endsWith("apikey")
+            || compact.endsWith("accesskey")
+            || compact.endsWith("privatekey")
+            || compact.endsWith("consumerkey");
     }
 
     private static @Nullable String redactUri(String value) {

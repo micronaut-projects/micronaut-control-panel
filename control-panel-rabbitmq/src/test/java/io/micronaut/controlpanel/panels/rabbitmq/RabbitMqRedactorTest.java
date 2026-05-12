@@ -30,6 +30,12 @@ class RabbitMqRedactorTest {
     void redactsSecretKeyValuePairs() {
         assertEquals(RabbitMqRedactor.REDACTED, RabbitMqRedactor.redact("password=secret"));
         assertEquals(RabbitMqRedactor.REDACTED, RabbitMqRedactor.redactKeyValue("server.password", "secret"));
+        assertEquals(RabbitMqRedactor.REDACTED, RabbitMqRedactor.redactKeyValue("api-key", "secret"));
         assertEquals(RabbitMqRedactor.REDACTED, RabbitMqRedactor.redactCredential("developer"));
+    }
+
+    @Test
+    void keepsNonSensitiveKeysVisible() {
+        assertEquals("orders.created", RabbitMqRedactor.redactKeyValue("routingKey", "orders.created"));
     }
 }

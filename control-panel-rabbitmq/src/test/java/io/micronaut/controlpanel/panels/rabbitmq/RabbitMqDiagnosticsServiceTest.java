@@ -38,6 +38,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RabbitMqDiagnosticsServiceTest {
@@ -116,7 +117,7 @@ class RabbitMqDiagnosticsServiceTest {
             RabbitMqBody body = context.getBean(RabbitMqControlPanel.class).getBody();
 
             assertNotNull(body);
-            assertEquals(null, body.managementUrl());
+            assertNull(body.managementUrl());
         }
     }
 
@@ -130,7 +131,7 @@ class RabbitMqDiagnosticsServiceTest {
             RabbitMqBody body = context.getBean(RabbitMqControlPanel.class).getBody();
 
             assertNotNull(body);
-            assertEquals(null, body.managementUrl());
+            assertNull(body.managementUrl());
         }
     }
 
