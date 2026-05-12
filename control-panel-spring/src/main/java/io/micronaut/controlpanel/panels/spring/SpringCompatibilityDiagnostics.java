@@ -18,6 +18,7 @@ package io.micronaut.controlpanel.panels.spring;
 import io.micronaut.context.BeanContext;
 import io.micronaut.context.DisabledBean;
 import io.micronaut.core.annotation.AnnotationMetadata;
+import io.micronaut.core.annotation.AnnotationValue;
 import io.micronaut.core.reflect.ClassUtils;
 import io.micronaut.inject.BeanDefinition;
 import io.micronaut.inject.ExecutableMethod;
@@ -25,10 +26,13 @@ import io.micronaut.web.router.Router;
 import io.micronaut.web.router.UriRouteInfo;
 import jakarta.inject.Singleton;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -55,6 +59,7 @@ public final class SpringCompatibilityDiagnostics {
     private final Optional<Router> router;
     private final SpringCompatibilityConfiguration configuration;
     private final SpringAnnotationCatalog catalog = new SpringAnnotationCatalog();
+    private final SpringAnnotationValueSanitizer sanitizer = new SpringAnnotationValueSanitizer();
 
     /**
      * @param beanContext bean context
@@ -122,6 +127,7 @@ public final class SpringCompatibilityDiagnostics {
             state,
             springAnnotations,
             mappedAnnotations(beanDefinition.getAnnotationMetadata(), null),
+            annotationValuesForGroup(beanDefinition.getAnnotationMetadata(), null),
             requirementSummary
         );
     }
@@ -138,7 +144,8 @@ public final class SpringCompatibilityDiagnostics {
                 route.getUriMatchTemplate().toPathString(),
                 declaringMethod(route.getTargetMethod().getExecutableMethod()),
                 annotationNames(route.getTargetMethod().getAnnotationMetadata(), GROUP_WEB),
-                mappedAnnotations(route.getTargetMethod().getAnnotationMetadata(), GROUP_WEB)
+                mappedAnnotations(route.getTargetMethod().getAnnotationMetadata(), GROUP_WEB),
+                annotationValuesForGroup(route.getTargetMethod().getAnnotationMetadata(), GROUP_WEB)
             ))
             .toList();
     }
@@ -168,6 +175,7 @@ public final class SpringCompatibilityDiagnostics {
                     state,
                     annotation.annotationName(),
                     annotation.mappedAnnotationName(),
+                    annotationValuesForAnnotation(beanDefinition.getAnnotationMetadata(), annotation.annotationName()),
                     requirementSummary.isBlank() && beanDefinition.getAnnotationMetadata().hasAnnotation(REQUIRES_ANNOTATION)
                         ? "Mapped to @Requires"
                         : requirementSummary
@@ -190,7 +198,8 @@ public final class SpringCompatibilityDiagnostics {
                             declaringMethod(method),
                             "/" + endpointId,
                             methodAnnotations,
-                            mappedAnnotations(method.getAnnotationMetadata(), GROUP_ACTUATOR)
+                            mappedAnnotations(method.getAnnotationMetadata(), GROUP_ACTUATOR),
+                            annotationValuesForGroup(method.getAnnotationMetadata(), GROUP_ACTUATOR)
                         ));
                     }
                 }
@@ -261,6 +270,92 @@ public final class SpringCompatibilityDiagnostics {
             }
         }
         return List.copyOf(mapped);
+    }
+
+    private List<SpringCompatibilityBody.AnnotationValueRow> annotationValuesForGroup(AnnotationMetadata metadata, String group) {
+        if (!configuration.isShowAnnotationValues()) {
+            return List.of();
+        }
+        List<SpringCompatibilityBody.AnnotationValueRow> rows = new ArrayList<>();
+        for (SpringAnnotationCatalog.SpringAnnotationInfo annotation : catalog.findAll(allAnnotationNames(metadata))) {
+            if (group == null || group.equals(annotation.group())) {
+                addAnnotationValues(rows, annotation.annotationName(), metadata);
+            }
+        }
+        return rows.stream()
+            .sorted(Comparator.comparing(SpringCompatibilityBody.AnnotationValueRow::annotationName)
+                .thenComparing(SpringCompatibilityBody.AnnotationValueRow::memberName))
+            .toList();
+    }
+
+    private List<SpringCompatibilityBody.AnnotationValueRow> annotationValuesForAnnotation(AnnotationMetadata metadata, String annotationName) {
+        if (!configuration.isShowAnnotationValues()) {
+            return List.of();
+        }
+        List<SpringCompatibilityBody.AnnotationValueRow> rows = new ArrayList<>();
+        addAnnotationValues(rows, annotationName, metadata);
+        return rows.stream()
+            .sorted(Comparator.comparing(SpringCompatibilityBody.AnnotationValueRow::annotationName)
+                .thenComparing(SpringCompatibilityBody.AnnotationValueRow::memberName))
+            .toList();
+    }
+
+    private void addAnnotationValues(List<SpringCompatibilityBody.AnnotationValueRow> rows,
+                                     String annotationName,
+                                     AnnotationMetadata metadata) {
+        List<AnnotationValue<java.lang.annotation.Annotation>> values = metadata.getAnnotationValuesByName(annotationName);
+        if (values.isEmpty()) {
+            Map<CharSequence, Object> directValues = metadata.getValues(annotationName);
+            if (!directValues.isEmpty()) {
+                addAnnotationValueMembers(rows, annotationName, "", directValues);
+            }
+            return;
+        }
+        for (AnnotationValue<?> value : values) {
+            addAnnotationValueMembers(rows, annotationName, "", value.getValues());
+        }
+    }
+
+    private void addAnnotationValueMembers(List<SpringCompatibilityBody.AnnotationValueRow> rows,
+                                           String annotationName,
+                                           String prefix,
+                                           Map<CharSequence, Object> values) {
+        for (Map.Entry<CharSequence, Object> entry : values.entrySet()) {
+            String memberName = prefix + entry.getKey();
+            Object value = entry.getValue();
+            if (value instanceof AnnotationValue<?> annotationValue) {
+                addAnnotationValueMembers(rows, annotationName, memberName + ".", annotationValue.getValues());
+            } else if (value instanceof AnnotationValue<?>[] annotationValues) {
+                for (int i = 0; i < annotationValues.length; i++) {
+                    addAnnotationValueMembers(rows, annotationName, memberName + "[" + i + "].", annotationValues[i].getValues());
+                }
+            } else {
+                rows.add(new SpringCompatibilityBody.AnnotationValueRow(
+                    annotationName,
+                    memberName,
+                    sanitizer.summarize(memberName, displayValue(value), true)
+                ));
+            }
+        }
+    }
+
+    private static String displayValue(Object value) {
+        if (value == null) {
+            return "";
+        }
+        if (value instanceof Object[] objects) {
+            return Arrays.toString(objects);
+        }
+        Class<?> type = value.getClass();
+        if (type.isArray()) {
+            List<String> values = new ArrayList<>();
+            int length = Array.getLength(value);
+            for (int i = 0; i < length; i++) {
+                values.add(String.valueOf(Array.get(value, i)));
+            }
+            return values.toString();
+        }
+        return String.valueOf(value);
     }
 
     private Set<String> allAnnotationNames(AnnotationMetadata metadata) {

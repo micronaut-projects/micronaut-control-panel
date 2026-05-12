@@ -108,6 +108,7 @@ public record SpringCompatibilityBody(
      * @param state active or disabled
      * @param springAnnotations source Spring annotations
      * @param mappedAnnotations mapped Micronaut annotations
+     * @param annotationValues sanitized annotation member value summaries
      * @param requirementSummary disabled requirement summary
      */
     @ReflectiveAccess
@@ -119,6 +120,7 @@ public record SpringCompatibilityBody(
         String state,
         List<String> springAnnotations,
         List<String> mappedAnnotations,
+        List<AnnotationValueRow> annotationValues,
         String requirementSummary) {
     }
 
@@ -128,6 +130,7 @@ public record SpringCompatibilityBody(
      * @param declaringMethod declaring method
      * @param springAnnotations source Spring annotations
      * @param mappedAnnotations mapped Micronaut annotations
+     * @param annotationValues sanitized annotation member value summaries
      */
     @ReflectiveAccess
     public record RouteRow(
@@ -135,7 +138,8 @@ public record SpringCompatibilityBody(
         String path,
         String declaringMethod,
         List<String> springAnnotations,
-        List<String> mappedAnnotations) {
+        List<String> mappedAnnotations,
+        List<AnnotationValueRow> annotationValues) {
     }
 
     /**
@@ -143,6 +147,7 @@ public record SpringCompatibilityBody(
      * @param state active or disabled
      * @param springAnnotation Spring Boot condition
      * @param mappedAnnotation mapped Micronaut annotation
+     * @param annotationValues sanitized annotation member value summaries
      * @param requirementSummary requirement summary
      */
     @ReflectiveAccess
@@ -151,6 +156,7 @@ public record SpringCompatibilityBody(
         String state,
         String springAnnotation,
         String mappedAnnotation,
+        List<AnnotationValueRow> annotationValues,
         String requirementSummary) {
     }
 
@@ -161,6 +167,7 @@ public record SpringCompatibilityBody(
      * @param managementPath management path
      * @param springAnnotations source Spring annotations
      * @param mappedAnnotations mapped Micronaut annotations
+     * @param annotationValues sanitized annotation member value summaries
      */
     @ReflectiveAccess
     public record EndpointRow(
@@ -169,7 +176,17 @@ public record SpringCompatibilityBody(
         String declaringMethod,
         String managementPath,
         List<String> springAnnotations,
-        List<String> mappedAnnotations) {
+        List<String> mappedAnnotations,
+        List<AnnotationValueRow> annotationValues) {
+    }
+
+    /**
+     * @param annotationName Spring annotation name
+     * @param memberName annotation member name
+     * @param valueSummary sanitized member value summary
+     */
+    @ReflectiveAccess
+    public record AnnotationValueRow(String annotationName, String memberName, String valueSummary) {
     }
 
     /**
