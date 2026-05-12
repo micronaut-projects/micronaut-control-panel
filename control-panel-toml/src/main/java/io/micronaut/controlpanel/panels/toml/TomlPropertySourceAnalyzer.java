@@ -51,12 +51,6 @@ public class TomlPropertySourceAnalyzer {
     );
 
     /**
-     * Creates a TOML property-source analyzer.
-     */
-    public TomlPropertySourceAnalyzer() {
-    }
-
-    /**
      * Analyze the current environment.
      *
      * @param environment The environment
@@ -144,7 +138,7 @@ public class TomlPropertySourceAnalyzer {
 
     private static String originLocation(PropertySource propertySource) {
         String location = propertySource.getOrigin().location();
-        if (location == null || location.isBlank()) {
+        if (location.isBlank()) {
             return "Unknown origin";
         }
         return location;

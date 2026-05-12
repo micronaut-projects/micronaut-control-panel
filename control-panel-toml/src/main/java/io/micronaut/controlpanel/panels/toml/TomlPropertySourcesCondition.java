@@ -30,11 +30,7 @@ import java.util.Locale;
 @Internal
 public class TomlPropertySourcesCondition implements Condition {
 
-    /**
-     * Creates a TOML property-source condition.
-     */
-    public TomlPropertySourcesCondition() {
-    }
+    private static final String TOML_EXTENSION = ".toml";
 
     @Override
     public boolean matches(ConditionContext context) {
@@ -53,13 +49,13 @@ public class TomlPropertySourcesCondition implements Condition {
     }
 
     private static boolean hasTomlExtension(String location) {
-        int extensionStart = location.indexOf(".toml");
+        int extensionStart = location.indexOf(TOML_EXTENSION);
         while (extensionStart >= 0) {
-            int next = extensionStart + ".toml".length();
+            int next = extensionStart + TOML_EXTENSION.length();
             if (isPathBoundary(location, extensionStart) && isExtensionBoundary(location, next)) {
                 return true;
             }
-            extensionStart = location.indexOf(".toml", next);
+            extensionStart = location.indexOf(TOML_EXTENSION, next);
         }
         return false;
     }

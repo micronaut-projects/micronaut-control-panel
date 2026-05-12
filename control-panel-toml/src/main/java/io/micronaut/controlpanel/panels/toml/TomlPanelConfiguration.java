@@ -38,12 +38,6 @@ public class TomlPanelConfiguration {
     private boolean showEmpty;
 
     /**
-     * Creates default TOML panel configuration.
-     */
-    public TomlPanelConfiguration() {
-    }
-
-    /**
      * Whether non-sensitive effective TOML values should be displayed.
      *
      * @return true when values may be displayed
