@@ -23,15 +23,12 @@ import io.micronaut.core.annotation.Internal;
 import io.micronaut.core.util.StringUtils;
 
 import java.util.Locale;
-import java.util.regex.Pattern;
 
 /**
  * Enables the TOML panel only when there is TOML data to inspect, unless empty diagnostics are requested.
  */
 @Internal
 public class TomlPropertySourcesCondition implements Condition {
-
-    private static final Pattern TOML_LOCATION_PATTERN = Pattern.compile("(^|[/:\\\\])[^/\\\\?#)!\\s]+\\.toml($|[?#)!\\s])");
 
     /**
      * Creates a TOML property-source condition.
@@ -52,6 +49,34 @@ public class TomlPropertySourcesCondition implements Condition {
 
     static boolean isTomlPropertySource(PropertySource propertySource) {
         String location = propertySource.getOrigin().location();
-        return StringUtils.isNotEmpty(location) && TOML_LOCATION_PATTERN.matcher(location.toLowerCase(Locale.ROOT)).find();
+        return StringUtils.isNotEmpty(location) && hasTomlExtension(location.toLowerCase(Locale.ROOT));
+    }
+
+    private static boolean hasTomlExtension(String location) {
+        int extensionStart = location.indexOf(".toml");
+        while (extensionStart >= 0) {
+            int next = extensionStart + ".toml".length();
+            if (isPathBoundary(location, extensionStart) && isExtensionBoundary(location, next)) {
+                return true;
+            }
+            extensionStart = location.indexOf(".toml", next);
+        }
+        return false;
+    }
+
+    private static boolean isPathBoundary(String location, int extensionStart) {
+        if (extensionStart == 0) {
+            return false;
+        }
+        char previous = location.charAt(extensionStart - 1);
+        return previous != '/' && previous != '\\' && previous != ':';
+    }
+
+    private static boolean isExtensionBoundary(String location, int index) {
+        return index == location.length()
+            || switch (location.charAt(index)) {
+                case '?', '#', ')', '!', ' ', '\t', '\n', '\r' -> true;
+                default -> false;
+            };
     }
 }
