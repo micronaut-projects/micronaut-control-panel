@@ -229,6 +229,27 @@ code.language-sql.hljs .hljs-comment {
     color: var(--sql-comment);
 }
 
+code.language-json.hljs {
+    color: var(--foreground);
+}
+
+code.language-json.hljs .hljs-attr {
+    color: var(--sql-function);
+}
+
+code.language-json.hljs .hljs-string {
+    color: var(--sql-string);
+}
+
+code.language-json.hljs .hljs-number,
+code.language-json.hljs .hljs-literal {
+    color: var(--sql-number);
+}
+
+code.language-json.hljs .hljs-punctuation {
+    color: var(--sql-punctuation);
+}
+
 .cp-dashboard-provider {
     display: flex;
     min-height: 100svh;
@@ -415,6 +436,11 @@ html[data-theme="light"] .cp-brand-image-light {
 }
 
 html[data-theme="light"] .cp-sidebar .cp-nav-link {
+    color: var(--sidebar-foreground);
+}
+
+html[data-theme="light"] .cp-sidebar .cp-nav-link > .badge {
+    background: var(--sidebar-border);
     color: var(--sidebar-foreground);
 }
 
@@ -2744,6 +2770,55 @@ div.mermaid {
     max-height: none;
 }
 
+.cp-datasource-summary {
+    display: grid;
+    gap: 1rem;
+}
+
+.cp-datasource-summary-group {
+    display: grid;
+    gap: 0.6rem;
+    min-width: 0;
+}
+
+.cp-datasource-summary-group h3 {
+    margin: 0;
+    color: var(--foreground);
+    font-size: 0.875rem;
+    font-weight: 700;
+}
+
+.cp-datasource-summary-group dl {
+    display: grid;
+    gap: 0;
+    margin: 0;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--card);
+}
+
+.cp-datasource-summary-group dl > div {
+    display: grid;
+    grid-template-columns: minmax(7rem, 0.35fr) minmax(0, 1fr);
+    gap: 0.75rem;
+    padding: 0.65rem 0.75rem;
+}
+
+.cp-datasource-summary-group dl > div + div {
+    border-top: 1px solid var(--border);
+}
+
+.cp-datasource-summary-group dt {
+    color: var(--muted-foreground);
+    font-weight: 600;
+}
+
+.cp-datasource-summary-group dd {
+    min-width: 0;
+    margin: 0;
+}
+
 .cp-schema-sidebar-header {
     display: flex;
     align-items: center;
@@ -2786,11 +2861,13 @@ div.mermaid {
 .cp-datasource-page .cp-sql-card,
 .cp-datasource-page .cp-query-results-card {
     min-height: 0;
+    margin-bottom: 0;
 }
 
 .cp-datasource-page .cp-sql-card {
     display: flex;
     flex-direction: column;
+    height: 100%;
 }
 
 .cp-datasource-page .cp-sql-card .card-body {
@@ -2815,13 +2892,62 @@ div.mermaid {
 
 .cp-datasource-page .cp-query-results-card .cp-data-table {
     flex: 1;
-    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-rows: minmax(0, 1fr) auto;
     min-height: 0;
 }
 
 .cp-datasource-page .cp-query-results-card .cp-data-table-container {
     max-height: none;
     min-height: 0;
+}
+
+.cp-datasource-page .cp-query-header-page-size {
+    white-space: nowrap;
+}
+
+.cp-query-column-heading {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.cp-query-column-type {
+    color: var(--muted-foreground);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    line-height: 1.1;
+    text-transform: uppercase;
+}
+
+.cp-query-json-cell {
+    min-width: 16rem;
+}
+
+.cp-query-json-raw {
+    max-height: 6rem;
+}
+
+.cp-query-json-cell {
+    cursor: pointer;
+}
+
+.cp-query-json-cell code {
+    display: block;
+    width: 100%;
+    max-height: 14rem;
+    margin: 0;
+    overflow: auto;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    padding: 0;
+    color: var(--foreground);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 1.45;
+    white-space: pre-wrap;
+    word-break: break-word;
 }
 
 .cp-query-state {
@@ -2970,6 +3096,589 @@ div.mermaid {
     cursor: default;
 }
 
+.cp-datasource-tabs {
+    height: calc(100svh - var(--header-height) - 3.5rem);
+    min-height: 0;
+    grid-template-rows: auto minmax(0, 1fr);
+}
+
+.cp-datasource-tabs > .tabs-panel {
+    min-height: 0;
+    overflow: hidden;
+}
+
+.cp-datasource-tabs > .tabs-panel:not([hidden]) {
+    display: flex;
+    flex-direction: column;
+}
+
+.cp-datasource-table-browser {
+    --cp-table-list-width: 50%;
+    display: grid;
+    flex: 1;
+    grid-template-columns: minmax(18rem, var(--cp-table-list-width)) 0.75rem minmax(0, 1fr);
+    gap: 0;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.cp-datasource-table-browser.detail-collapsed {
+    grid-template-columns: minmax(0, 1fr) 0 3.5rem;
+}
+
+.cp-datasource-query-layout {
+    --cp-query-editor-height: 15%;
+    display: grid;
+    flex: 1;
+    grid-template-rows: minmax(7.5rem, var(--cp-query-editor-height)) 0.75rem minmax(0, 1fr);
+    gap: 0;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.cp-query-layout-splitter {
+    position: relative;
+    min-height: 0.75rem;
+    cursor: row-resize;
+    touch-action: none;
+}
+
+.cp-query-layout-splitter::before {
+    position: absolute;
+    inset: calc(50% - 1px) 0.75rem;
+    height: 2px;
+    border-radius: 999px;
+    background: var(--border);
+    content: "";
+    opacity: 0;
+    transition: opacity 120ms ease, background-color 120ms ease;
+}
+
+.cp-query-layout-splitter:hover::before,
+.cp-query-layout-splitter:focus-visible::before,
+body.cp-query-layout-resizing .cp-query-layout-splitter::before {
+    background: var(--ring);
+    opacity: 1;
+}
+
+.cp-query-layout-splitter:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: -2px;
+}
+
+.cp-table-list-card,
+.cp-table-detail-card {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    margin-bottom: 0;
+}
+
+.cp-table-list-card .card-header {
+    flex-wrap: wrap;
+}
+
+.cp-table-list-toggle,
+.cp-table-detail-toggle {
+    padding: 0;
+}
+
+.cp-table-list-toggle {
+    cursor: default;
+}
+
+.cp-table-detail-toggle {
+    cursor: pointer;
+}
+
+.cp-table-detail-toggle:disabled {
+    cursor: default;
+    opacity: 0.65;
+}
+
+.cp-table-detail-toggle:not(:disabled):hover {
+    background: var(--accent);
+    color: var(--accent-foreground);
+}
+
+.cp-table-browser-splitter {
+    position: relative;
+    min-width: 0.75rem;
+    cursor: col-resize;
+    touch-action: none;
+}
+
+.cp-table-browser-splitter::before {
+    position: absolute;
+    inset: 0.75rem calc(50% - 1px);
+    width: 2px;
+    border-radius: 999px;
+    background: var(--border);
+    content: "";
+    opacity: 0;
+    transition: opacity 120ms ease, background-color 120ms ease;
+}
+
+.cp-table-browser-splitter:hover::before,
+.cp-table-browser-splitter:focus-visible::before,
+body.cp-table-browser-resizing .cp-table-browser-splitter::before {
+    background: var(--ring);
+    opacity: 1;
+}
+
+.cp-table-browser-splitter:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: -2px;
+}
+
+.cp-datasource-table-browser.detail-collapsed .cp-table-browser-splitter {
+    display: none;
+}
+
+.cp-table-list-tools {
+    flex: 1 1 30rem;
+    flex-wrap: wrap;
+    min-width: min(100%, 22rem);
+}
+
+.cp-table-search-control {
+    position: relative;
+    display: flex;
+    flex: 1 1 14rem;
+    min-width: min(100%, 12rem);
+    margin: 0;
+}
+
+.cp-table-search-control .fas,
+.cp-table-search-control .fa {
+    position: absolute;
+    top: 50%;
+    left: 0.65rem;
+    color: var(--muted-foreground);
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.cp-table-search-control input {
+    min-height: 2rem;
+    padding-left: 2rem;
+}
+
+.cp-table-schema-control {
+    display: flex;
+    flex: 0 1 12rem;
+    min-width: min(100%, 10rem);
+    margin: 0;
+}
+
+.cp-table-schema-control select {
+    min-height: 2rem;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+}
+
+.cp-table-list-card .card-body,
+.cp-table-detail-card .card-body {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.cp-table-detail-card.collapsed-card .card-body {
+    display: none;
+}
+
+.cp-table-detail-card.detail-rail-collapsed {
+    width: 3.5rem;
+}
+
+.cp-table-detail-card.detail-rail-collapsed .card-header {
+    flex-direction: column;
+    justify-content: flex-start;
+    height: 100%;
+    padding: 0.75rem 0.5rem;
+}
+
+.cp-table-detail-card.detail-rail-collapsed .cp-card-header-text,
+.cp-table-detail-card.detail-rail-collapsed .card-tools {
+    display: none;
+}
+
+.cp-table-list-card .cp-data-table {
+    flex: 1;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    min-height: 0;
+}
+
+.cp-table-list-card .cp-data-table-container {
+    max-height: none;
+    min-height: 0;
+}
+
+.cp-table-detail-container {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+}
+
+.cp-datasource-table-list tr.active td {
+    background: var(--muted);
+}
+
+.cp-datasource-table-list [data-table-row] {
+    cursor: pointer;
+}
+
+.cp-datasource-table-list [data-table-row]:hover td {
+    background: var(--muted);
+}
+
+.cp-table-name-button {
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
+    gap: 0.45rem;
+    border: 0;
+    background: transparent;
+    color: var(--foreground);
+    padding: 0;
+    font: inherit;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+}
+
+.cp-table-name-button:hover {
+    color: var(--primary);
+}
+
+.cp-table-detail-link {
+    vertical-align: middle;
+}
+
+.cp-table-column-reference {
+    margin-left: 0.2rem;
+    vertical-align: middle;
+}
+
+.cp-table-name-button span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cp-table-actions-column {
+    width: 5.5rem;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.cp-table-actions-column .cp-actions-menu {
+    justify-content: flex-end;
+}
+
+.cp-data-table-muted {
+    color: var(--muted-foreground);
+}
+
+.cp-table-detail-content {
+    display: grid;
+    gap: 1rem;
+    min-width: 0;
+}
+
+.cp-table-detail-summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.cp-table-detail-title {
+    display: grid;
+    gap: 0.25rem;
+    min-width: 0;
+}
+
+.cp-table-detail-title h3 {
+    margin: 0;
+    overflow-wrap: anywhere;
+    font-size: 1.125rem;
+    font-weight: 700;
+}
+
+.cp-table-detail-title p {
+    margin: 0;
+    color: var(--muted-foreground);
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    overflow-wrap: anywhere;
+}
+
+.cp-table-detail-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.cp-table-detail-section {
+    display: grid;
+    gap: 0.6rem;
+    min-width: 0;
+}
+
+.cp-table-detail-section h4 {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.cp-table-detail-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.cp-table-detail-empty {
+    padding: 1rem;
+}
+
+.cp-datasource-column-list .badge + .badge {
+    margin-left: 0.25rem;
+}
+
+.cp-table-er-diagram {
+    min-height: 14rem;
+    overflow: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--muted);
+    padding: 1rem;
+}
+
+.cp-datasource-pool-panel {
+    min-height: 0;
+}
+
+.cp-pool-panel {
+    display: grid;
+    flex: 1;
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 1rem;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.cp-pool-status-card,
+.cp-pool-options-card {
+    min-height: 0;
+    margin-bottom: 0;
+}
+
+.cp-pool-status-card .card-body,
+.cp-pool-options-card .card-body {
+    min-height: 0;
+    overflow: auto;
+}
+
+.cp-pool-status-layout {
+    display: grid;
+    grid-template-columns: minmax(18rem, 0.95fr) minmax(20rem, 1.05fr);
+    gap: 1rem;
+    align-items: stretch;
+}
+
+.cp-pool-status-chart {
+    display: grid;
+    align-content: center;
+    gap: 0.75rem;
+    min-width: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--muted);
+    padding: 1rem;
+}
+
+.cp-pool-status-heading,
+.cp-pool-usage-legend {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.cp-pool-status-heading span {
+    color: var(--muted-foreground);
+    font-size: 0.8125rem;
+    font-weight: 650;
+}
+
+.cp-pool-status-heading strong {
+    color: var(--foreground);
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+}
+
+.cp-pool-usage-bar {
+    display: flex;
+    width: 100%;
+    height: 0.9rem;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--background);
+}
+
+.cp-pool-usage-segment {
+    display: block;
+    min-width: 0;
+    transition: width 160ms ease;
+}
+
+.cp-pool-usage-active {
+    background: var(--chart-1);
+}
+
+.cp-pool-usage-idle {
+    background: var(--success);
+}
+
+.cp-pool-usage-remaining {
+    background: color-mix(in oklab, var(--muted-foreground) 22%, transparent);
+}
+
+.cp-pool-usage-legend {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    color: var(--muted-foreground);
+    font-size: 0.75rem;
+}
+
+.cp-pool-usage-legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.cp-pool-legend-dot {
+    display: inline-block;
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 999px;
+}
+
+.cp-pool-legend-active {
+    background: var(--chart-1);
+}
+
+.cp-pool-legend-idle {
+    background: var(--success);
+}
+
+.cp-pool-legend-remaining {
+    background: color-mix(in oklab, var(--muted-foreground) 32%, transparent);
+}
+
+.cp-pool-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 0.75rem;
+    min-width: 0;
+}
+
+.cp-pool-metric {
+    display: grid;
+    gap: 0.35rem;
+    min-width: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--card);
+    padding: 0.85rem;
+}
+
+.cp-pool-metric span {
+    color: var(--muted-foreground);
+    font-size: 0.75rem;
+    font-weight: 650;
+}
+
+.cp-pool-metric strong {
+    color: var(--foreground);
+    font-family: var(--font-mono);
+    font-size: 1.35rem;
+    line-height: 1;
+}
+
+.cp-pool-option-groups {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    min-width: 0;
+}
+
+.cp-pool-option-group {
+    display: grid;
+    align-content: start;
+    gap: 0.6rem;
+    min-width: 0;
+}
+
+.cp-pool-option-group h4 {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.cp-pool-option-group dl {
+    display: grid;
+    gap: 0;
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--card);
+}
+
+.cp-pool-option-group dl > div {
+    display: grid;
+    grid-template-columns: minmax(8rem, 0.38fr) minmax(0, 1fr);
+    gap: 0.75rem;
+    min-width: 0;
+    padding: 0.65rem 0.75rem;
+}
+
+.cp-pool-option-group dl > div + div {
+    border-top: 1px solid var(--border);
+}
+
+.cp-pool-option-group dt {
+    color: var(--muted-foreground);
+    font-weight: 650;
+}
+
+.cp-pool-option-group dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+}
+
+.cp-pool-status-card [data-pool-status-refresh].is-loading i {
+    animation: cp-spin 700ms linear infinite;
+}
+
+@keyframes cp-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 @media (max-width: 1000px) {
     .cp-sidebar {
         position: fixed;
@@ -3087,6 +3796,72 @@ div.mermaid {
         overflow: visible;
     }
 
+    .cp-datasource-tabs {
+        height: auto;
+    }
+
+    .cp-datasource-tabs > .tabs-panel {
+        overflow: visible;
+    }
+
+    .cp-datasource-table-browser,
+    .cp-datasource-query-layout {
+        overflow: visible;
+    }
+
+    .cp-datasource-table-browser {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .cp-datasource-query-layout {
+        grid-template-rows: auto auto;
+        gap: 1rem;
+    }
+
+    .cp-datasource-table-browser.detail-collapsed {
+        grid-template-columns: 1fr;
+    }
+
+    .cp-table-browser-splitter,
+    .cp-query-layout-splitter {
+        display: none;
+    }
+
+    .cp-table-list-card,
+    .cp-table-detail-card,
+    .cp-datasource-page .cp-sql-card,
+    .cp-datasource-page .cp-query-results-card,
+    .cp-pool-status-card,
+    .cp-pool-options-card {
+        min-height: 20rem;
+    }
+
+    .cp-pool-panel {
+        overflow: visible;
+    }
+
+    .cp-pool-status-layout,
+    .cp-pool-option-groups {
+        grid-template-columns: 1fr;
+    }
+
+    .cp-pool-metrics-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .cp-table-detail-card.detail-rail-collapsed {
+        width: auto;
+        min-height: auto;
+    }
+
+    .cp-table-detail-card.detail-rail-collapsed .card-header {
+        flex-direction: row;
+        justify-content: space-between;
+        height: auto;
+        padding: 0.85rem 1rem;
+    }
+
     .cp-schema-sidebar {
         max-height: 18rem;
     }
@@ -3107,6 +3882,15 @@ div.mermaid {
 
     .cp-header-actions {
         justify-content: flex-start;
+    }
+
+    .cp-pool-metrics-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .cp-pool-option-group dl > div {
+        grid-template-columns: 1fr;
+        gap: 0.35rem;
     }
 
     .cp-panel-header,
