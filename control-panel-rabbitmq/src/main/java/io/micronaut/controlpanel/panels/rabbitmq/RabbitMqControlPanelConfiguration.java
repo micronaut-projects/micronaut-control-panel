@@ -42,6 +42,7 @@ public class RabbitMqControlPanelConfiguration {
      * Constructor.
      */
     public RabbitMqControlPanelConfiguration() {
+        // Required for configuration binding.
     }
 
     /**

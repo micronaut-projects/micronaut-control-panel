@@ -164,6 +164,7 @@ class RabbitMqDiagnosticsServiceTest {
 
         @Override
         public <T> void process(BeanDefinition<T> beanDefinition, ExecutableMethod<T, ?> method) {
+            // Intentionally disables RabbitMQ consumer startup in diagnostics tests.
         }
     }
 
@@ -173,6 +174,7 @@ class RabbitMqDiagnosticsServiceTest {
 
         @Queue(value = "orders.created", numberOfConsumers = "3", prefetch = 25, exclusive = true, reQueue = true)
         void receive(String body, Acknowledgement acknowledgement) {
+            // The method body is irrelevant; the test inspects listener metadata.
         }
     }
 }

@@ -17,10 +17,12 @@ class RabbitMqDemoListener {
 
     @Queue(value = "orders.created", numberOfConsumers = "2", prefetch = 25, reQueue = true)
     void receive(String body, Acknowledgement acknowledgement) {
+        // Demo listener metadata only; the replacement processor prevents consumption.
     }
 
     @Queue(value = "audit.events", autoAcknowledgment = true)
     void audit(String body) {
+        // Demo listener metadata only; the replacement processor prevents consumption.
     }
 
     @Singleton
@@ -29,6 +31,7 @@ class RabbitMqDemoListener {
 
         @Override
         public <T> void process(BeanDefinition<T> beanDefinition, ExecutableMethod<T, ?> method) {
+            // Keep the example diagnostics-only by preventing RabbitMQ consumer startup.
         }
     }
 }
