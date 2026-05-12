@@ -3,8 +3,6 @@ package example.e2e;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Page.GetByRoleOptions;
-import com.microsoft.playwright.junit.Options;
-import com.microsoft.playwright.junit.OptionsFactory;
 import com.microsoft.playwright.junit.UsePlaywright;
 import com.microsoft.playwright.options.AriaRole;
 import io.micronaut.context.annotation.Property;
@@ -24,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@UsePlaywright(ControlPanelE2ETest.HeadlessBrowserOptions.class)
+@UsePlaywright(ControlPanelBrowserOptions.class)
 @MicronautTest(environments = {"hibernate", "kafka", "oracle"})
 @Property(name = "kafka.streams.default.state.dir", value = "build/tmp/kafka-streams-e2e")
 class ControlPanelE2ETest extends AbstractE2ETest {
@@ -274,25 +272,147 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         page.navigate(baseUrl());
         categoryLink(page, "Data Sources").click();
 
+        assertDatasourceList(page);
+        controlPanelDetails(page, "my-oracle").click();
+        assertDatasourceTablesInitialState(page);
+
+        String schema = filterDatasourceTables(page, "dept");
+        String expectedTableDetailSubtitle = expectedTableSubtitle(schema, "DEPT");
+        selectTable(page, "DEPT");
+        assertDepartmentTableDetail(page, expectedTableDetailSubtitle);
+
+        assertSelectedTableDeselects(page);
+        assertTableDetailToggle(page);
+        assertTablesListToggleDisabled(page);
+        assertRelationshipNavigation(page, schema, expectedTableDetailSubtitle);
+
+        executeSelectAllTableQuery(page);
+        assertTablesTabAfterBrowserBack(page);
+        executeDisplayTableAsJson(page);
+        assertTablesTabAfterBrowserBack(page);
+        assertDatasourcePoolTab(page);
+    }
+
+    private static void assertDatasourceList(Page page) {
         assertThat(body(page)).containsText("my-oracle");
         assertThat(body(page)).containsText("my-postgres");
         assertThat(body(page)).containsText("Flyway");
+    }
 
-        controlPanelDetails(page, "my-oracle").click();
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Show ER diagram")).click();
-        assertThat(page.locator("#erDiagramDialog")).isVisible();
-        assertThat(page.locator("#erDiagramDialog")).containsText("Entity Relationship Diagram");
-        assertThat(page.locator("#mermaidErCode")).containsText("TEST_DEPT");
-        assertThat(page.locator("#mermaidErCode")).containsText("TEST_EMP");
+    private static void assertDatasourceTablesInitialState(Page page) {
+        assertThat(page.locator("#tablesPageContainer")).containsText("DEPT");
+        assertThat(page.locator("#tablesPageContainer")).containsText("EMP");
+        assertThat(page.locator("#tableDetailCard")).hasClass(Pattern.compile(".*collapsed-card.*"));
+        assertThat(page.locator("#tableDetailCard")).hasClass(Pattern.compile(".*detail-rail-collapsed.*"));
+    }
 
-        page.locator("#erDiagramDialog button[aria-label='Close']").click();
-        assertThat(page.locator("[data-schema-tree]")).containsText("DEPT");
-        assertThat(page.locator("[data-schema-tree]")).containsText("EMP");
+    private static String filterDatasourceTables(Page page, String search) {
+        String schema = page.locator("[data-table-schema-filter] option:not([value='__all__'])").first().getAttribute("value");
+        page.locator("[data-table-schema-filter]").selectOption(schema);
+        page.locator("[data-table-search]").fill(search);
+        assertThat(page.locator("#tablesPageContainer")).containsText("DEPT");
+        assertThat(page.locator("#tablesPageContainer")).not().containsText("EMP");
+        return schema;
+    }
 
-        page.locator("#sql-console").getByRole(AriaRole.TEXTBOX).fill("SELECT * FROM DEPT");
+    private static void assertDepartmentTableDetail(Page page, String expectedTableDetailSubtitle) {
+        assertThat(page.locator("#tableDetailCard")).not().hasClass(Pattern.compile(".*collapsed-card.*"));
+        assertThat(page.locator("#tableDetailSubtitle")).containsText(expectedTableDetailSubtitle);
+        assertThat(page.locator("#tableDetailContainer")).containsText("Entity Relationship Diagram");
+        assertThat(page.locator("#tableErDiagramCode")).containsText("TEST_DEPT");
+        assertThat(page.locator(".cp-datasource-table-browser")).not().hasClass(Pattern.compile(".*tables-collapsed.*"));
+    }
+
+    private static void assertSelectedTableDeselects(Page page) {
+        selectTable(page, "DEPT");
+        assertThat(page.locator("#tableDetailCard")).hasClass(Pattern.compile(".*collapsed-card.*"));
+        assertThat(page.locator("#tableDetailCard")).hasClass(Pattern.compile(".*detail-rail-collapsed.*"));
+        selectTable(page, "DEPT");
+        assertThat(page.locator("#tableDetailCard")).not().hasClass(Pattern.compile(".*collapsed-card.*"));
+        assertThat(page.locator(".cp-datasource-table-browser")).not().hasClass(Pattern.compile(".*tables-collapsed.*"));
+    }
+
+    private static void assertTableDetailToggle(Page page) {
+        page.locator("#toggleTableDetail").click();
+        assertThat(page.locator("#tableDetailCard")).hasClass(Pattern.compile(".*collapsed-card.*"));
+        assertThat(page.locator("#tableDetailCard")).hasClass(Pattern.compile(".*detail-rail-collapsed.*"));
+        assertThat(page.locator(".cp-datasource-table-browser")).hasClass(Pattern.compile(".*detail-collapsed.*"));
+        page.locator("#toggleTableDetail").click();
+        assertThat(page.locator("#tableDetailCard")).not().hasClass(Pattern.compile(".*collapsed-card.*"));
+        assertThat(page.locator("#tableDetailCard")).not().hasClass(Pattern.compile(".*detail-rail-collapsed.*"));
+        assertThat(page.locator(".cp-datasource-table-browser")).not().hasClass(Pattern.compile(".*detail-collapsed.*"));
+    }
+
+    private static void assertTablesListToggleDisabled(Page page) {
+        page.locator("#toggleTablesList").click();
+        assertThat(page.locator(".cp-datasource-table-browser")).not().hasClass(Pattern.compile(".*tables-collapsed.*"));
+    }
+
+    private static void assertRelationshipNavigation(Page page, String schema, String expectedTableDetailSubtitle) {
+        page.locator("[data-table-search]").fill("emp");
+        assertThat(page.locator("#tablesPageContainer")).containsText("EMP");
+        selectTable(page, "EMP");
+        assertThat(page.locator("#tableDetailSubtitle")).containsText(expectedTableSubtitle(schema, "EMP"));
+        page.locator("#tableDetailContainer [data-table-detail-link][data-table-name='DEPT']").first().click();
+        assertThat(page.locator("#tableDetailSubtitle")).containsText(expectedTableDetailSubtitle);
+    }
+
+    private static void executeSelectAllTableQuery(Page page) {
+        page.locator("#tableDetailActions > summary").click();
+        page.locator("#selectAllTableQuery").click();
+        assertThat(page.locator("#sql-console").getByRole(AriaRole.TEXTBOX)).isVisible();
+        executeQueryShortcut(page);
+        assertThat(page.locator("#queryResultsContainer tbody")).containsText("ACCOUNTING");
+    }
+
+    private static void assertTablesTabAfterBrowserBack(Page page) {
+        page.evaluate("history.back()");
+        assertThat(page.locator("#datasourceTablesTab")).isVisible();
+        assertThat(page.locator("#tablesPageContainer")).containsText("EMP");
+    }
+
+    private static void executeDisplayTableAsJson(Page page) {
+        page.locator("#tableDetailActions > summary").click();
+        page.locator("#displayTableAsJson").click();
+        assertThat(page.locator("#datasourceQueryTab")).isVisible();
+        assertThat(page.locator("#sql-console").getByRole(AriaRole.TEXTBOX)).containsText("JSON_OBJECT");
         executeQueryShortcut(page);
 
-        assertThat(page.locator("tbody")).containsText("ACCOUNTING");
+        var jsonCell = page.locator("#queryResultsContainer [data-query-json-cell]").first();
+        assertThat(jsonCell).isVisible();
+        assertThat(jsonCell.locator("[data-query-json-raw]")).containsText("ACCOUNTING");
+        jsonCell.click();
+        assertThat(jsonCell).hasClass(Pattern.compile(".*cp-query-json-cell-formatted.*"));
+        assertTrue(jsonCell.locator("code").textContent().contains("\n  \"DNAME\""));
+        jsonCell.click();
+        assertThat(jsonCell).not().hasClass(Pattern.compile(".*cp-query-json-cell-formatted.*"));
+        assertThat(jsonCell.locator("[data-query-json-raw]")).containsText("ACCOUNTING");
+    }
+
+    private static void assertDatasourcePoolTab(Page page) {
+        page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("Pool").setExact(true)).click();
+        assertThat(page.locator("#datasourcePoolTab")).isVisible();
+        assertThat(page.locator("#poolStatusCardContainer")).containsText("HikariCP");
+        assertThat(page.locator("#poolStatusCardContainer")).containsText("example-oracle-pool");
+        assertThat(page.locator("#poolStatusCardContainer")).containsText("Connection status");
+        assertThat(page.locator("#poolStatusCardContainer")).containsText("Active");
+        assertThat(page.locator("#poolStatusCardContainer")).containsText("Idle");
+        assertThat(page.locator("#poolStatusCardContainer")).containsText("Waiting");
+        assertThat(page.locator("#datasourcePoolTab")).containsText("Pool options");
+        assertThat(page.locator("#datasourcePoolTab")).containsText("Maximum pool size");
+        assertThat(page.locator("#datasourcePoolTab")).containsText("5");
+        assertThat(page.locator("#datasourcePoolTab")).containsText("Connection test query");
+        assertThat(page.locator("#datasourcePoolTab")).containsText("SELECT 1 FROM DUAL");
+        page.locator("#poolStatusCardContainer [data-pool-status-refresh]").click();
+        assertThat(page.locator("#poolStatusCardContainer")).containsText("Connection status");
+    }
+
+    private static void selectTable(Page page, String tableName) {
+        page.locator("#tablesPageContainer [data-table-row][data-table-name='" + tableName + "']").click();
+    }
+
+    private static String expectedTableSubtitle(String schema, String tableName) {
+        return schema == null || schema.isBlank() ? tableName : schema + "." + tableName;
     }
 
     @Test
@@ -727,17 +847,6 @@ class ControlPanelE2ETest extends AbstractE2ETest {
     private static void assertGlobalAlert(Page page, String title) {
         page.waitForFunction("expected => document.querySelector('#globalAlertTitle')?.textContent?.includes(expected)", title);
         assertThat(page.locator("#globalAlertTitle")).containsText(title);
-    }
-
-    public static class HeadlessBrowserOptions implements OptionsFactory {
-        @Override
-        public Options getOptions() {
-            if (System.getenv("CI") == null) {
-                return new Options().setHeadless(false);
-            } else {
-                return new Options();
-            }
-        }
     }
 
 }
