@@ -1,0 +1,14 @@
+endpoints:
+  health:
+    r2dbc:
+      database-name-to-health-query:
+        H2: SELECT 1
+
+micronaut:
+  control-panel:
+    allowed-environments:
+      - r2dbc-preview
+  metrics:
+    binders:
+      r2dbc:
+        enabled: false

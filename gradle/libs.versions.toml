@@ -27,6 +27,7 @@ micronaut-micrometer = "6.0.0"
 micronaut-object-storage = "3.0.0"
 micronaut-cache = "6.0.0"
 micronaut-sql = "7.0.1"
+micronaut-r2dbc = "7.0.0"
 micronaut-data = "5.0.0"
 micronaut-testresources = "4.0.0"
 micronaut-gradle-plugin = "5.0.0-M1"
@@ -55,6 +56,7 @@ micronaut-micrometer = { module = "io.micronaut.micrometer:micronaut-micrometer-
 micronaut-object-storage = { module = "io.micronaut.objectstorage:micronaut-object-storage-bom", version.ref = "micronaut-object-storage" }
 micronaut-cache = { module = "io.micronaut.cache:micronaut-cache-bom", version.ref = "micronaut-cache" }
 micronaut-sql = { module = "io.micronaut.sql:micronaut-sql-bom", version.ref = "micronaut-sql" }
+micronaut-r2dbc = { module = "io.micronaut.r2dbc:micronaut-r2dbc-bom", version.ref = "micronaut-r2dbc" }
 micronaut-data = { module = "io.micronaut.data:micronaut-data-bom", version.ref = "micronaut-data" }
 micronaut-testresources = { module = 'io.micronaut.testresources:micronaut-test-resources-bom', version.ref = "micronaut-testresources" }
 micronaut-kafka = { module = "io.micronaut.kafka:micronaut-kafka-bom", version.ref = "micronaut-kafka" }
