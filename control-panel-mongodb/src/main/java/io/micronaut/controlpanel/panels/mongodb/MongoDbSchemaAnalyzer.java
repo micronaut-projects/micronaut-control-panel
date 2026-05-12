@@ -19,6 +19,7 @@ import org.bson.Document;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +47,7 @@ final class MongoDbSchemaAnalyzer {
         Map<String, FieldAccumulator> fields = new LinkedHashMap<>();
         int maxFields = Math.max(1, configuration.getSchema().getMaxFields());
         for (Document document : documents) {
-            visit("", document, 0, fields, maxFields);
+            visit("", document, 0, fields, maxFields, new HashSet<>());
         }
         boolean truncated = fields.size() >= maxFields;
         int samples = documents.size();
@@ -58,7 +59,12 @@ final class MongoDbSchemaAnalyzer {
         return new MongoDbModels.SchemaSummary(true, samples, truncated, schemaFields, List.of());
     }
 
-    private void visit(String prefix, Document document, int depth, Map<String, FieldAccumulator> fields, int maxFields) {
+    private void visit(String prefix,
+                       Document document,
+                       int depth,
+                       Map<String, FieldAccumulator> fields,
+                       int maxFields,
+                       Set<String> documentPaths) {
         if (depth >= configuration.getSchema().getMaxDepth() || fields.size() >= maxFields) {
             return;
         }
@@ -70,16 +76,22 @@ final class MongoDbSchemaAnalyzer {
             Object value = configuration.getSchema().isRedactValues()
                 ? sanitizer.redactValue(entry.getKey(), entry.getValue())
                 : entry.getValue();
-            fields.computeIfAbsent(path, ignored -> new FieldAccumulator()).add(AbstractMongoDbDiagnosticService.bsonType(value));
+            fields.computeIfAbsent(path, ignored -> new FieldAccumulator())
+                .add(AbstractMongoDbDiagnosticService.bsonType(value), documentPaths.add(path));
             if (value instanceof Document nested) {
-                visit(path, nested, depth + 1, fields, maxFields);
+                visit(path, nested, depth + 1, fields, maxFields, documentPaths);
             } else if (value instanceof List<?> list) {
-                visitList(path, list, depth + 1, fields, maxFields);
+                visitList(path, list, depth + 1, fields, maxFields, documentPaths);
             }
         }
     }
 
-    private void visitList(String path, List<?> list, int depth, Map<String, FieldAccumulator> fields, int maxFields) {
+    private void visitList(String path,
+                           List<?> list,
+                           int depth,
+                           Map<String, FieldAccumulator> fields,
+                           int maxFields,
+                           Set<String> documentPaths) {
         if (depth >= configuration.getSchema().getMaxDepth() || fields.size() >= maxFields) {
             return;
         }
@@ -89,9 +101,11 @@ final class MongoDbSchemaAnalyzer {
                 return;
             }
             if (item instanceof Document document) {
-                visit(path + "[]", document, depth, fields, maxFields);
+                visit(path + "[]", document, depth, fields, maxFields, documentPaths);
             } else {
-                fields.computeIfAbsent(path + "[]", ignored -> new FieldAccumulator()).add(AbstractMongoDbDiagnosticService.bsonType(item));
+                String itemPath = path + "[]";
+                fields.computeIfAbsent(itemPath, ignored -> new FieldAccumulator())
+                    .add(AbstractMongoDbDiagnosticService.bsonType(item), documentPaths.add(itemPath));
             }
             index++;
         }
@@ -99,16 +113,18 @@ final class MongoDbSchemaAnalyzer {
 
     private static final class FieldAccumulator {
         private final Set<String> types = new TreeSet<>();
-        private int count;
+        private int documentCount;
 
-        void add(String type) {
+        void add(String type, boolean firstSeenInDocument) {
             types.add(type);
-            count++;
+            if (firstSeenInDocument) {
+                documentCount++;
+            }
         }
 
         MongoDbModels.SchemaField toField(String path, int samples) {
-            String frequency = samples == 0 ? "0%" : Math.round((count * 100.0d) / samples) + "%";
-            return new MongoDbModels.SchemaField(path, new ArrayList<>(types).stream().sorted(Comparator.naturalOrder()).toList(), count, frequency);
+            String frequency = samples == 0 ? "0%" : Math.round((documentCount * 100.0d) / samples) + "%";
+            return new MongoDbModels.SchemaField(path, new ArrayList<>(types).stream().sorted(Comparator.naturalOrder()).toList(), documentCount, frequency);
         }
     }
 }

@@ -17,6 +17,10 @@ MongoDB diagnostics require the MongoDB Control Panel module plus `micronaut-mon
 
 dependency:io.micronaut.controlpanel:micronaut-control-panel-mongodb[scope=developmentOnly]
 
+dependency:io.micronaut.mongodb:micronaut-mongo-sync[scope=runtimeOnly]
+
+dependency:io.micronaut.mongodb:micronaut-mongo-reactive[scope=runtimeOnly]
+
 By default, the Control Panel is only enabled in the `dev` or `test` environments. You can change this and other settings
 in your configuration file:
 

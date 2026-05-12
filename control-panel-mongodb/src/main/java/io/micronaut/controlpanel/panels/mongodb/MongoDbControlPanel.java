@@ -33,7 +33,7 @@ public class MongoDbControlPanel extends AbstractEachBeanControlPanel<MongoDbMod
 
     public static final String NAME = "mongodb";
     public static final String ENABLED_PROPERTY = ControlPanelConfiguration.PREFIX + "." + NAME + ".enabled";
-    public static final String DEFAULT_ICON_CLASS = "fas fa-database";
+    public static final String DEFAULT_ICON_CLASS = "si si-mongodb";
 
     private final MongoDbDiagnosticService diagnosticService;
 
@@ -70,7 +70,7 @@ public class MongoDbControlPanel extends AbstractEachBeanControlPanel<MongoDbMod
 
     @Override
     public String getIcon() {
-        return "fa-database";
+        return DEFAULT_ICON_CLASS;
     }
 
     @Override

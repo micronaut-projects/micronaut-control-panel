@@ -65,4 +65,23 @@ class MongoDbSchemaAnalyzerTest {
         assertEquals(1, summary.fields().size());
         assertTrue(summary.truncated());
     }
+
+    @Test
+    void arrayOccurrencesAreCountedOncePerDocumentForFrequency() {
+        var configuration = new MongoDbControlPanelConfiguration();
+        configuration.getSchema().setEnabled(true);
+        var analyzer = new MongoDbSchemaAnalyzer(configuration, new MongoDbSanitizer());
+
+        var summary = analyzer.summarize(List.of(
+            new Document("tags", List.of("fiction", "classic", "award")),
+            new Document("title", "Dune")
+        ));
+
+        var tags = summary.fields().stream()
+            .filter(field -> field.path().equals("tags[]"))
+            .findFirst()
+            .orElseThrow();
+        assertEquals(1, tags.count());
+        assertEquals("50%", tags.frequency());
+    }
 }
