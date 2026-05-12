@@ -1764,6 +1764,144 @@ dl.row dt {
     padding: 2rem 1rem !important;
 }
 
+.cp-kafka-card-summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.cp-kafka-card-metric {
+    display: grid;
+    gap: 0.25rem;
+    min-width: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.75rem;
+    background: var(--muted);
+}
+
+.cp-kafka-card-label,
+.cp-kafka-muted,
+.cp-kafka-section-description {
+    color: var(--muted-foreground);
+}
+
+.cp-kafka-card-label {
+    font-size: 0.75rem;
+    font-weight: 650;
+    text-transform: uppercase;
+}
+
+.cp-kafka-runtime,
+.cp-kafka-topology {
+    display: grid;
+    gap: 0.875rem;
+    min-width: 0;
+    margin-bottom: 1.25rem;
+}
+
+.cp-kafka-runtime {
+    border: 1px solid var(--border);
+    border-left-width: 0.25rem;
+    border-radius: var(--radius);
+    padding: 1rem;
+    background: var(--card);
+}
+
+.cp-kafka-runtime--available {
+    border-left-color: var(--success);
+}
+
+.cp-kafka-runtime--error {
+    border-left-color: var(--destructive);
+}
+
+.cp-kafka-runtime--unavailable {
+    border-left-color: var(--warning);
+}
+
+.cp-kafka-section-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.cp-kafka-section-title {
+    margin: 0;
+    color: var(--foreground);
+    font-size: 0.95rem;
+    font-weight: 650;
+    line-height: 1.25;
+}
+
+.cp-kafka-section-description,
+.cp-kafka-runtime-message {
+    margin: 0.25rem 0 0;
+    font-size: 0.875rem;
+}
+
+.cp-kafka-runtime-empty {
+    display: grid;
+    gap: 0.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem;
+    color: var(--muted-foreground);
+    background: var(--muted);
+}
+
+.cp-kafka-runtime-empty strong {
+    color: var(--foreground);
+}
+
+.cp-kafka-runtime-table .cp-data-table-container {
+    max-width: 100%;
+}
+
+.cp-kafka-threads-table td {
+    overflow-wrap: anywhere;
+}
+
+.cp-kafka-threads-table tr:focus {
+    outline: 2px solid var(--ring);
+    outline-offset: -2px;
+}
+
+.cp-kafka-inline-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.cp-kafka-task-summary {
+    display: grid;
+    gap: 0.25rem;
+}
+
+.cp-kafka-diagram {
+    min-height: 12rem;
+    overflow: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem;
+    background: var(--card);
+}
+
+.badge.cp-kafka-badge-success {
+    background: var(--success);
+    color: var(--success-foreground);
+}
+
+.badge.cp-kafka-badge-warning {
+    background: var(--warning);
+    color: var(--warning-foreground);
+}
+
 .cp-actions-menu {
     position: relative;
     display: inline-flex;
@@ -3054,5 +3192,65 @@ div.mermaid {
 
     .cp-reactor-route-fields dd:last-child {
         margin-bottom: 0;
+    }
+
+    .cp-kafka-card-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .cp-kafka-section-header {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .cp-kafka-runtime-table .cp-data-table-container {
+        border: 0;
+        overflow: visible;
+    }
+
+    .cp-kafka-threads-table,
+    .cp-kafka-threads-table thead,
+    .cp-kafka-threads-table tbody,
+    .cp-kafka-threads-table tr,
+    .cp-kafka-threads-table th,
+    .cp-kafka-threads-table td {
+        display: block;
+    }
+
+    .cp-kafka-threads-table thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+    }
+
+    .cp-kafka-threads-table tr {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        margin-bottom: 0.75rem;
+        background: var(--card);
+    }
+
+    .cp-kafka-threads-table tr:last-child {
+        margin-bottom: 0;
+    }
+
+    .cp-kafka-threads-table td {
+        display: grid;
+        grid-template-columns: minmax(7rem, 38%) minmax(0, 1fr);
+        gap: 0.75rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .cp-kafka-threads-table td::before {
+        content: attr(data-label);
+        color: var(--muted-foreground);
+        font-weight: 650;
+    }
+
+    .cp-kafka-threads-table td:last-child {
+        border-bottom: 0;
     }
 }
