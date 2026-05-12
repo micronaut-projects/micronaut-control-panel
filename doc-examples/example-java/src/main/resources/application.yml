@@ -9,6 +9,8 @@ micronaut:
         icon: fa-plug # <2>
         order: 10 # <3>
 #end::control-panel[]
+      mongodb:
+        enabled: false
     env:
       show-values: true
   router:
@@ -54,6 +56,8 @@ endpoints:
     sensitive: false
   health:
     details-visible: ANONYMOUS
+    mongodb:
+      enabled: false
   info:
     enabled: true
 

@@ -8,6 +8,7 @@ micronaut:
   control-panel:
     panels:
       mongodb:
+        enabled: true
         schema:
           enabled: true
           sample-size: 10

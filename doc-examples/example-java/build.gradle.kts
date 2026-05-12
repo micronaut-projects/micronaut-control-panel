@@ -77,7 +77,6 @@ micronaut {
         additionalModules.add(KnownModules.JDBC_ORACLE_FREE)
         additionalModules.add(KnownModules.JDBC_POSTGRESQL)
         additionalModules.add(KnownModules.KAFKA)
-        additionalModules.add("mongodb")
         additionalModules.add("infinispan")
         additionalModules.add("hazelcast")
     }
