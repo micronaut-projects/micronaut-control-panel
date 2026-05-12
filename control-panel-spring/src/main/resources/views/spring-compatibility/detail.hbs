@@ -1,0 +1,338 @@
+{{#with controlPanel.body }}
+    <div class="cp-dashboard-stack">
+        <div class="cp-detail-card-grid">
+            <section class="card">
+                <div class="card-body">
+                    <div class="text-muted">Spring-origin beans</div>
+                    <div class="h3 mb-0">{{ beanCount }}</div>
+                </div>
+            </section>
+            <section class="card">
+                <div class="card-body">
+                    <div class="text-muted">Spring-origin routes</div>
+                    <div class="h3 mb-0">{{ routeCount }}</div>
+                </div>
+            </section>
+            <section class="card">
+                <div class="card-body">
+                    <div class="text-muted">Boot conditions</div>
+                    <div class="h3 mb-0">{{ conditionCount }}</div>
+                </div>
+            </section>
+            <section class="card">
+                <div class="card-body">
+                    <div class="text-muted">Actuator operations</div>
+                    <div class="h3 mb-0">{{ endpointCount }}</div>
+                </div>
+            </section>
+            <section class="card">
+                <div class="card-body">
+                    <div class="text-muted">Warnings</div>
+                    <div class="h3 mb-0">{{ warningCount }}</div>
+                </div>
+            </section>
+        </div>
+
+        <div class="alert alert-info" role="status">{{ dataCompleteness }}</div>
+
+        <section class="card">
+            <div class="card-header">
+                <h3 class="card-title">Compare with generic diagnostics</h3>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">
+                    Spring Compatibility explains Spring annotation provenance. Use the generic panels as the source of truth for complete Micronaut beans,
+                    routes, and disabled-bean requirement details.
+                </p>
+                <div class="d-flex flex-wrap gap-2">
+                    <a class="btn btn-secondary btn-sm" href="{{../ext.controlPanelPath}}/beans">
+                        <i class="fas fa-mug-saucer"></i>
+                        Beans
+                    </a>
+                    <a class="btn btn-secondary btn-sm" href="{{../ext.controlPanelPath}}/routes">
+                        <i class="fas fa-route"></i>
+                        Routes
+                    </a>
+                    <a class="btn btn-secondary btn-sm" href="{{../ext.controlPanelPath}}/disabled-beans">
+                        <i class="fas fa-circle-exclamation"></i>
+                        Disabled Beans
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        {{#if classpathSummaryIncluded}}
+            <section class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Detected Micronaut Spring modules</h3>
+                </div>
+                <div class="card-body">
+                    <div class="cp-data-table">
+                        <div class="cp-data-table-container">
+                            <table class="table cp-data-table-table">
+                                <thead>
+                                <tr>
+                                    <th>Module</th>
+                                    <th>State</th>
+                                    <th>Marker</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {{#each detectedModules}}
+                                    <tr>
+                                        <td>{{ name }}</td>
+                                        <td>
+                                            {{#if present}}
+                                                <span class="badge badge-success">detected</span>
+                                            {{else}}
+                                                <span class="badge badge-secondary">not detected</span>
+                                            {{/if}}
+                                        </td>
+                                        <td><code class="cp-table-code">{{ markerClass }}</code></td>
+                                    </tr>
+                                {{/each}}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        {{/if}}
+
+        <div class="tabs" data-tabs data-tabs-storage-key="spring-compatibility-tabs">
+            <div class="tabs-list" role="tablist" aria-label="Spring compatibility details">
+                <button type="button" class="tabs-trigger active" role="tab" aria-selected="true" data-tabs-trigger="beans">
+                    <i class="fas fa-mug-saucer"></i>
+                    Beans
+                </button>
+                <button type="button" class="tabs-trigger" role="tab" aria-selected="false" data-tabs-trigger="routes">
+                    <i class="fas fa-route"></i>
+                    Routes
+                </button>
+                <button type="button" class="tabs-trigger" role="tab" aria-selected="false" data-tabs-trigger="conditions">
+                    <i class="fas fa-filter"></i>
+                    Conditions
+                </button>
+                <button type="button" class="tabs-trigger" role="tab" aria-selected="false" data-tabs-trigger="endpoints">
+                    <i class="fas fa-plug"></i>
+                    Actuator Endpoints
+                </button>
+                <button type="button" class="tabs-trigger" role="tab" aria-selected="false" data-tabs-trigger="annotations">
+                    <i class="fas fa-tags"></i>
+                    Annotation Support
+                </button>
+                <button type="button" class="tabs-trigger" role="tab" aria-selected="false" data-tabs-trigger="warnings">
+                    <i class="fas fa-triangle-exclamation"></i>
+                    Warnings
+                </button>
+            </div>
+
+            <div class="tabs-panel active" role="tabpanel" data-tabs-panel="beans">
+                <div class="alert alert-info" role="status">
+                    Compare Spring-origin bean rows with the
+                    <a href="{{../ext.controlPanelPath}}/beans">Beans panel</a>; disabled entries can be checked in
+                    <a href="{{../ext.controlPanelPath}}/disabled-beans">Disabled Beans</a>.
+                </div>
+                {{#if beans}}
+                    <div class="cp-data-table">
+                        <div class="cp-data-table-container">
+                            <table class="table cp-data-table-table">
+                                <thead>
+                                <tr>
+                                    <th>Bean</th>
+                                    <th>State</th>
+                                    <th>Scope</th>
+                                    <th>Spring annotations</th>
+                                    <th>Mapped Micronaut annotations</th>
+                                    <th>Requirements</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {{#each beans}}
+                                    <tr>
+                                        <td><code class="cp-table-code">{{ beanType }}</code></td>
+                                        <td>{{ state }}</td>
+                                        <td>{{ scope }}</td>
+                                        <td>{{#each springAnnotations}}<code class="cp-table-code">{{ this }}</code> {{/each}}</td>
+                                        <td>{{#each mappedAnnotations}}<code class="cp-table-code">{{ this }}</code> {{/each}}</td>
+                                        <td>{{ requirementSummary }}</td>
+                                    </tr>
+                                {{/each}}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                {{else}}
+                    <p class="text-muted">No Spring-origin beans were detected.</p>
+                {{/if}}
+            </div>
+
+            <div class="tabs-panel" role="tabpanel" data-tabs-panel="routes">
+                <div class="alert alert-info" role="status">
+                    Compare Spring-origin route rows with the complete
+                    <a href="{{../ext.controlPanelPath}}/routes">Routes panel</a>.
+                </div>
+                {{#if routes}}
+                    <div class="cp-data-table">
+                        <div class="cp-data-table-container">
+                            <table class="table cp-data-table-table">
+                                <thead>
+                                <tr>
+                                    <th>Method</th>
+                                    <th>Path</th>
+                                    <th>Declaring method</th>
+                                    <th>Spring annotations</th>
+                                    <th>Mapped Micronaut annotations</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {{#each routes}}
+                                    <tr>
+                                        <td><span class="badge badge-info">{{ httpMethod }}</span></td>
+                                        <td><code class="cp-table-code">{{ path }}</code></td>
+                                        <td><code class="cp-table-code">{{ declaringMethod }}</code></td>
+                                        <td>{{#each springAnnotations}}<code class="cp-table-code">{{ this }}</code> {{/each}}</td>
+                                        <td>{{#each mappedAnnotations}}<code class="cp-table-code">{{ this }}</code> {{/each}}</td>
+                                    </tr>
+                                {{/each}}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                {{else}}
+                    <p class="text-muted">No Spring MVC route metadata was detected.</p>
+                {{/if}}
+            </div>
+
+            <div class="tabs-panel" role="tabpanel" data-tabs-panel="conditions">
+                <div class="alert alert-info" role="status">
+                    Compare Spring Boot condition mappings with the
+                    <a href="{{../ext.controlPanelPath}}/disabled-beans">Disabled Beans panel</a> for full Micronaut requirement reasons.
+                </div>
+                {{#if conditions}}
+                    <div class="cp-data-table">
+                        <div class="cp-data-table-container">
+                            <table class="table cp-data-table-table">
+                                <thead>
+                                <tr>
+                                    <th>Bean</th>
+                                    <th>State</th>
+                                    <th>Spring condition</th>
+                                    <th>Mapped annotation</th>
+                                    <th>Requirement summary</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {{#each conditions}}
+                                    <tr>
+                                        <td><code class="cp-table-code">{{ beanType }}</code></td>
+                                        <td>{{ state }}</td>
+                                        <td><code class="cp-table-code">{{ springAnnotation }}</code></td>
+                                        <td><code class="cp-table-code">{{ mappedAnnotation }}</code></td>
+                                        <td>{{ requirementSummary }}</td>
+                                    </tr>
+                                {{/each}}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                {{else}}
+                    <p class="text-muted">No Spring Boot condition metadata was detected.</p>
+                {{/if}}
+            </div>
+
+            <div class="tabs-panel" role="tabpanel" data-tabs-panel="endpoints">
+                {{#if endpoints}}
+                    <div class="cp-data-table">
+                        <div class="cp-data-table-container">
+                            <table class="table cp-data-table-table">
+                                <thead>
+                                <tr>
+                                    <th>Endpoint</th>
+                                    <th>Operation</th>
+                                    <th>Path</th>
+                                    <th>Declaring method</th>
+                                    <th>Spring annotations</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {{#each endpoints}}
+                                    <tr>
+                                        <td>{{ endpointId }}</td>
+                                        <td>{{ operation }}</td>
+                                        <td><code class="cp-table-code">{{ managementPath }}</code></td>
+                                        <td><code class="cp-table-code">{{ declaringMethod }}</code></td>
+                                        <td>{{#each springAnnotations}}<code class="cp-table-code">{{ this }}</code> {{/each}}</td>
+                                    </tr>
+                                {{/each}}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                {{else}}
+                    <p class="text-muted">No Spring Boot Actuator endpoint metadata was detected.</p>
+                {{/if}}
+            </div>
+
+            <div class="tabs-panel" role="tabpanel" data-tabs-panel="annotations">
+                <div class="cp-data-table">
+                    <div class="cp-data-table-container">
+                        <table class="table cp-data-table-table">
+                            <thead>
+                            <tr>
+                                <th>Group</th>
+                                <th>Spring annotation</th>
+                                <th>Status</th>
+                                <th>Mapped Micronaut annotation</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {{#each annotations}}
+                                <tr>
+                                    <td>{{ group }}</td>
+                                    <td><code class="cp-table-code">{{ annotationName }}</code></td>
+                                    <td>{{ supportStatus }}</td>
+                                    <td><code class="cp-table-code">{{ mappedAnnotationName }}</code></td>
+                                </tr>
+                            {{/each}}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tabs-panel" role="tabpanel" data-tabs-panel="warnings">
+                {{#if warnings}}
+                    <div class="cp-data-table">
+                        <div class="cp-data-table-container">
+                            <table class="table cp-data-table-table">
+                                <thead>
+                                <tr>
+                                    <th>Severity</th>
+                                    <th>Source</th>
+                                    <th>Message</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {{#each warnings}}
+                                    <tr>
+                                        <td>{{ severity }}</td>
+                                        <td><code class="cp-table-code">{{ source }}</code></td>
+                                        <td>{{ message }}</td>
+                                    </tr>
+                                {{/each}}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                {{else}}
+                    <p class="text-muted">No unsupported-feature warnings were detected.</p>
+                {{/if}}
+            </div>
+        </div>
+
+        {{#unless annotationValuesVisible}}
+            <p class="text-muted">Annotation values are hidden by configuration.</p>
+        {{/unless}}
+    </div>
+{{/with}}
