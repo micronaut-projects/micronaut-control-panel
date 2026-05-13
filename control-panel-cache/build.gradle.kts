@@ -30,6 +30,7 @@ dependencies {
     testImplementation(mn.micronaut.http.server.netty)
     testImplementation(mn.micronaut.http.client)
     testImplementation(mnSerde.micronaut.serde.jackson)
+    testResourcesImplementation(mnSerde.micronaut.serde.jackson)
 
     testImplementation(mnCache.micronaut.cache.caffeine)
     testImplementation(mnCache.micronaut.cache.ehcache)

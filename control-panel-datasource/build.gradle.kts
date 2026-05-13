@@ -38,6 +38,7 @@ dependencies {
     testImplementation(mnSql.micronaut.jdbc.hikari)
     testImplementation(mnSql.micronaut.jdbc.ucp)
     testImplementation(mnSerde.micronaut.serde.jackson)
+    testResourcesImplementation(mnSerde.micronaut.serde.jackson)
     testImplementation(mnTest.mockito.core)
     testImplementation(mnTest.mockito.junit.jupiter)
     testRuntimeOnly(mnTest.bytebuddy.agent)
