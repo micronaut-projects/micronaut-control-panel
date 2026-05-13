@@ -4,7 +4,7 @@
             <div class="card-header">
                 <h3 class="card-title">Storage configuration</h3>
                 <div class="card-tools">
-                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#uploadModal">
+                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#uploadModal"{{#unless ext.writeAccess.allowed}} disabled aria-disabled="true" title="{{ ext.writeAccess.reason }}"{{/unless}}>
                         <i class="fa fa-upload"></i>
                         Upload file
                     </button>
@@ -59,7 +59,7 @@
                                                         <i class="fa fa-download"></i>
                                                         Download
                                                     </button>
-                                                    <button type="button" class="cp-actions-menu-item cp-actions-menu-item-danger" data-toggle="modal" data-target="#deleteConfirmModal" data-key="{{entry.key}}">
+                                                    <button type="button" class="cp-actions-menu-item cp-actions-menu-item-danger" data-toggle="modal" data-target="#deleteConfirmModal" data-key="{{entry.key}}"{{#unless ext.writeAccess.allowed}} disabled aria-disabled="true" title="{{ ext.writeAccess.reason }}"{{/unless}}>
                                                         <i class="fa fa-trash"></i>
                                                         Delete
                                                     </button>
@@ -105,7 +105,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-danger" id="deleteConfirm">Delete</button>
+                        <button type="button" class="btn btn-danger" id="deleteConfirm"{{#unless ext.writeAccess.allowed}} disabled aria-disabled="true" title="{{ ext.writeAccess.reason }}"{{/unless}}>Delete</button>
                     </div>
                 </div>
             </div>
@@ -141,7 +141,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="upload">Upload</button>
+                    <button type="button" class="btn btn-primary" id="upload"{{#unless ext.writeAccess.allowed}} disabled aria-disabled="true" title="{{ ext.writeAccess.reason }}"{{/unless}}>Upload</button>
                 </div>
             </div>
         </div>
@@ -150,6 +150,9 @@
     <script>
 
         $('#upload').click(function(e){
+            if (!{{ ext.writeAccess.allowed }} || this.disabled) {
+                return;
+            }
             var form = $('#uploadForm')[0]
             var formData = new FormData(form)
 
@@ -180,6 +183,9 @@
         })
 
         $('#deleteConfirm').click(function(event) {
+            if (!{{ ext.writeAccess.allowed }} || this.disabled) {
+                return;
+            }
             var fileKey = $(this).attr('data-key');
             $.ajax({
                 url: '{{ ext.controlPanelPath }}/object-storage-control-panel-controller/{{ controlPanel.title }}/' + fileKey,

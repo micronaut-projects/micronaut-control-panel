@@ -4,7 +4,7 @@
         <div class="card-header">
             <h3 class="card-title">Logger configuration</h3>
             <div class="card-tools">
-                <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#actionsModal">
+                <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#actionsModal"{{#unless ext.writeAccess.allowed}} disabled aria-disabled="true" title="{{ ext.writeAccess.reason }}"{{/unless}}>
                     <i class="fa fa-plus"></i>
                     Add new logger
                 </button>
@@ -58,7 +58,7 @@
                                     <span class="badge">{{ logger.configuredLevel }}</span>
                                 </td>
                                 <td class="cp-logger-actions">
-                                    <button type="button" class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#actionsModal" data-logger="{{@key}}" data-currentlevel="{{ logger.configuredLevel }}">
+                                    <button type="button" class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#actionsModal" data-logger="{{@key}}" data-currentlevel="{{ logger.configuredLevel }}"{{#unless ext.writeAccess.allowed}} disabled aria-disabled="true" title="{{ ext.writeAccess.reason }}"{{/unless}}>
                                         <i class="fa fa-edit"></i>
                                         Reconfigure
                                     </button>
@@ -112,7 +112,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                 <button type="button" class="btn btn-secondary" id="refreshTable" style="display: none;">Refresh table</button>
-                <button type="button" class="btn btn-primary" id="submit">Submit</button>
+                <button type="button" class="btn btn-primary" id="submit"{{#unless ext.writeAccess.allowed}} disabled aria-disabled="true" title="{{ ext.writeAccess.reason }}"{{/unless}}>Submit</button>
             </div>
         </div>
     </div>
@@ -142,7 +142,12 @@
             modal.find('.modal-body select').val('');
         }
         $('#refreshTable').hide();
-        $('#submit').show().prop('disabled', false).removeAttr('aria-describedby').removeAttr('title');
+        var submitButton = $('#submit').show().removeAttr('aria-describedby');
+        if ({{ ext.writeAccess.allowed }}) {
+            submitButton.prop('disabled', false).removeAttr('title').removeAttr('aria-disabled');
+        } else {
+            submitButton.prop('disabled', true).attr('aria-disabled', 'true').attr('title', '{{ ext.writeAccess.reason }}');
+        }
     })
 
     $('#actionsModal').on('hidden.bs.modal', function (e) {
@@ -168,6 +173,9 @@
     })
 
     function submitForm(){
+        if (!{{ ext.writeAccess.allowed }} || $('#submit').prop('disabled')) {
+            return;
+        }
         var loggerInput = $('#logger');
         var logger = loggerInput.val().trim();
         if (!logger) {
