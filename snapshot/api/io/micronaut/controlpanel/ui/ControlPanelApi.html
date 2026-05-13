@@ -54,6 +54,7 @@ loadScripts(document, 'script');</script>
 <div class="toc-header">Contents&nbsp;<input type="text" class="filter-input" disabled placeholder="Filter contents (type .)" aria-label="Filter table of contents" autocomplete="off" spellcheck="false"><input type="reset" class="reset-filter" disabled tabindex="-1" value="Reset"></div>
 <ol class="toc-list" tabindex="-1">
 <li><a href="#" tabindex="0">Description</a></li>
+<li><a href="#nested-class-summary" tabindex="0">Nested Class Summary</a></li>
 <li><a href="#field-summary" tabindex="0">Field Summary</a></li>
 <li><a href="#method-summary" tabindex="0">Method Summary</a></li>
 <li><a href="#field-detail" tabindex="0">Field Details</a>
@@ -63,9 +64,11 @@ loadScripts(document, 'script');</script>
 </li>
 <li><a href="#method-detail" tabindex="0">Method Details</a>
 <ol class="toc-list">
-<li><a href="#index()" tabindex="0">index()</a></li>
-<li><a href="#byCategory(java.lang.String)" tabindex="0">byCategory(String)</a></li>
-<li><a href="#detail(java.lang.String)" tabindex="0">detail(String)</a></li>
+<li><a href="#index(io.micronaut.http.HttpRequest)" tabindex="0">index(HttpRequest)</a></li>
+<li><a href="#byCategory(java.lang.String,io.micronaut.http.HttpRequest)" tabindex="0">byCategory(String, HttpRequest)</a></li>
+<li><a href="#detail(java.lang.String,io.micronaut.http.HttpRequest)" tabindex="0">detail(String, HttpRequest)</a></li>
+<li><a href="#refresh(io.micronaut.controlpanel.ui.ControlPanelApi.RefreshRequest)" tabindex="0">refresh(ControlPanelApi.RefreshRequest)</a></li>
+<li><a href="#stop()" tabindex="0">stop()</a></li>
 </ol>
 </li>
 </ol>
@@ -94,6 +97,21 @@ loadScripts(document, 'script');</script>
 </section>
 <section class="summary">
 <ul class="summary-list">
+<!-- ======== NESTED CLASS SUMMARY ======== -->
+<li>
+<section class="nested-class-summary" id="nested-class-summary">
+<h2>Nested Class Summary</h2>
+<div class="caption"><span>Nested Classes</span></div>
+<div class="summary-table three-column-summary">
+<div class="table-header col-first">Modifier and Type</div>
+<div class="table-header col-second">Interface</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><code>static final record&nbsp;</code></div>
+<div class="col-second even-row-color"><code><a href="ControlPanelApi.RefreshRequest.html" class="type-name-link" title="class in io.micronaut.controlpanel.ui">ControlPanelApi.RefreshRequest</a></code></div>
+<div class="col-last even-row-color">&nbsp;</div>
+</div>
+</section>
+</li>
 <!-- =========== FIELD SUMMARY =========== -->
 <li>
 <section class="field-summary" id="field-summary">
@@ -121,19 +139,31 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>io.micronaut.http.HttpResponse<wbr>&lt;io.micronaut.views.ModelAndView&lt;?&gt;&gt;</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#byCategory(java.lang.String)" class="member-name-link">byCategory</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;categoryId)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#byCategory(java.lang.String,io.micronaut.http.HttpRequest)" class="member-name-link">byCategory</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;categoryId,
+ io.micronaut.http.HttpRequest&lt;?&gt;&nbsp;request)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
 <div class="block">Renders the category view.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>io.micronaut.http.HttpResponse<wbr>&lt;io.micronaut.views.ModelAndView&lt;?&gt;&gt;</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#detail(java.lang.String)" class="member-name-link">detail</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;controlPanelName)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#detail(java.lang.String,io.micronaut.http.HttpRequest)" class="member-name-link">detail</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;controlPanelName,
+ io.micronaut.http.HttpRequest&lt;?&gt;&nbsp;request)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
 <div class="block">Renders the control panel detailed view.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>io.micronaut.http.HttpResponse<wbr>&lt;io.micronaut.views.ModelAndView&lt;?&gt;&gt;</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#index()" class="member-name-link">index</a>()</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#index(io.micronaut.http.HttpRequest)" class="member-name-link">index</a><wbr>(io.micronaut.http.HttpRequest&lt;?&gt;&nbsp;request)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
 <div class="block">Renders the index view.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>io.micronaut.http.HttpResponse<wbr>&lt;<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&gt;</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#refresh(io.micronaut.controlpanel.ui.ControlPanelApi.RefreshRequest)" class="member-name-link">refresh</a><wbr>(@Nullable <a href="ControlPanelApi.RefreshRequest.html" title="class in io.micronaut.controlpanel.ui">ControlPanelApi.RefreshRequest</a>&nbsp;request)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="block">Refreshes the host application through a control-panel-owned write route.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>io.micronaut.http.HttpResponse<wbr>&lt;<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&gt;</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#stop()" class="member-name-link">stop</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="block">Stops the host application through a control-panel-owned write route.</div>
 </div>
 </div>
 </div>
@@ -174,13 +204,15 @@ loadScripts(document, 'script');</script>
 <h2>Method Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="index()">
+<section class="detail" id="index(io.micronaut.http.HttpRequest)">
 <h3>index</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="annotations">@Get
-</span><span class="return-type">io.micronaut.http.HttpResponse&lt;io.micronaut.views.ModelAndView&lt;?&gt;&gt;</span>&nbsp;<span class="element-name">index</span>()</div>
+</span><span class="return-type">io.micronaut.http.HttpResponse&lt;io.micronaut.views.ModelAndView&lt;?&gt;&gt;</span>&nbsp;<span class="element-name">index</span><wbr><span class="parameters">(io.micronaut.http.HttpRequest&lt;?&gt;&nbsp;request)</span></div>
 <div class="block">Renders the index view.</div>
 <dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>request</code> - the current HTTP request</dd>
 <dt>Returns:</dt>
 <dd>the model</dd>
 </dl>
@@ -188,15 +220,17 @@ loadScripts(document, 'script');</script>
 </section>
 </li>
 <li>
-<section class="detail" id="byCategory(java.lang.String)">
+<section class="detail" id="byCategory(java.lang.String,io.micronaut.http.HttpRequest)">
 <h3>byCategory</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="annotations">@Get("/categories/{categoryId}")
-</span><span class="return-type">io.micronaut.http.HttpResponse&lt;io.micronaut.views.ModelAndView&lt;?&gt;&gt;</span>&nbsp;<span class="element-name">byCategory</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;categoryId)</span></div>
+</span><span class="return-type">io.micronaut.http.HttpResponse&lt;io.micronaut.views.ModelAndView&lt;?&gt;&gt;</span>&nbsp;<span class="element-name">byCategory</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;categoryId,
+ io.micronaut.http.HttpRequest&lt;?&gt;&nbsp;request)</span></div>
 <div class="block">Renders the category view.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
 <dd><code>categoryId</code> - the category id.</dd>
+<dd><code>request</code> - the current HTTP request</dd>
 <dt>Returns:</dt>
 <dd>the model</dd>
 </dl>
@@ -204,17 +238,50 @@ loadScripts(document, 'script');</script>
 </section>
 </li>
 <li>
-<section class="detail" id="detail(java.lang.String)">
+<section class="detail" id="detail(java.lang.String,io.micronaut.http.HttpRequest)">
 <h3>detail</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="annotations">@Get("/{controlPanelName}")
-</span><span class="return-type">io.micronaut.http.HttpResponse&lt;io.micronaut.views.ModelAndView&lt;?&gt;&gt;</span>&nbsp;<span class="element-name">detail</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;controlPanelName)</span></div>
+</span><span class="return-type">io.micronaut.http.HttpResponse&lt;io.micronaut.views.ModelAndView&lt;?&gt;&gt;</span>&nbsp;<span class="element-name">detail</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;controlPanelName,
+ io.micronaut.http.HttpRequest&lt;?&gt;&nbsp;request)</span></div>
 <div class="block">Renders the control panel detailed view.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
 <dd><code>controlPanelName</code> - the control panel name.</dd>
+<dd><code>request</code> - the current HTTP request</dd>
 <dt>Returns:</dt>
 <dd>the model</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="refresh(io.micronaut.controlpanel.ui.ControlPanelApi.RefreshRequest)">
+<h3>refresh</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="annotations">@Post("/application-control-panel-controller/refresh")
+</span><span class="return-type">io.micronaut.http.HttpResponse&lt;<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&gt;</span>&nbsp;<span class="element-name">refresh</span><wbr><span class="parameters">(@Body
+ @Nullable <a href="ControlPanelApi.RefreshRequest.html" title="class in io.micronaut.controlpanel.ui">ControlPanelApi.RefreshRequest</a>&nbsp;request)</span></div>
+<div class="block">Refreshes the host application through a control-panel-owned write route.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>request</code> - the optional refresh request</dd>
+<dt>Returns:</dt>
+<dd>the refresh result</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="stop()">
+<h3>stop</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="annotations">@Post("/application-control-panel-controller/stop")
+</span><span class="return-type">io.micronaut.http.HttpResponse&lt;<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&gt;</span>&nbsp;<span class="element-name">stop</span>()</div>
+<div class="block">Stops the host application through a control-panel-owned write route.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the stop result</dd>
 </dl>
 </div>
 </section>

@@ -64,16 +64,19 @@ loadScripts(document, 'script');</script>
 <li><a href="#HIBERNATE_PATH" tabindex="0">HIBERNATE_PATH</a></li>
 <li><a href="#LOGGERS_PATH" tabindex="0">LOGGERS_PATH</a></li>
 <li><a href="#OBJECT_STORAGE_PATH" tabindex="0">OBJECT_STORAGE_PATH</a></li>
+<li><a href="#APPLICATION_PATH" tabindex="0">APPLICATION_PATH</a></li>
 <li><a href="#CACHE" tabindex="0">CACHE</a></li>
 <li><a href="#DATASOURCE" tabindex="0">DATASOURCE</a></li>
 <li><a href="#HIBERNATE" tabindex="0">HIBERNATE</a></li>
 <li><a href="#LOGGERS" tabindex="0">LOGGERS</a></li>
 <li><a href="#OBJECT_STORAGE" tabindex="0">OBJECT_STORAGE</a></li>
+<li><a href="#APPLICATION" tabindex="0">APPLICATION</a></li>
 </ol>
 </li>
 <li><a href="#method-detail" tabindex="0">Method Details</a>
 <ol class="toc-list">
 <li><a href="#helperPaths()" tabindex="0">helperPaths()</a></li>
+<li><a href="#isWriteRequest(java.lang.String,io.micronaut.http.HttpRequest)" tabindex="0">isWriteRequest(String, HttpRequest)</a></li>
 </ol>
 </li>
 </ol>
@@ -106,6 +109,12 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Field</div>
 <div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><code>static final <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color"><code><a href="#APPLICATION" class="member-name-link">APPLICATION</a></code></div>
+<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><code>static final <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second odd-row-color"><code><a href="#APPLICATION_PATH" class="member-name-link">APPLICATION_PATH</a></code></div>
+<div class="col-last odd-row-color">&nbsp;</div>
 <div class="col-first even-row-color"><code>static final <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
 <div class="col-second even-row-color"><code><a href="#CACHE" class="member-name-link">CACHE</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
@@ -156,6 +165,12 @@ loadScripts(document, 'script');</script>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a><wbr>&lt;<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#helperPaths()" class="member-name-link">helperPaths</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static boolean</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#isWriteRequest(java.lang.String,io.micronaut.http.HttpRequest)" class="member-name-link">isWriteRequest</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;controlPanelPath,
+ io.micronaut.http.HttpRequest&lt;?&gt;&nbsp;request)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Determines whether a request targets a control-panel-owned write operation.</div>
+</div>
 </div>
 </div>
 </div>
@@ -270,6 +285,22 @@ loadScripts(document, 'script');</script>
 </section>
 </li>
 <li>
+<section class="detail" id="APPLICATION_PATH">
+<h3>APPLICATION_PATH</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">APPLICATION_PATH</span></div>
+<dl class="notes">
+<dt>See Also:</dt>
+<dd>
+<ul class="tag-list">
+<li><a href="../../../../../constant-values.html#io.micronaut.controlpanel.core.security.ControlPanelSecurityPaths.APPLICATION_PATH">Constant Field Values</a></li>
+</ul>
+</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
 <section class="detail" id="CACHE">
 <h3>CACHE</h3>
 <div class="horizontal-scroll">
@@ -349,6 +380,22 @@ loadScripts(document, 'script');</script>
 </div>
 </section>
 </li>
+<li>
+<section class="detail" id="APPLICATION">
+<h3>APPLICATION</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">APPLICATION</span></div>
+<dl class="notes">
+<dt>See Also:</dt>
+<dd>
+<ul class="tag-list">
+<li><a href="../../../../../constant-values.html#io.micronaut.controlpanel.core.security.ControlPanelSecurityPaths.APPLICATION">Constant Field Values</a></li>
+</ul>
+</dd>
+</dl>
+</div>
+</section>
+</li>
 </ul>
 </section>
 </li>
@@ -365,6 +412,23 @@ loadScripts(document, 'script');</script>
 <dl class="notes">
 <dt>Returns:</dt>
 <dd>helper route path suffixes that belong to the control panel HTTP surface</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="isWriteRequest(java.lang.String,io.micronaut.http.HttpRequest)">
+<h3>isWriteRequest</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">isWriteRequest</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;controlPanelPath,
+ io.micronaut.http.HttpRequest&lt;?&gt;&nbsp;request)</span></div>
+<div class="block">Determines whether a request targets a control-panel-owned write operation.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>controlPanelPath</code> - the resolved control panel path, including any application context path</dd>
+<dd><code>request</code> - the HTTP request</dd>
+<dt>Returns:</dt>
+<dd>true if the request mutates application/runtime state</dd>
 </dl>
 </div>
 </section>
