@@ -615,14 +615,14 @@ final class KafkaClusterService {
                 throw new IllegalStateException("Kafka management producer factory is unavailable");
             }
             try (Producer<byte[], byte[]> producer = factory.createProducer()) {
-                ProducerRecord<byte[], byte[]> record = new ProducerRecord<>(
+                ProducerRecord<byte[], byte[]> producerRecord = new ProducerRecord<>(
                     topic,
                     partition,
                     key,
                     value,
                     headers
                 );
-                RecordMetadata metadata = producer.send(record).get(ADMIN_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS);
+                RecordMetadata metadata = producer.send(producerRecord).get(ADMIN_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS);
                 producer.flush();
                 return appliedResult(action, metadata.topic() + "-" + metadata.partition(), impact + " at offset " + metadata.offset());
             }
@@ -1709,15 +1709,15 @@ final class KafkaClusterService {
                 consumer.seekToBeginning(List.of(partition));
                 yield new BrowseOffsets(consumer.position(partition, CONSUMER_API_TIMEOUT), null);
             }
-            case "latest" -> seekLatest(consumer, partition, limit);
-            case "offset" -> {
+            case RESET_LATEST -> seekLatest(consumer, partition, limit);
+            case RESET_OFFSET -> {
                 if (offset == null || offset < 0) {
                     throw new IllegalArgumentException("Offset must be greater than or equal to 0");
                 }
                 consumer.seek(partition, offset);
                 yield new BrowseOffsets(offset, null);
             }
-            case "timestamp" -> seekTimestamp(consumer, partition, timestamp);
+            case RESET_TIMESTAMP -> seekTimestamp(consumer, partition, timestamp);
             default -> throw new IllegalArgumentException("Unsupported message browse mode: " + mode);
         };
     }
@@ -1765,11 +1765,11 @@ final class KafkaClusterService {
         List<MessageRecord> records = new ArrayList<>(limit);
         for (int i = 0; i < MAX_POLLS && records.size() < limit; i++) {
             ConsumerRecords<byte[], byte[]> consumerRecords = consumer.poll(CONSUMER_POLL_TIMEOUT);
-            for (ConsumerRecord<byte[], byte[]> record : consumerRecords.records(partition)) {
-                if (endOffset != null && record.offset() >= endOffset) {
+            for (ConsumerRecord<byte[], byte[]> consumerRecord : consumerRecords.records(partition)) {
+                if (endOffset != null && consumerRecord.offset() >= endOffset) {
                     return records;
                 }
-                records.add(toMessageRecord(record));
+                records.add(toMessageRecord(consumerRecord));
                 if (records.size() >= limit) {
                     break;
                 }
@@ -1781,19 +1781,19 @@ final class KafkaClusterService {
         return records;
     }
 
-    private MessageRecord toMessageRecord(ConsumerRecord<byte[], byte[]> record) {
+    private MessageRecord toMessageRecord(ConsumerRecord<byte[], byte[]> consumerRecord) {
         List<MessageHeader> headers = new ArrayList<>();
-        for (Header header : record.headers()) {
+        for (Header header : consumerRecord.headers()) {
             headers.add(new MessageHeader(header.key(), renderPayload(header.value())));
         }
         return new MessageRecord(
-            record.offset(),
-            record.timestamp(),
-            record.timestampType().toString(),
-            renderPayload(record.key()),
-            renderPayload(record.value()),
+            consumerRecord.offset(),
+            consumerRecord.timestamp(),
+            consumerRecord.timestampType().toString(),
+            renderPayload(consumerRecord.key()),
+            renderPayload(consumerRecord.value()),
             headers,
-            record.partition()
+            consumerRecord.partition()
         );
     }
 

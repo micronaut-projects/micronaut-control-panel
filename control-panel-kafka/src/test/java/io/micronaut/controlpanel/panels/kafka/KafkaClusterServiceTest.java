@@ -27,12 +27,17 @@ import io.micronaut.http.annotation.Controller;
 import io.micronaut.json.JsonMapper;
 import io.micronaut.json.tree.JsonNode;
 import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.AlterConfigsResult;
+import org.apache.kafka.clients.admin.AlterConsumerGroupOffsetsResult;
 import org.apache.kafka.clients.admin.Config;
 import org.apache.kafka.clients.admin.ConfigEntry;
 import org.apache.kafka.clients.admin.ConsumerGroupDescription;
+import org.apache.kafka.clients.admin.CreatePartitionsOptions;
+import org.apache.kafka.clients.admin.CreatePartitionsResult;
 import org.apache.kafka.clients.admin.CreateTopicsOptions;
 import org.apache.kafka.clients.admin.CreateTopicsResult;
 import org.apache.kafka.clients.admin.DeleteTopicsOptions;
+import org.apache.kafka.clients.admin.DeleteTopicsResult;
 import org.apache.kafka.clients.admin.DescribeClusterOptions;
 import org.apache.kafka.clients.admin.DescribeClusterResult;
 import org.apache.kafka.clients.admin.DescribeConfigsOptions;
@@ -60,6 +65,9 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.OffsetAndTimestamp;
+import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.GroupState;
 import org.apache.kafka.common.GroupType;
 import org.apache.kafka.common.KafkaFuture;
@@ -87,6 +95,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
@@ -514,6 +523,35 @@ final class KafkaClusterServiceTest {
     }
 
     @Test
+    void messageBrowserFallsBackToEndWhenLatestOrTimestampOffsetsAreUnavailable() {
+        AdminClient admin = mock(AdminClient.class);
+        @SuppressWarnings("unchecked")
+        Consumer<byte[], byte[]> latestConsumer = mock(Consumer.class);
+        @SuppressWarnings("unchecked")
+        Consumer<byte[], byte[]> timestampConsumer = mock(Consumer.class);
+        KafkaMessageBrowserConsumerFactory factory = mock(KafkaMessageBrowserConsumerFactory.class);
+        TopicPartition partition = new TopicPartition("orders", 0);
+        when(factory.createConsumer()).thenReturn(latestConsumer, timestampConsumer);
+        when(latestConsumer.beginningOffsets(any(Collection.class), any())).thenReturn(Map.of());
+        when(latestConsumer.endOffsets(any(Collection.class), any())).thenReturn(Map.of());
+        when(latestConsumer.position(any(TopicPartition.class), any())).thenReturn(12L);
+        when(latestConsumer.poll(any())).thenReturn(ConsumerRecords.empty());
+        when(timestampConsumer.offsetsForTimes(anyMap(), any())).thenReturn(Map.of());
+        when(timestampConsumer.position(any(TopicPartition.class), any())).thenReturn(15L);
+        when(timestampConsumer.poll(any())).thenReturn(ConsumerRecords.empty());
+
+        var latestSection = new KafkaClusterService(admin, factory).messages("orders", 0, "latest", null, null, 10);
+        var timestampSection = new KafkaClusterService(admin, factory).messages("orders", 0, "timestamp", null, 1234L, 10);
+
+        assertNull(latestSection.error());
+        assertEquals(12L, latestSection.data().startOffset());
+        assertNull(timestampSection.error());
+        assertEquals(15L, timestampSection.data().startOffset());
+        verify(latestConsumer).seekToEnd(List.of(partition));
+        verify(timestampConsumer).seekToEnd(List.of(partition));
+    }
+
+    @Test
     void messageBrowserReportsInvalidRequestsAsSectionErrors() {
         AdminClient admin = mock(AdminClient.class);
         KafkaMessageBrowserConsumerFactory factory = mock(KafkaMessageBrowserConsumerFactory.class);
@@ -720,6 +758,77 @@ final class KafkaClusterServiceTest {
     }
 
     @Test
+    void topicWriteActionsApplyWithConfirmations() {
+        AdminClient admin = mock(AdminClient.class);
+        AlterConfigsResult alterConfigsResult = mock(AlterConfigsResult.class);
+        CreatePartitionsResult createPartitionsResult = mock(CreatePartitionsResult.class);
+        DeleteTopicsResult deleteTopicsResult = mock(DeleteTopicsResult.class);
+        when(admin.incrementalAlterConfigs(anyMap(), any())).thenReturn(alterConfigsResult);
+        when(alterConfigsResult.all()).thenReturn(KafkaFuture.completedFuture(null));
+        when(admin.createPartitions(anyMap(), any(CreatePartitionsOptions.class))).thenReturn(createPartitionsResult);
+        when(createPartitionsResult.all()).thenReturn(KafkaFuture.completedFuture(null));
+        when(admin.deleteTopics(any(TopicCollection.class), any(DeleteTopicsOptions.class))).thenReturn(deleteTopicsResult);
+        when(deleteTopicsResult.all()).thenReturn(KafkaFuture.completedFuture(null));
+        KafkaClusterService service = new KafkaClusterService(admin, null, null, null, writeConfig(true, true));
+
+        var updateConfig = service.updateTopicConfig(new KafkaClusterResponse.UpdateTopicConfigRequest(
+            "orders",
+            Map.of("cleanup.policy", "compact", "retention.ms", "60000"),
+            false,
+            "UPDATE CONFIG orders"
+        ));
+        var increasePartitions = service.increasePartitions(new KafkaClusterResponse.IncreasePartitionsRequest(
+            "orders",
+            4,
+            false,
+            "INCREASE PARTITIONS orders"
+        ));
+        var deleteTopic = service.deleteTopic(new KafkaClusterResponse.DeleteTopicRequest(
+            "orders",
+            false,
+            "DELETE orders"
+        ));
+
+        assertTrue(updateConfig.data().applied());
+        assertTrue(increasePartitions.data().applied());
+        assertTrue(deleteTopic.data().applied());
+        verify(admin).incrementalAlterConfigs(anyMap(), any());
+        verify(admin).createPartitions(anyMap(), any(CreatePartitionsOptions.class));
+        verify(admin).deleteTopics(any(TopicCollection.class), any(DeleteTopicsOptions.class));
+    }
+
+    @Test
+    void resetOffsetsAppliesExplicitOffsetForInactiveGroup() {
+        AdminClient admin = mock(AdminClient.class);
+        TopicPartition partition = new TopicPartition("orders", 0);
+        mockConsumerGroupDescriptions(admin, Map.of("orders-service", consumerGroup(
+            "orders-service",
+            GroupState.EMPTY,
+            "range"
+        )));
+        mockConsumerGroupOffsets(admin, Map.of("orders-service", Map.of(partition, new OffsetAndMetadata(20L))));
+        AlterConsumerGroupOffsetsResult result = mock(AlterConsumerGroupOffsetsResult.class);
+        when(admin.alterConsumerGroupOffsets(any(String.class), anyMap(), any())).thenReturn(result);
+        when(result.all()).thenReturn(KafkaFuture.completedFuture(null));
+
+        var section = new KafkaClusterService(admin, null, null, null, writeConfig(true, false))
+            .resetConsumerGroupOffsets(new KafkaClusterResponse.ResetOffsetsRequest(
+                "orders-service",
+                "offset",
+                null,
+                null,
+                7L,
+                null,
+                false,
+                "RESET OFFSETS orders-service"
+            ));
+
+        assertNull(section.error());
+        assertTrue(section.data().applied());
+        verify(admin).alterConsumerGroupOffsets(any(String.class), anyMap(), any());
+    }
+
+    @Test
     void resetOffsetsRequiresInactiveConsumerGroup() {
         AdminClient admin = mock(AdminClient.class);
         mockConsumerGroupDescriptions(admin, Map.of("orders-service", consumerGroup(
@@ -779,6 +888,39 @@ final class KafkaClusterServiceTest {
         );
         assertFalse(config.containsKey(org.apache.kafka.clients.producer.ProducerConfig.TRANSACTIONAL_ID_CONFIG));
         assertNotNull(config.get(org.apache.kafka.clients.producer.ProducerConfig.CLIENT_ID_CONFIG));
+    }
+
+    @Test
+    void produceMessageAppliesWithValidatedHeadersAndProducerMetadata() {
+        AdminClient admin = mock(AdminClient.class);
+        KafkaManagementProducerFactory factory = mock(KafkaManagementProducerFactory.class);
+        @SuppressWarnings("unchecked")
+        Producer<byte[], byte[]> producer = mock(Producer.class);
+        RecordMetadata metadata = mock(RecordMetadata.class);
+        when(factory.createProducer()).thenReturn(producer);
+        when(metadata.topic()).thenReturn("orders");
+        when(metadata.partition()).thenReturn(0);
+        when(metadata.offset()).thenReturn(9L);
+        when(producer.send(any())).thenReturn(CompletableFuture.completedFuture(metadata));
+
+        var section = new KafkaClusterService(admin, null, null, factory, writeConfig(true, false))
+            .produceMessage(produceRequest(
+                "orders",
+                "order-1",
+                "{\"id\":1}",
+                List.of(new KafkaClusterResponse.MessageHeaderInput("trace", "abc"))
+            ));
+
+        assertNull(section.error());
+        assertTrue(section.data().applied());
+        assertTrue(section.data().impact().contains("offset 9"));
+        @SuppressWarnings({"rawtypes", "unchecked"})
+        ArgumentCaptor<ProducerRecord<byte[], byte[]>> captor = ArgumentCaptor.forClass((Class) ProducerRecord.class);
+        verify(producer).send(captor.capture());
+        assertEquals("orders", captor.getValue().topic());
+        assertEquals("trace", captor.getValue().headers().iterator().next().key());
+        verify(producer).flush();
+        verify(producer).close();
     }
 
     private static void assertPreview(KafkaClusterResponse.Section<KafkaClusterResponse.ActionResult> section, String action) {
