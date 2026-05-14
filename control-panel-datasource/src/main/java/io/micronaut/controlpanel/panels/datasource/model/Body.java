@@ -17,6 +17,8 @@ package io.micronaut.controlpanel.panels.datasource.model;
 
 import io.micronaut.core.annotation.ReflectiveAccess;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 /**
@@ -25,7 +27,23 @@ import java.util.List;
  * @param dataSourceInfo The DataSource information
  * @param tables         The list of tables
  * @param mermaidEr      The Mermaid ER diagram code generated from the datasource
+ * @param poolInfo       The datasource connection pool metadata, if a supported pool is present
  */
 @ReflectiveAccess
-public record Body(DataSourceInfo dataSourceInfo, List<Table> tables, String mermaidEr) {
+public record Body(DataSourceInfo dataSourceInfo, List<Table> tables, String mermaidEr, PoolInfo poolInfo) {
+
+    public Body(DataSourceInfo dataSourceInfo, List<Table> tables, String mermaidEr) {
+        this(dataSourceInfo, tables, mermaidEr, null);
+    }
+
+    /**
+     * @return The distinct table schemas in datasource metadata order.
+     */
+    public List<String> tableSchemas() {
+        var schemas = new LinkedHashSet<String>();
+        for (Table table : tables) {
+            schemas.add(table.schema() == null ? "" : table.schema());
+        }
+        return new ArrayList<>(schemas);
+    }
 }
