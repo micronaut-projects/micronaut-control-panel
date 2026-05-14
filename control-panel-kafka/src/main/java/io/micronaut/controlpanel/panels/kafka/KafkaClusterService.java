@@ -188,6 +188,7 @@ final class KafkaClusterService {
     private static final String TARGET_CONNECTOR = "Connector";
     private static final String PATH_SUBJECTS = "/subjects/";
     private static final String PATH_CONNECTORS = "/connectors/";
+    private static final String MESSAGE_BEGINNING = "beginning";
     private static final String RESET_EARLIEST = "earliest";
     private static final String RESET_LATEST = "latest";
     private static final String RESET_OFFSET = "offset";
@@ -1705,7 +1706,7 @@ final class KafkaClusterService {
                                         @Nullable Long timestamp,
                                         int limit) {
         return switch (mode) {
-            case "beginning" -> {
+            case MESSAGE_BEGINNING -> {
                 consumer.seekToBeginning(List.of(partition));
                 yield new BrowseOffsets(consumer.position(partition, CONSUMER_API_TIMEOUT), null);
             }
@@ -1942,8 +1943,9 @@ final class KafkaClusterService {
     }
 
     private static String normalizeMessageMode(String mode) {
-        return switch (mode.toLowerCase(Locale.ROOT)) {
-            case "beginning", "latest", "offset", "timestamp" -> mode.toLowerCase(Locale.ROOT);
+        String normalized = mode.toLowerCase(Locale.ROOT);
+        return switch (normalized) {
+            case MESSAGE_BEGINNING, RESET_LATEST, RESET_OFFSET, RESET_TIMESTAMP -> normalized;
             default -> throw new IllegalArgumentException("Unsupported message browse mode: " + mode);
         };
     }
