@@ -567,6 +567,7 @@ final class KafkaClusterService {
             byte @Nullable [] key = request.key() == null
                 ? null
                 : boundedBytes(request.key(), "Key", writeConfiguration.getMaxMessageKeyBytes());
+            List<Header> headers = producerHeaders(request.headers(), writeConfiguration);
             Integer partition = request.partition();
             if (partition != null && partition < 0) {
                 throw new IllegalArgumentException("Partition must be greater than or equal to 0");
@@ -587,7 +588,7 @@ final class KafkaClusterService {
                     partition,
                     key,
                     value,
-                    producerHeaders(request.headers(), writeConfiguration)
+                    headers
                 );
                 RecordMetadata metadata = producer.send(record).get(ADMIN_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS);
                 producer.flush();
