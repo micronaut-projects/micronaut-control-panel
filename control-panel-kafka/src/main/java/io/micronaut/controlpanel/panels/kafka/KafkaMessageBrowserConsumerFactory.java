@@ -33,6 +33,7 @@ import java.util.UUID;
  */
 @Singleton
 @Internal
+@Requires(beans = KafkaDefaultConfiguration.class)
 @Requires(property = KafkaClusterControlPanel.ENABLED_PROPERTY, notEquals = StringUtils.FALSE)
 final class KafkaMessageBrowserConsumerFactory {
 

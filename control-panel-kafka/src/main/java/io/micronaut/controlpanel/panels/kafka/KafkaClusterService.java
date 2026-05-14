@@ -218,7 +218,7 @@ final class KafkaClusterService {
     @Inject
     KafkaClusterService(AdminClient adminClient,
                         @Nullable ConsumerRegistry consumerRegistry,
-                        KafkaMessageBrowserConsumerFactory consumerFactory,
+                        @Nullable KafkaMessageBrowserConsumerFactory consumerFactory,
                         @Nullable KafkaManagementProducerFactory producerFactory,
                         @Nullable KafkaIntegrationClient integrationClient,
                         JsonMapper jsonMapper,
