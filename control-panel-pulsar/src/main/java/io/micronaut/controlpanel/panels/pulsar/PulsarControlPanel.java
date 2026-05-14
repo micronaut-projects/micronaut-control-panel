@@ -49,7 +49,7 @@ public final class PulsarControlPanel extends AbstractControlPanel<PulsarControl
 
     public static final String NAME = "pulsar";
     public static final String ENABLED_PROPERTY = ControlPanelConfiguration.PREFIX + "." + NAME + ".enabled";
-    public static final ControlPanel.Category CATEGORY = new ControlPanel.Category("messaging", "Messaging", "fa-message", 40);
+    public static final ControlPanel.Category CATEGORY = new ControlPanel.Category("messaging", "Messaging", "fas fa-paper-plane", 40);
 
     private static final Argument<PulsarConsumerRegistry> CONSUMER_REGISTRY = Argument.of(PulsarConsumerRegistry.class);
     private static final Argument<PulsarProducerRegistry> PRODUCER_REGISTRY = Argument.of(PulsarProducerRegistry.class);
