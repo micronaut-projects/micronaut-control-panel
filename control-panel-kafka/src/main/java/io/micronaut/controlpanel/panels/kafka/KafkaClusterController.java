@@ -35,19 +35,30 @@ import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.Action
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.Broker;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.AppConsumer;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.AppConsumerActionRequest;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.ConnectorActionRequest;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.ConnectorTaskActionRequest;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.ConsumerGroupDetail;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.ConsumerGroupSummary;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.CreateTopicRequest;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.DeleteConsumerGroupRequest;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.DeleteSchemaSubjectRequest;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.DeleteSchemaVersionRequest;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.DeleteTopicRequest;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.IncreasePartitionsRequest;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.KafkaConnectOverview;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.KsqlDbOverview;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.MessagePage;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.Overview;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.ProduceMessageRequest;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.RegisterSchemaRequest;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.ResetOffsetsRequest;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.SchemaRegistryOverview;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.SchemaVersionDetail;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.Section;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.TopicDetail;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.TopicPage;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.UpdateConnectorConfigRequest;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.UpdateSchemaCompatibilityRequest;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.UpdateTopicConfigRequest;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.WriteCapabilities;
 
@@ -122,6 +133,27 @@ public final class KafkaClusterController {
         return service.writeCapabilities();
     }
 
+    @Get("/schema-registry")
+    public Section<SchemaRegistryOverview> schemaRegistry() {
+        return service.schemaRegistry();
+    }
+
+    @Get("/schema-registry/subjects/{subject}{?version}")
+    public Section<SchemaVersionDetail> schemaRegistrySubject(String subject,
+                                                              @QueryValue(defaultValue = "1") int version) {
+        return service.schemaRegistrySubject(subject, version);
+    }
+
+    @Get("/kafka-connect")
+    public Section<KafkaConnectOverview> kafkaConnect() {
+        return service.kafkaConnect();
+    }
+
+    @Get("/ksqldb")
+    public Section<KsqlDbOverview> ksqldb() {
+        return service.ksqldb();
+    }
+
     @Post("/topics")
     public Section<ActionResult> createTopic(@Body CreateTopicRequest request) {
         return service.createTopic(request);
@@ -165,5 +197,55 @@ public final class KafkaClusterController {
     @Post("/app-consumers/resume")
     public Section<ActionResult> resumeAppConsumer(@Body AppConsumerActionRequest request) {
         return service.resumeAppConsumer(request);
+    }
+
+    @Post("/schema-registry/subjects")
+    public Section<ActionResult> registerSchema(@Body RegisterSchemaRequest request) {
+        return service.registerSchema(request);
+    }
+
+    @Post("/schema-registry/compatibility")
+    public Section<ActionResult> updateSchemaCompatibility(@Body UpdateSchemaCompatibilityRequest request) {
+        return service.updateSchemaCompatibility(request);
+    }
+
+    @Post("/schema-registry/subjects/delete")
+    public Section<ActionResult> deleteSchemaSubject(@Body DeleteSchemaSubjectRequest request) {
+        return service.deleteSchemaSubject(request);
+    }
+
+    @Post("/schema-registry/subjects/versions/delete")
+    public Section<ActionResult> deleteSchemaVersion(@Body DeleteSchemaVersionRequest request) {
+        return service.deleteSchemaVersion(request);
+    }
+
+    @Post("/kafka-connect/pause")
+    public Section<ActionResult> pauseConnector(@Body ConnectorActionRequest request) {
+        return service.pauseConnector(request);
+    }
+
+    @Post("/kafka-connect/resume")
+    public Section<ActionResult> resumeConnector(@Body ConnectorActionRequest request) {
+        return service.resumeConnector(request);
+    }
+
+    @Post("/kafka-connect/restart")
+    public Section<ActionResult> restartConnector(@Body ConnectorActionRequest request) {
+        return service.restartConnector(request);
+    }
+
+    @Post("/kafka-connect/restart-task")
+    public Section<ActionResult> restartConnectorTask(@Body ConnectorTaskActionRequest request) {
+        return service.restartConnectorTask(request);
+    }
+
+    @Post("/kafka-connect/config")
+    public Section<ActionResult> updateConnectorConfig(@Body UpdateConnectorConfigRequest request) {
+        return service.updateConnectorConfig(request);
+    }
+
+    @Post("/kafka-connect/delete")
+    public Section<ActionResult> deleteConnector(@Body ConnectorActionRequest request) {
+        return service.deleteConnector(request);
     }
 }

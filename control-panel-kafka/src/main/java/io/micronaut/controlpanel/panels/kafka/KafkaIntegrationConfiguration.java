@@ -1,0 +1,77 @@
+/*
+ * Copyright 2017-2026 original authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package io.micronaut.controlpanel.panels.kafka;
+
+import io.micronaut.context.annotation.ConfigurationProperties;
+import io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration;
+import io.micronaut.core.annotation.Internal;
+import org.jspecify.annotations.Nullable;
+
+/**
+ * Optional Kafka ecosystem integration endpoints for the Kafka cluster panel.
+ */
+@Internal
+@ConfigurationProperties(KafkaIntegrationConfiguration.PREFIX)
+final class KafkaIntegrationConfiguration {
+
+    static final String PREFIX = ControlPanelModuleConfiguration.PREFIX + ".kafka.integrations";
+
+    private Endpoint schemaRegistry = new Endpoint();
+    private Endpoint connect = new Endpoint();
+    private Endpoint ksqldb = new Endpoint();
+
+    Endpoint getSchemaRegistry() {
+        return schemaRegistry;
+    }
+
+    void setSchemaRegistry(Endpoint schemaRegistry) {
+        this.schemaRegistry = schemaRegistry;
+    }
+
+    Endpoint getConnect() {
+        return connect;
+    }
+
+    void setConnect(Endpoint connect) {
+        this.connect = connect;
+    }
+
+    Endpoint getKsqldb() {
+        return ksqldb;
+    }
+
+    void setKsqldb(Endpoint ksqldb) {
+        this.ksqldb = ksqldb;
+    }
+
+    @Internal
+    static final class Endpoint {
+        private @Nullable String url;
+
+        @Nullable
+        String getUrl() {
+            return url;
+        }
+
+        void setUrl(@Nullable String url) {
+            this.url = url;
+        }
+
+        boolean isConfigured() {
+            return url != null && !url.isBlank();
+        }
+    }
+}

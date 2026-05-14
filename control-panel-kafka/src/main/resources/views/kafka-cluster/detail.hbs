@@ -398,9 +398,109 @@
             </div>
         </div>
     </div>
-    <div class="tabs-panel" id="panel-kafka-schema-registry" role="tabpanel" aria-labelledby="tab-kafka-schema-registry" data-tabs-panel="schema-registry" hidden></div>
-    <div class="tabs-panel" id="panel-kafka-connect" role="tabpanel" aria-labelledby="tab-kafka-connect" data-tabs-panel="kafka-connect" hidden></div>
-    <div class="tabs-panel" id="panel-kafka-ksqldb" role="tabpanel" aria-labelledby="tab-kafka-ksqldb" data-tabs-panel="ksqldb" hidden></div>
+    <div class="tabs-panel" id="panel-kafka-schema-registry" role="tabpanel" aria-labelledby="tab-kafka-schema-registry" data-tabs-panel="schema-registry" hidden>
+        <div id="kafkaSchemaRegistryAlerts"></div>
+        <dl class="row">
+            <dt class="col-sm-3">Schema Registry</dt>
+            <dd class="col-sm-9"><span id="kafkaSchemaRegistryConfigured" class="badge badge-secondary">not configured</span> <code id="kafkaSchemaRegistryUrl">-</code></dd>
+        </dl>
+        <div class="row">
+            <div class="col-lg-7">
+                <table id="kafkaSchemaRegistrySubjects" class="table table-bordered table-striped">
+                    <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Versions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr id="kafkaSchemaRegistryEmpty"><td class="cp-data-table-empty-cell" colspan="2">No schema subjects loaded.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-lg-5">
+                <form class="card" id="kafkaRegisterSchemaForm" data-kafka-management-form data-action="schema-registry.register" data-endpoint="/schema-registry/subjects" data-confirm-prefix="REGISTER SCHEMA">
+                    <div class="card-header"><h3 class="card-title">Register Schema Version</h3></div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="kafkaSchemaSubject">Subject</label>
+                            <input type="text" class="form-control" id="kafkaSchemaSubject" data-target required>
+                        </div>
+                        <div class="form-group">
+                            <label for="kafkaSchemaType">Schema type</label>
+                            <select class="form-control" id="kafkaSchemaType">
+                                <option value="AVRO">AVRO</option>
+                                <option value="JSON">JSON</option>
+                                <option value="PROTOBUF">PROTOBUF</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="kafkaSchemaText">Schema</label>
+                            <textarea class="form-control" id="kafkaSchemaText" rows="7" required></textarea>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button type="button" class="btn btn-secondary" data-preview>Preview</button>
+                        <button type="submit" class="btn btn-primary">Register</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="tabs-panel" id="panel-kafka-connect" role="tabpanel" aria-labelledby="tab-kafka-connect" data-tabs-panel="kafka-connect" hidden>
+        <div id="kafkaConnectAlerts"></div>
+        <dl class="row">
+            <dt class="col-sm-3">Kafka Connect</dt>
+            <dd class="col-sm-9"><span id="kafkaConnectConfigured" class="badge badge-secondary">not configured</span> <code id="kafkaConnectUrl">-</code></dd>
+        </dl>
+        <table id="kafkaConnectConnectors" class="table table-bordered table-striped">
+            <thead>
+            <tr>
+                <th>Connector</th>
+                <th>Type</th>
+                <th>State</th>
+                <th>Worker</th>
+                <th>Tasks</th>
+                <th>Config</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr id="kafkaConnectEmpty"><td class="cp-data-table-empty-cell" colspan="6">No connectors loaded.</td></tr>
+            </tbody>
+        </table>
+        <form class="card" id="kafkaConnectPauseForm" data-kafka-management-form data-action="kafka-connect.pause" data-endpoint="/kafka-connect/pause" data-confirm-prefix="PAUSE CONNECTOR">
+            <div class="card-header"><h3 class="card-title">Pause Connector</h3></div>
+            <div class="card-body">
+                <label for="kafkaConnectActionName">Connector</label>
+                <input type="text" class="form-control" id="kafkaConnectActionName" data-target required>
+            </div>
+            <div class="card-footer">
+                <button type="button" class="btn btn-secondary" data-preview>Preview</button>
+                <button type="submit" class="btn btn-primary">Pause</button>
+            </div>
+        </form>
+    </div>
+    <div class="tabs-panel" id="panel-kafka-ksqldb" role="tabpanel" aria-labelledby="tab-kafka-ksqldb" data-tabs-panel="ksqldb" hidden>
+        <div id="kafkaKsqlDbAlerts"></div>
+        <dl class="row">
+            <dt class="col-sm-3">ksqlDB</dt>
+            <dd class="col-sm-9"><span id="kafkaKsqlDbConfigured" class="badge badge-secondary">not configured</span> <code id="kafkaKsqlDbUrl">-</code></dd>
+        </dl>
+        <div class="row">
+            <div class="col-lg-4">
+                <h6>Streams</h6>
+                <table id="kafkaKsqlDbStreams" class="table table-bordered table-striped table-sm"><tbody></tbody></table>
+            </div>
+            <div class="col-lg-4">
+                <h6>Tables</h6>
+                <table id="kafkaKsqlDbTables" class="table table-bordered table-striped table-sm"><tbody></tbody></table>
+            </div>
+            <div class="col-lg-4">
+                <h6>Queries</h6>
+                <table id="kafkaKsqlDbQueries" class="table table-bordered table-striped table-sm"><tbody></tbody></table>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="modal fade cp-dialog" id="kafkaConsumerGroupDetailModal" tabindex="-1" role="dialog" aria-labelledby="kafkaConsumerGroupDetailModalLabel" aria-hidden="true">
@@ -795,6 +895,87 @@
       });
     }
 
+    function renderObjectRows(selector, rows, emptyText) {
+      var tbody = $(selector + ' tbody');
+      tbody.empty();
+      if (!rows || rows.length === 0) {
+        tbody.append('<tr><td class="cp-data-table-empty-cell">' + escapeHtml(emptyText) + '</td></tr>');
+        return;
+      }
+      rows.forEach(function(row) {
+        var keys = Object.keys(row || {});
+        tbody.append('<tr><td><dl class="mb-0">'
+          + keys.map(function(key) {
+            return '<dt><code>' + escapeHtml(key) + '</code></dt><dd><code>' + escapeHtml(row[key]) + '</code></dd>';
+          }).join('')
+          + '</dl></td></tr>');
+      });
+    }
+
+    function loadSchemaRegistry() {
+      loadSection(baseUrl + '/schema-registry', 'Schema Registry unavailable', '#kafkaSchemaRegistryAlerts', function(registry) {
+        $('#kafkaSchemaRegistryConfigured')
+          .toggleClass('badge-success', registry.configured)
+          .toggleClass('badge-secondary', !registry.configured)
+          .text(registry.configured ? 'configured' : 'not configured');
+        $('#kafkaSchemaRegistryUrl').text(registry.url || '-');
+        var tbody = $('#kafkaSchemaRegistrySubjects tbody');
+        tbody.empty();
+        if (!registry.subjects || registry.subjects.length === 0) {
+          tbody.append('<tr id="kafkaSchemaRegistryEmpty"><td class="cp-data-table-empty-cell" colspan="2">No schema subjects found.</td></tr>');
+          return;
+        }
+        registry.subjects.forEach(function(subject) {
+          tbody.append('<tr>'
+            + '<td><code>' + escapeHtml(subject.subject) + '</code></td>'
+            + '<td><code>' + escapeHtml((subject.versions || []).join(', ') || '-') + '</code></td>'
+            + '</tr>');
+        });
+      });
+    }
+
+    function loadKafkaConnect() {
+      loadSection(baseUrl + '/kafka-connect', 'Kafka Connect unavailable', '#kafkaConnectAlerts', function(connect) {
+        $('#kafkaConnectConfigured')
+          .toggleClass('badge-success', connect.configured)
+          .toggleClass('badge-secondary', !connect.configured)
+          .text(connect.configured ? 'configured' : 'not configured');
+        $('#kafkaConnectUrl').text(connect.url || '-');
+        var tbody = $('#kafkaConnectConnectors tbody');
+        tbody.empty();
+        if (!connect.connectors || connect.connectors.length === 0) {
+          tbody.append('<tr id="kafkaConnectEmpty"><td class="cp-data-table-empty-cell" colspan="6">No connectors found.</td></tr>');
+          return;
+        }
+        connect.connectors.forEach(function(connector) {
+          var tasks = (connector.tasks || []).map(function(task) {
+            return task.id + ':' + valueOrDash(task.state);
+          }).join(', ');
+          tbody.append('<tr>'
+            + '<td><code>' + escapeHtml(connector.name) + '</code></td>'
+            + '<td><code>' + escapeHtml(valueOrDash(connector.type)) + '</code></td>'
+            + '<td><code>' + escapeHtml(valueOrDash(connector.state)) + '</code></td>'
+            + '<td><code>' + escapeHtml(valueOrDash(connector.workerId)) + '</code></td>'
+            + '<td><code>' + escapeHtml(tasks || '-') + '</code></td>'
+            + '<td>' + inlineConfig(connector.config) + '</td>'
+            + '</tr>');
+        });
+      });
+    }
+
+    function loadKsqlDb() {
+      loadSection(baseUrl + '/ksqldb', 'ksqlDB unavailable', '#kafkaKsqlDbAlerts', function(ksqldb) {
+        $('#kafkaKsqlDbConfigured')
+          .toggleClass('badge-success', ksqldb.configured)
+          .toggleClass('badge-secondary', !ksqldb.configured)
+          .text(ksqldb.configured ? 'configured' : 'not configured');
+        $('#kafkaKsqlDbUrl').text(ksqldb.url || '-');
+        renderObjectRows('#kafkaKsqlDbStreams', ksqldb.streams, 'No streams found.');
+        renderObjectRows('#kafkaKsqlDbTables', ksqldb.tables, 'No tables found.');
+        renderObjectRows('#kafkaKsqlDbQueries', ksqldb.queries, 'No queries found.');
+      });
+    }
+
     function postManagement(endpoint, payload, title, success) {
       $.ajax({
         url: baseUrl + endpoint,
@@ -857,6 +1038,24 @@
           headers: [],
           preview: preview,
           confirmation: preview ? null : 'PRODUCE ' + target
+        };
+      }
+      if (form.id === 'kafkaRegisterSchemaForm') {
+        var subject = $('#kafkaSchemaSubject').val().trim();
+        return {
+          subject: subject,
+          schema: $('#kafkaSchemaText').val(),
+          schemaType: $('#kafkaSchemaType').val(),
+          preview: preview,
+          confirmation: preview ? null : 'REGISTER SCHEMA ' + subject
+        };
+      }
+      if (form.id === 'kafkaConnectPauseForm') {
+        var connector = $('#kafkaConnectActionName').val().trim();
+        return {
+          connector: connector,
+          preview: preview,
+          confirmation: preview ? null : 'PAUSE CONNECTOR ' + connector
         };
       }
       return {};
@@ -996,6 +1195,9 @@
     loadConsumerGroups();
     loadAppConsumers();
     loadWriteCapabilities();
+    loadSchemaRegistry();
+    loadKafkaConnect();
+    loadKsqlDb();
     var linkedTopic = new URLSearchParams(window.location.search).get('topic');
     if (linkedTopic) {
       openTopicDetail(linkedTopic);

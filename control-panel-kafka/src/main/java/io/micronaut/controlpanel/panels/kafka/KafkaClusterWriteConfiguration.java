@@ -67,6 +67,16 @@ final class KafkaClusterWriteConfiguration {
             case "consumer-groups.reset-offsets" -> actions.isResetConsumerGroupOffsets();
             case "app-consumers.pause" -> actions.isPauseAppConsumer();
             case "app-consumers.resume" -> actions.isResumeAppConsumer();
+            case "schema-registry.register" -> actions.isRegisterSchema();
+            case "schema-registry.update-compatibility" -> actions.isUpdateSchemaCompatibility();
+            case "schema-registry.delete-subject" -> actions.isDeleteSchemaSubject();
+            case "schema-registry.delete-version" -> actions.isDeleteSchemaVersion();
+            case "kafka-connect.pause" -> actions.isPauseConnector();
+            case "kafka-connect.resume" -> actions.isResumeConnector();
+            case "kafka-connect.restart" -> actions.isRestartConnector();
+            case "kafka-connect.restart-task" -> actions.isRestartConnectorTask();
+            case "kafka-connect.update-config" -> actions.isUpdateConnectorConfig();
+            case "kafka-connect.delete" -> actions.isDeleteConnector();
             default -> false;
         };
     }
@@ -84,6 +94,16 @@ final class KafkaClusterWriteConfiguration {
         private boolean resetConsumerGroupOffsets = true;
         private boolean pauseAppConsumer = true;
         private boolean resumeAppConsumer = true;
+        private boolean registerSchema = true;
+        private boolean updateSchemaCompatibility = true;
+        private boolean deleteSchemaSubject = true;
+        private boolean deleteSchemaVersion = true;
+        private boolean pauseConnector = true;
+        private boolean resumeConnector = true;
+        private boolean restartConnector = true;
+        private boolean restartConnectorTask = true;
+        private boolean updateConnectorConfig = true;
+        private boolean deleteConnector = true;
 
         boolean isCreateTopic() {
             return createTopic;
@@ -155,6 +175,86 @@ final class KafkaClusterWriteConfiguration {
 
         void setResumeAppConsumer(boolean resumeAppConsumer) {
             this.resumeAppConsumer = resumeAppConsumer;
+        }
+
+        boolean isRegisterSchema() {
+            return registerSchema;
+        }
+
+        void setRegisterSchema(boolean registerSchema) {
+            this.registerSchema = registerSchema;
+        }
+
+        boolean isUpdateSchemaCompatibility() {
+            return updateSchemaCompatibility;
+        }
+
+        void setUpdateSchemaCompatibility(boolean updateSchemaCompatibility) {
+            this.updateSchemaCompatibility = updateSchemaCompatibility;
+        }
+
+        boolean isDeleteSchemaSubject() {
+            return deleteSchemaSubject;
+        }
+
+        void setDeleteSchemaSubject(boolean deleteSchemaSubject) {
+            this.deleteSchemaSubject = deleteSchemaSubject;
+        }
+
+        boolean isDeleteSchemaVersion() {
+            return deleteSchemaVersion;
+        }
+
+        void setDeleteSchemaVersion(boolean deleteSchemaVersion) {
+            this.deleteSchemaVersion = deleteSchemaVersion;
+        }
+
+        boolean isPauseConnector() {
+            return pauseConnector;
+        }
+
+        void setPauseConnector(boolean pauseConnector) {
+            this.pauseConnector = pauseConnector;
+        }
+
+        boolean isResumeConnector() {
+            return resumeConnector;
+        }
+
+        void setResumeConnector(boolean resumeConnector) {
+            this.resumeConnector = resumeConnector;
+        }
+
+        boolean isRestartConnector() {
+            return restartConnector;
+        }
+
+        void setRestartConnector(boolean restartConnector) {
+            this.restartConnector = restartConnector;
+        }
+
+        boolean isRestartConnectorTask() {
+            return restartConnectorTask;
+        }
+
+        void setRestartConnectorTask(boolean restartConnectorTask) {
+            this.restartConnectorTask = restartConnectorTask;
+        }
+
+        boolean isUpdateConnectorConfig() {
+            return updateConnectorConfig;
+        }
+
+        void setUpdateConnectorConfig(boolean updateConnectorConfig) {
+            this.updateConnectorConfig = updateConnectorConfig;
+        }
+
+        boolean isDeleteConnector() {
+            return deleteConnector;
+        }
+
+        void setDeleteConnector(boolean deleteConnector) {
+            this.deleteConnector = deleteConnector;
         }
     }
 }

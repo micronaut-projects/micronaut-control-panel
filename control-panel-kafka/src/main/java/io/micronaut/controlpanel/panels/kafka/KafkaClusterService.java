@@ -98,14 +98,22 @@ import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.AppCon
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.AppConsumerActionRequest;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.Broker;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.BrokerNode;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.ConnectorActionRequest;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.ConnectorSummary;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.ConnectorTask;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.ConnectorTaskActionRequest;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.ConsumerGroupDetail;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.ConsumerGroupMember;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.ConsumerGroupPartition;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.ConsumerGroupSummary;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.CreateTopicRequest;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.DeleteConsumerGroupRequest;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.DeleteSchemaSubjectRequest;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.DeleteSchemaVersionRequest;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.DeleteTopicRequest;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.IncreasePartitionsRequest;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.KafkaConnectOverview;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.KsqlDbOverview;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.MessageHeaderInput;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.MessageHeader;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.MessagePage;
@@ -113,13 +121,20 @@ import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.Messag
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.Overview;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.PartitionDetail;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.ProduceMessageRequest;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.RegisterSchemaRequest;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.RenderedPayload;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.ResetOffsetsRequest;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.SchemaReference;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.SchemaRegistryOverview;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.SchemaSubject;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.SchemaVersionDetail;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.Section;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.TopicDetail;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.TopicPage;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.TopicPartitionInput;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.TopicSummary;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.UpdateConnectorConfigRequest;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.UpdateSchemaCompatibilityRequest;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.UpdateTopicConfigRequest;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.WriteCapabilities;
 
@@ -131,6 +146,10 @@ import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.WriteC
 @Requires(beans = AdminClient.class)
 @Requires(property = KafkaClusterControlPanel.ENABLED_PROPERTY, notEquals = StringUtils.FALSE)
 final class KafkaClusterService {
+
+    static final String INTEGRATION_SCHEMA_REGISTRY = "Schema Registry";
+    static final String INTEGRATION_CONNECT = "Kafka Connect";
+    static final String INTEGRATION_KSQLDB = "ksqlDB";
 
     private static final Duration ADMIN_TIMEOUT = Duration.ofSeconds(5);
     private static final Duration CONSUMER_POLL_TIMEOUT = Duration.ofMillis(250);
@@ -158,36 +177,42 @@ final class KafkaClusterService {
     private final @Nullable ConsumerRegistry consumerRegistry;
     private final @Nullable KafkaMessageBrowserConsumerFactory consumerFactory;
     private final @Nullable KafkaManagementProducerFactory producerFactory;
+    private final @Nullable KafkaIntegrationClient integrationClient;
     private final JsonMapper jsonMapper;
     private final KafkaClusterWriteConfiguration writeConfiguration;
+    private final KafkaIntegrationConfiguration integrationConfiguration;
 
     @Inject
     KafkaClusterService(AdminClient adminClient,
                         @Nullable ConsumerRegistry consumerRegistry,
                         KafkaMessageBrowserConsumerFactory consumerFactory,
                         @Nullable KafkaManagementProducerFactory producerFactory,
+                        @Nullable KafkaIntegrationClient integrationClient,
                         JsonMapper jsonMapper,
-                        KafkaClusterWriteConfiguration writeConfiguration) {
+                        KafkaClusterWriteConfiguration writeConfiguration,
+                        KafkaIntegrationConfiguration integrationConfiguration) {
         this.adminClient = adminClient;
         this.consumerRegistry = consumerRegistry;
         this.consumerFactory = consumerFactory;
         this.producerFactory = producerFactory;
+        this.integrationClient = integrationClient;
         this.jsonMapper = jsonMapper;
         this.writeConfiguration = writeConfiguration;
+        this.integrationConfiguration = integrationConfiguration;
     }
 
     KafkaClusterService(AdminClient adminClient) {
-        this(adminClient, null, null, null, JsonMapper.createDefault(), new KafkaClusterWriteConfiguration());
+        this(adminClient, null, null, null, null, JsonMapper.createDefault(), new KafkaClusterWriteConfiguration(), new KafkaIntegrationConfiguration());
     }
 
     KafkaClusterService(AdminClient adminClient,
                         KafkaMessageBrowserConsumerFactory consumerFactory) {
-        this(adminClient, null, consumerFactory, null, JsonMapper.createDefault(), new KafkaClusterWriteConfiguration());
+        this(adminClient, null, consumerFactory, null, null, JsonMapper.createDefault(), new KafkaClusterWriteConfiguration(), new KafkaIntegrationConfiguration());
     }
 
     KafkaClusterService(AdminClient adminClient,
                         ConsumerRegistry consumerRegistry) {
-        this(adminClient, consumerRegistry, null, null, JsonMapper.createDefault(), new KafkaClusterWriteConfiguration());
+        this(adminClient, consumerRegistry, null, null, null, JsonMapper.createDefault(), new KafkaClusterWriteConfiguration(), new KafkaIntegrationConfiguration());
     }
 
     KafkaClusterService(AdminClient adminClient,
@@ -195,7 +220,14 @@ final class KafkaClusterService {
                         @Nullable KafkaMessageBrowserConsumerFactory consumerFactory,
                         @Nullable KafkaManagementProducerFactory producerFactory,
                         KafkaClusterWriteConfiguration writeConfiguration) {
-        this(adminClient, consumerRegistry, consumerFactory, producerFactory, JsonMapper.createDefault(), writeConfiguration);
+        this(adminClient, consumerRegistry, consumerFactory, producerFactory, null, JsonMapper.createDefault(), writeConfiguration, new KafkaIntegrationConfiguration());
+    }
+
+    KafkaClusterService(AdminClient adminClient,
+                        KafkaIntegrationClient integrationClient,
+                        KafkaIntegrationConfiguration integrationConfiguration,
+                        KafkaClusterWriteConfiguration writeConfiguration) {
+        this(adminClient, null, null, null, integrationClient, JsonMapper.createDefault(), writeConfiguration, integrationConfiguration);
     }
 
     Section<Overview> overview() {
@@ -367,21 +399,70 @@ final class KafkaClusterService {
         });
     }
 
+    Section<SchemaRegistryOverview> schemaRegistry() {
+        return section(() -> {
+            if (!integrationConfiguration.getSchemaRegistry().isConfigured()) {
+                return new SchemaRegistryOverview(false, null, List.of());
+            }
+            JsonNode subjectsNode = integrationRequest(INTEGRATION_SCHEMA_REGISTRY, "GET", "/subjects", null);
+            List<SchemaSubject> subjects = jsonArrayStrings(subjectsNode).stream()
+                .sorted()
+                .map(subject -> new SchemaSubject(subject, schemaVersions(subject)))
+                .toList();
+            return new SchemaRegistryOverview(true, integrationConfiguration.getSchemaRegistry().getUrl(), subjects);
+        });
+    }
+
+    Section<SchemaVersionDetail> schemaRegistrySubject(String subject, int version) {
+        return section(() -> {
+            String safeSubject = requireName(subject, "Schema subject");
+            if (version <= 0) {
+                throw new IllegalArgumentException("Schema version must be greater than 0");
+            }
+            JsonNode detail = integrationRequest(
+                INTEGRATION_SCHEMA_REGISTRY,
+                "GET",
+                "/subjects/" + KafkaIntegrationClient.encodePath(safeSubject) + "/versions/" + version,
+                null
+            );
+            return toSchemaVersionDetail(safeSubject, version, detail, schemaCompatibility(safeSubject));
+        });
+    }
+
+    Section<KafkaConnectOverview> kafkaConnect() {
+        return section(() -> {
+            if (!integrationConfiguration.getConnect().isConfigured()) {
+                return new KafkaConnectOverview(false, null, List.of());
+            }
+            List<ConnectorSummary> connectors = jsonArrayStrings(integrationRequest(INTEGRATION_CONNECT, "GET", "/connectors", null))
+                .stream()
+                .sorted()
+                .map(this::connectorSummary)
+                .toList();
+            return new KafkaConnectOverview(true, integrationConfiguration.getConnect().getUrl(), connectors);
+        });
+    }
+
+    Section<KsqlDbOverview> ksqldb() {
+        return section(() -> {
+            if (!integrationConfiguration.getKsqldb().isConfigured()) {
+                return new KsqlDbOverview(false, null, List.of(), List.of(), List.of());
+            }
+            return new KsqlDbOverview(
+                true,
+                integrationConfiguration.getKsqldb().getUrl(),
+                ksqlRows("SHOW STREAMS;"),
+                ksqlRows("SHOW TABLES;"),
+                ksqlRows("SHOW QUERIES;")
+            );
+        });
+    }
+
     Section<WriteCapabilities> writeCapabilities() {
         return Section.ok(new WriteCapabilities(
             writeConfiguration.isEnabled(),
             writeConfiguration.isDestructiveEnabled(),
-            Map.of(
-                "topics.create", writeConfiguration.actionEnabled("topics.create"),
-                "topics.update-config", writeConfiguration.actionEnabled("topics.update-config"),
-                "topics.increase-partitions", writeConfiguration.actionEnabled("topics.increase-partitions"),
-                "topics.delete", writeConfiguration.actionEnabled("topics.delete"),
-                "messages.produce", writeConfiguration.actionEnabled("messages.produce"),
-                "consumer-groups.delete", writeConfiguration.actionEnabled("consumer-groups.delete"),
-                "consumer-groups.reset-offsets", writeConfiguration.actionEnabled("consumer-groups.reset-offsets"),
-                "app-consumers.pause", writeConfiguration.actionEnabled("app-consumers.pause"),
-                "app-consumers.resume", writeConfiguration.actionEnabled("app-consumers.resume")
-            )
+            writeActionMap()
         ));
     }
 
@@ -563,6 +644,166 @@ final class KafkaClusterService {
         return appConsumerAction("app-consumers.resume", "RESUME", request, false);
     }
 
+    Section<ActionResult> registerSchema(RegisterSchemaRequest request) {
+        return section(() -> {
+            String subject = requireName(request.subject(), "Schema subject");
+            String schema = requireName(request.schema(), "Schema");
+            String action = "schema-registry.register";
+            guardWrite(action, false);
+            requireIntegrationConfigured(INTEGRATION_SCHEMA_REGISTRY);
+            String impact = "Register a new schema version for subject " + subject;
+            if (request.preview()) {
+                return previewResult(action, subject, impact);
+            }
+            requireConfirmation(request.confirmation(), confirmation("REGISTER SCHEMA", subject));
+            Map<String, Object> body = new LinkedHashMap<>();
+            body.put("schema", schema);
+            if (request.schemaType() != null && !request.schemaType().isBlank()) {
+                body.put("schemaType", request.schemaType().trim());
+            }
+            JsonNode response = integrationRequest(
+                INTEGRATION_SCHEMA_REGISTRY,
+                "POST",
+                "/subjects/" + KafkaIntegrationClient.encodePath(subject) + "/versions",
+                body
+            );
+            return appliedResult(action, subject, impact + responseIdSuffix(response));
+        });
+    }
+
+    Section<ActionResult> updateSchemaCompatibility(UpdateSchemaCompatibilityRequest request) {
+        return section(() -> {
+            String subject = requireName(request.subject(), "Schema subject");
+            String compatibility = requireName(request.compatibility(), "Compatibility");
+            String action = "schema-registry.update-compatibility";
+            guardWrite(action, false);
+            requireIntegrationConfigured(INTEGRATION_SCHEMA_REGISTRY);
+            String impact = "Update Schema Registry compatibility for subject " + subject + " to " + compatibility;
+            if (request.preview()) {
+                return previewResult(action, subject, impact);
+            }
+            requireConfirmation(request.confirmation(), confirmation("UPDATE COMPATIBILITY", subject));
+            integrationRequest(
+                INTEGRATION_SCHEMA_REGISTRY,
+                "PUT",
+                "/config/" + KafkaIntegrationClient.encodePath(subject),
+                Map.of("compatibility", compatibility)
+            );
+            return appliedResult(action, subject, impact);
+        });
+    }
+
+    Section<ActionResult> deleteSchemaSubject(DeleteSchemaSubjectRequest request) {
+        return section(() -> {
+            String subject = requireName(request.subject(), "Schema subject");
+            String action = "schema-registry.delete-subject";
+            guardWrite(action, true);
+            requireIntegrationConfigured(INTEGRATION_SCHEMA_REGISTRY);
+            String impact = "Delete Schema Registry subject " + subject;
+            if (request.preview()) {
+                return previewResult(action, subject, impact);
+            }
+            requireConfirmation(request.confirmation(), confirmation("DELETE SCHEMA SUBJECT", subject));
+            integrationRequest(
+                INTEGRATION_SCHEMA_REGISTRY,
+                "DELETE",
+                "/subjects/" + KafkaIntegrationClient.encodePath(subject),
+                null
+            );
+            return appliedResult(action, subject, impact);
+        });
+    }
+
+    Section<ActionResult> deleteSchemaVersion(DeleteSchemaVersionRequest request) {
+        return section(() -> {
+            String subject = requireName(request.subject(), "Schema subject");
+            if (request.version() <= 0) {
+                throw new IllegalArgumentException("Schema version must be greater than 0");
+            }
+            String target = subject + " v" + request.version();
+            String action = "schema-registry.delete-version";
+            guardWrite(action, true);
+            requireIntegrationConfigured(INTEGRATION_SCHEMA_REGISTRY);
+            String impact = "Delete Schema Registry subject version " + target;
+            if (request.preview()) {
+                return previewResult(action, target, impact);
+            }
+            requireConfirmation(request.confirmation(), confirmation("DELETE SCHEMA VERSION", target));
+            integrationRequest(
+                INTEGRATION_SCHEMA_REGISTRY,
+                "DELETE",
+                "/subjects/" + KafkaIntegrationClient.encodePath(subject) + "/versions/" + request.version(),
+                null
+            );
+            return appliedResult(action, target, impact);
+        });
+    }
+
+    Section<ActionResult> pauseConnector(ConnectorActionRequest request) {
+        return connectorAction("kafka-connect.pause", "PAUSE CONNECTOR", "PUT", "/pause", request, false);
+    }
+
+    Section<ActionResult> resumeConnector(ConnectorActionRequest request) {
+        return connectorAction("kafka-connect.resume", "RESUME CONNECTOR", "PUT", "/resume", request, false);
+    }
+
+    Section<ActionResult> restartConnector(ConnectorActionRequest request) {
+        return connectorAction("kafka-connect.restart", "RESTART CONNECTOR", "POST", "/restart", request, false);
+    }
+
+    Section<ActionResult> restartConnectorTask(ConnectorTaskActionRequest request) {
+        return section(() -> {
+            String connector = requireName(request.connector(), "Connector");
+            if (request.task() < 0) {
+                throw new IllegalArgumentException("Connector task must be greater than or equal to 0");
+            }
+            String target = connector + " task " + request.task();
+            String action = "kafka-connect.restart-task";
+            guardWrite(action, false);
+            requireIntegrationConfigured(INTEGRATION_CONNECT);
+            String impact = "Restart Kafka Connect " + target;
+            if (request.preview()) {
+                return previewResult(action, target, impact);
+            }
+            requireConfirmation(request.confirmation(), confirmation("RESTART CONNECTOR TASK", target));
+            integrationRequest(
+                INTEGRATION_CONNECT,
+                "POST",
+                "/connectors/" + KafkaIntegrationClient.encodePath(connector) + "/tasks/" + request.task() + "/restart",
+                null
+            );
+            return appliedResult(action, target, impact);
+        });
+    }
+
+    Section<ActionResult> updateConnectorConfig(UpdateConnectorConfigRequest request) {
+        return section(() -> {
+            String connector = requireName(request.connector(), "Connector");
+            if (request.config() == null || request.config().isEmpty()) {
+                throw new IllegalArgumentException("Connector config is required");
+            }
+            String action = "kafka-connect.update-config";
+            guardWrite(action, false);
+            requireIntegrationConfigured(INTEGRATION_CONNECT);
+            String impact = "Update Kafka Connect config for connector " + connector;
+            if (request.preview()) {
+                return previewResult(action, connector, impact);
+            }
+            requireConfirmation(request.confirmation(), confirmation("UPDATE CONNECTOR CONFIG", connector));
+            integrationRequest(
+                INTEGRATION_CONNECT,
+                "PUT",
+                "/connectors/" + KafkaIntegrationClient.encodePath(connector) + "/config",
+                new LinkedHashMap<>(request.config())
+            );
+            return appliedResult(action, connector, impact);
+        });
+    }
+
+    Section<ActionResult> deleteConnector(ConnectorActionRequest request) {
+        return connectorAction("kafka-connect.delete", "DELETE CONNECTOR", "DELETE", "", request, true);
+    }
+
     private Section<ActionResult> appConsumerAction(String action,
                                                     String confirmationAction,
                                                     AppConsumerActionRequest request,
@@ -601,6 +842,32 @@ final class KafkaClusterService {
         });
     }
 
+    private Section<ActionResult> connectorAction(String action,
+                                                  String confirmationAction,
+                                                  String method,
+                                                  String suffix,
+                                                  ConnectorActionRequest request,
+                                                  boolean destructive) {
+        return section(() -> {
+            String connector = requireName(request.connector(), "Connector");
+            guardWrite(action, destructive);
+            requireIntegrationConfigured(INTEGRATION_CONNECT);
+            String impact = confirmationAction.charAt(0) + confirmationAction.substring(1).toLowerCase(Locale.ROOT)
+                + " " + connector;
+            if (request.preview()) {
+                return previewResult(action, connector, impact);
+            }
+            requireConfirmation(request.confirmation(), confirmation(confirmationAction, connector));
+            integrationRequest(
+                INTEGRATION_CONNECT,
+                method,
+                "/connectors/" + KafkaIntegrationClient.encodePath(connector) + suffix,
+                null
+            );
+            return appliedResult(action, connector, impact);
+        });
+    }
+
     private void guardWrite(String action, boolean destructive) {
         if (!writeConfiguration.isEnabled()) {
             throw new IllegalStateException("Kafka writes are disabled. Set " + KafkaClusterWriteConfiguration.PREFIX + ".enabled=true to enable write endpoints.");
@@ -611,6 +878,54 @@ final class KafkaClusterService {
         if (destructive && !writeConfiguration.isDestructiveEnabled()) {
             throw new IllegalStateException("Kafka destructive actions are disabled. Set " + KafkaClusterWriteConfiguration.PREFIX + ".destructive-enabled=true to enable this action.");
         }
+    }
+
+    private Map<String, Boolean> writeActionMap() {
+        Map<String, Boolean> actions = new LinkedHashMap<>();
+        actions.put("topics.create", writeConfiguration.actionEnabled("topics.create"));
+        actions.put("topics.update-config", writeConfiguration.actionEnabled("topics.update-config"));
+        actions.put("topics.increase-partitions", writeConfiguration.actionEnabled("topics.increase-partitions"));
+        actions.put("topics.delete", writeConfiguration.actionEnabled("topics.delete"));
+        actions.put("messages.produce", writeConfiguration.actionEnabled("messages.produce"));
+        actions.put("consumer-groups.delete", writeConfiguration.actionEnabled("consumer-groups.delete"));
+        actions.put("consumer-groups.reset-offsets", writeConfiguration.actionEnabled("consumer-groups.reset-offsets"));
+        actions.put("app-consumers.pause", writeConfiguration.actionEnabled("app-consumers.pause"));
+        actions.put("app-consumers.resume", writeConfiguration.actionEnabled("app-consumers.resume"));
+        actions.put("schema-registry.register", writeConfiguration.actionEnabled("schema-registry.register"));
+        actions.put("schema-registry.update-compatibility", writeConfiguration.actionEnabled("schema-registry.update-compatibility"));
+        actions.put("schema-registry.delete-subject", writeConfiguration.actionEnabled("schema-registry.delete-subject"));
+        actions.put("schema-registry.delete-version", writeConfiguration.actionEnabled("schema-registry.delete-version"));
+        actions.put("kafka-connect.pause", writeConfiguration.actionEnabled("kafka-connect.pause"));
+        actions.put("kafka-connect.resume", writeConfiguration.actionEnabled("kafka-connect.resume"));
+        actions.put("kafka-connect.restart", writeConfiguration.actionEnabled("kafka-connect.restart"));
+        actions.put("kafka-connect.restart-task", writeConfiguration.actionEnabled("kafka-connect.restart-task"));
+        actions.put("kafka-connect.update-config", writeConfiguration.actionEnabled("kafka-connect.update-config"));
+        actions.put("kafka-connect.delete", writeConfiguration.actionEnabled("kafka-connect.delete"));
+        return actions;
+    }
+
+    private void requireIntegrationConfigured(String integration) {
+        KafkaIntegrationConfiguration.Endpoint endpoint = integrationEndpoint(integration);
+        if (!endpoint.isConfigured()) {
+            throw new IllegalStateException(integration + " is not configured");
+        }
+        if (integrationClient == null) {
+            throw new IllegalStateException(integration + " client is unavailable");
+        }
+    }
+
+    private JsonNode integrationRequest(String integration, String method, String path, @Nullable Object body) throws Exception {
+        requireIntegrationConfigured(integration);
+        return integrationClient.request(integration, method, path, body);
+    }
+
+    private KafkaIntegrationConfiguration.Endpoint integrationEndpoint(String integration) {
+        return switch (integration) {
+            case INTEGRATION_SCHEMA_REGISTRY -> integrationConfiguration.getSchemaRegistry();
+            case INTEGRATION_CONNECT -> integrationConfiguration.getConnect();
+            case INTEGRATION_KSQLDB -> integrationConfiguration.getKsqldb();
+            default -> throw new IllegalArgumentException("Unknown integration: " + integration);
+        };
     }
 
     private static ActionResult previewResult(String action, String target, String impact) {
@@ -762,8 +1077,229 @@ final class KafkaClusterService {
         if (entry.isSensitive()) {
             return false;
         }
-        String name = entry.name().toLowerCase(Locale.ROOT);
-        return SECRET_NAME_PARTS.stream().noneMatch(name::contains);
+        return isSafeConfigName(entry.name());
+    }
+
+    static boolean isSafeConfigName(String name) {
+        String lower = name.toLowerCase(Locale.ROOT);
+        return SECRET_NAME_PARTS.stream().noneMatch(lower::contains);
+    }
+
+    private List<Integer> schemaVersions(String subject) {
+        try {
+            return jsonArrayNumbers(integrationRequest(
+                INTEGRATION_SCHEMA_REGISTRY,
+                "GET",
+                "/subjects/" + KafkaIntegrationClient.encodePath(subject) + "/versions",
+                null
+            ));
+        } catch (Exception e) {
+            return List.of();
+        }
+    }
+
+    @Nullable
+    private String schemaCompatibility(String subject) {
+        try {
+            JsonNode config = integrationRequest(
+                INTEGRATION_SCHEMA_REGISTRY,
+                "GET",
+                "/config/" + KafkaIntegrationClient.encodePath(subject),
+                null
+            );
+            return text(config.get("compatibilityLevel"), text(config.get("compatibility"), null));
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private ConnectorSummary connectorSummary(String connector) {
+        try {
+            JsonNode status = integrationRequest(
+                INTEGRATION_CONNECT,
+                "GET",
+                "/connectors/" + KafkaIntegrationClient.encodePath(connector) + "/status",
+                null
+            );
+            JsonNode config = integrationRequest(
+                INTEGRATION_CONNECT,
+                "GET",
+                "/connectors/" + KafkaIntegrationClient.encodePath(connector) + "/config",
+                null
+            );
+            JsonNode connectorStatus = status.get("connector");
+            return new ConnectorSummary(
+                connector,
+                text(status.get("type"), null),
+                connectorStatus == null ? null : text(connectorStatus.get("state"), null),
+                connectorStatus == null ? null : text(connectorStatus.get("worker_id"), null),
+                connectorTasks(status.get("tasks")),
+                filteredObject(config)
+            );
+        } catch (Exception e) {
+            return new ConnectorSummary(connector, null, "ERROR: " + errorMessage(e), null, List.of(), Map.of());
+        }
+    }
+
+    private List<Map<String, String>> ksqlRows(String statement) throws Exception {
+        JsonNode response = integrationRequest(
+            INTEGRATION_KSQLDB,
+            "POST",
+            "/ksql",
+            Map.of("ksql", statement)
+        );
+        List<Map<String, String>> rows = new ArrayList<>();
+        Iterable<JsonNode> resultNodes = response.isArray() ? response.values() : List.of(response);
+        for (JsonNode result : resultNodes) {
+            JsonNode streams = result.get("streams");
+            JsonNode tables = result.get("tables");
+            JsonNode queries = result.get("queries");
+            JsonNode rowContainer = streams != null && streams.isArray()
+                ? streams
+                : tables != null && tables.isArray() ? tables : queries;
+            if (rowContainer != null && rowContainer.isArray()) {
+                for (JsonNode row : rowContainer.values()) {
+                    rows.add(stringObject(row));
+                }
+            }
+        }
+        return rows;
+    }
+
+    private static SchemaVersionDetail toSchemaVersionDetail(String subject,
+                                                             int version,
+                                                             JsonNode detail,
+                                                             @Nullable String compatibility) {
+        return new SchemaVersionDetail(
+            text(detail.get("subject"), subject),
+            numericInt(detail.get("version"), version),
+            nullableInt(detail.get("id")),
+            text(detail.get("schemaType"), null),
+            text(detail.get("schema"), null),
+            compatibility,
+            schemaReferences(detail.get("references"))
+        );
+    }
+
+    private static List<SchemaReference> schemaReferences(JsonNode node) {
+        if (node == null || !node.isArray()) {
+            return List.of();
+        }
+        List<SchemaReference> references = new ArrayList<>();
+        for (JsonNode reference : node.values()) {
+            references.add(new SchemaReference(
+                text(reference.get("name"), ""),
+                text(reference.get("subject"), ""),
+                numericInt(reference.get("version"), 0)
+            ));
+        }
+        return references;
+    }
+
+    private static List<ConnectorTask> connectorTasks(JsonNode node) {
+        if (node == null || !node.isArray()) {
+            return List.of();
+        }
+        List<ConnectorTask> tasks = new ArrayList<>();
+        for (JsonNode task : node.values()) {
+            tasks.add(new ConnectorTask(
+                numericInt(task.get("id"), -1),
+                text(task.get("state"), null),
+                text(task.get("worker_id"), null)
+            ));
+        }
+        return tasks;
+    }
+
+    private static List<String> jsonArrayStrings(JsonNode node) {
+        if (node == null || !node.isArray()) {
+            return List.of();
+        }
+        List<String> values = new ArrayList<>();
+        for (JsonNode value : node.values()) {
+            values.add(value.coerceStringValue());
+        }
+        return values;
+    }
+
+    private static List<Integer> jsonArrayNumbers(JsonNode node) {
+        if (node == null || !node.isArray()) {
+            return List.of();
+        }
+        List<Integer> values = new ArrayList<>();
+        for (JsonNode value : node.values()) {
+            values.add(numericInt(value, 0));
+        }
+        return values;
+    }
+
+    private static Map<String, String> filteredObject(JsonNode node) {
+        if (node == null || !node.isObject()) {
+            return Map.of();
+        }
+        Map<String, String> result = new LinkedHashMap<>();
+        for (Map.Entry<String, JsonNode> entry : node.entries()) {
+            if (isSafeConfigName(entry.getKey())) {
+                result.put(entry.getKey(), entry.getValue().coerceStringValue());
+            }
+        }
+        return result;
+    }
+
+    private static Map<String, String> stringObject(JsonNode node) {
+        if (node == null || !node.isObject()) {
+            return Map.of();
+        }
+        Map<String, String> result = new LinkedHashMap<>();
+        for (Map.Entry<String, JsonNode> entry : node.entries()) {
+            if (isSafeConfigName(entry.getKey())) {
+                result.put(entry.getKey(), entry.getValue().coerceStringValue());
+            }
+        }
+        return result;
+    }
+
+    @Nullable
+    private static String text(JsonNode node, @Nullable String defaultValue) {
+        if (node == null || node.isNull()) {
+            return defaultValue;
+        }
+        return node.coerceStringValue();
+    }
+
+    @Nullable
+    private static Integer nullableInt(JsonNode node) {
+        if (node == null || node.isNull()) {
+            return null;
+        }
+        return numericInt(node, 0);
+    }
+
+    private static int numericInt(JsonNode node, int defaultValue) {
+        if (node == null || node.isNull()) {
+            return defaultValue;
+        }
+        if (node.isNumber()) {
+            return node.getIntValue();
+        }
+        try {
+            return Integer.parseInt(node.coerceStringValue());
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
+    }
+
+    private static String responseIdSuffix(JsonNode response) {
+        Integer id = nullableInt(response.get("id"));
+        return id == null ? "" : " with id " + id;
+    }
+
+    static JsonNode json(String value) {
+        try {
+            return JsonMapper.createDefault().readValue(value.getBytes(StandardCharsets.UTF_8), JsonNode.class);
+        } catch (IOException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 
     private <T> Section<T> section(Callable<T> callable) {

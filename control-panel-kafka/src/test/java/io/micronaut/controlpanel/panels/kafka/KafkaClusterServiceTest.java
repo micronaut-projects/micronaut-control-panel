@@ -23,6 +23,7 @@ import io.micronaut.http.annotation.Patch;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.http.annotation.Put;
 import io.micronaut.http.annotation.Controller;
+import io.micronaut.json.tree.JsonNode;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.Config;
 import org.apache.kafka.clients.admin.ConfigEntry;
@@ -684,6 +685,116 @@ final class KafkaClusterServiceTest {
     }
 
     @Test
+    void optionalIntegrationsAreAbsentUntilConfigured() {
+        AdminClient admin = mock(AdminClient.class);
+
+        KafkaClusterService service = new KafkaClusterService(
+            admin,
+            new FakeIntegrationClient(Map.of()),
+            new KafkaIntegrationConfiguration(),
+            writeConfig(false, false)
+        );
+
+        assertFalse(service.schemaRegistry().data().configured());
+        assertFalse(service.kafkaConnect().data().configured());
+        assertFalse(service.ksqldb().data().configured());
+    }
+
+    @Test
+    void schemaRegistryReadViewsLoadSubjectsVersionsAndDetails() {
+        AdminClient admin = mock(AdminClient.class);
+        KafkaIntegrationConfiguration configuration = integrationConfig("http://schema-registry", null, null);
+        FakeIntegrationClient client = new FakeIntegrationClient(Map.of(
+            "Schema Registry GET /subjects", KafkaClusterService.json("[\"orders-value\"]"),
+            "Schema Registry GET /subjects/orders-value/versions", KafkaClusterService.json("[1,2]"),
+            "Schema Registry GET /subjects/orders-value/versions/2", KafkaClusterService.json("""
+                {"subject":"orders-value","version":2,"id":7,"schemaType":"AVRO","schema":"{\\"type\\":\\"record\\",\\"name\\":\\"Order\\"}","references":[{"name":"Money","subject":"money-value","version":1}]}
+                """),
+            "Schema Registry GET /config/orders-value", KafkaClusterService.json("{\"compatibilityLevel\":\"BACKWARD\"}")
+        ));
+        KafkaClusterService service = new KafkaClusterService(admin, client, configuration, writeConfig(false, false));
+
+        var overview = service.schemaRegistry();
+        var detail = service.schemaRegistrySubject("orders-value", 2);
+
+        assertNull(overview.error());
+        assertTrue(overview.data().configured());
+        assertEquals(List.of(1, 2), overview.data().subjects().get(0).versions());
+        assertNull(detail.error());
+        assertEquals(7, detail.data().id());
+        assertEquals("BACKWARD", detail.data().compatibility());
+        assertEquals("money-value", detail.data().references().get(0).subject());
+    }
+
+    @Test
+    void schemaRegistryWritesUseWriteAndDestructiveGates() {
+        AdminClient admin = mock(AdminClient.class);
+        KafkaIntegrationConfiguration configuration = integrationConfig("http://schema-registry", null, null);
+        FakeIntegrationClient client = new FakeIntegrationClient(Map.of(
+            "Schema Registry POST /subjects/orders-value/versions", KafkaClusterService.json("{\"id\":9}"),
+            "Schema Registry DELETE /subjects/orders-value", KafkaClusterService.json("[1,2]")
+        ));
+
+        var disabled = new KafkaClusterService(admin, client, configuration, writeConfig(false, false))
+            .registerSchema(new KafkaClusterResponse.RegisterSchemaRequest("orders-value", "{}", "JSON", false, "REGISTER SCHEMA orders-value"));
+        var destructiveDisabled = new KafkaClusterService(admin, client, configuration, writeConfig(true, false))
+            .deleteSchemaSubject(new KafkaClusterResponse.DeleteSchemaSubjectRequest("orders-value", false, "DELETE SCHEMA SUBJECT orders-value"));
+        var applied = new KafkaClusterService(admin, client, configuration, writeConfig(true, true))
+            .registerSchema(new KafkaClusterResponse.RegisterSchemaRequest("orders-value", "{}", "JSON", false, "REGISTER SCHEMA orders-value"));
+
+        assertEquals("Kafka writes are disabled. Set micronaut.control-panel.kafka.writes.enabled=true to enable write endpoints.", disabled.error());
+        assertEquals("Kafka destructive actions are disabled. Set micronaut.control-panel.kafka.writes.destructive-enabled=true to enable this action.", destructiveDisabled.error());
+        assertNull(applied.error());
+        assertTrue(applied.data().applied());
+        assertEquals("Schema Registry POST /subjects/orders-value/versions", client.lastAction());
+    }
+
+    @Test
+    void kafkaConnectReadFiltersSensitiveConfigAndWritesAreGated() {
+        AdminClient admin = mock(AdminClient.class);
+        KafkaIntegrationConfiguration configuration = integrationConfig(null, "http://connect", null);
+        FakeIntegrationClient client = new FakeIntegrationClient(Map.of(
+            "Kafka Connect GET /connectors", KafkaClusterService.json("[\"jdbc-sink\"]"),
+            "Kafka Connect GET /connectors/jdbc-sink/status", KafkaClusterService.json("""
+                {"name":"jdbc-sink","type":"sink","connector":{"state":"RUNNING","worker_id":"worker:8083"},"tasks":[{"id":0,"state":"RUNNING","worker_id":"worker:8083"}]}
+                """),
+            "Kafka Connect GET /connectors/jdbc-sink/config", KafkaClusterService.json("{\"connector.class\":\"JdbcSinkConnector\",\"connection.password\":\"secret\"}"),
+            "Kafka Connect PUT /connectors/jdbc-sink/pause", JsonNode.nullNode()
+        ));
+        KafkaClusterService service = new KafkaClusterService(admin, client, configuration, writeConfig(true, false));
+
+        var overview = service.kafkaConnect();
+        var pause = service.pauseConnector(new KafkaClusterResponse.ConnectorActionRequest("jdbc-sink", false, "PAUSE CONNECTOR jdbc-sink"));
+
+        assertNull(overview.error());
+        assertEquals("RUNNING", overview.data().connectors().get(0).state());
+        assertTrue(overview.data().connectors().get(0).config().containsKey("connector.class"));
+        assertFalse(overview.data().connectors().get(0).config().containsKey("connection.password"));
+        assertNull(pause.error());
+        assertTrue(pause.data().applied());
+    }
+
+    @Test
+    void ksqlDbReadViewsLoadStreamsTablesAndQueries() {
+        AdminClient admin = mock(AdminClient.class);
+        KafkaIntegrationConfiguration configuration = integrationConfig(null, null, "http://ksqldb");
+        FakeIntegrationClient client = new FakeIntegrationClient(Map.of(
+            "ksqlDB POST /ksql {ksql=SHOW STREAMS;}", KafkaClusterService.json("[{\"streams\":[{\"name\":\"ORDERS\",\"topic\":\"orders\",\"password\":\"hidden\"}]}]"),
+            "ksqlDB POST /ksql {ksql=SHOW TABLES;}", KafkaClusterService.json("[{\"tables\":[{\"name\":\"CUSTOMERS\"}]}]"),
+            "ksqlDB POST /ksql {ksql=SHOW QUERIES;}", KafkaClusterService.json("[{\"queries\":[{\"id\":\"CSAS_1\",\"state\":\"RUNNING\"}]}]")
+        ));
+        KafkaClusterService service = new KafkaClusterService(admin, client, configuration, writeConfig(false, false));
+
+        var section = service.ksqldb();
+
+        assertNull(section.error());
+        assertEquals("ORDERS", section.data().streams().get(0).get("name"));
+        assertFalse(section.data().streams().get(0).containsKey("password"));
+        assertEquals("CUSTOMERS", section.data().tables().get(0).get("name"));
+        assertEquals("CSAS_1", section.data().queries().get(0).get("id"));
+    }
+
+    @Test
     void controllerKeepsAllEndpointsUnderKafkaSecurityPath() {
         assertEquals(ControlPanelSecurityPaths.KAFKA, KafkaClusterController.class.getAnnotation(Controller.class).value());
         Set<String> postMethods = Set.of(
@@ -695,7 +806,17 @@ final class KafkaClusterServiceTest {
             "deleteConsumerGroup",
             "resetConsumerGroupOffsets",
             "pauseAppConsumer",
-            "resumeAppConsumer"
+            "resumeAppConsumer",
+            "registerSchema",
+            "updateSchemaCompatibility",
+            "deleteSchemaSubject",
+            "deleteSchemaVersion",
+            "pauseConnector",
+            "resumeConnector",
+            "restartConnector",
+            "restartConnectorTask",
+            "updateConnectorConfig",
+            "deleteConnector"
         );
         for (Method method : KafkaClusterController.class.getDeclaredMethods()) {
             assertFalse(method.isAnnotationPresent(Put.class), method.getName());
@@ -738,6 +859,47 @@ final class KafkaClusterServiceTest {
         configuration.setEnabled(enabled);
         configuration.setDestructiveEnabled(destructiveEnabled);
         return configuration;
+    }
+
+    private static KafkaIntegrationConfiguration integrationConfig(@Nullable String schemaRegistryUrl,
+                                                                  @Nullable String connectUrl,
+                                                                  @Nullable String ksqlDbUrl) {
+        KafkaIntegrationConfiguration configuration = new KafkaIntegrationConfiguration();
+        configuration.getSchemaRegistry().setUrl(schemaRegistryUrl);
+        configuration.getConnect().setUrl(connectUrl);
+        configuration.getKsqldb().setUrl(ksqlDbUrl);
+        return configuration;
+    }
+
+    private static final class FakeIntegrationClient implements KafkaIntegrationClient {
+        private final Map<String, JsonNode> responses;
+        private @Nullable String lastAction;
+
+        FakeIntegrationClient(Map<String, JsonNode> responses) {
+            this.responses = responses;
+        }
+
+        @Override
+        public JsonNode request(String integration, String method, String path, @Nullable Object body) {
+            String action = body == null
+                ? integration + " " + method + " " + path
+                : integration + " " + method + " " + path + " " + body;
+            JsonNode response = responses.get(action);
+            if (response == null) {
+                action = integration + " " + method + " " + path;
+                response = responses.get(action);
+            }
+            lastAction = action;
+            if (response == null) {
+                throw new IllegalStateException("No fake response for " + action);
+            }
+            return response;
+        }
+
+        @Nullable
+        String lastAction() {
+            return lastAction;
+        }
     }
 
     private static void mockCluster(AdminClient admin) {

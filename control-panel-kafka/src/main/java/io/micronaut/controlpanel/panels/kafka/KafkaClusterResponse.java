@@ -207,6 +207,65 @@ public final class KafkaClusterResponse {
 
     @Introspected
     @ReflectiveAccess
+    public record SchemaRegistryOverview(boolean configured,
+                                         @Nullable String url,
+                                         List<SchemaSubject> subjects) {
+    }
+
+    @Introspected
+    @ReflectiveAccess
+    public record SchemaSubject(String subject, List<Integer> versions) {
+    }
+
+    @Introspected
+    @ReflectiveAccess
+    public record SchemaVersionDetail(String subject,
+                                      int version,
+                                      @Nullable Integer id,
+                                      @Nullable String schemaType,
+                                      @Nullable String schema,
+                                      @Nullable String compatibility,
+                                      List<SchemaReference> references) {
+    }
+
+    @Introspected
+    @ReflectiveAccess
+    public record SchemaReference(String name, String subject, int version) {
+    }
+
+    @Introspected
+    @ReflectiveAccess
+    public record KafkaConnectOverview(boolean configured,
+                                       @Nullable String url,
+                                       List<ConnectorSummary> connectors) {
+    }
+
+    @Introspected
+    @ReflectiveAccess
+    public record ConnectorSummary(String name,
+                                   @Nullable String type,
+                                   @Nullable String state,
+                                   @Nullable String workerId,
+                                   List<ConnectorTask> tasks,
+                                   Map<String, String> config) {
+    }
+
+    @Introspected
+    @ReflectiveAccess
+    public record ConnectorTask(int id, @Nullable String state, @Nullable String workerId) {
+    }
+
+    @Introspected
+    @ReflectiveAccess
+    public record KsqlDbOverview(boolean configured,
+                                 @Nullable String url,
+                                 List<Map<String, String>> streams,
+                                 List<Map<String, String>> tables,
+                                 List<Map<String, String>> queries) {
+    }
+
+    @Introspected
+    @ReflectiveAccess
     public record ActionResult(boolean applied,
                                String action,
                                String target,
@@ -299,5 +358,60 @@ public final class KafkaClusterResponse {
     @Introspected
     @ReflectiveAccess
     public record TopicPartitionInput(String topic, int partition) {
+    }
+
+    @Introspected
+    @ReflectiveAccess
+    public record RegisterSchemaRequest(String subject,
+                                        String schema,
+                                        @Nullable String schemaType,
+                                        boolean preview,
+                                        @Nullable String confirmation) {
+    }
+
+    @Introspected
+    @ReflectiveAccess
+    public record UpdateSchemaCompatibilityRequest(String subject,
+                                                   String compatibility,
+                                                   boolean preview,
+                                                   @Nullable String confirmation) {
+    }
+
+    @Introspected
+    @ReflectiveAccess
+    public record DeleteSchemaSubjectRequest(String subject,
+                                             boolean preview,
+                                             @Nullable String confirmation) {
+    }
+
+    @Introspected
+    @ReflectiveAccess
+    public record DeleteSchemaVersionRequest(String subject,
+                                             int version,
+                                             boolean preview,
+                                             @Nullable String confirmation) {
+    }
+
+    @Introspected
+    @ReflectiveAccess
+    public record ConnectorActionRequest(String connector,
+                                         boolean preview,
+                                         @Nullable String confirmation) {
+    }
+
+    @Introspected
+    @ReflectiveAccess
+    public record ConnectorTaskActionRequest(String connector,
+                                             int task,
+                                             boolean preview,
+                                             @Nullable String confirmation) {
+    }
+
+    @Introspected
+    @ReflectiveAccess
+    public record UpdateConnectorConfigRequest(String connector,
+                                               Map<String, String> config,
+                                               boolean preview,
+                                               @Nullable String confirmation) {
     }
 }
