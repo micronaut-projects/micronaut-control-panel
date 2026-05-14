@@ -1,0 +1,39 @@
+<script>
+    $(function() {
+        const cpDatasourceDetail = window.cpDatasourceDetail;
+        if (!cpDatasourceDetail) {
+            return;
+        }
+        const datasourceBaseUrl = cpDatasourceDetail.datasourceBaseUrl;
+        const escapeHtml = cpDatasourceDetail.escapeHtml;
+
+        $('.cp-datasource-pool-panel').on('click', '[data-pool-status-refresh]', function () {
+            const button = this;
+            const $button = $(button);
+            const $container = $('[data-pool-status-container]');
+            button.disabled = true;
+            $button.addClass('is-loading');
+            $.ajax({
+                url: datasourceBaseUrl + '/pool/status',
+                type: 'GET',
+                dataType: 'html'
+            }).done(function (html) {
+                $container.html(html);
+            }).fail(function (xhr) {
+                const message = xhr && xhr.status === 404
+                    ? 'Connection pool information is no longer available.'
+                    : 'Connection pool status could not be refreshed.';
+                $container.find('.cp-pool-status-card .card-body').html(
+                    '<div class="cp-query-state cp-query-state-error">' +
+                    '<i class="fas fa-circle-exclamation" aria-hidden="true"></i>' +
+                    '<strong>Refresh failed</strong>' +
+                    '<p>' + escapeHtml(message) + '</p>' +
+                    '</div>'
+                );
+            }).always(function () {
+                button.disabled = false;
+                $button.removeClass('is-loading');
+            });
+        });
+    });
+</script>
