@@ -17,6 +17,7 @@ package io.micronaut.controlpanel.core.security;
 
 import io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration;
 import io.micronaut.http.HttpRequest;
+import io.micronaut.http.filter.ServerFilterPhase;
 import io.micronaut.http.server.HttpServerConfiguration;
 import io.micronaut.security.authentication.Authentication;
 import io.micronaut.security.rules.ConfigurationInterceptUrlMapRule;
@@ -24,10 +25,16 @@ import io.micronaut.security.rules.SecurityRuleResult;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class ControlPanelSecurityRuleTest {
 
@@ -36,6 +43,15 @@ class ControlPanelSecurityRuleTest {
         ControlPanelSecurityRule rule = newRule(ControlPanelSecurityConfiguration.Access.AUTHENTICATED, null);
 
         assertEquals(ConfigurationInterceptUrlMapRule.ORDER + 50, rule.getOrder());
+    }
+
+    @Test
+    void fallbackWriteAccessFilterOrderDoesNotDependOnSecurityClasses() throws IOException {
+        assertEquals(ControlPanelWriteAccessFilter.ORDER, ServerFilterPhase.SECURITY.after());
+
+        byte[] filterBytecode = readClassBytes(ControlPanelWriteAccessFilter.class);
+        assertFalse(containsAscii(filterBytecode, "ControlPanelSecurityRule"));
+        assertFalse(containsAscii(filterBytecode, "io/micronaut/security"));
     }
 
     @Test
@@ -109,6 +125,57 @@ class ControlPanelSecurityRuleTest {
     }
 
     @Test
+    void deniedWriteAccessRejectsWriteRequestsWhileAllowingReads() {
+        ControlPanelSecurityRule rule = newRule(
+            ControlPanelSecurityConfiguration.Access.ANONYMOUS,
+            null,
+            ControlPanelModuleConfiguration.DEFAULT_PATH,
+            ControlPanelSecurityConfiguration.DEFAULT_ROLE,
+            ControlPanelSecurityConfiguration.WriteAccess.DENIED,
+            null
+        );
+
+        assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.GET("/control-panel"), null));
+        assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.POST("/control-panel" + ControlPanelSecurityPaths.HIBERNATE_PATH + "/default/hql", "{}"), null));
+        for (HttpRequest<?> request : writeRequests("/control-panel")) {
+            assertEquals(SecurityRuleResult.REJECTED, check(rule, request, null));
+        }
+    }
+
+    @Test
+    void separateWriteRoleAllowsReadRoleToReadOnly() {
+        ControlPanelSecurityRule rule = newRule(
+            ControlPanelSecurityConfiguration.Access.AUTHORIZED,
+            null,
+            ControlPanelModuleConfiguration.DEFAULT_PATH,
+            ControlPanelSecurityConfiguration.DEFAULT_ROLE,
+            ControlPanelSecurityConfiguration.WriteAccess.AUTHORIZED,
+            "ROLE_CONTROL_PANEL_WRITE"
+        );
+        Authentication reader = Authentication.build("reader", Set.of(ControlPanelSecurityConfiguration.DEFAULT_ROLE), Map.of());
+        Authentication writer = Authentication.build("writer", Set.of("ROLE_CONTROL_PANEL_WRITE"), Map.of());
+
+        assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.GET("/control-panel"), reader));
+        assertEquals(SecurityRuleResult.REJECTED, check(rule, HttpRequest.DELETE("/control-panel" + ControlPanelSecurityPaths.CACHE_PATH + "/demo"), reader));
+        assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.DELETE("/control-panel" + ControlPanelSecurityPaths.CACHE_PATH + "/demo"), writer));
+    }
+
+    @Test
+    void authenticatedWriteAccessFailsClosedWithoutAuthentication() {
+        ControlPanelSecurityRule rule = newRule(
+            ControlPanelSecurityConfiguration.Access.ANONYMOUS,
+            null,
+            ControlPanelModuleConfiguration.DEFAULT_PATH,
+            ControlPanelSecurityConfiguration.DEFAULT_ROLE,
+            ControlPanelSecurityConfiguration.WriteAccess.AUTHENTICATED,
+            null
+        );
+
+        assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.GET("/control-panel"), null));
+        assertEquals(SecurityRuleResult.REJECTED, check(rule, HttpRequest.POST("/control-panel" + ControlPanelSecurityPaths.LOGGERS_PATH + "/ROOT", "{}"), null));
+    }
+
+    @Test
     void nonControlPanelRoutesRemainUnknown() {
         ControlPanelSecurityRule rule = newRule(ControlPanelSecurityConfiguration.Access.AUTHENTICATED, null);
 
@@ -143,7 +210,16 @@ class ControlPanelSecurityRuleTest {
                                                     String contextPath,
                                                     String controlPanelPath,
                                                     String role) {
-        ControlPanelSecurityConfiguration securityConfiguration = new ControlPanelSecurityConfiguration(access, role);
+        return newRule(access, contextPath, controlPanelPath, role, ControlPanelSecurityConfiguration.WriteAccess.INHERITED, null);
+    }
+
+    private static ControlPanelSecurityRule newRule(ControlPanelSecurityConfiguration.Access access,
+                                                    String contextPath,
+                                                    String controlPanelPath,
+                                                    String role,
+                                                    ControlPanelSecurityConfiguration.WriteAccess writeAccess,
+                                                    String writeRole) {
+        ControlPanelSecurityConfiguration securityConfiguration = new ControlPanelSecurityConfiguration(access, role, writeAccess, writeRole);
         ControlPanelModuleConfiguration moduleConfiguration = new ControlPanelModuleConfiguration() {
             @Override
             public boolean isEnabled() {
@@ -172,9 +248,50 @@ class ControlPanelSecurityRuleTest {
         return new ControlPanelSecurityRule(securityConfiguration, moduleConfiguration, serverConfiguration);
     }
 
+    private static List<HttpRequest<?>> writeRequests(String controlPanelPath) {
+        return List.of(
+            HttpRequest.DELETE(controlPanelPath + ControlPanelSecurityPaths.CACHE_PATH + "/demo"),
+            HttpRequest.DELETE(controlPanelPath + ControlPanelSecurityPaths.CACHE_PATH + "/demo/key"),
+            HttpRequest.POST(controlPanelPath + ControlPanelSecurityPaths.DATASOURCE_PATH + "/default/query", "{}"),
+            HttpRequest.POST(controlPanelPath + ControlPanelSecurityPaths.HIBERNATE_PATH + "/default/statistics/enabled/true", ""),
+            HttpRequest.DELETE(controlPanelPath + ControlPanelSecurityPaths.HIBERNATE_PATH + "/default/statistics"),
+            HttpRequest.DELETE(controlPanelPath + ControlPanelSecurityPaths.HIBERNATE_PATH + "/default/cache"),
+            HttpRequest.DELETE(controlPanelPath + ControlPanelSecurityPaths.HIBERNATE_PATH + "/default/cache/region?region=books"),
+            HttpRequest.POST(controlPanelPath + ControlPanelSecurityPaths.LOGGERS_PATH + "/ROOT", "{}"),
+            HttpRequest.POST(controlPanelPath + ControlPanelSecurityPaths.APPLICATION_PATH + "/refresh", "{}"),
+            HttpRequest.POST(controlPanelPath + ControlPanelSecurityPaths.APPLICATION_PATH + "/stop", ""),
+            HttpRequest.POST(controlPanelPath + ControlPanelSecurityPaths.OBJECT_STORAGE_PATH + "/default", ""),
+            HttpRequest.DELETE(controlPanelPath + ControlPanelSecurityPaths.OBJECT_STORAGE_PATH + "/default/hello.txt")
+        );
+    }
+
     private static SecurityRuleResult check(ControlPanelSecurityRule rule,
                                             HttpRequest<?> request,
                                             Authentication authentication) {
         return Mono.from(rule.check(request, authentication)).block();
+    }
+
+    private static byte[] readClassBytes(Class<?> type) throws IOException {
+        String resourceName = type.getSimpleName() + ".class";
+        try (InputStream inputStream = Objects.requireNonNull(type.getResourceAsStream(resourceName))) {
+            return inputStream.readAllBytes();
+        }
+    }
+
+    private static boolean containsAscii(byte[] bytes, String value) {
+        byte[] needle = value.getBytes(StandardCharsets.US_ASCII);
+        for (int i = 0; i <= bytes.length - needle.length; i++) {
+            boolean matches = true;
+            for (int j = 0; j < needle.length; j++) {
+                if (bytes[i + j] != needle[j]) {
+                    matches = false;
+                    break;
+                }
+            }
+            if (matches) {
+                return true;
+            }
+        }
+        return false;
     }
 }
