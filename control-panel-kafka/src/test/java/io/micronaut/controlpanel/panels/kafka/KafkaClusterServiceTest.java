@@ -27,6 +27,9 @@ import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.Config;
 import org.apache.kafka.clients.admin.ConfigEntry;
 import org.apache.kafka.clients.admin.ConsumerGroupDescription;
+import org.apache.kafka.clients.admin.CreateTopicsOptions;
+import org.apache.kafka.clients.admin.CreateTopicsResult;
+import org.apache.kafka.clients.admin.DeleteTopicsOptions;
 import org.apache.kafka.clients.admin.DescribeClusterOptions;
 import org.apache.kafka.clients.admin.DescribeClusterResult;
 import org.apache.kafka.clients.admin.DescribeConfigsOptions;
@@ -528,15 +531,181 @@ final class KafkaClusterServiceTest {
     }
 
     @Test
-    void controllerIntroducesOnlyGetEndpoints() {
+    void writeCapabilitiesAreDefaultOff() {
+        AdminClient admin = mock(AdminClient.class);
+
+        var section = new KafkaClusterService(admin).writeCapabilities();
+
+        assertNull(section.error());
+        assertNotNull(section.data());
+        assertFalse(section.data().writesEnabled());
+        assertFalse(section.data().destructiveEnabled());
+        assertTrue(section.data().actions().get("topics.create"));
+    }
+
+    @Test
+    void createTopicRejectsWhenWritesAreDisabled() {
+        AdminClient admin = mock(AdminClient.class);
+
+        var section = new KafkaClusterService(admin).createTopic(new KafkaClusterResponse.CreateTopicRequest(
+            "orders",
+            1,
+            (short) 1,
+            Map.of(),
+            false,
+            "CREATE orders"
+        ));
+
+        assertNull(section.data());
+        assertEquals("Kafka writes are disabled. Set micronaut.control-panel.kafka.writes.enabled=true to enable write endpoints.", section.error());
+        verify(admin, never()).createTopics(any(Collection.class), any(CreateTopicsOptions.class));
+    }
+
+    @Test
+    void destructiveActionsRequireSeparateGate() {
+        AdminClient admin = mock(AdminClient.class);
+
+        var section = new KafkaClusterService(admin, null, null, null, writeConfig(true, false))
+            .deleteTopic(new KafkaClusterResponse.DeleteTopicRequest("orders", false, "DELETE orders"));
+
+        assertNull(section.data());
+        assertEquals("Kafka destructive actions are disabled. Set micronaut.control-panel.kafka.writes.destructive-enabled=true to enable this action.", section.error());
+        verify(admin, never()).deleteTopics(any(TopicCollection.class), any(DeleteTopicsOptions.class));
+    }
+
+    @Test
+    void createTopicPreviewDoesNotMutateKafka() {
+        AdminClient admin = mock(AdminClient.class);
+
+        var section = new KafkaClusterService(admin, null, null, null, writeConfig(true, false))
+            .createTopic(new KafkaClusterResponse.CreateTopicRequest(
+                "orders",
+                3,
+                (short) 1,
+                Map.of("cleanup.policy", "delete"),
+                true,
+                null
+            ));
+
+        assertNull(section.error());
+        assertNotNull(section.data());
+        assertFalse(section.data().applied());
+        assertEquals("topics.create", section.data().action());
+        assertEquals("orders", section.data().target());
+        verify(admin, never()).createTopics(any(Collection.class), any(CreateTopicsOptions.class));
+    }
+
+    @Test
+    void createTopicAppliesWithExactConfirmation() {
+        AdminClient admin = mock(AdminClient.class);
+        CreateTopicsResult result = mock(CreateTopicsResult.class);
+        when(admin.createTopics(any(Collection.class), any(CreateTopicsOptions.class))).thenReturn(result);
+        when(result.all()).thenReturn(KafkaFuture.completedFuture(null));
+
+        var section = new KafkaClusterService(admin, null, null, null, writeConfig(true, false))
+            .createTopic(new KafkaClusterResponse.CreateTopicRequest(
+                "orders",
+                3,
+                (short) 1,
+                Map.of("cleanup.policy", "delete"),
+                false,
+                "CREATE orders"
+            ));
+
+        assertNull(section.error());
+        assertNotNull(section.data());
+        assertTrue(section.data().applied());
+        @SuppressWarnings({"rawtypes", "unchecked"})
+        ArgumentCaptor<Collection> captor = ArgumentCaptor.forClass(Collection.class);
+        verify(admin).createTopics(captor.capture(), any(CreateTopicsOptions.class));
+        assertEquals("orders", ((org.apache.kafka.clients.admin.NewTopic) captor.getValue().iterator().next()).name());
+    }
+
+    @Test
+    void resetOffsetsRequiresInactiveConsumerGroup() {
+        AdminClient admin = mock(AdminClient.class);
+        mockConsumerGroupDescriptions(admin, Map.of("orders-service", consumerGroup(
+            "orders-service",
+            GroupState.STABLE,
+            "range",
+            member("consumer-1", "client-1", "/127.0.0.1", new TopicPartition("orders", 0))
+        )));
+
+        var section = new KafkaClusterService(admin, null, null, null, writeConfig(true, false))
+            .resetConsumerGroupOffsets(new KafkaClusterResponse.ResetOffsetsRequest(
+                "orders-service",
+                "earliest",
+                "orders",
+                0,
+                null,
+                null,
+                true,
+                null
+            ));
+
+        assertNull(section.data());
+        assertEquals("Consumer group must be inactive before this operation: orders-service", section.error());
+    }
+
+    @Test
+    void appConsumerPauseUsesRegistryWhenEnabled() {
+        AdminClient admin = mock(AdminClient.class);
+        ConsumerRegistry registry = mock(ConsumerRegistry.class);
+
+        var section = new KafkaClusterService(admin, registry, null, null, writeConfig(true, false))
+            .pauseAppConsumer(new KafkaClusterResponse.AppConsumerActionRequest(
+                "orders-consumer",
+                List.of(new KafkaClusterResponse.TopicPartitionInput("orders", 0)),
+                false,
+                "PAUSE orders-consumer orders-0"
+            ));
+
+        assertNull(section.error());
+        assertNotNull(section.data());
+        assertTrue(section.data().applied());
+        verify(registry).pause("orders-consumer", List.of(new TopicPartition("orders", 0)));
+    }
+
+    @Test
+    void managementProducerConfigUsesIsolatedByteArrayProducer() {
+        Properties defaults = new Properties();
+        defaults.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        defaults.put(org.apache.kafka.clients.producer.ProducerConfig.TRANSACTIONAL_ID_CONFIG, "application-transaction");
+
+        Properties config = KafkaManagementProducerFactory.producerConfig(defaults);
+
+        assertEquals("localhost:9092", config.get(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG));
+        assertEquals(
+            org.apache.kafka.common.serialization.ByteArraySerializer.class.getName(),
+            config.get(org.apache.kafka.clients.producer.ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG)
+        );
+        assertFalse(config.containsKey(org.apache.kafka.clients.producer.ProducerConfig.TRANSACTIONAL_ID_CONFIG));
+        assertNotNull(config.get(org.apache.kafka.clients.producer.ProducerConfig.CLIENT_ID_CONFIG));
+    }
+
+    @Test
+    void controllerKeepsAllEndpointsUnderKafkaSecurityPath() {
         assertEquals(ControlPanelSecurityPaths.KAFKA, KafkaClusterController.class.getAnnotation(Controller.class).value());
+        Set<String> postMethods = Set.of(
+            "createTopic",
+            "updateTopicConfig",
+            "increasePartitions",
+            "deleteTopic",
+            "produceMessage",
+            "deleteConsumerGroup",
+            "resetConsumerGroupOffsets",
+            "pauseAppConsumer",
+            "resumeAppConsumer"
+        );
         for (Method method : KafkaClusterController.class.getDeclaredMethods()) {
-            assertFalse(method.isAnnotationPresent(Post.class), method.getName());
             assertFalse(method.isAnnotationPresent(Put.class), method.getName());
             assertFalse(method.isAnnotationPresent(Patch.class), method.getName());
             assertFalse(method.isAnnotationPresent(Delete.class), method.getName());
-            if (method.isAnnotationPresent(Get.class)) {
+            if (method.isAnnotationPresent(Get.class) || method.isAnnotationPresent(Post.class)) {
                 assertTrue(Modifier.isPublic(method.getModifiers()), method.getName());
+            }
+            if (postMethods.contains(method.getName())) {
+                assertTrue(method.isAnnotationPresent(Post.class), method.getName());
             }
         }
     }
@@ -562,6 +731,13 @@ final class KafkaClusterServiceTest {
             new RecordHeaders().add("trace", "abc".getBytes(StandardCharsets.UTF_8)),
             Optional.empty()
         );
+    }
+
+    private static KafkaClusterWriteConfiguration writeConfig(boolean enabled, boolean destructiveEnabled) {
+        KafkaClusterWriteConfiguration configuration = new KafkaClusterWriteConfiguration();
+        configuration.setEnabled(enabled);
+        configuration.setDestructiveEnabled(destructiveEnabled);
+        return configuration;
     }
 
     private static void mockCluster(AdminClient admin) {

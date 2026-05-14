@@ -24,9 +24,16 @@ import io.micronaut.json.tree.JsonNode;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.AlterConfigOp;
+import org.apache.kafka.clients.admin.AlterConfigsOptions;
+import org.apache.kafka.clients.admin.AlterConsumerGroupOffsetsOptions;
 import org.apache.kafka.clients.admin.Config;
 import org.apache.kafka.clients.admin.ConfigEntry;
 import org.apache.kafka.clients.admin.ConsumerGroupDescription;
+import org.apache.kafka.clients.admin.CreatePartitionsOptions;
+import org.apache.kafka.clients.admin.CreateTopicsOptions;
+import org.apache.kafka.clients.admin.DeleteConsumerGroupsOptions;
+import org.apache.kafka.clients.admin.DeleteTopicsOptions;
 import org.apache.kafka.clients.admin.DescribeClusterOptions;
 import org.apache.kafka.clients.admin.DescribeConfigsOptions;
 import org.apache.kafka.clients.admin.DescribeConsumerGroupsOptions;
@@ -38,6 +45,8 @@ import org.apache.kafka.clients.admin.ListGroupsOptions;
 import org.apache.kafka.clients.admin.ListOffsetsOptions;
 import org.apache.kafka.clients.admin.ListOffsetsResult;
 import org.apache.kafka.clients.admin.ListTopicsOptions;
+import org.apache.kafka.clients.admin.NewPartitions;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.admin.MemberAssignment;
 import org.apache.kafka.clients.admin.MemberDescription;
 import org.apache.kafka.clients.admin.OffsetSpec;
@@ -48,9 +57,14 @@ import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.OffsetAndTimestamp;
+import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.KafkaFuture;
 import org.apache.kafka.common.Node;
+import org.apache.kafka.common.GroupState;
 import org.apache.kafka.common.header.Header;
+import org.apache.kafka.common.header.internals.RecordHeader;
 import org.apache.kafka.common.TopicCollection;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.TopicPartitionInfo;
@@ -79,26 +93,38 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.AppConsumer;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.ActionResult;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.AppConsumerAssignment;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.AppConsumerActionRequest;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.Broker;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.BrokerNode;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.ConsumerGroupDetail;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.ConsumerGroupMember;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.ConsumerGroupPartition;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.ConsumerGroupSummary;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.CreateTopicRequest;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.DeleteConsumerGroupRequest;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.DeleteTopicRequest;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.IncreasePartitionsRequest;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.MessageHeaderInput;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.MessageHeader;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.MessagePage;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.MessageRecord;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.Overview;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.PartitionDetail;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.ProduceMessageRequest;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.RenderedPayload;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.ResetOffsetsRequest;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.Section;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.TopicDetail;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.TopicPage;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.TopicPartitionInput;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.TopicSummary;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.UpdateTopicConfigRequest;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.WriteCapabilities;
 
 /**
- * Read-only facade over Kafka AdminClient APIs for the cluster panel.
+ * Facade over Kafka APIs for the cluster panel.
  */
 @Singleton
 @Internal
@@ -130,32 +156,46 @@ final class KafkaClusterService {
 
     private final AdminClient adminClient;
     private final @Nullable ConsumerRegistry consumerRegistry;
-    private final KafkaMessageBrowserConsumerFactory consumerFactory;
+    private final @Nullable KafkaMessageBrowserConsumerFactory consumerFactory;
+    private final @Nullable KafkaManagementProducerFactory producerFactory;
     private final JsonMapper jsonMapper;
+    private final KafkaClusterWriteConfiguration writeConfiguration;
 
     @Inject
     KafkaClusterService(AdminClient adminClient,
                         @Nullable ConsumerRegistry consumerRegistry,
                         KafkaMessageBrowserConsumerFactory consumerFactory,
-                        JsonMapper jsonMapper) {
+                        @Nullable KafkaManagementProducerFactory producerFactory,
+                        JsonMapper jsonMapper,
+                        KafkaClusterWriteConfiguration writeConfiguration) {
         this.adminClient = adminClient;
         this.consumerRegistry = consumerRegistry;
         this.consumerFactory = consumerFactory;
+        this.producerFactory = producerFactory;
         this.jsonMapper = jsonMapper;
+        this.writeConfiguration = writeConfiguration;
     }
 
     KafkaClusterService(AdminClient adminClient) {
-        this(adminClient, null, null, JsonMapper.createDefault());
+        this(adminClient, null, null, null, JsonMapper.createDefault(), new KafkaClusterWriteConfiguration());
     }
 
     KafkaClusterService(AdminClient adminClient,
                         KafkaMessageBrowserConsumerFactory consumerFactory) {
-        this(adminClient, null, consumerFactory, JsonMapper.createDefault());
+        this(adminClient, null, consumerFactory, null, JsonMapper.createDefault(), new KafkaClusterWriteConfiguration());
     }
 
     KafkaClusterService(AdminClient adminClient,
                         ConsumerRegistry consumerRegistry) {
-        this(adminClient, consumerRegistry, null, JsonMapper.createDefault());
+        this(adminClient, consumerRegistry, null, null, JsonMapper.createDefault(), new KafkaClusterWriteConfiguration());
+    }
+
+    KafkaClusterService(AdminClient adminClient,
+                        @Nullable ConsumerRegistry consumerRegistry,
+                        @Nullable KafkaMessageBrowserConsumerFactory consumerFactory,
+                        @Nullable KafkaManagementProducerFactory producerFactory,
+                        KafkaClusterWriteConfiguration writeConfiguration) {
+        this(adminClient, consumerRegistry, consumerFactory, producerFactory, JsonMapper.createDefault(), writeConfiguration);
     }
 
     Section<Overview> overview() {
@@ -325,6 +365,397 @@ final class KafkaClusterService {
                 );
             }
         });
+    }
+
+    Section<WriteCapabilities> writeCapabilities() {
+        return Section.ok(new WriteCapabilities(
+            writeConfiguration.isEnabled(),
+            writeConfiguration.isDestructiveEnabled(),
+            Map.of(
+                "topics.create", writeConfiguration.actionEnabled("topics.create"),
+                "topics.update-config", writeConfiguration.actionEnabled("topics.update-config"),
+                "topics.increase-partitions", writeConfiguration.actionEnabled("topics.increase-partitions"),
+                "topics.delete", writeConfiguration.actionEnabled("topics.delete"),
+                "messages.produce", writeConfiguration.actionEnabled("messages.produce"),
+                "consumer-groups.delete", writeConfiguration.actionEnabled("consumer-groups.delete"),
+                "consumer-groups.reset-offsets", writeConfiguration.actionEnabled("consumer-groups.reset-offsets"),
+                "app-consumers.pause", writeConfiguration.actionEnabled("app-consumers.pause"),
+                "app-consumers.resume", writeConfiguration.actionEnabled("app-consumers.resume")
+            )
+        ));
+    }
+
+    Section<ActionResult> createTopic(CreateTopicRequest request) {
+        return section(() -> {
+            String topic = requireName(request.topic(), "Topic");
+            validatePositive(request.partitions(), "Partitions");
+            if (request.replicationFactor() <= 0) {
+                throw new IllegalArgumentException("Replication factor must be greater than 0");
+            }
+            String action = "topics.create";
+            guardWrite(action, false);
+            String impact = "Create topic " + topic + " with " + request.partitions()
+                + " partitions and replication factor " + request.replicationFactor();
+            if (request.preview()) {
+                return previewResult(action, topic, impact);
+            }
+            requireConfirmation(request.confirmation(), confirmation("CREATE", topic));
+            NewTopic newTopic = new NewTopic(topic, request.partitions(), request.replicationFactor());
+            if (request.config() != null && !request.config().isEmpty()) {
+                newTopic.configs(new LinkedHashMap<>(request.config()));
+            }
+            await(adminClient.createTopics(List.of(newTopic), new CreateTopicsOptions()).all());
+            return appliedResult(action, topic, impact);
+        });
+    }
+
+    Section<ActionResult> updateTopicConfig(UpdateTopicConfigRequest request) {
+        return section(() -> {
+            String topic = requireName(request.topic(), "Topic");
+            if (request.config() == null || request.config().isEmpty()) {
+                throw new IllegalArgumentException("At least one config entry is required");
+            }
+            String action = "topics.update-config";
+            guardWrite(action, false);
+            String impact = "Update " + request.config().size() + " config entries for topic " + topic;
+            if (request.preview()) {
+                return previewResult(action, topic, impact);
+            }
+            requireConfirmation(request.confirmation(), confirmation("UPDATE CONFIG", topic));
+            List<AlterConfigOp> operations = request.config().entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .map(entry -> new AlterConfigOp(
+                    new ConfigEntry(entry.getKey(), entry.getValue()),
+                    entry.getValue() == null ? AlterConfigOp.OpType.DELETE : AlterConfigOp.OpType.SET
+                ))
+                .toList();
+            ConfigResource resource = new ConfigResource(ConfigResource.Type.TOPIC, topic);
+            await(adminClient.incrementalAlterConfigs(
+                Map.of(resource, operations),
+                new AlterConfigsOptions()
+            ).all());
+            return appliedResult(action, topic, impact);
+        });
+    }
+
+    Section<ActionResult> increasePartitions(IncreasePartitionsRequest request) {
+        return section(() -> {
+            String topic = requireName(request.topic(), "Topic");
+            validatePositive(request.totalPartitions(), "Total partitions");
+            String action = "topics.increase-partitions";
+            guardWrite(action, false);
+            String impact = "Increase topic " + topic + " to " + request.totalPartitions() + " partitions";
+            if (request.preview()) {
+                return previewResult(action, topic, impact);
+            }
+            requireConfirmation(request.confirmation(), confirmation("INCREASE PARTITIONS", topic));
+            await(adminClient.createPartitions(
+                Map.of(topic, NewPartitions.increaseTo(request.totalPartitions())),
+                new CreatePartitionsOptions()
+            ).all());
+            return appliedResult(action, topic, impact);
+        });
+    }
+
+    Section<ActionResult> deleteTopic(DeleteTopicRequest request) {
+        return section(() -> {
+            String topic = requireName(request.topic(), "Topic");
+            String action = "topics.delete";
+            guardWrite(action, true);
+            String impact = "Delete topic " + topic;
+            if (request.preview()) {
+                return previewResult(action, topic, impact);
+            }
+            requireConfirmation(request.confirmation(), confirmation("DELETE", topic));
+            await(adminClient.deleteTopics(TopicCollection.ofTopicNames(List.of(topic)), new DeleteTopicsOptions()).all());
+            return appliedResult(action, topic, impact);
+        });
+    }
+
+    Section<ActionResult> produceMessage(ProduceMessageRequest request) {
+        return section(() -> {
+            String topic = requireName(request.topic(), "Topic");
+            String action = "messages.produce";
+            guardWrite(action, false);
+            byte[] value = payloadBytes(request.value(), request.format(), "Value");
+            byte @Nullable [] key = request.key() == null ? null : request.key().getBytes(StandardCharsets.UTF_8);
+            Integer partition = request.partition();
+            if (partition != null && partition < 0) {
+                throw new IllegalArgumentException("Partition must be greater than or equal to 0");
+            }
+            String target = partition == null ? topic : topic + "-" + partition;
+            String impact = "Produce one " + normalizePayloadFormat(request.format()) + " test message to " + target;
+            if (request.preview()) {
+                return previewResult(action, target, impact);
+            }
+            requireConfirmation(request.confirmation(), confirmation("PRODUCE", target));
+            KafkaManagementProducerFactory factory = producerFactory;
+            if (factory == null) {
+                throw new IllegalStateException("Kafka management producer factory is unavailable");
+            }
+            try (Producer<byte[], byte[]> producer = factory.createProducer()) {
+                ProducerRecord<byte[], byte[]> record = new ProducerRecord<>(
+                    topic,
+                    partition,
+                    key,
+                    value,
+                    producerHeaders(request.headers())
+                );
+                RecordMetadata metadata = producer.send(record).get(ADMIN_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS);
+                producer.flush();
+                return appliedResult(action, metadata.topic() + "-" + metadata.partition(), impact + " at offset " + metadata.offset());
+            }
+        });
+    }
+
+    Section<ActionResult> deleteConsumerGroup(DeleteConsumerGroupRequest request) {
+        return section(() -> {
+            String groupId = requireName(request.groupId(), "Consumer group");
+            String action = "consumer-groups.delete";
+            guardWrite(action, true);
+            ConsumerGroupDescription description = requireInactiveConsumerGroup(groupId);
+            String impact = "Delete inactive consumer group " + description.groupId();
+            if (request.preview()) {
+                return previewResult(action, groupId, impact);
+            }
+            requireConfirmation(request.confirmation(), confirmation("DELETE GROUP", groupId));
+            await(adminClient.deleteConsumerGroups(List.of(groupId), new DeleteConsumerGroupsOptions()).all());
+            return appliedResult(action, groupId, impact);
+        });
+    }
+
+    Section<ActionResult> resetConsumerGroupOffsets(ResetOffsetsRequest request) {
+        return section(() -> {
+            String groupId = requireName(request.groupId(), "Consumer group");
+            String action = "consumer-groups.reset-offsets";
+            guardWrite(action, false);
+            requireInactiveConsumerGroup(groupId);
+            Map<TopicPartition, OffsetAndMetadata> currentOffsets = consumerGroupOffsets(List.of(groupId))
+                .getOrDefault(groupId, Map.of());
+            List<TopicPartition> partitions = resetPartitions(request, currentOffsets.keySet());
+            if (partitions.isEmpty()) {
+                throw new IllegalArgumentException("At least one committed or requested partition is required");
+            }
+            Map<TopicPartition, OffsetAndMetadata> newOffsets = resetOffsets(request, partitions);
+            String target = groupId + " " + partitions.stream()
+                .map(KafkaClusterService::topicPartitionLabel)
+                .collect(Collectors.joining(", "));
+            String impact = "Reset " + partitions.size() + " offsets for inactive consumer group " + groupId
+                + " to " + normalizeResetTarget(request.target());
+            if (request.preview()) {
+                return previewResult(action, target, impact);
+            }
+            requireConfirmation(request.confirmation(), confirmation("RESET OFFSETS", groupId));
+            await(adminClient.alterConsumerGroupOffsets(
+                groupId,
+                newOffsets,
+                new AlterConsumerGroupOffsetsOptions()
+            ).all());
+            return appliedResult(action, target, impact);
+        });
+    }
+
+    Section<ActionResult> pauseAppConsumer(AppConsumerActionRequest request) {
+        return appConsumerAction("app-consumers.pause", "PAUSE", request, true);
+    }
+
+    Section<ActionResult> resumeAppConsumer(AppConsumerActionRequest request) {
+        return appConsumerAction("app-consumers.resume", "RESUME", request, false);
+    }
+
+    private Section<ActionResult> appConsumerAction(String action,
+                                                    String confirmationAction,
+                                                    AppConsumerActionRequest request,
+                                                    boolean pause) {
+        return section(() -> {
+            String consumerId = requireName(request.consumerId(), "Consumer id");
+            guardWrite(action, false);
+            ConsumerRegistry registry = consumerRegistry;
+            if (registry == null) {
+                throw new IllegalStateException("Micronaut Kafka ConsumerRegistry is unavailable");
+            }
+            List<TopicPartition> partitions = request.partitions() == null ? List.of() : request.partitions().stream()
+                .map(KafkaClusterService::toTopicPartition)
+                .sorted(KafkaClusterService::compareTopicPartitions)
+                .toList();
+            String target = partitions.isEmpty() ? consumerId : consumerId + " " + partitions.stream()
+                .map(KafkaClusterService::topicPartitionLabel)
+                .collect(Collectors.joining(", "));
+            String impact = (pause ? "Pause" : "Resume") + " app consumer " + target;
+            if (request.preview()) {
+                return previewResult(action, target, impact);
+            }
+            requireConfirmation(request.confirmation(), confirmation(confirmationAction, target));
+            if (partitions.isEmpty()) {
+                if (pause) {
+                    registry.pause(consumerId);
+                } else {
+                    registry.resume(consumerId);
+                }
+            } else if (pause) {
+                registry.pause(consumerId, partitions);
+            } else {
+                registry.resume(consumerId, partitions);
+            }
+            return appliedResult(action, target, impact);
+        });
+    }
+
+    private void guardWrite(String action, boolean destructive) {
+        if (!writeConfiguration.isEnabled()) {
+            throw new IllegalStateException("Kafka writes are disabled. Set " + KafkaClusterWriteConfiguration.PREFIX + ".enabled=true to enable write endpoints.");
+        }
+        if (!writeConfiguration.actionEnabled(action)) {
+            throw new IllegalStateException("Kafka write action is disabled: " + action);
+        }
+        if (destructive && !writeConfiguration.isDestructiveEnabled()) {
+            throw new IllegalStateException("Kafka destructive actions are disabled. Set " + KafkaClusterWriteConfiguration.PREFIX + ".destructive-enabled=true to enable this action.");
+        }
+    }
+
+    private static ActionResult previewResult(String action, String target, String impact) {
+        return new ActionResult(false, action, target, impact, List.of());
+    }
+
+    private static ActionResult appliedResult(String action, String target, String impact) {
+        return new ActionResult(true, action, target, impact, List.of());
+    }
+
+    private static String requireName(String value, String label) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException(label + " is required");
+        }
+        return value.trim();
+    }
+
+    private static void validatePositive(int value, String label) {
+        if (value <= 0) {
+            throw new IllegalArgumentException(label + " must be greater than 0");
+        }
+    }
+
+    private static String confirmation(String action, String target) {
+        return action + " " + target;
+    }
+
+    private static void requireConfirmation(@Nullable String actual, String expected) {
+        if (!expected.equals(actual)) {
+            throw new IllegalArgumentException("Confirmation must exactly match: " + expected);
+        }
+    }
+
+    private static byte[] payloadBytes(String value, String format, String label) {
+        if (value == null) {
+            throw new IllegalArgumentException(label + " is required");
+        }
+        String normalized = normalizePayloadFormat(format);
+        if ("json".equals(normalized)) {
+            String trimmed = value.trim();
+            if (!isJsonCandidate(trimmed)) {
+                throw new IllegalArgumentException(label + " must be a JSON object or array");
+            }
+        }
+        return value.getBytes(StandardCharsets.UTF_8);
+    }
+
+    private static String normalizePayloadFormat(String format) {
+        String normalized = format == null ? "string" : format.toLowerCase(Locale.ROOT);
+        return switch (normalized) {
+            case "string", "json" -> normalized;
+            default -> throw new IllegalArgumentException("Unsupported payload format: " + format);
+        };
+    }
+
+    private static List<Header> producerHeaders(@Nullable List<MessageHeaderInput> headers) {
+        if (headers == null || headers.isEmpty()) {
+            return List.of();
+        }
+        return headers.stream()
+            .map(header -> new RecordHeader(
+                requireName(header.key(), "Header key"),
+                header.value() == null ? null : header.value().getBytes(StandardCharsets.UTF_8)
+            ))
+            .map(Header.class::cast)
+            .toList();
+    }
+
+    private ConsumerGroupDescription requireInactiveConsumerGroup(String groupId) throws Exception {
+        ConsumerGroupDescription description = describeConsumerGroups(List.of(groupId)).get(groupId);
+        if (description == null) {
+            throw new IllegalArgumentException("Consumer group not found or not authorized: " + groupId);
+        }
+        if (description.groupState() != GroupState.EMPTY && !description.members().isEmpty()) {
+            throw new IllegalStateException("Consumer group must be inactive before this operation: " + groupId);
+        }
+        return description;
+    }
+
+    private Map<TopicPartition, OffsetAndMetadata> resetOffsets(ResetOffsetsRequest request,
+                                                                List<TopicPartition> partitions) throws Exception {
+        String target = normalizeResetTarget(request.target());
+        return switch (target) {
+            case "earliest" -> offsetsForReset(partitions, OffsetSpec.earliest());
+            case "latest" -> offsetsForReset(partitions, OffsetSpec.latest());
+            case "offset" -> {
+                if (request.offset() == null || request.offset() < 0) {
+                    throw new IllegalArgumentException("Offset must be greater than or equal to 0");
+                }
+                yield partitions.stream()
+                    .collect(Collectors.toMap(
+                        partition -> partition,
+                        partition -> new OffsetAndMetadata(request.offset()),
+                        (first, second) -> first,
+                        LinkedHashMap::new
+                    ));
+            }
+            case "timestamp" -> {
+                if (request.timestamp() == null || request.timestamp() < 0) {
+                    throw new IllegalArgumentException("Timestamp must be greater than or equal to 0");
+                }
+                yield offsetsForReset(partitions, OffsetSpec.forTimestamp(request.timestamp()));
+            }
+            default -> throw new IllegalArgumentException("Unsupported reset target: " + request.target());
+        };
+    }
+
+    private Map<TopicPartition, OffsetAndMetadata> offsetsForReset(List<TopicPartition> partitions,
+                                                                   OffsetSpec offsetSpec) throws Exception {
+        Map<TopicPartition, ListOffsetsResult.ListOffsetsResultInfo> offsets = listOffsets(partitions, offsetSpec);
+        Map<TopicPartition, OffsetAndMetadata> result = new LinkedHashMap<>();
+        for (TopicPartition partition : partitions) {
+            ListOffsetsResult.ListOffsetsResultInfo offset = offsets.get(partition);
+            if (offset != null) {
+                result.put(partition, new OffsetAndMetadata(offset.offset()));
+            }
+        }
+        return result;
+    }
+
+    private static String normalizeResetTarget(String target) {
+        return switch ((target == null ? "" : target).toLowerCase(Locale.ROOT)) {
+            case "earliest", "latest", "offset", "timestamp" -> target.toLowerCase(Locale.ROOT);
+            default -> throw new IllegalArgumentException("Unsupported reset target: " + target);
+        };
+    }
+
+    private static List<TopicPartition> resetPartitions(ResetOffsetsRequest request,
+                                                        Collection<TopicPartition> committedPartitions) {
+        if (request.topic() != null && !request.topic().isBlank()) {
+            if (request.partition() == null || request.partition() < 0) {
+                throw new IllegalArgumentException("Partition must be greater than or equal to 0");
+            }
+            return List.of(new TopicPartition(request.topic(), request.partition()));
+        }
+        return committedPartitions.stream()
+            .sorted(KafkaClusterService::compareTopicPartitions)
+            .toList();
+    }
+
+    private static TopicPartition toTopicPartition(TopicPartitionInput input) {
+        if (input.partition() < 0) {
+            throw new IllegalArgumentException("Partition must be greater than or equal to 0");
+        }
+        return new TopicPartition(requireName(input.topic(), "Topic"), input.partition());
     }
 
     static boolean isSafeConfig(ConfigEntry entry) {

@@ -8,6 +8,7 @@
         <button type="button" class="tabs-trigger" id="tab-kafka-consumer-groups" role="tab" aria-selected="false" aria-controls="panel-kafka-consumer-groups" data-tabs-trigger="consumer-groups">Consumer Groups</button>
         <button type="button" class="tabs-trigger" id="tab-kafka-messages" role="tab" aria-selected="false" aria-controls="panel-kafka-messages" data-tabs-trigger="messages">Messages</button>
         <button type="button" class="tabs-trigger" id="tab-kafka-app-consumers" role="tab" aria-selected="false" aria-controls="panel-kafka-app-consumers" data-tabs-trigger="app-consumers">App Consumers</button>
+        <button type="button" class="tabs-trigger" id="tab-kafka-management" role="tab" aria-selected="false" aria-controls="panel-kafka-management" data-tabs-trigger="management">Writes/Management</button>
         <button type="button" class="tabs-trigger" id="tab-kafka-schema-registry" role="tab" aria-selected="false" aria-controls="panel-kafka-schema-registry" data-tabs-trigger="schema-registry">Schema Registry</button>
         <button type="button" class="tabs-trigger" id="tab-kafka-connect" role="tab" aria-selected="false" aria-controls="panel-kafka-connect" data-tabs-trigger="kafka-connect">Kafka Connect</button>
         <button type="button" class="tabs-trigger" id="tab-kafka-ksqldb" role="tab" aria-selected="false" aria-controls="panel-kafka-ksqldb" data-tabs-trigger="ksqldb">ksqlDB</button>
@@ -322,6 +323,78 @@
                     </tr>
                     </tbody>
                 </table>
+            </div>
+        </div>
+    </div>
+    <div class="tabs-panel" id="panel-kafka-management" role="tabpanel" aria-labelledby="tab-kafka-management" data-tabs-panel="management" hidden>
+        <div id="kafkaManagementAlerts"></div>
+        <dl class="row">
+            <dt class="col-sm-3">Writes</dt>
+            <dd class="col-sm-9"><span id="kafkaWritesEnabled" class="badge badge-secondary">disabled</span></dd>
+            <dt class="col-sm-3">Destructive actions</dt>
+            <dd class="col-sm-9"><span id="kafkaDestructiveEnabled" class="badge badge-secondary">disabled</span></dd>
+        </dl>
+        <div class="row">
+            <div class="col-lg-6">
+                <form class="card" id="kafkaCreateTopicForm" data-kafka-management-form data-action="topics.create" data-endpoint="/topics" data-confirm-prefix="CREATE">
+                    <div class="card-header"><h3 class="card-title">Create Topic</h3></div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="kafkaCreateTopicName">Topic</label>
+                            <input type="text" class="form-control" id="kafkaCreateTopicName" data-target required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="kafkaCreateTopicPartitions">Partitions</label>
+                                <input type="number" min="1" class="form-control" id="kafkaCreateTopicPartitions" value="1" required>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="kafkaCreateTopicReplication">Replication factor</label>
+                                <input type="number" min="1" class="form-control" id="kafkaCreateTopicReplication" value="1" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button type="button" class="btn btn-secondary" data-preview>Preview</button>
+                        <button type="submit" class="btn btn-primary">Create</button>
+                    </div>
+                </form>
+            </div>
+            <div class="col-lg-6">
+                <form class="card" id="kafkaProduceMessageForm" data-kafka-management-form data-action="messages.produce" data-endpoint="/messages" data-confirm-prefix="PRODUCE">
+                    <div class="card-header"><h3 class="card-title">Produce Test Message</h3></div>
+                    <div class="card-body">
+                        <div class="form-row">
+                            <div class="form-group col-md-8">
+                                <label for="kafkaProduceTopic">Topic</label>
+                                <input type="text" class="form-control" id="kafkaProduceTopic" data-target required>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label for="kafkaProducePartition">Partition</label>
+                                <input type="number" min="0" class="form-control" id="kafkaProducePartition">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="kafkaProduceKey">Key</label>
+                            <input type="text" class="form-control" id="kafkaProduceKey">
+                        </div>
+                        <div class="form-group">
+                            <label for="kafkaProduceFormat">Format</label>
+                            <select class="form-control" id="kafkaProduceFormat">
+                                <option value="string">String</option>
+                                <option value="json">JSON</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="kafkaProduceValue">Value</label>
+                            <textarea class="form-control" id="kafkaProduceValue" rows="5" required></textarea>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button type="button" class="btn btn-secondary" data-preview>Preview</button>
+                        <button type="submit" class="btn btn-primary">Produce</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -722,6 +795,82 @@
       });
     }
 
+    function postManagement(endpoint, payload, title, success) {
+      $.ajax({
+        url: baseUrl + endpoint,
+        method: 'POST',
+        contentType: 'application/json',
+        dataType: 'json',
+        data: JSON.stringify(payload)
+      }).done(function(section) {
+        if (section.error) {
+          alertSection('#kafkaManagementAlerts', title, section.error);
+          return;
+        }
+        $('#kafkaManagementAlerts').empty();
+        success(section.data);
+      }).fail(function(xhr) {
+        alertSection('#kafkaManagementAlerts', title, xhr.statusText || 'Request failed');
+      });
+    }
+
+    function loadWriteCapabilities() {
+      loadSection(baseUrl + '/writes', 'Kafka write capabilities unavailable', '#kafkaManagementAlerts', function(capabilities) {
+        $('#kafkaWritesEnabled')
+          .toggleClass('badge-success', capabilities.writesEnabled)
+          .toggleClass('badge-secondary', !capabilities.writesEnabled)
+          .text(capabilities.writesEnabled ? 'enabled' : 'disabled');
+        $('#kafkaDestructiveEnabled')
+          .toggleClass('badge-danger', capabilities.destructiveEnabled)
+          .toggleClass('badge-secondary', !capabilities.destructiveEnabled)
+          .text(capabilities.destructiveEnabled ? 'enabled' : 'disabled');
+        $('[data-kafka-management-form]').each(function() {
+          var action = this.getAttribute('data-action');
+          var enabled = Boolean(capabilities.writesEnabled && capabilities.actions && capabilities.actions[action]);
+          $(this).find('input, textarea, select, button').prop('disabled', !enabled);
+        });
+      });
+    }
+
+    function managementPayload(form, preview) {
+      if (form.id === 'kafkaCreateTopicForm') {
+        var topic = $('#kafkaCreateTopicName').val().trim();
+        return {
+          topic: topic,
+          partitions: Number($('#kafkaCreateTopicPartitions').val()) || 1,
+          replicationFactor: Number($('#kafkaCreateTopicReplication').val()) || 1,
+          config: {},
+          preview: preview,
+          confirmation: preview ? null : 'CREATE ' + topic
+        };
+      }
+      if (form.id === 'kafkaProduceMessageForm') {
+        var produceTopic = $('#kafkaProduceTopic').val().trim();
+        var partitionValue = $('#kafkaProducePartition').val();
+        var target = partitionValue === '' ? produceTopic : produceTopic + '-' + Number(partitionValue);
+        return {
+          topic: produceTopic,
+          partition: partitionValue === '' ? null : Number(partitionValue),
+          key: $('#kafkaProduceKey').val() || null,
+          value: $('#kafkaProduceValue').val(),
+          format: $('#kafkaProduceFormat').val(),
+          headers: [],
+          preview: preview,
+          confirmation: preview ? null : 'PRODUCE ' + target
+        };
+      }
+      return {};
+    }
+
+    function handleManagementResult(result) {
+      var badge = result.applied ? 'success' : 'info';
+      $('#kafkaManagementAlerts').empty().append(
+        '<div class="alert alert-' + badge + '"><h5>' + escapeHtml(result.applied ? 'Applied' : 'Preview') + '</h5>'
+        + '<p><strong>' + escapeHtml(result.action) + '</strong>: ' + escapeHtml(result.impact) + '</p>'
+        + '<p>Target: <code>' + escapeHtml(result.target) + '</code></p></div>'
+      );
+    }
+
     function loadTopicDetail(topicName) {
       $('#kafkaTopicDetailName').text(topicName);
       $('#kafkaTopicPartitions tbody').empty();
@@ -829,6 +978,14 @@
       event.preventDefault();
       loadMessages();
     });
+    $('[data-kafka-management-form] [data-preview]').on('click', function() {
+      var form = $(this).closest('[data-kafka-management-form]')[0];
+      postManagement(form.getAttribute('data-endpoint'), managementPayload(form, true), 'Kafka management preview unavailable', handleManagementResult);
+    });
+    $('[data-kafka-management-form]').on('submit', function(event) {
+      event.preventDefault();
+      postManagement(this.getAttribute('data-endpoint'), managementPayload(this, false), 'Kafka management action failed', handleManagementResult);
+    });
     $('#kafkaClusterTabs [data-tabs-trigger]').on('click', function() {
       activateKafkaTab(this.getAttribute('data-tabs-trigger'));
     });
@@ -838,6 +995,7 @@
     loadTopics();
     loadConsumerGroups();
     loadAppConsumers();
+    loadWriteCapabilities();
     var linkedTopic = new URLSearchParams(window.location.search).get('topic');
     if (linkedTopic) {
       openTopicDetail(linkedTopic);

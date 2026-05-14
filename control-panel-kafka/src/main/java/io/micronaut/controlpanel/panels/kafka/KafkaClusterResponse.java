@@ -197,4 +197,107 @@ public final class KafkaClusterResponse {
                                   int size,
                                   boolean truncated) {
     }
+
+    @Introspected
+    @ReflectiveAccess
+    public record WriteCapabilities(boolean writesEnabled,
+                                    boolean destructiveEnabled,
+                                    Map<String, Boolean> actions) {
+    }
+
+    @Introspected
+    @ReflectiveAccess
+    public record ActionResult(boolean applied,
+                               String action,
+                               String target,
+                               String impact,
+                               List<ActionError> errors) {
+    }
+
+    @Introspected
+    @ReflectiveAccess
+    public record ActionError(String target, String error) {
+    }
+
+    @Introspected
+    @ReflectiveAccess
+    public record CreateTopicRequest(String topic,
+                                     int partitions,
+                                     short replicationFactor,
+                                     Map<String, String> config,
+                                     boolean preview,
+                                     @Nullable String confirmation) {
+    }
+
+    @Introspected
+    @ReflectiveAccess
+    public record UpdateTopicConfigRequest(String topic,
+                                           Map<String, @Nullable String> config,
+                                           boolean preview,
+                                           @Nullable String confirmation) {
+    }
+
+    @Introspected
+    @ReflectiveAccess
+    public record IncreasePartitionsRequest(String topic,
+                                            int totalPartitions,
+                                            boolean preview,
+                                            @Nullable String confirmation) {
+    }
+
+    @Introspected
+    @ReflectiveAccess
+    public record DeleteTopicRequest(String topic,
+                                     boolean preview,
+                                     @Nullable String confirmation) {
+    }
+
+    @Introspected
+    @ReflectiveAccess
+    public record ProduceMessageRequest(String topic,
+                                        @Nullable Integer partition,
+                                        @Nullable String key,
+                                        String value,
+                                        String format,
+                                        List<MessageHeaderInput> headers,
+                                        boolean preview,
+                                        @Nullable String confirmation) {
+    }
+
+    @Introspected
+    @ReflectiveAccess
+    public record MessageHeaderInput(String key, @Nullable String value) {
+    }
+
+    @Introspected
+    @ReflectiveAccess
+    public record DeleteConsumerGroupRequest(String groupId,
+                                             boolean preview,
+                                             @Nullable String confirmation) {
+    }
+
+    @Introspected
+    @ReflectiveAccess
+    public record ResetOffsetsRequest(String groupId,
+                                      String target,
+                                      @Nullable String topic,
+                                      @Nullable Integer partition,
+                                      @Nullable Long offset,
+                                      @Nullable Long timestamp,
+                                      boolean preview,
+                                      @Nullable String confirmation) {
+    }
+
+    @Introspected
+    @ReflectiveAccess
+    public record AppConsumerActionRequest(String consumerId,
+                                           List<TopicPartitionInput> partitions,
+                                           boolean preview,
+                                           @Nullable String confirmation) {
+    }
+
+    @Introspected
+    @ReflectiveAccess
+    public record TopicPartitionInput(String topic, int partition) {
+    }
 }
