@@ -111,4 +111,41 @@ public final class KafkaClusterResponse {
                                   @Nullable Long endOffset,
                                   @Nullable Long sizeEstimate) {
     }
+
+    @Introspected
+    @ReflectiveAccess
+    public record ConsumerGroupSummary(String groupId,
+                                       String state,
+                                       String protocol,
+                                       int members,
+                                       int assignedPartitions,
+                                       int committedPartitions,
+                                       @Nullable Long totalLag) {
+    }
+
+    @Introspected
+    @ReflectiveAccess
+    public record ConsumerGroupDetail(ConsumerGroupSummary group,
+                                      List<ConsumerGroupMember> members,
+                                      List<ConsumerGroupPartition> partitions) {
+    }
+
+    @Introspected
+    @ReflectiveAccess
+    public record ConsumerGroupMember(String consumerId,
+                                      @Nullable String groupInstanceId,
+                                      String clientId,
+                                      String host,
+                                      List<String> assignment) {
+    }
+
+    @Introspected
+    @ReflectiveAccess
+    public record ConsumerGroupPartition(String topic,
+                                         int partition,
+                                         boolean assigned,
+                                         @Nullable Long committedOffset,
+                                         @Nullable Long endOffset,
+                                         @Nullable Long lag) {
+    }
 }

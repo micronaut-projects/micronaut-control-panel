@@ -203,12 +203,99 @@
         </div>
     </div>
 
-    <div class="tabs-panel" id="panel-kafka-consumer-groups" role="tabpanel" aria-labelledby="tab-kafka-consumer-groups" data-tabs-panel="consumer-groups" hidden></div>
+    <div class="tabs-panel" id="panel-kafka-consumer-groups" role="tabpanel" aria-labelledby="tab-kafka-consumer-groups" data-tabs-panel="consumer-groups" hidden>
+        <div id="kafkaConsumerGroupsAlerts"></div>
+        <div class="cp-data-table" id="kafkaConsumerGroupsTable" data-filter-table data-filter-table-unpaged data-filter-table-label="consumer group" data-filter-table-label-plural="consumer groups">
+            <div class="cp-data-table-toolbar">
+                <div class="cp-data-table-summary" data-filter-table-summary>0 consumer groups</div>
+                <div class="cp-data-table-search">
+                    <input type="search" class="form-control" data-filter-table-search placeholder="Search consumer groups" aria-label="Search consumer groups">
+                </div>
+            </div>
+            <div class="cp-data-table-container">
+                <table id="kafkaConsumerGroups" class="table cp-data-table-table table-bordered table-striped">
+                    <thead>
+                    <tr>
+                        <th>Group id</th>
+                        <th>State</th>
+                        <th>Protocol</th>
+                        <th>Members</th>
+                        <th>Assigned partitions</th>
+                        <th>Committed partitions</th>
+                        <th>Total lag</th>
+                        <th>Details</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr data-filter-table-empty hidden>
+                        <td class="cp-data-table-empty-cell" colspan="8">No consumer groups found.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
     <div class="tabs-panel" id="panel-kafka-messages" role="tabpanel" aria-labelledby="tab-kafka-messages" data-tabs-panel="messages" hidden></div>
     <div class="tabs-panel" id="panel-kafka-app-consumers" role="tabpanel" aria-labelledby="tab-kafka-app-consumers" data-tabs-panel="app-consumers" hidden></div>
     <div class="tabs-panel" id="panel-kafka-schema-registry" role="tabpanel" aria-labelledby="tab-kafka-schema-registry" data-tabs-panel="schema-registry" hidden></div>
     <div class="tabs-panel" id="panel-kafka-connect" role="tabpanel" aria-labelledby="tab-kafka-connect" data-tabs-panel="kafka-connect" hidden></div>
     <div class="tabs-panel" id="panel-kafka-ksqldb" role="tabpanel" aria-labelledby="tab-kafka-ksqldb" data-tabs-panel="ksqldb" hidden></div>
+</div>
+
+<div class="modal fade cp-dialog" id="kafkaConsumerGroupDetailModal" tabindex="-1" role="dialog" aria-labelledby="kafkaConsumerGroupDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content cp-dialog-content">
+            <div class="modal-header cp-dialog-header">
+                <h5 class="modal-title cp-dialog-title" id="kafkaConsumerGroupDetailModalLabel">Consumer group: <code id="kafkaConsumerGroupDetailName"></code></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" title="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="kafkaConsumerGroupDetailAlerts"></div>
+                <dl class="row">
+                    <dt class="col-sm-2">State</dt>
+                    <dd class="col-sm-10"><code id="kafkaConsumerGroupState">-</code></dd>
+                    <dt class="col-sm-2">Protocol</dt>
+                    <dd class="col-sm-10"><code id="kafkaConsumerGroupProtocol">-</code></dd>
+                    <dt class="col-sm-2">Total lag</dt>
+                    <dd class="col-sm-10"><code id="kafkaConsumerGroupLag">-</code></dd>
+                </dl>
+
+                <h6>Members</h6>
+                <table id="kafkaConsumerGroupMembers" class="table table-bordered table-striped">
+                    <thead>
+                    <tr>
+                        <th>Consumer id</th>
+                        <th>Instance id</th>
+                        <th>Client id</th>
+                        <th>Host</th>
+                        <th>Assignment</th>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+
+                <h6>Offsets and lag</h6>
+                <table id="kafkaConsumerGroupPartitions" class="table table-bordered table-striped">
+                    <thead>
+                    <tr>
+                        <th>Topic</th>
+                        <th>Partition</th>
+                        <th>Assigned</th>
+                        <th>Committed offset</th>
+                        <th>End offset</th>
+                        <th>Lag</th>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="modal fade cp-dialog" id="kafkaTopicDetailModal" tabindex="-1" role="dialog" aria-labelledby="kafkaTopicDetailModalLabel" aria-hidden="true">
@@ -271,6 +358,10 @@
     function brokerLabel(broker) {
       if (!broker) return '-';
       return broker.id + ' (' + broker.host + ':' + broker.port + ')';
+    }
+
+    function valueOrDash(value) {
+      return value == null || value === '' ? '-' : value;
     }
 
     function renderConfig(selector, config) {
@@ -433,6 +524,27 @@
       });
     }
 
+    function loadConsumerGroups() {
+      loadSection(baseUrl + '/consumer-groups', 'Kafka consumer groups unavailable', '#kafkaConsumerGroupsAlerts', function(groups) {
+        var tbody = $('#kafkaConsumerGroups tbody');
+        tbody.find('[data-filter-table-row]').remove();
+        groups.forEach(function(group) {
+          tbody.append('<tr>'
+            + '<td><code>' + escapeHtml(group.groupId) + '</code></td>'
+            + '<td><code>' + escapeHtml(valueOrDash(group.state)) + '</code></td>'
+            + '<td><code>' + escapeHtml(valueOrDash(group.protocol)) + '</code></td>'
+            + '<td>' + group.members + '</td>'
+            + '<td>' + group.assignedPartitions + '</td>'
+            + '<td>' + group.committedPartitions + '</td>'
+            + '<td>' + valueOrDash(group.totalLag) + '</td>'
+            + '<td><button type="button" class="btn btn-secondary btn-xs kafka-consumer-group-detail" data-group="' + escapeHtml(group.groupId) + '" data-toggle="modal" data-target="#kafkaConsumerGroupDetailModal">Details</button></td>'
+            + '</tr>');
+          tbody.find('tr:last').attr('data-filter-table-row', '');
+        });
+        refreshFilterTable('#kafkaConsumerGroupsTable');
+      });
+    }
+
     function loadTopicDetail(topicName) {
       $('#kafkaTopicDetailName').text(topicName);
       $('#kafkaTopicPartitions tbody').empty();
@@ -453,6 +565,44 @@
             + '</tr>');
         });
         renderConfig('#kafkaTopicConfig', detail.topic.config);
+      });
+    }
+
+    function loadConsumerGroupDetail(groupId) {
+      $('#kafkaConsumerGroupDetailName').text(groupId);
+      $('#kafkaConsumerGroupState').text('-');
+      $('#kafkaConsumerGroupProtocol').text('-');
+      $('#kafkaConsumerGroupLag').text('-');
+      $('#kafkaConsumerGroupMembers tbody').empty();
+      $('#kafkaConsumerGroupPartitions tbody').empty();
+      loadSection(baseUrl + '/consumer-groups/' + encodeURIComponent(groupId), 'Kafka consumer group detail unavailable', '#kafkaConsumerGroupDetailAlerts', function(detail) {
+        $('#kafkaConsumerGroupDetailName').text(detail.group.groupId);
+        $('#kafkaConsumerGroupState').text(valueOrDash(detail.group.state));
+        $('#kafkaConsumerGroupProtocol').text(valueOrDash(detail.group.protocol));
+        $('#kafkaConsumerGroupLag').text(valueOrDash(detail.group.totalLag));
+        var memberRows = $('#kafkaConsumerGroupMembers tbody');
+        memberRows.empty();
+        detail.members.forEach(function(member) {
+          memberRows.append('<tr>'
+            + '<td><code>' + escapeHtml(member.consumerId) + '</code></td>'
+            + '<td><code>' + escapeHtml(valueOrDash(member.groupInstanceId)) + '</code></td>'
+            + '<td><code>' + escapeHtml(member.clientId) + '</code></td>'
+            + '<td><code>' + escapeHtml(member.host) + '</code></td>'
+            + '<td><code>' + escapeHtml((member.assignment || []).join(', ') || '-') + '</code></td>'
+            + '</tr>');
+        });
+        var partitionRows = $('#kafkaConsumerGroupPartitions tbody');
+        partitionRows.empty();
+        detail.partitions.forEach(function(partition) {
+          partitionRows.append('<tr>'
+            + '<td><code>' + escapeHtml(partition.topic) + '</code></td>'
+            + '<td>' + partition.partition + '</td>'
+            + '<td>' + (partition.assigned ? 'yes' : 'no') + '</td>'
+            + '<td>' + valueOrDash(partition.committedOffset) + '</td>'
+            + '<td>' + valueOrDash(partition.endOffset) + '</td>'
+            + '<td>' + valueOrDash(partition.lag) + '</td>'
+            + '</tr>');
+        });
       });
     }
 
@@ -481,6 +631,9 @@
     $('#kafkaTopics').on('click', '.kafka-topic-detail', function() {
       loadTopicDetail($(this).data('topic'));
     });
+    $('#kafkaConsumerGroups').on('click', '.kafka-consumer-group-detail', function() {
+      loadConsumerGroupDetail($(this).data('group'));
+    });
     $('#kafkaClusterTabs [data-tabs-trigger]').on('click', function() {
       activateKafkaTab(this.getAttribute('data-tabs-trigger'));
     });
@@ -488,6 +641,7 @@
     loadSummary();
     loadBrokers();
     loadTopics();
+    loadConsumerGroups();
   })();
 </script>
 {{/with}}

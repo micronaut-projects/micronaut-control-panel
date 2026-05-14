@@ -22,16 +22,24 @@ import jakarta.inject.Singleton;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.Config;
 import org.apache.kafka.clients.admin.ConfigEntry;
+import org.apache.kafka.clients.admin.ConsumerGroupDescription;
 import org.apache.kafka.clients.admin.DescribeClusterOptions;
 import org.apache.kafka.clients.admin.DescribeConfigsOptions;
+import org.apache.kafka.clients.admin.DescribeConsumerGroupsOptions;
 import org.apache.kafka.clients.admin.DescribeTopicsOptions;
+import org.apache.kafka.clients.admin.GroupListing;
+import org.apache.kafka.clients.admin.ListConsumerGroupOffsetsOptions;
+import org.apache.kafka.clients.admin.ListConsumerGroupOffsetsSpec;
 import org.apache.kafka.clients.admin.ListGroupsOptions;
 import org.apache.kafka.clients.admin.ListOffsetsOptions;
 import org.apache.kafka.clients.admin.ListOffsetsResult;
 import org.apache.kafka.clients.admin.ListTopicsOptions;
+import org.apache.kafka.clients.admin.MemberAssignment;
+import org.apache.kafka.clients.admin.MemberDescription;
 import org.apache.kafka.clients.admin.OffsetSpec;
 import org.apache.kafka.clients.admin.TopicDescription;
 import org.apache.kafka.clients.admin.TopicListing;
+import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.KafkaFuture;
 import org.apache.kafka.common.Node;
 import org.apache.kafka.common.TopicCollection;
@@ -55,6 +63,10 @@ import java.util.stream.Collectors;
 
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.Broker;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.BrokerNode;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.ConsumerGroupDetail;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.ConsumerGroupMember;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.ConsumerGroupPartition;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.ConsumerGroupSummary;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.Overview;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.PartitionDetail;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.Section;
@@ -178,6 +190,40 @@ final class KafkaClusterService {
         });
     }
 
+    Section<List<ConsumerGroupSummary>> consumerGroups() {
+        return section(() -> {
+            List<String> groupIds = consumerGroupIds();
+            if (groupIds.isEmpty()) {
+                return List.of();
+            }
+            Map<String, ConsumerGroupDescription> descriptions = describeConsumerGroups(groupIds);
+            Map<String, Map<TopicPartition, OffsetAndMetadata>> committedOffsets = consumerGroupOffsets(groupIds);
+            java.util.ArrayList<ConsumerGroupSummary> summaries = new java.util.ArrayList<>(groupIds.size());
+            for (String groupId : groupIds) {
+                ConsumerGroupDescription description = descriptions.get(groupId);
+                if (description != null) {
+                    summaries.add(toConsumerGroupDetail(
+                        description,
+                        committedOffsets.getOrDefault(groupId, Map.of())
+                    ).group());
+                }
+            }
+            return summaries;
+        });
+    }
+
+    Section<ConsumerGroupDetail> consumerGroup(String groupId) {
+        return section(() -> {
+            ConsumerGroupDescription description = describeConsumerGroups(List.of(groupId)).get(groupId);
+            if (description == null) {
+                throw new IllegalArgumentException("Consumer group not found or not authorized: " + groupId);
+            }
+            Map<TopicPartition, OffsetAndMetadata> offsets = consumerGroupOffsets(List.of(groupId))
+                .getOrDefault(groupId, Map.of());
+            return toConsumerGroupDetail(description, offsets);
+        });
+    }
+
     static boolean isSafeConfig(ConfigEntry entry) {
         if (entry.isSensitive()) {
             return false;
@@ -217,6 +263,44 @@ final class KafkaClusterService {
         return await(adminClient
             .describeTopics(TopicCollection.ofTopicNames(topicNames), new DescribeTopicsOptions())
             .allTopicNames());
+    }
+
+    private List<String> consumerGroupIds() throws Exception {
+        Collection<GroupListing> groups = await(adminClient
+            .listGroups(new ListGroupsOptions())
+            .all());
+        return groups
+            .stream()
+            .map(GroupListing::groupId)
+            .sorted()
+            .toList();
+    }
+
+    private Map<String, ConsumerGroupDescription> describeConsumerGroups(Collection<String> groupIds) throws Exception {
+        if (groupIds.isEmpty()) {
+            return Map.of();
+        }
+        return await(adminClient
+            .describeConsumerGroups(groupIds, new DescribeConsumerGroupsOptions())
+            .all());
+    }
+
+    private Map<String, Map<TopicPartition, OffsetAndMetadata>> consumerGroupOffsets(
+        Collection<String> groupIds) throws Exception {
+        if (groupIds.isEmpty()) {
+            return Map.of();
+        }
+        Map<String, ListConsumerGroupOffsetsSpec> specs = groupIds.stream()
+            .sorted()
+            .collect(Collectors.toMap(
+                groupId -> groupId,
+                groupId -> new ListConsumerGroupOffsetsSpec(),
+                (first, second) -> first,
+                LinkedHashMap::new
+            ));
+        return await(adminClient
+            .listConsumerGroupOffsets(specs, new ListConsumerGroupOffsetsOptions())
+            .all());
     }
 
     private Map<Integer, Map<String, String>> brokerConfigs(Collection<Node> nodes) throws Exception {
@@ -374,6 +458,109 @@ final class KafkaClusterService {
             end,
             estimate
         );
+    }
+
+    private ConsumerGroupDetail toConsumerGroupDetail(
+        ConsumerGroupDescription description,
+        Map<TopicPartition, OffsetAndMetadata> committedOffsets) throws Exception {
+        List<TopicPartition> assignedPartitions = description.members().stream()
+            .flatMap(member -> member.assignment().topicPartitions().stream())
+            .sorted(KafkaClusterService::compareTopicPartitions)
+            .toList();
+        List<TopicPartition> partitions = java.util.stream.Stream
+            .concat(assignedPartitions.stream(), committedOffsets.keySet().stream())
+            .distinct()
+            .sorted(KafkaClusterService::compareTopicPartitions)
+            .toList();
+        Map<TopicPartition, ListOffsetsResult.ListOffsetsResultInfo> endOffsets =
+            partitions.isEmpty() ? Map.of() : listOffsets(partitions, OffsetSpec.latest());
+        List<ConsumerGroupPartition> groupPartitions = partitions.stream()
+            .map(partition -> toConsumerGroupPartition(
+                partition,
+                assignedPartitions.contains(partition),
+                committedOffsets.get(partition),
+                endOffsets.get(partition)))
+            .toList();
+        Long totalLag = groupPartitions.stream()
+            .map(ConsumerGroupPartition::lag)
+            .reduce(0L, (total, lag) -> lag == null ? total : total + lag);
+        ConsumerGroupSummary summary = new ConsumerGroupSummary(
+            description.groupId(),
+            description.groupState().toString(),
+            description.partitionAssignor(),
+            description.members().size(),
+            assignedPartitions.size(),
+            committedOffsets.size(),
+            partitions.isEmpty() ? null : totalLag
+        );
+        return new ConsumerGroupDetail(
+            summary,
+            description.members().stream()
+                .sorted(Comparator.comparing(MemberDescription::consumerId))
+                .map(KafkaClusterService::toConsumerGroupMember)
+                .toList(),
+            groupPartitions
+        );
+    }
+
+    private static ConsumerGroupMember toConsumerGroupMember(MemberDescription member) {
+        return new ConsumerGroupMember(
+            member.consumerId(),
+            member.groupInstanceId().orElse(null),
+            member.clientId(),
+            member.host(),
+            topicPartitionLabels(member.assignment())
+        );
+    }
+
+    private static List<String> topicPartitionLabels(MemberAssignment assignment) {
+        return assignment.topicPartitions().stream()
+            .sorted(KafkaClusterService::compareTopicPartitions)
+            .map(KafkaClusterService::topicPartitionLabel)
+            .toList();
+    }
+
+    private static ConsumerGroupPartition toConsumerGroupPartition(
+        TopicPartition partition,
+        boolean assigned,
+        @Nullable OffsetAndMetadata committedOffset,
+        ListOffsetsResult.ListOffsetsResultInfo endOffset) {
+        Long committed = committedOffset == null ? null : committedOffset.offset();
+        Long end = offset(endOffset);
+        Long lag = committed == null || end == null ? null : Math.max(0, end - committed);
+        return new ConsumerGroupPartition(
+            partition.topic(),
+            partition.partition(),
+            assigned,
+            committed,
+            end,
+            lag
+        );
+    }
+
+    private Map<TopicPartition, ListOffsetsResult.ListOffsetsResultInfo> listOffsets(
+        Collection<TopicPartition> partitions,
+        OffsetSpec offsetSpec) throws Exception {
+        Map<TopicPartition, OffsetSpec> requests = partitions.stream()
+            .collect(Collectors.toMap(
+                partition -> partition,
+                partition -> offsetSpec,
+                (first, second) -> first,
+                LinkedHashMap::new
+            ));
+        if (requests.isEmpty()) {
+            return Map.of();
+        }
+        return await(adminClient.listOffsets(requests, new ListOffsetsOptions()).all());
+    }
+
+    private static int compareTopicPartitions(TopicPartition first, TopicPartition second) {
+        int topic = first.topic().compareTo(second.topic());
+        return topic == 0 ? Integer.compare(first.partition(), second.partition()) : topic;
+    }
+
+    private static String topicPartitionLabel(TopicPartition partition) {
+        return partition.topic() + "-" + partition.partition();
     }
 
     @Nullable

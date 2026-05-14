@@ -25,21 +25,31 @@ import io.micronaut.http.annotation.Controller;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.Config;
 import org.apache.kafka.clients.admin.ConfigEntry;
+import org.apache.kafka.clients.admin.ConsumerGroupDescription;
 import org.apache.kafka.clients.admin.DescribeClusterOptions;
 import org.apache.kafka.clients.admin.DescribeClusterResult;
 import org.apache.kafka.clients.admin.DescribeConfigsOptions;
 import org.apache.kafka.clients.admin.DescribeConfigsResult;
+import org.apache.kafka.clients.admin.DescribeConsumerGroupsOptions;
+import org.apache.kafka.clients.admin.DescribeConsumerGroupsResult;
 import org.apache.kafka.clients.admin.DescribeTopicsOptions;
 import org.apache.kafka.clients.admin.DescribeTopicsResult;
 import org.apache.kafka.clients.admin.GroupListing;
+import org.apache.kafka.clients.admin.ListConsumerGroupOffsetsOptions;
+import org.apache.kafka.clients.admin.ListConsumerGroupOffsetsResult;
 import org.apache.kafka.clients.admin.ListGroupsOptions;
 import org.apache.kafka.clients.admin.ListGroupsResult;
 import org.apache.kafka.clients.admin.ListOffsetsOptions;
 import org.apache.kafka.clients.admin.ListOffsetsResult;
 import org.apache.kafka.clients.admin.ListTopicsOptions;
 import org.apache.kafka.clients.admin.ListTopicsResult;
+import org.apache.kafka.clients.admin.MemberAssignment;
+import org.apache.kafka.clients.admin.MemberDescription;
 import org.apache.kafka.clients.admin.TopicDescription;
 import org.apache.kafka.clients.admin.TopicListing;
+import org.apache.kafka.clients.consumer.OffsetAndMetadata;
+import org.apache.kafka.common.GroupState;
+import org.apache.kafka.common.GroupType;
 import org.apache.kafka.common.KafkaFuture;
 import org.apache.kafka.common.Node;
 import org.apache.kafka.common.TopicCollection;
@@ -241,6 +251,97 @@ final class KafkaClusterServiceTest {
     }
 
     @Test
+    void consumerGroupsReturnLagSummaries() {
+        AdminClient admin = mock(AdminClient.class);
+        ConsumerGroupDescription group = consumerGroup(
+            "orders-service",
+            GroupState.STABLE,
+            "range",
+            member("consumer-1", "client-1", "/127.0.0.1",
+                new TopicPartition("orders", 0),
+                new TopicPartition("orders", 1))
+        );
+        mockConsumerGroupList(admin, "orders-service");
+        mockConsumerGroupDescriptions(admin, Map.of("orders-service", group));
+        mockConsumerGroupOffsets(admin, Map.of("orders-service", Map.of(
+            new TopicPartition("orders", 0), new OffsetAndMetadata(4L),
+            new TopicPartition("orders", 1), new OffsetAndMetadata(6L)
+        )));
+        mockOffsets(admin, Map.of(
+            new TopicPartition("orders", 0), new ListOffsetsResult.ListOffsetsResultInfo(10L, 0L, Optional.empty()),
+            new TopicPartition("orders", 1), new ListOffsetsResult.ListOffsetsResultInfo(9L, 0L, Optional.empty())
+        ));
+
+        var section = new KafkaClusterService(admin).consumerGroups();
+
+        assertNull(section.error());
+        assertNotNull(section.data());
+        assertEquals(1, section.data().size());
+        var summary = section.data().getFirst();
+        assertEquals("orders-service", summary.groupId());
+        assertEquals("Stable", summary.state());
+        assertEquals("range", summary.protocol());
+        assertEquals(1, summary.members());
+        assertEquals(2, summary.assignedPartitions());
+        assertEquals(2, summary.committedPartitions());
+        assertEquals(9L, summary.totalLag());
+    }
+
+    @Test
+    void consumerGroupDetailIncludesMembersAssignmentsOffsetsAndLag() {
+        AdminClient admin = mock(AdminClient.class);
+        ConsumerGroupDescription group = consumerGroup(
+            "orders-service",
+            GroupState.STABLE,
+            "range",
+            member("consumer-2", "client-2", "/127.0.0.2", new TopicPartition("orders", 1)),
+            member("consumer-1", "client-1", "/127.0.0.1", new TopicPartition("orders", 0))
+        );
+        mockConsumerGroupDescriptions(admin, Map.of("orders-service", group));
+        mockConsumerGroupOffsets(admin, Map.of("orders-service", Map.of(
+            new TopicPartition("orders", 0), new OffsetAndMetadata(4L),
+            new TopicPartition("orders", 1), new OffsetAndMetadata(7L),
+            new TopicPartition("payments", 0), new OffsetAndMetadata(3L)
+        )));
+        mockOffsets(admin, Map.of(
+            new TopicPartition("orders", 0), new ListOffsetsResult.ListOffsetsResultInfo(10L, 0L, Optional.empty()),
+            new TopicPartition("orders", 1), new ListOffsetsResult.ListOffsetsResultInfo(9L, 0L, Optional.empty()),
+            new TopicPartition("payments", 0), new ListOffsetsResult.ListOffsetsResultInfo(8L, 0L, Optional.empty())
+        ));
+
+        var section = new KafkaClusterService(admin).consumerGroup("orders-service");
+
+        assertNull(section.error());
+        assertNotNull(section.data());
+        assertEquals("orders-service", section.data().group().groupId());
+        assertEquals(13L, section.data().group().totalLag());
+        assertEquals(List.of("consumer-1", "consumer-2"), section.data().members().stream()
+            .map(KafkaClusterResponse.ConsumerGroupMember::consumerId)
+            .toList());
+        assertEquals(List.of("orders-0"), section.data().members().getFirst().assignment());
+        assertEquals(List.of("orders:0", "orders:1", "payments:0"), section.data().partitions().stream()
+            .map(partition -> partition.topic() + ":" + partition.partition())
+            .toList());
+        assertTrue(section.data().partitions().getFirst().assigned());
+        assertEquals(4L, section.data().partitions().getFirst().committedOffset());
+        assertEquals(10L, section.data().partitions().getFirst().endOffset());
+        assertEquals(6L, section.data().partitions().getFirst().lag());
+        assertFalse(section.data().partitions().get(2).assigned());
+        assertEquals(5L, section.data().partitions().get(2).lag());
+    }
+
+    @Test
+    void consumerGroupDetailReportsMissingGroupClearly() {
+        AdminClient admin = mock(AdminClient.class);
+        mockConsumerGroupDescriptions(admin, Map.of());
+
+        var section = new KafkaClusterService(admin).consumerGroup("missing-group");
+
+        assertNull(section.data());
+        assertEquals("Consumer group not found or not authorized: missing-group", section.error());
+    }
+
+    @Test
     void controllerIntroducesOnlyGetEndpoints() {
         assertEquals(ControlPanelSecurityPaths.KAFKA, KafkaClusterController.class.getAnnotation(Controller.class).value());
         for (Method method : KafkaClusterController.class.getDeclaredMethods()) {
@@ -294,6 +395,37 @@ final class KafkaClusterServiceTest {
         when(result.all()).thenReturn(future);
     }
 
+    private static void mockConsumerGroupList(AdminClient admin, String... groupIds) {
+        ListGroupsResult result = mock(ListGroupsResult.class);
+        when(admin.listGroups(any(ListGroupsOptions.class))).thenReturn(result);
+        Collection<GroupListing> groups = java.util.Arrays.stream(groupIds)
+            .map(groupId -> new GroupListing(groupId, Optional.empty(), "", Optional.empty()))
+            .toList();
+        when(result.all()).thenReturn(KafkaFuture.completedFuture(groups));
+    }
+
+    private static void mockConsumerGroupDescriptions(
+        AdminClient admin,
+        Map<String, ConsumerGroupDescription> descriptions) {
+        DescribeConsumerGroupsResult result = mock(DescribeConsumerGroupsResult.class);
+        when(admin.describeConsumerGroups(
+            any(Collection.class),
+            any(DescribeConsumerGroupsOptions.class))
+        ).thenReturn(result);
+        when(result.all()).thenReturn(KafkaFuture.completedFuture(descriptions));
+    }
+
+    private static void mockConsumerGroupOffsets(
+        AdminClient admin,
+        Map<String, Map<TopicPartition, OffsetAndMetadata>> offsets) {
+        ListConsumerGroupOffsetsResult result = mock(ListConsumerGroupOffsetsResult.class);
+        when(admin.listConsumerGroupOffsets(
+            any(Map.class),
+            any(ListConsumerGroupOffsetsOptions.class))
+        ).thenReturn(result);
+        when(result.all()).thenReturn(KafkaFuture.completedFuture(offsets));
+    }
+
     private static void mockConfigs(AdminClient admin, Map<ConfigResource, Config> configs) {
         DescribeConfigsResult result = mock(DescribeConfigsResult.class);
         when(admin.describeConfigs(any(Collection.class), any(DescribeConfigsOptions.class))).thenReturn(result);
@@ -308,6 +440,50 @@ final class KafkaClusterServiceTest {
         when(beginningResult.all()).thenReturn(KafkaFuture.completedFuture(beginning));
         when(endResult.all()).thenReturn(KafkaFuture.completedFuture(end));
         when(admin.listOffsets(anyMap(), any(ListOffsetsOptions.class))).thenReturn(beginningResult, endResult);
+    }
+
+    private static void mockOffsets(AdminClient admin,
+                                    Map<TopicPartition, ListOffsetsResult.ListOffsetsResultInfo> offsets) {
+        ListOffsetsResult result = mock(ListOffsetsResult.class);
+        when(result.all()).thenReturn(KafkaFuture.completedFuture(offsets));
+        when(admin.listOffsets(anyMap(), any(ListOffsetsOptions.class))).thenReturn(result);
+    }
+
+    private static ConsumerGroupDescription consumerGroup(
+        String groupId,
+        GroupState state,
+        String protocol,
+        MemberDescription... members) {
+        return new ConsumerGroupDescription(
+            groupId,
+            false,
+            List.of(members),
+            protocol,
+            GroupType.CONSUMER,
+            state,
+            BROKER_0,
+            Set.of(),
+            Optional.empty(),
+            Optional.empty()
+        );
+    }
+
+    private static MemberDescription member(
+        String consumerId,
+        String clientId,
+        String host,
+        TopicPartition... topicPartitions) {
+        return new MemberDescription(
+            consumerId,
+            Optional.empty(),
+            Optional.empty(),
+            clientId,
+            host,
+            new MemberAssignment(Set.of(topicPartitions)),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty()
+        );
     }
 
     private static TopicDescription topic(String name, boolean internal, TopicPartitionInfo... partitions) {

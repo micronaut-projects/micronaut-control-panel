@@ -30,6 +30,8 @@ import org.jspecify.annotations.Nullable;
 import java.util.List;
 
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.Broker;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.ConsumerGroupDetail;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.ConsumerGroupSummary;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.Overview;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.Section;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.TopicDetail;
@@ -74,5 +76,15 @@ public final class KafkaClusterController {
     @Get("/topics/{topic}")
     public Section<TopicDetail> topic(String topic) {
         return service.topic(topic);
+    }
+
+    @Get("/consumer-groups")
+    public Section<List<ConsumerGroupSummary>> consumerGroups() {
+        return service.consumerGroups();
+    }
+
+    @Get("/consumer-groups/{groupId}")
+    public Section<ConsumerGroupDetail> consumerGroup(String groupId) {
+        return service.consumerGroup(groupId);
     }
 }

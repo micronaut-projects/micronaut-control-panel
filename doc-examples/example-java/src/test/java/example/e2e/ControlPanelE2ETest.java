@@ -455,6 +455,12 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         assertThat(page.locator("#kafkaTopicDetailModal")).isVisible();
         assertThat(page.locator("#kafkaTopicDetailModal")).containsText("Beginning offset");
         assertThat(page.locator("#kafkaTopicDetailModal")).containsText("Topic config");
+        page.locator("#kafkaTopicDetailModal .modal-footer [data-dismiss='modal']").click();
+        assertThat(page.locator("#kafkaTopicDetailModal")).isHidden();
+
+        page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("Consumer Groups")).click();
+        assertThat(page.getByLabel("Search consumer groups")).isVisible();
+        assertThat(page.locator("#kafkaConsumerGroups")).containsText("Total lag");
 
         page.navigate(baseUrl());
         categoryLink(page, "Kafka").click();
