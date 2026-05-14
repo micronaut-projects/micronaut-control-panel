@@ -435,13 +435,26 @@ class ControlPanelE2ETest extends AbstractE2ETest {
 
         page.locator("a[href$='/control-panel/kafka-cluster']").click();
         assertThat(body(page)).containsText("Cluster id");
-        assertThat(body(page)).containsText("Brokers");
-        assertThat(body(page)).containsText("Topics");
+        assertThat(page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("Overview"))).isVisible();
+        assertThat(page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("Cluster Config"))).isVisible();
+        assertThat(page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("Consumer Groups"))).isVisible();
+        assertThat(page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("Messages"))).isVisible();
+
+        page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("Cluster Config")).click();
+        assertThat(page.getByLabel("Search cluster config")).isVisible();
+        assertThat(page.locator("#kafkaClusterConfigTable [data-filter-table-page]")).containsText("Page");
+
+        page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("Topics")).click();
         assertThat(page.getByLabel("Search topics")).isVisible();
         assertThat(page.locator("#kafkaTopics")).containsText("product_description_v1");
         page.getByLabel("Search topics").fill("product_description");
         assertThat(page.locator("#kafkaTopicsTable [data-filter-table-summary]")).containsText("filtered from");
-        assertThat(page.getByRole(AriaRole.ROW, new Page.GetByRoleOptions().setName(Pattern.compile("product_description_v1")))).isVisible();
+        var productDescriptionRow = page.getByRole(AriaRole.ROW, new Page.GetByRoleOptions().setName(Pattern.compile("product_description_v1")));
+        assertThat(productDescriptionRow).isVisible();
+        productDescriptionRow.getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName("Details")).click();
+        assertThat(page.locator("#kafkaTopicDetailModal")).isVisible();
+        assertThat(page.locator("#kafkaTopicDetailModal")).containsText("Beginning offset");
+        assertThat(page.locator("#kafkaTopicDetailModal")).containsText("Topic config");
 
         page.navigate(baseUrl());
         categoryLink(page, "Kafka").click();

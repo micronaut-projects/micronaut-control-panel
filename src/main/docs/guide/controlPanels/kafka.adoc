@@ -14,9 +14,11 @@ It uses Kafka AdminClient read APIs only.
 Features include:
 
 * View cluster id, controller broker, broker count, topic count, partition count, and consumer group count.
+* Navigate the Kafka Cluster detail page by section tabs for overview, cluster configuration, brokers, topics, and future Kafka feature areas.
+* Page and search the safe cluster configuration summary.
 * Inspect brokers, host/port/rack metadata, controller status, leader/replica partition counts, and under-replicated partition indicators.
 * Search and page topics, optionally showing internal topics.
-* View topic cleanup policy, retention settings, segment settings, partitions, leaders, replicas, ISR, and beginning/end offsets.
+* View topic cleanup policy, retention settings, segment settings, and open topic partition details in a modal with leaders, replicas, ISR, and beginning/end offsets.
 * Display readable section-level errors when Kafka metadata, broker, topic, or offset calls are unavailable or unauthorized.
 
 Sensitive broker and topic configuration values are filtered.

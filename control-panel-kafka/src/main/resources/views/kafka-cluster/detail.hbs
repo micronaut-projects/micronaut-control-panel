@@ -1,185 +1,258 @@
 {{#with controlPanel.body }}
-<div id="kafkaClusterAlerts"></div>
+<div class="tabs cp-fill-tabs" id="kafkaClusterTabs" data-tabs data-tabs-storage-key="kafka-cluster-detail-tab">
+    <div class="tabs-list" role="tablist" aria-label="Kafka cluster sections">
+        <button type="button" class="tabs-trigger active" id="tab-kafka-overview" role="tab" aria-selected="true" aria-controls="panel-kafka-overview" data-tabs-trigger="overview">Overview</button>
+        <button type="button" class="tabs-trigger" id="tab-kafka-cluster-config" role="tab" aria-selected="false" aria-controls="panel-kafka-cluster-config" data-tabs-trigger="cluster-config">Cluster Config</button>
+        <button type="button" class="tabs-trigger" id="tab-kafka-brokers" role="tab" aria-selected="false" aria-controls="panel-kafka-brokers" data-tabs-trigger="brokers">Brokers</button>
+        <button type="button" class="tabs-trigger" id="tab-kafka-topics" role="tab" aria-selected="false" aria-controls="panel-kafka-topics" data-tabs-trigger="topics">Topics</button>
+        <button type="button" class="tabs-trigger" id="tab-kafka-consumer-groups" role="tab" aria-selected="false" aria-controls="panel-kafka-consumer-groups" data-tabs-trigger="consumer-groups">Consumer Groups</button>
+        <button type="button" class="tabs-trigger" id="tab-kafka-messages" role="tab" aria-selected="false" aria-controls="panel-kafka-messages" data-tabs-trigger="messages">Messages</button>
+        <button type="button" class="tabs-trigger" id="tab-kafka-app-consumers" role="tab" aria-selected="false" aria-controls="panel-kafka-app-consumers" data-tabs-trigger="app-consumers">App Consumers</button>
+        <button type="button" class="tabs-trigger" id="tab-kafka-schema-registry" role="tab" aria-selected="false" aria-controls="panel-kafka-schema-registry" data-tabs-trigger="schema-registry">Schema Registry</button>
+        <button type="button" class="tabs-trigger" id="tab-kafka-connect" role="tab" aria-selected="false" aria-controls="panel-kafka-connect" data-tabs-trigger="kafka-connect">Kafka Connect</button>
+        <button type="button" class="tabs-trigger" id="tab-kafka-ksqldb" role="tab" aria-selected="false" aria-controls="panel-kafka-ksqldb" data-tabs-trigger="ksqldb">ksqlDB</button>
+    </div>
 
-<div class="row">
-    <div class="col-md-3">
-        <div class="small-box bg-info">
-            <div class="inner">
-                <h3 id="kafkaBrokerCount">-</h3>
-                <p>Brokers</p>
+    <div class="tabs-panel" id="panel-kafka-overview" role="tabpanel" aria-labelledby="tab-kafka-overview" data-tabs-panel="overview">
+        <div id="kafkaOverviewAlerts"></div>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3 id="kafkaBrokerCount">-</h3>
+                        <p>Brokers</p>
+                    </div>
+                    <div class="icon">
+                        <i class="si si-apachekafka"></i>
+                    </div>
+                </div>
             </div>
-            <div class="icon">
-                <i class="si si-apachekafka"></i>
+            <div class="col-md-3">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3 id="kafkaTopicCount">-</h3>
+                        <p>Topics</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3 id="kafkaPartitionCount">-</h3>
+                        <p>Partitions</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-diagram-project"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="small-box bg-secondary">
+                    <div class="inner">
+                        <h3 id="kafkaConsumerGroupCount">-</h3>
+                        <p>Consumer groups</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <dl class="row">
+            <dt class="col-sm-2">Cluster id</dt>
+            <dd class="col-sm-10"><code id="kafkaClusterId">-</code></dd>
+            <dt class="col-sm-2">Controller broker</dt>
+            <dd class="col-sm-10"><code id="kafkaControllerBroker">-</code></dd>
+        </dl>
+    </div>
+
+    <div class="tabs-panel" id="panel-kafka-cluster-config" role="tabpanel" aria-labelledby="tab-kafka-cluster-config" data-tabs-panel="cluster-config" hidden>
+        <div id="kafkaClusterConfigAlerts"></div>
+        <div class="cp-data-table cp-data-table-paged" id="kafkaClusterConfigTable" data-filter-table data-filter-table-page-size="10" data-filter-table-label="config value" data-filter-table-label-plural="config values">
+            <div class="cp-data-table-toolbar">
+                <div class="cp-data-table-summary" data-filter-table-summary>0 config values</div>
+                <div class="cp-data-table-search">
+                    <input type="search" class="form-control" data-filter-table-search placeholder="Search config" aria-label="Search cluster config">
+                </div>
+            </div>
+            <div class="cp-data-table-container">
+                <table id="kafkaClusterConfig" class="table cp-data-table-table table-bordered table-striped table-sm">
+                    <thead>
+                    <tr>
+                        <th>Config</th>
+                        <th>Value</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr data-filter-table-empty hidden>
+                        <td class="cp-data-table-empty-cell" colspan="2">No safe config values available.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="cp-data-table-footer">
+                <label class="cp-data-table-page-size">
+                    Rows per page
+                    <select class="form-control" data-filter-table-page-size-select aria-label="Cluster config per page">
+                        <option value="10" selected>10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                    </select>
+                </label>
+                <div class="cp-data-table-pagination">
+                    <span class="cp-data-table-page" data-filter-table-page>Page 1 of 1</span>
+                    <button type="button" class="btn btn-secondary btn-sm" data-filter-table-prev>Previous</button>
+                    <button type="button" class="btn btn-secondary btn-sm" data-filter-table-next>Next</button>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="small-box bg-success">
-            <div class="inner">
-                <h3 id="kafkaTopicCount">-</h3>
-                <p>Topics</p>
+
+    <div class="tabs-panel" id="panel-kafka-brokers" role="tabpanel" aria-labelledby="tab-kafka-brokers" data-tabs-panel="brokers" hidden>
+        <div id="kafkaBrokersAlerts"></div>
+        <div class="cp-data-table" id="kafkaBrokersTable" data-filter-table data-filter-table-unpaged data-filter-table-label="broker" data-filter-table-label-plural="brokers">
+            <div class="cp-data-table-toolbar">
+                <div class="cp-data-table-summary" data-filter-table-summary>0 brokers</div>
+                <div class="cp-data-table-search">
+                    <input type="search" class="form-control" data-filter-table-search placeholder="Search brokers" aria-label="Search brokers">
+                </div>
             </div>
-            <div class="icon">
-                <i class="fas fa-layer-group"></i>
+            <div class="cp-data-table-container">
+                <table id="kafkaBrokers" class="table cp-data-table-table table-bordered table-striped">
+                    <thead>
+                    <tr>
+                        <th>Broker</th>
+                        <th>Host</th>
+                        <th>Port</th>
+                        <th>Rack</th>
+                        <th>Controller</th>
+                        <th>Leaders</th>
+                        <th>Replicas</th>
+                        <th>Under replicated</th>
+                        <th>Config</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr data-filter-table-empty hidden>
+                        <td class="cp-data-table-empty-cell" colspan="9">No brokers found.</td>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="small-box bg-warning">
-            <div class="inner">
-                <h3 id="kafkaPartitionCount">-</h3>
-                <p>Partitions</p>
+
+    <div class="tabs-panel" id="panel-kafka-topics" role="tabpanel" aria-labelledby="tab-kafka-topics" data-tabs-panel="topics" hidden>
+        <div id="kafkaTopicsAlerts"></div>
+        <div class="d-flex align-items-center mb-2">
+            <div class="form-check ml-auto">
+                <input class="form-check-input" type="checkbox" id="kafkaIncludeInternal">
+                <label class="form-check-label" for="kafkaIncludeInternal">Show internal topics</label>
             </div>
-            <div class="icon">
-                <i class="fas fa-diagram-project"></i>
+        </div>
+        <div class="cp-data-table cp-data-table-paged" id="kafkaTopicsTable" data-kafka-topics-table>
+            <div class="cp-data-table-toolbar">
+                <div class="cp-data-table-summary" data-filter-table-summary>0 topics</div>
+                <div class="cp-data-table-search">
+                    <input type="search" class="form-control" data-filter-table-search placeholder="Search topics" aria-label="Search topics">
+                </div>
+            </div>
+            <div class="cp-data-table-container">
+                <table id="kafkaTopics" class="table cp-data-table-table table-bordered table-striped">
+                    <thead>
+                    <tr>
+                        <th>Topic</th>
+                        <th>Internal</th>
+                        <th>Partitions</th>
+                        <th>Replication factor</th>
+                        <th>Cleanup policy</th>
+                        <th>Retention ms</th>
+                        <th>Retention bytes</th>
+                        <th>Segment bytes</th>
+                        <th>Under replicated</th>
+                        <th>Details</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr data-filter-table-empty hidden>
+                        <td class="cp-data-table-empty-cell" colspan="10">No topics found.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="cp-data-table-footer">
+                <label class="cp-data-table-page-size">
+                    Rows per page
+                    <select class="form-control" data-filter-table-page-size-select aria-label="Topics per page">
+                        <option value="10" selected>10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </label>
+                <div class="cp-data-table-pagination">
+                    <span class="cp-data-table-page" data-filter-table-page>Page 1 of 1</span>
+                    <button type="button" class="btn btn-secondary btn-sm" data-filter-table-prev>Previous</button>
+                    <button type="button" class="btn btn-secondary btn-sm" data-filter-table-next>Next</button>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="small-box bg-secondary">
-            <div class="inner">
-                <h3 id="kafkaConsumerGroupCount">-</h3>
-                <p>Consumer groups</p>
-            </div>
-            <div class="icon">
-                <i class="fas fa-users"></i>
-            </div>
-        </div>
-    </div>
+
+    <div class="tabs-panel" id="panel-kafka-consumer-groups" role="tabpanel" aria-labelledby="tab-kafka-consumer-groups" data-tabs-panel="consumer-groups" hidden></div>
+    <div class="tabs-panel" id="panel-kafka-messages" role="tabpanel" aria-labelledby="tab-kafka-messages" data-tabs-panel="messages" hidden></div>
+    <div class="tabs-panel" id="panel-kafka-app-consumers" role="tabpanel" aria-labelledby="tab-kafka-app-consumers" data-tabs-panel="app-consumers" hidden></div>
+    <div class="tabs-panel" id="panel-kafka-schema-registry" role="tabpanel" aria-labelledby="tab-kafka-schema-registry" data-tabs-panel="schema-registry" hidden></div>
+    <div class="tabs-panel" id="panel-kafka-connect" role="tabpanel" aria-labelledby="tab-kafka-connect" data-tabs-panel="kafka-connect" hidden></div>
+    <div class="tabs-panel" id="panel-kafka-ksqldb" role="tabpanel" aria-labelledby="tab-kafka-ksqldb" data-tabs-panel="ksqldb" hidden></div>
 </div>
 
-<dl class="row">
-    <dt class="col-sm-2">Cluster id</dt>
-    <dd class="col-sm-10"><code id="kafkaClusterId">-</code></dd>
-    <dt class="col-sm-2">Controller broker</dt>
-    <dd class="col-sm-10"><code id="kafkaControllerBroker">-</code></dd>
-</dl>
+<div class="modal fade cp-dialog" id="kafkaTopicDetailModal" tabindex="-1" role="dialog" aria-labelledby="kafkaTopicDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content cp-dialog-content">
+            <div class="modal-header cp-dialog-header">
+                <h5 class="modal-title cp-dialog-title" id="kafkaTopicDetailModalLabel">Topic detail: <code id="kafkaTopicDetailName"></code></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" title="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="kafkaTopicDetailAlerts"></div>
+                <table id="kafkaTopicPartitions" class="table table-bordered table-striped">
+                    <thead>
+                    <tr>
+                        <th>Partition</th>
+                        <th>Leader</th>
+                        <th>Replicas</th>
+                        <th>ISR</th>
+                        <th>Beginning offset</th>
+                        <th>End offset</th>
+                        <th>Size estimate</th>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
 
-<h5>Cluster config summary</h5>
-<table id="kafkaClusterConfig" class="table table-bordered table-striped table-sm">
-    <thead>
-    <tr>
-        <th>Config</th>
-        <th>Value</th>
-    </tr>
-    </thead>
-    <tbody></tbody>
-</table>
-
-<h5>Brokers</h5>
-<div class="cp-data-table" id="kafkaBrokersTable" data-filter-table data-filter-table-unpaged data-filter-table-label="broker" data-filter-table-label-plural="brokers">
-    <div class="cp-data-table-toolbar">
-        <div class="cp-data-table-summary" data-filter-table-summary>0 brokers</div>
-        <div class="cp-data-table-search">
-            <input type="search" class="form-control" data-filter-table-search placeholder="Search brokers" aria-label="Search brokers">
+                <h6>Topic config</h6>
+                <table id="kafkaTopicConfig" class="table table-bordered table-striped table-sm">
+                    <thead>
+                    <tr>
+                        <th>Config</th>
+                        <th>Value</th>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
         </div>
     </div>
-    <div class="cp-data-table-container">
-        <table id="kafkaBrokers" class="table cp-data-table-table table-bordered table-striped">
-            <thead>
-            <tr>
-                <th>Broker</th>
-                <th>Host</th>
-                <th>Port</th>
-                <th>Rack</th>
-                <th>Controller</th>
-                <th>Leaders</th>
-                <th>Replicas</th>
-                <th>Under replicated</th>
-                <th>Config</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr data-filter-table-empty hidden>
-                <td class="cp-data-table-empty-cell" colspan="9">No brokers found.</td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<div class="d-flex align-items-center mb-2">
-    <h5 class="mb-0">Topics</h5>
-    <div class="form-check ml-3">
-        <input class="form-check-input" type="checkbox" id="kafkaIncludeInternal">
-        <label class="form-check-label" for="kafkaIncludeInternal">Show internal topics</label>
-    </div>
-</div>
-<div class="cp-data-table cp-data-table-paged" id="kafkaTopicsTable" data-kafka-topics-table>
-    <div class="cp-data-table-toolbar">
-        <div class="cp-data-table-summary" data-filter-table-summary>0 topics</div>
-        <div class="cp-data-table-search">
-            <input type="search" class="form-control" data-filter-table-search placeholder="Search topics" aria-label="Search topics">
-        </div>
-    </div>
-    <div class="cp-data-table-container">
-        <table id="kafkaTopics" class="table cp-data-table-table table-bordered table-striped">
-            <thead>
-            <tr>
-                <th>Topic</th>
-                <th>Internal</th>
-                <th>Partitions</th>
-                <th>Replication factor</th>
-                <th>Cleanup policy</th>
-                <th>Retention ms</th>
-                <th>Retention bytes</th>
-                <th>Segment bytes</th>
-                <th>Under replicated</th>
-                <th>Details</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr data-filter-table-empty hidden>
-                <td class="cp-data-table-empty-cell" colspan="10">No topics found.</td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
-    <div class="cp-data-table-footer">
-        <label class="cp-data-table-page-size">
-            Rows per page
-            <select class="form-control" data-filter-table-page-size-select aria-label="Topics per page">
-                <option value="10" selected>10</option>
-                <option value="25">25</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-            </select>
-        </label>
-        <div class="cp-data-table-pagination">
-            <span class="cp-data-table-page" data-filter-table-page>Page 1 of 1</span>
-            <button type="button" class="btn btn-secondary btn-sm" data-filter-table-prev>Previous</button>
-            <button type="button" class="btn btn-secondary btn-sm" data-filter-table-next>Next</button>
-        </div>
-    </div>
-</div>
-
-<div id="kafkaTopicDetail" style="display: none;">
-    <h5>Topic detail: <code id="kafkaTopicDetailName"></code></h5>
-    <table id="kafkaTopicPartitions" class="table table-bordered table-striped">
-        <thead>
-        <tr>
-            <th>Partition</th>
-            <th>Leader</th>
-            <th>Replicas</th>
-            <th>ISR</th>
-            <th>Beginning offset</th>
-            <th>End offset</th>
-            <th>Size estimate</th>
-        </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-
-    <h6>Topic config</h6>
-    <table id="kafkaTopicConfig" class="table table-bordered table-striped table-sm">
-        <thead>
-        <tr>
-            <th>Config</th>
-            <th>Value</th>
-        </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
 </div>
 
 <script>
@@ -202,15 +275,18 @@
 
     function renderConfig(selector, config) {
       var tbody = $(selector + ' tbody');
-      tbody.empty();
+      tbody.find('[data-filter-table-row]').remove();
+      tbody.find('tr:not([data-filter-table-empty])').remove();
       var keys = Object.keys(config || {});
       if (keys.length === 0) {
-        tbody.append('<tr><td colspan="2">No safe config values available</td></tr>');
+        $(selector).closest('[data-filter-table]').find('[data-filter-table-empty]').prop('hidden', false);
         return;
       }
       keys.forEach(function(key) {
         tbody.append('<tr><td><code>' + escapeHtml(key) + '</code></td><td><code>' + escapeHtml(config[key]) + '</code></td></tr>');
+        tbody.find('tr:last').attr('data-filter-table-row', '');
       });
+      refreshFilterTable($(selector).closest('[data-filter-table]'));
     }
 
     function inlineConfig(config) {
@@ -223,29 +299,30 @@
         + '</dl></details>';
     }
 
-    function alertSection(title, message) {
-      $('#kafkaClusterAlerts').append(
+    function alertSection(selector, title, message) {
+      $(selector).empty().append(
         '<div class="alert alert-warning"><h5><i class="icon fas fa-triangle-exclamation"></i> '
         + escapeHtml(title) + '</h5><span>' + escapeHtml(message) + '</span></div>'
       );
     }
 
-    function loadSection(url, title, success) {
+    function loadSection(url, title, alertSelector, success) {
       $.getJSON(url)
         .done(function(section) {
           if (section.error) {
-            alertSection(title, section.error);
+            alertSection(alertSelector, title, section.error);
             return;
           }
+          $(alertSelector).empty();
           success(section.data);
         })
         .fail(function(xhr) {
-          alertSection(title, xhr.statusText || 'Request failed');
+          alertSection(alertSelector, title, xhr.statusText || 'Request failed');
       });
     }
 
-    function refreshFilterTable(selector) {
-      $(selector).find('[data-filter-table-search]').trigger('input');
+    function refreshFilterTable(selectorOrTable) {
+      $(selectorOrTable).find('[data-filter-table-search]').trigger('input');
     }
 
     function pluralize(count, singular, plural) {
@@ -276,8 +353,24 @@
       $('#kafkaTopicsTable [data-filter-table-empty]').prop('hidden', filtered !== 0);
     }
 
+    function activateKafkaTab(target) {
+      $('#kafkaClusterTabs [data-tabs-trigger]').each(function() {
+        var active = this.getAttribute('data-tabs-trigger') === target;
+        this.classList.toggle('active', active);
+        this.setAttribute('aria-selected', active ? 'true' : 'false');
+      });
+      $('#kafkaClusterTabs [data-tabs-panel]').each(function() {
+        var active = this.getAttribute('data-tabs-panel') === target;
+        this.hidden = !active;
+        if (active) {
+          $(this).find('[data-filter-table-search]').trigger('input');
+        }
+      });
+    }
+
     function loadSummary() {
-      loadSection(baseUrl + '/summary', 'Kafka cluster overview unavailable', function(summary) {
+      loadSection(baseUrl + '/summary', 'Kafka cluster overview unavailable', '#kafkaOverviewAlerts', function(summary) {
+        $('#kafkaClusterConfigAlerts').empty();
         $('#kafkaClusterId').text(summary.clusterId || '-');
         $('#kafkaControllerBroker').text(brokerLabel(summary.controller));
         $('#kafkaBrokerCount').text(summary.brokerCount);
@@ -289,7 +382,7 @@
     }
 
     function loadBrokers() {
-      loadSection(baseUrl + '/brokers', 'Kafka brokers unavailable', function(brokers) {
+      loadSection(baseUrl + '/brokers', 'Kafka brokers unavailable', '#kafkaBrokersAlerts', function(brokers) {
         var tbody = $('#kafkaBrokers tbody');
         tbody.find('[data-filter-table-row]').remove();
         brokers.forEach(function(broker) {
@@ -318,7 +411,7 @@
         start: topicsState.start,
         length: topicsState.length
       });
-      loadSection(baseUrl + '/topics?' + query, 'Kafka topics unavailable', function(page) {
+      loadSection(baseUrl + '/topics?' + query, 'Kafka topics unavailable', '#kafkaTopicsAlerts', function(page) {
         var tbody = $('#kafkaTopics tbody');
         tbody.find('[data-filter-table-row]').remove();
         page.topics.forEach(function(topic) {
@@ -332,7 +425,7 @@
             + '<td><code>' + escapeHtml(topic.retentionBytes || '-') + '</code></td>'
             + '<td><code>' + escapeHtml(topic.segmentBytes || '-') + '</code></td>'
             + '<td>' + (topic.underReplicated ? '<span class="badge badge-warning">yes</span>' : 'no') + '</td>'
-            + '<td><button type="button" class="btn btn-secondary btn-xs kafka-topic-detail" data-topic="' + escapeHtml(topic.name) + '">Details</button></td>'
+            + '<td><button type="button" class="btn btn-secondary btn-xs kafka-topic-detail" data-topic="' + escapeHtml(topic.name) + '" data-toggle="modal" data-target="#kafkaTopicDetailModal">Details</button></td>'
             + '</tr>');
           tbody.find('tr:last').attr('data-filter-table-row', '');
         });
@@ -341,8 +434,10 @@
     }
 
     function loadTopicDetail(topicName) {
-      loadSection(baseUrl + '/topics/' + encodeURIComponent(topicName), 'Kafka topic detail unavailable', function(detail) {
-        $('#kafkaTopicDetail').show();
+      $('#kafkaTopicDetailName').text(topicName);
+      $('#kafkaTopicPartitions tbody').empty();
+      $('#kafkaTopicConfig tbody').empty();
+      loadSection(baseUrl + '/topics/' + encodeURIComponent(topicName), 'Kafka topic detail unavailable', '#kafkaTopicDetailAlerts', function(detail) {
         $('#kafkaTopicDetailName').text(detail.topic.name);
         var tbody = $('#kafkaTopicPartitions tbody');
         tbody.empty();
@@ -385,6 +480,9 @@
     });
     $('#kafkaTopics').on('click', '.kafka-topic-detail', function() {
       loadTopicDetail($(this).data('topic'));
+    });
+    $('#kafkaClusterTabs [data-tabs-trigger]').on('click', function() {
+      activateKafkaTab(this.getAttribute('data-tabs-trigger'));
     });
 
     loadSummary();
