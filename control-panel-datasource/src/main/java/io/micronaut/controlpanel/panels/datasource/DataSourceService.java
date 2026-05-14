@@ -21,8 +21,11 @@ import io.micronaut.controlpanel.panels.datasource.model.Column;
 import io.micronaut.controlpanel.panels.datasource.model.ColumnType;
 import io.micronaut.controlpanel.panels.datasource.model.ForeignKey;
 import io.micronaut.controlpanel.panels.datasource.model.JdbcInfo;
+import io.micronaut.controlpanel.panels.datasource.model.PoolInfo;
 import io.micronaut.controlpanel.panels.datasource.model.Table;
 import io.micronaut.data.connection.jdbc.advice.DelegatingDataSource;
+import io.micronaut.serde.annotation.Serdeable;
+import jakarta.inject.Inject;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,9 +59,16 @@ public class DataSourceService {
     private static final Pattern SINGLE_LINE_COMMENT = Pattern.compile("--.*", Pattern.MULTILINE);
 
     private final DataSource dataSource;
+    private final List<ConnectionPoolInspector> connectionPoolInspectors;
+
+    @Inject
+    public DataSourceService(@Parameter DataSource dataSource, List<ConnectionPoolInspector> connectionPoolInspectors) {
+        this.dataSource = DelegatingDataSource.unwrapDataSource(dataSource);
+        this.connectionPoolInspectors = connectionPoolInspectors;
+    }
 
     public DataSourceService(@Parameter DataSource dataSource) {
-        this.dataSource = DelegatingDataSource.unwrapDataSource(dataSource);
+        this(dataSource, List.of());
     }
 
     /**
@@ -81,6 +91,25 @@ public class DataSourceService {
             LOG.warn("Exception while getting JDBC metadata: {}", e.getMessage());
             return JdbcInfo.EMPTY;
         }
+    }
+
+    /**
+     * Retrieves connection pool metadata when the datasource uses a supported pool provider.
+     *
+     * @return pool metadata for supported datasources, otherwise empty
+     */
+    public Optional<PoolInfo> getPoolInfo() {
+        for (ConnectionPoolInspector inspector : connectionPoolInspectors) {
+            try {
+                var poolInfo = inspector.inspect(dataSource);
+                if (poolInfo.isPresent()) {
+                    return poolInfo;
+                }
+            } catch (RuntimeException e) {
+                LOG.warn("Exception while getting connection pool metadata: {}", e.getMessage());
+            }
+        }
+        return Optional.empty();
     }
 
     /**
@@ -295,6 +324,7 @@ public class DataSourceService {
         try (var connection = dataSource.getConnection()) {
             int total = 0;
             List<String> cols = new ArrayList<>();
+            List<QueryColumn> columns = new ArrayList<>();
             List<List<String>> rows = new ArrayList<>();
 
             if (isSelect) {
@@ -314,7 +344,14 @@ public class DataSourceService {
                     int colCount = md.getColumnCount();
                     for (int i = 1; i <= colCount; i++) {
                         String label = md.getColumnLabel(i);
-                        cols.add(label != null ? label : ("col" + i));
+                        String columnLabel = label != null ? label : ("col" + i);
+                        cols.add(columnLabel);
+                        columns.add(new QueryColumn(
+                            columnLabel,
+                            valueOrEmpty(md.getColumnTypeName(i)),
+                            md.getColumnType(i),
+                            valueOrEmpty(md.getColumnClassName(i))
+                        ));
                     }
 
                     // skip to offset
@@ -340,13 +377,14 @@ public class DataSourceService {
                     total = ps.executeUpdate();
                 }
                 cols.add("Affected Rows");
+                columns.add(new QueryColumn("Affected Rows", "INTEGER", Types.INTEGER, Integer.class.getName()));
                 rows.add(List.of(total + " rows affected"));
             }
 
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Query executed: columns={}, rowsReturned={}, total={}", cols.size(), rows.size(), total);
             }
-            return new QueryResult(cols, rows, total);
+            return new QueryResult(cols, rows, total, columns);
         } catch (SQLException e) {
             LOG.error("Error while executing SQL query: {}", e.getMessage(), e);
             throw new RuntimeException(e);
@@ -382,10 +420,33 @@ public class DataSourceService {
     /**
      * Result of executing a SQL query.
      *
-     * @param cols  The column labels in display order
-     * @param rows  The page of rows; each row is a list of column values
-     * @param total The total number of rows for the full result set
+     * @param cols    The column labels in display order
+     * @param rows    The page of rows; each row is a list of column values
+     * @param total   The total number of rows for the full result set
+     * @param columns JDBC metadata for each column in display order
      */
-    public record QueryResult(List<String> cols, List<List<String>> rows, int total) { }
+    public record QueryResult(List<String> cols, List<List<String>> rows, int total, List<QueryColumn> columns) {
+        public QueryResult(List<String> cols, List<List<String>> rows, int total) {
+            this(cols, rows, total, defaultColumns(cols));
+        }
+
+        private static List<QueryColumn> defaultColumns(List<String> cols) {
+            return cols.stream()
+                .map(col -> new QueryColumn(col, "", Types.OTHER, ""))
+                .toList();
+        }
+    }
+
+    /**
+     * Metadata for a query result column.
+     *
+     * @param label     Result-set column label
+     * @param typeName  JDBC type name
+     * @param jdbcType  JDBC type code from {@link Types}
+     * @param className Java class name reported by the driver
+     */
+    @Serdeable
+    public record QueryColumn(String label, String typeName, int jdbcType, String className) {
+    }
 
 }

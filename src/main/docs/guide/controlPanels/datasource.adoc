@@ -4,14 +4,44 @@ image::datasource.png[]
 
 Features include:
 
-* Database schema discovery, inspecting tables, columns, primary/foreign keys and indexes.
-* Visualize relationships in an E/R diagram.
-* SQL console with schema autocompletion and client-side SQL linting.
+* Database schema discovery with connection, database, and driver details grouped on the datasource card.
+* A table browser that loads tables page by page, with schema and name filters.
+* Table detail for columns, keys, relationships, and a focused E/R diagram.
+* SQL console with schema autocompletion, client-side SQL linting, and paginated query results.
+* JSON display actions for supported databases.
+* Optional connection pool status and options for supported pool implementations.
+
+=== Browsing Tables
+
+The `Tables` tab lists tables without rendering the full datasource schema at once. Use the schema filter and table search field to narrow the current page, then click a table row to open its detail panel.
+
+The table detail panel shows the selected table name and schema, columns, primary keys, foreign keys, unique keys, relationship links, and an E/R diagram for the selected table. Relationship links open the related table detail so you can move through the schema without returning to the datasource list.
+
+The table list and detail panel are separated by a resizable divider. The detail panel can also be collapsed from the table detail icon when you need more room for the table list.
+
+=== SQL and JSON Results
 
 The SQL console can execute ad hoc queries and displays the result set in a paginated table:
 
 .Datasource SQL query browser
 image::datasource-query.png[Datasource SQL query browser]
+
+Table actions can insert a `SELECT *` query or a database-specific JSON query for the selected table. PostgreSQL datasources use `to_json`/`to_jsonb` queries, and Oracle datasources use `JSON_OBJECT(... RETURNING JSON)` so the returned column metadata identifies JSON values.
+
+When a query result column is JSON, the cell is highlighted as JSON. Click the cell to format the JSON in place; click it again to return to the compact value. Non-JSON columns continue to render as regular table cells.
+
+If the selected table has relationships, the table actions also include a JSON-with-relationships query. The generated JSON contains all table properties plus relationship properties named after the foreign key or relationship name.
+
+=== Connection Pools
+
+When a supported pool implementation is present on the classpath and the datasource uses that pool, the datasource detail includes a `Pool` tab:
+
+.Datasource connection pool details
+image::datasource-pool.png[Datasource connection pool details]
+
+The pool tab shows a refreshable connection status card with active, idle, remaining, total, min, max, and waiting connection counts. It also lists pool options such as JDBC URL, user, sizing, timeouts, validation SQL, and behavior flags.
+
+HikariCP pools are detected when `micronaut-jdbc-hikari`/HikariCP is present. Oracle UCP pools are detected when `micronaut-jdbc-ucp`/Oracle UCP is present. The tab is omitted when no supported pool inspector is available for the datasource.
 
 To get started, add the following module as a development-time dependency:
 

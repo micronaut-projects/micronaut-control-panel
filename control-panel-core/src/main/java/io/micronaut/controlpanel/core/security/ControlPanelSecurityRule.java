@@ -51,6 +51,9 @@ public final class ControlPanelSecurityRule implements SecurityRule<HttpRequest<
 
     private final ControlPanelSecurityConfiguration.Access access;
     private final String role;
+    private final ControlPanelSecurityConfiguration.WriteAccess writeAccess;
+    private final String writeRole;
+    private final String controlPanelPath;
     private final List<String> protectedRoutePrefixes;
 
     public ControlPanelSecurityRule(ControlPanelSecurityConfiguration securityConfiguration,
@@ -58,8 +61,10 @@ public final class ControlPanelSecurityRule implements SecurityRule<HttpRequest<
                                     HttpServerConfiguration serverConfiguration) {
         this.access = securityConfiguration.access();
         this.role = securityConfiguration.role();
+        this.writeAccess = securityConfiguration.writeAccess();
+        this.writeRole = securityConfiguration.effectiveWriteRole();
         String applicationPath = Optional.ofNullable(serverConfiguration.getContextPath()).orElse("");
-        String controlPanelPath = computeControlPanelPath(applicationPath, moduleConfiguration.getPath());
+        this.controlPanelPath = computeControlPanelPath(applicationPath, moduleConfiguration.getPath());
         List<String> prefixes = new ArrayList<>();
         prefixes.add(controlPanelPath);
         for (String helperPath : ControlPanelSecurityPaths.helperPaths()) {
@@ -74,18 +79,43 @@ public final class ControlPanelSecurityRule implements SecurityRule<HttpRequest<
         if (request == null || !matches(request.getPath())) {
             return Publishers.just(SecurityRuleResult.UNKNOWN);
         }
+        if (ControlPanelSecurityPaths.isWriteRequest(controlPanelPath, request)) {
+            return Publishers.just(writeResult(authentication));
+        }
+        return Publishers.just(readResult(authentication));
+    }
+
+    private SecurityRuleResult writeResult(@Nullable Authentication authentication) {
+        if (writeAccess == ControlPanelSecurityConfiguration.WriteAccess.INHERITED) {
+            return readResult(authentication);
+        }
+        if (writeAccess == ControlPanelSecurityConfiguration.WriteAccess.ANONYMOUS) {
+            return SecurityRuleResult.ALLOWED;
+        }
+        if (writeAccess == ControlPanelSecurityConfiguration.WriteAccess.AUTHENTICATED && authentication != null) {
+            return SecurityRuleResult.ALLOWED;
+        }
+        if (writeAccess == ControlPanelSecurityConfiguration.WriteAccess.AUTHORIZED
+            && authentication != null
+            && authentication.getRoles().contains(writeRole)) {
+            return SecurityRuleResult.ALLOWED;
+        }
+        return SecurityRuleResult.REJECTED;
+    }
+
+    private SecurityRuleResult readResult(@Nullable Authentication authentication) {
         if (access == ControlPanelSecurityConfiguration.Access.ANONYMOUS) {
-            return Publishers.just(SecurityRuleResult.ALLOWED);
+            return SecurityRuleResult.ALLOWED;
         }
         if (access == ControlPanelSecurityConfiguration.Access.AUTHENTICATED && authentication != null) {
-            return Publishers.just(SecurityRuleResult.ALLOWED);
+            return SecurityRuleResult.ALLOWED;
         }
         if (access == ControlPanelSecurityConfiguration.Access.AUTHORIZED
             && authentication != null
             && authentication.getRoles().contains(role)) {
-            return Publishers.just(SecurityRuleResult.ALLOWED);
+            return SecurityRuleResult.ALLOWED;
         }
-        return Publishers.just(SecurityRuleResult.REJECTED);
+        return SecurityRuleResult.REJECTED;
     }
 
     @Override

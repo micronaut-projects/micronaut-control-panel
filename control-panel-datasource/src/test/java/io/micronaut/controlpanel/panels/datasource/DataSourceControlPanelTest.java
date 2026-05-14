@@ -21,6 +21,7 @@ import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.controlpanel.panels.datasource.model.Body;
 import io.micronaut.controlpanel.panels.datasource.model.DataSourceInfo;
 import io.micronaut.controlpanel.panels.datasource.model.DatabaseType;
+import io.micronaut.controlpanel.panels.datasource.model.PoolInfo;
 import io.micronaut.controlpanel.panels.datasource.model.Table;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,6 +29,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -67,7 +69,7 @@ class DataSourceControlPanelTest {
         // Then
         assertEquals(BEAN_NAME, panel.getBeanName());
         assertEquals(DataSourceControlPanel.NAME, panel.getPanelName());
-        assertEquals("Query", panel.getDetailLinkName());
+        assertEquals("Detail", panel.getDetailLinkName());
         assertNotNull(panel.getBody());
         verify(dataSourceService).getTables();
         verify(dataSourceService).generateMermaidER(EMPTY_TABLE_LIST);
@@ -115,6 +117,28 @@ class DataSourceControlPanelTest {
         assertEquals(EMPTY_TABLE_LIST, body.tables());
         assertEquals(MERMAID_ER, body.mermaidEr());
         assertNotNull(body.dataSourceInfo());
+    }
+
+    @Test
+    void getBodyIncludesPoolInfoWhenAvailable() {
+        // Given
+        var poolInfo = new PoolInfo(
+            "HikariCP",
+            "main-pool",
+            "com.zaxxer.hikari.HikariDataSource",
+            PoolInfo.PoolStats.of(1, 2, 3, 10, 1, 0),
+            List.of()
+        );
+        when(dataSourceService.getTables()).thenReturn(EMPTY_TABLE_LIST);
+        when(dataSourceService.generateMermaidER(EMPTY_TABLE_LIST)).thenReturn(MERMAID_ER);
+        when(dataSourceService.getPoolInfo()).thenReturn(Optional.of(poolInfo));
+        when(environment.getProperty(anyString(), eq(String.class), eq(""))).thenReturn("");
+
+        // When
+        DataSourceControlPanel panel = new DataSourceControlPanel(BEAN_NAME, dataSourceService, environment, configuration);
+
+        // Then
+        assertSame(poolInfo, panel.getBody().poolInfo());
     }
 
     @Test

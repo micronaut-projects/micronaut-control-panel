@@ -2,3 +2,12 @@ datasources:
   my-oracle:
     db-type: oracle
     driver-class-name: oracle.jdbc.OracleDriver
+    pool-name: example-oracle-pool
+    maximum-pool-size: 5
+    minimum-idle: 1
+    connection-timeout: 20000
+    validation-timeout: 5000
+    idle-timeout: 180000
+    max-lifetime: 1200000
+    keepalive-time: 300000
+    connection-test-query: SELECT 1 FROM DUAL

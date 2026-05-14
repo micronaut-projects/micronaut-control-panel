@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
-@UsePlaywright
+@UsePlaywright(ControlPanelBrowserOptions.class)
 @MicronautTest
 @Property(name = "infinispan.enabled", value = StringUtils.FALSE)
 class ControlPanelShutdownE2ETest extends AbstractE2ETest {
