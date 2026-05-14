@@ -27,6 +27,7 @@ import java.util.Map;
  * JSON DTOs for the read-only Kafka Cluster control panel.
  */
 @Internal
+@SuppressWarnings("MissingJavadocType")
 public final class KafkaClusterResponse {
 
     private KafkaClusterResponse() {

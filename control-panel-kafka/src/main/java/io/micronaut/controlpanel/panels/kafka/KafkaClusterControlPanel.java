@@ -63,6 +63,7 @@ public final class KafkaClusterControlPanel extends AbstractControlPanel<KafkaCl
     }
 
     @ReflectiveAccess
+    @SuppressWarnings("MissingJavadocType")
     public record Body(String controllerPath) {
     }
 }
