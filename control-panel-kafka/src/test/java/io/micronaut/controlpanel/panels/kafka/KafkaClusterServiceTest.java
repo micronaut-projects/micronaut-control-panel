@@ -15,6 +15,7 @@
  */
 package io.micronaut.controlpanel.panels.kafka;
 
+import io.micronaut.configuration.kafka.ConsumerRegistry;
 import io.micronaut.controlpanel.core.security.ControlPanelSecurityPaths;
 import io.micronaut.http.annotation.Delete;
 import io.micronaut.http.annotation.Get;
@@ -350,6 +351,47 @@ final class KafkaClusterServiceTest {
 
         assertNull(section.data());
         assertEquals("Consumer group not found or not authorized: missing-group", section.error());
+    }
+
+    @Test
+    void appConsumersReturnRegistrySubscriptionsAssignmentsAndPauseState() {
+        AdminClient admin = mock(AdminClient.class);
+        ConsumerRegistry registry = mock(ConsumerRegistry.class);
+        TopicPartition ordersZero = new TopicPartition("orders", 0);
+        TopicPartition paymentsOne = new TopicPartition("payments", 1);
+        when(registry.getConsumerIds()).thenReturn(Set.of("payments-consumer", "orders-consumer"));
+        when(registry.getConsumerSubscription("orders-consumer")).thenReturn(Set.of("orders", "payments"));
+        when(registry.getConsumerAssignment("orders-consumer")).thenReturn(Set.of(paymentsOne, ordersZero));
+        when(registry.isPaused("orders-consumer")).thenReturn(true);
+        when(registry.isPaused("orders-consumer", List.of(ordersZero))).thenReturn(false);
+        when(registry.isPaused("orders-consumer", List.of(paymentsOne))).thenReturn(true);
+        when(registry.getConsumerSubscription("payments-consumer")).thenReturn(Set.of());
+        when(registry.getConsumerAssignment("payments-consumer")).thenReturn(Set.of());
+        when(registry.isPaused("payments-consumer")).thenReturn(false);
+
+        var section = new KafkaClusterService(admin, registry).appConsumers();
+
+        assertNull(section.error());
+        assertNotNull(section.data());
+        assertEquals(List.of("orders-consumer", "payments-consumer"), section.data().stream()
+            .map(KafkaClusterResponse.AppConsumer::id)
+            .toList());
+        KafkaClusterResponse.AppConsumer ordersConsumer = section.data().getFirst();
+        assertEquals(List.of("orders", "payments"), ordersConsumer.subscriptions());
+        assertTrue(ordersConsumer.paused());
+        assertEquals(List.of("orders:0:false", "payments:1:true"), ordersConsumer.assignments().stream()
+            .map(assignment -> assignment.topic() + ":" + assignment.partition() + ":" + assignment.paused())
+            .toList());
+    }
+
+    @Test
+    void appConsumersAreEmptyWhenConsumerRegistryIsUnavailable() {
+        AdminClient admin = mock(AdminClient.class);
+
+        var section = new KafkaClusterService(admin).appConsumers();
+
+        assertNull(section.error());
+        assertEquals(List.of(), section.data());
     }
 
     @Test

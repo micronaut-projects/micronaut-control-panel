@@ -15,6 +15,7 @@
  */
 package io.micronaut.controlpanel.panels.kafka;
 
+import io.micronaut.configuration.kafka.ConsumerRegistry;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.core.annotation.Internal;
 import io.micronaut.core.util.StringUtils;
@@ -77,6 +78,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.AppConsumer;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.AppConsumerAssignment;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.Broker;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.BrokerNode;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.ConsumerGroupDetail;
@@ -126,25 +129,33 @@ final class KafkaClusterService {
     );
 
     private final AdminClient adminClient;
+    private final @Nullable ConsumerRegistry consumerRegistry;
     private final KafkaMessageBrowserConsumerFactory consumerFactory;
     private final JsonMapper jsonMapper;
 
     @Inject
     KafkaClusterService(AdminClient adminClient,
+                        @Nullable ConsumerRegistry consumerRegistry,
                         KafkaMessageBrowserConsumerFactory consumerFactory,
                         JsonMapper jsonMapper) {
         this.adminClient = adminClient;
+        this.consumerRegistry = consumerRegistry;
         this.consumerFactory = consumerFactory;
         this.jsonMapper = jsonMapper;
     }
 
     KafkaClusterService(AdminClient adminClient) {
-        this(adminClient, null, JsonMapper.createDefault());
+        this(adminClient, null, null, JsonMapper.createDefault());
     }
 
     KafkaClusterService(AdminClient adminClient,
                         KafkaMessageBrowserConsumerFactory consumerFactory) {
-        this(adminClient, consumerFactory, JsonMapper.createDefault());
+        this(adminClient, null, consumerFactory, JsonMapper.createDefault());
+    }
+
+    KafkaClusterService(AdminClient adminClient,
+                        ConsumerRegistry consumerRegistry) {
+        this(adminClient, consumerRegistry, null, JsonMapper.createDefault());
     }
 
     Section<Overview> overview() {
@@ -263,6 +274,20 @@ final class KafkaClusterService {
             Map<TopicPartition, OffsetAndMetadata> offsets = consumerGroupOffsets(List.of(groupId))
                 .getOrDefault(groupId, Map.of());
             return toConsumerGroupDetail(description, offsets);
+        });
+    }
+
+    Section<List<AppConsumer>> appConsumers() {
+        return section(() -> {
+            ConsumerRegistry registry = consumerRegistry;
+            if (registry == null) {
+                return List.of();
+            }
+            return registry.getConsumerIds()
+                .stream()
+                .sorted()
+                .map(this::toAppConsumer)
+                .toList();
         });
     }
 
@@ -588,6 +613,30 @@ final class KafkaClusterService {
             member.clientId(),
             member.host(),
             topicPartitionLabels(member.assignment())
+        );
+    }
+
+    private AppConsumer toAppConsumer(String consumerId) {
+        ConsumerRegistry registry = consumerRegistry;
+        if (registry == null) {
+            throw new IllegalStateException("Micronaut Kafka ConsumerRegistry is unavailable");
+        }
+        List<String> subscriptions = registry.getConsumerSubscription(consumerId).stream()
+            .sorted()
+            .toList();
+        List<AppConsumerAssignment> assignments = registry.getConsumerAssignment(consumerId).stream()
+            .sorted(KafkaClusterService::compareTopicPartitions)
+            .map(partition -> new AppConsumerAssignment(
+                partition.topic(),
+                partition.partition(),
+                registry.isPaused(consumerId, List.of(partition))
+            ))
+            .toList();
+        return new AppConsumer(
+            consumerId,
+            subscriptions,
+            assignments,
+            registry.isPaused(consumerId)
         );
     }
 

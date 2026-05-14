@@ -297,7 +297,34 @@
             </table>
         </div>
     </div>
-    <div class="tabs-panel" id="panel-kafka-app-consumers" role="tabpanel" aria-labelledby="tab-kafka-app-consumers" data-tabs-panel="app-consumers" hidden></div>
+    <div class="tabs-panel" id="panel-kafka-app-consumers" role="tabpanel" aria-labelledby="tab-kafka-app-consumers" data-tabs-panel="app-consumers" hidden>
+        <div id="kafkaAppConsumersAlerts"></div>
+        <div class="cp-data-table" id="kafkaAppConsumersTable" data-filter-table data-filter-table-unpaged data-filter-table-label="app consumer" data-filter-table-label-plural="app consumers">
+            <div class="cp-data-table-toolbar">
+                <div class="cp-data-table-summary" data-filter-table-summary>0 app consumers</div>
+                <div class="cp-data-table-search">
+                    <input type="search" class="form-control" data-filter-table-search placeholder="Search app consumers" aria-label="Search app consumers">
+                </div>
+            </div>
+            <div class="cp-data-table-container">
+                <table id="kafkaAppConsumers" class="table cp-data-table-table table-bordered table-striped">
+                    <thead>
+                    <tr>
+                        <th>Consumer id</th>
+                        <th>Subscriptions</th>
+                        <th>Assignments</th>
+                        <th>Pause state</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr data-filter-table-empty hidden>
+                        <td class="cp-data-table-empty-cell" colspan="4">No Micronaut Kafka app consumers found.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
     <div class="tabs-panel" id="panel-kafka-schema-registry" role="tabpanel" aria-labelledby="tab-kafka-schema-registry" data-tabs-panel="schema-registry" hidden></div>
     <div class="tabs-panel" id="panel-kafka-connect" role="tabpanel" aria-labelledby="tab-kafka-connect" data-tabs-panel="kafka-connect" hidden></div>
     <div class="tabs-panel" id="panel-kafka-ksqldb" role="tabpanel" aria-labelledby="tab-kafka-ksqldb" data-tabs-panel="ksqldb" hidden></div>
@@ -438,6 +465,28 @@
       return '<dl>' + headers.map(function(header) {
         return '<dt><code>' + escapeHtml(header.key) + '</code></dt><dd>' + renderPayload(header.value) + '</dd>';
       }).join('') + '</dl>';
+    }
+
+    function renderTopicLink(topic) {
+      return '<button type="button" class="btn btn-link btn-sm p-0 kafka-topic-open" data-topic="'
+        + escapeHtml(topic) + '"><code>' + escapeHtml(topic) + '</code></button>';
+    }
+
+    function renderTopicList(topics) {
+      if (!topics || topics.length === 0) return '-';
+      return '<ul class="cp-kafka-inline-list">' + topics.map(function(topic) {
+        return '<li>' + renderTopicLink(topic) + '</li>';
+      }).join('') + '</ul>';
+    }
+
+    function renderAssignments(assignments) {
+      if (!assignments || assignments.length === 0) return '-';
+      return '<ul class="cp-kafka-inline-list">' + assignments.map(function(assignment) {
+        var label = assignment.topic + '-' + assignment.partition;
+        var state = assignment.paused ? ' <span class="badge badge-warning">paused</span>' : '';
+        return '<li>' + renderTopicLink(assignment.topic) + ':' + assignment.partition + state
+          + '<span class="sr-only">' + escapeHtml(label) + '</span></li>';
+      }).join('') + '</ul>';
     }
 
     function renderConfig(selector, config) {
@@ -621,6 +670,23 @@
       });
     }
 
+    function loadAppConsumers() {
+      loadSection(baseUrl + '/app-consumers', 'Micronaut Kafka app consumers unavailable', '#kafkaAppConsumersAlerts', function(consumers) {
+        var tbody = $('#kafkaAppConsumers tbody');
+        tbody.find('[data-filter-table-row]').remove();
+        consumers.forEach(function(consumer) {
+          tbody.append('<tr>'
+            + '<td><code>' + escapeHtml(consumer.id) + '</code></td>'
+            + '<td>' + renderTopicList(consumer.subscriptions) + '</td>'
+            + '<td>' + renderAssignments(consumer.assignments) + '</td>'
+            + '<td>' + (consumer.paused ? '<span class="badge badge-warning">paused</span>' : '<span class="badge badge-success">running</span>') + '</td>'
+            + '</tr>');
+          tbody.find('tr:last').attr('data-filter-table-row', '');
+        });
+        refreshFilterTable('#kafkaAppConsumersTable');
+      });
+    }
+
     function loadMessages() {
       var query = {
         topic: $('#kafkaMessageTopic').val().trim(),
@@ -677,6 +743,12 @@
         });
         renderConfig('#kafkaTopicConfig', detail.topic.config);
       });
+    }
+
+    function openTopicDetail(topicName) {
+      activateKafkaTab('topics');
+      loadTopicDetail(topicName);
+      $('#kafkaTopicDetailModal').modal('show');
     }
 
     function loadConsumerGroupDetail(groupId) {
@@ -742,6 +814,9 @@
     $('#kafkaTopics').on('click', '.kafka-topic-detail', function() {
       loadTopicDetail($(this).data('topic'));
     });
+    $('#kafkaClusterTabs').on('click', '.kafka-topic-open', function() {
+      openTopicDetail($(this).data('topic'));
+    });
     $('#kafkaConsumerGroups').on('click', '.kafka-consumer-group-detail', function() {
       loadConsumerGroupDetail($(this).data('group'));
     });
@@ -762,6 +837,11 @@
     loadBrokers();
     loadTopics();
     loadConsumerGroups();
+    loadAppConsumers();
+    var linkedTopic = new URLSearchParams(window.location.search).get('topic');
+    if (linkedTopic) {
+      openTopicDetail(linkedTopic);
+    }
   })();
 </script>
 {{/with}}

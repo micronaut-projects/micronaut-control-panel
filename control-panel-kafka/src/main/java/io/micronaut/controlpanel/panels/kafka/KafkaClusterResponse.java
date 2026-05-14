@@ -151,6 +151,19 @@ public final class KafkaClusterResponse {
 
     @Introspected
     @ReflectiveAccess
+    public record AppConsumer(String id,
+                              List<String> subscriptions,
+                              List<AppConsumerAssignment> assignments,
+                              boolean paused) {
+    }
+
+    @Introspected
+    @ReflectiveAccess
+    public record AppConsumerAssignment(String topic, int partition, boolean paused) {
+    }
+
+    @Introspected
+    @ReflectiveAccess
     public record MessagePage(String topic,
                               int partition,
                               String mode,
