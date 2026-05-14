@@ -71,6 +71,10 @@ dependencies {
     runtimeOnly(mnLogging.logback.classic)
     runtimeOnly(mn.snakeyaml)
 
+    // The test resources Control Panel service resolves the published RC artifacts.
+    testResourcesRuntimeOnly(mn.micronaut.discovery.core)
+    testResourcesRuntimeOnly(mn.micronaut.management)
+
     testImplementation(mn.micronaut.http.client)
     testImplementation(mnTest.micronaut.test.junit5)
     testImplementation(libs.playwright)
