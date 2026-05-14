@@ -462,6 +462,18 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         assertThat(page.getByLabel("Search consumer groups")).isVisible();
         assertThat(page.locator("#kafkaConsumerGroups")).containsText("Total lag");
 
+        page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("Writes/Management")).click();
+        assertThat(page.locator("#kafkaWritesEnabled")).containsText("disabled");
+        assertThat(page.locator("#kafkaDestructiveEnabled")).containsText("disabled");
+        assertThat(page.locator("#kafkaCreateTopicForm button[type='submit']")).isDisabled();
+
+        page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("Schema Registry")).click();
+        assertThat(page.locator("#kafkaSchemaRegistryConfigured")).containsText("not configured");
+        page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("Kafka Connect")).click();
+        assertThat(page.locator("#kafkaConnectConfigured")).containsText("not configured");
+        page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("ksqlDB")).click();
+        assertThat(page.locator("#kafkaKsqlDbConfigured")).containsText("not configured");
+
         page.navigate(baseUrl());
         categoryLink(page, "Kafka").click();
         page.locator("a[href$='/control-panel/kafka-streams-default']").click();
