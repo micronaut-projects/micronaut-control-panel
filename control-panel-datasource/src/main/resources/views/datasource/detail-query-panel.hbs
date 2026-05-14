@@ -9,7 +9,7 @@
                     <h3 class="card-title">SQL query</h3>
                 </div>
                 <div class="card-tools">
-                    <button type="button" class="btn btn-success btn-sm" id="executeQuery" title="Execute query (Cmd+Enter / Ctrl+Enter)">
+                    <button type="button" class="btn btn-success btn-sm" id="executeQuery" title="{{#if ext.writeAccess.allowed}}Execute query (Cmd+Enter / Ctrl+Enter){{else}}{{ ext.writeAccess.reason }}{{/if}}"{{#unless ext.writeAccess.allowed}} disabled aria-disabled="true"{{/unless}}>
                         <i class="fas fa-play" aria-hidden="true"></i>
                         Run
                     </button>
@@ -42,10 +42,18 @@
             </div>
             <div class="card-body">
                 <div id="queryResultsContainer" class="cp-data-table">
-                    <div class="cp-query-state">
-                        <i class="fas fa-table-list" aria-hidden="true"></i>
-                        <strong>Run a query to see results.</strong>
-                    </div>
+                    {{#if ext.writeAccess.allowed}}
+                        <div class="cp-query-state">
+                            <i class="fas fa-table-list" aria-hidden="true"></i>
+                            <strong>Run a query to see results.</strong>
+                        </div>
+                    {{else}}
+                        <div class="cp-query-state cp-query-state-error">
+                            <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
+                            <strong>Query execution disabled</strong>
+                            <p>{{ ext.writeAccess.reason }}</p>
+                        </div>
+                    {{/if}}
                 </div>
             </div>
         </div>

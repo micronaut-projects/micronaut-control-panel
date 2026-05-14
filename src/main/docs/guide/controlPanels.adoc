@@ -6,13 +6,17 @@ For example, to disable the routes control panel, set the property
 `micronaut.control-panel.panels.routes.enabled` to `false`.
 
 Beyond displaying the available panels, the control panel also allows to perform 2 additional actions, provided that the
-corresponding endpoints are enabled and non-sensitive:
+corresponding endpoints are enabled. These actions are routed through control-panel-owned helper routes, so
+`micronaut.control-panel.security.write-access` applies to them independently of the raw management endpoint routes:
 
 * *Refresh*: refreshing the application will cause all `@Refreshable` beans in the context to be destroyed and
   re-instantiated upon further requests. This requires the
-  https://docs.micronaut.io/latest/guide/#refreshEndpoint[Refresh Endpoint] to be enabled and non-sensitive.
+  https://docs.micronaut.io/latest/guide/#refreshEndpoint[Refresh Endpoint] to be enabled.
 
 * *Stop*: will shut down the application. This requires the
-  https://docs.micronaut.io/latest/guide/#stopEndpoint[Stop Endpoint] to be enabled and non-sensitive.
+  https://docs.micronaut.io/latest/guide/#stopEndpoint[Stop Endpoint] to be enabled.
+
+The raw `/refresh` and `/stop` management endpoint routes still follow Micronaut Management endpoint sensitivity rules.
+Keep those raw routes sensitive unless you intentionally want callers outside the control panel to invoke them directly.
 
 WARNING: Micronaut Endpoints require having the `io.micronaut:micronaut-management` dependency on the classpath.
