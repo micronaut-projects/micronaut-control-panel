@@ -39,14 +39,13 @@ public final class EndpointUtils {
     }
 
     /**
-     * Determines if the control panel can call the refresh endpoint.
+     * Determines if the control panel can call the refresh endpoint through its own write-gated helper route.
      *
      * @param endpoint the endpoint
-     * @param beanContext the bean context
      * @return true if the endpoint can be called, false otherwise
      */
-    public static boolean canRefresh(@Nullable RefreshEndpoint endpoint, BeanContext beanContext) {
-        return endpoint != null && !isSensitive(endpoint, beanContext);
+    public static boolean canRefresh(@Nullable RefreshEndpoint endpoint) {
+        return endpoint != null;
     }
 
     /**

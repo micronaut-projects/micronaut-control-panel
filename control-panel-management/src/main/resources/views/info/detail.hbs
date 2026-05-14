@@ -1,0 +1,81 @@
+{{#with controlPanel.body }}
+    {{#if sections}}
+        <div class="cp-info-detail">
+            <aside class="cp-info-sidebar" aria-label="Application info summary">
+                <section class="card cp-info-summary-card">
+                    <div class="card-header cp-card-header">
+                        <h2 class="card-title">Summary</h2>
+                        <span class="badge badge-secondary">InfoEndpoint available</span>
+                    </div>
+                    <div class="card-body">
+                        {{#if summaryItems}}
+                            <dl class="cp-info-summary-list">
+                                {{#each summaryItems}}
+                                    <div>
+                                        <dt>{{label}}</dt>
+                                        <dd>
+                                            {{#if code}}
+                                                <code class="cp-table-code">{{value}}</code>
+                                            {{else}}
+                                                {{value}}
+                                            {{/if}}
+                                        </dd>
+                                    </div>
+                                {{/each}}
+                            </dl>
+                        {{else}}
+                            <p class="text-muted">
+                                No common application, build, or git metadata was found. The full InfoSource output is still available.
+                            </p>
+                        {{/if}}
+                    </div>
+                </section>
+            </aside>
+
+            <section class="card cp-info-values-card">
+                <div class="card-header cp-card-header">
+                    <h2 class="card-title">Info values</h2>
+                    <span class="badge badge-outline">{{rows.size}} values</span>
+                </div>
+                <div class="card-body">
+                    <div class="cp-data-table cp-data-table-unpaged" data-filter-table data-filter-table-unpaged data-filter-table-label="info value" data-filter-table-label-plural="info values">
+                        <div class="cp-data-table-toolbar">
+                            <div class="cp-data-table-summary" data-filter-table-summary>{{rows.size}} info values</div>
+                            <div class="cp-data-table-search">
+                                <input type="text" class="form-control" data-filter-table-search placeholder="Search info values" aria-label="Search info values">
+                            </div>
+                        </div>
+                        <div class="cp-data-table-container cp-info-table-container">
+                            <table class="table cp-data-table-table cp-data-table-fixed cp-info-table">
+                                <thead>
+                                    <tr>
+                                        <th>Section</th>
+                                        <th>Key</th>
+                                        <th>Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {{#each rows}}
+                                        <tr data-filter-table-row>
+                                            <td data-label="Section">{{section}}</td>
+                                            <td data-label="Key"><code class="cp-table-code">{{key}}</code></td>
+                                            <td data-label="Value" class="cp-info-value">{{value}}</td>
+                                        </tr>
+                                    {{/each}}
+                                    <tr data-filter-table-empty hidden>
+                                        <td class="cp-data-table-empty-cell" colspan="3">No info values found.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    {{else}}
+        <div class="alert alert-info cp-info-empty-state">
+            <h5><i class="icon fas fa-info-circle"></i> No application info is available</h5>
+            The Info endpoint returned no values. Add an InfoSource bean, configure non-secret `info.*` values, or provide build/git metadata to populate this panel.
+        </div>
+    {{/if}}
+{{/with}}

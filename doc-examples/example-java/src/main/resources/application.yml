@@ -33,6 +33,13 @@ micronaut:
       http-hosts:
         - http://localhost:9200
 
+info:
+  demo:
+    name: Micronaut Control Panel Example
+    environment:
+      purpose: Local development
+      owner: Micronaut
+
 ehcache:
   caches:
     my-ehcache:
@@ -51,6 +58,8 @@ endpoints:
     sensitive: false
   health:
     details-visible: ANONYMOUS
+  info:
+    enabled: true
 
 infinispan:
   enabled: false
