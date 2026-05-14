@@ -59,7 +59,7 @@ public class DataSourceControlPanel extends AbstractEachBeanControlPanel<Body> {
         }
         this.tables = dataSourceService.getTables();
         this.dataSourceInfo = createDataSourceInfo(environment, beanName, dataSourceService);
-        this.body = new Body(dataSourceInfo, tables, dataSourceService.generateMermaidER(tables));
+        this.body = new Body(dataSourceInfo, tables, dataSourceService.generateMermaidER(tables), dataSourceService.getPoolInfo().orElse(null));
         if (LOG.isDebugEnabled()) {
             LOG.debug("DataSourceControlPanel initialized: bean='{}', tables={}, dbType={} URL='{}' user='{}'", beanName, tables.size(), dataSourceInfo.type(), safeUrl(dataSourceInfo.jdbcUrl()), safeUser(dataSourceInfo.username()));
         }
@@ -104,7 +104,7 @@ public class DataSourceControlPanel extends AbstractEachBeanControlPanel<Body> {
 
     @Override
     public String getDetailLinkName() {
-        return "Query";
+        return "Detail";
     }
 
     private static String safeUrl(String url) {
