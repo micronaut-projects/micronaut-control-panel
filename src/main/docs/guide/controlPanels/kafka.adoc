@@ -20,12 +20,14 @@ Features include:
 * Search and page topics, optionally showing internal topics.
 * View topic cleanup policy, retention settings, segment settings, and open topic partition details in a modal with leaders, replicas, ISR, and beginning/end offsets.
 * Inspect consumer groups, state, protocol, member count, assigned partitions, committed partitions, total lag, member client id/host/assignment, and per-partition committed offset, end offset, and lag.
+* Browse messages by topic and partition from the beginning, latest bounded window, a specific offset, or a timestamp.
+  The browser uses temporary consumers with auto-commit disabled and no consumer group id, caps requested record counts, and renders payloads as UTF-8, pretty JSON, or base64 for binary data.
 * Display readable section-level errors when Kafka metadata, broker, topic, or offset calls are unavailable or unauthorized.
 
 Sensitive broker and topic configuration values are filtered.
 The panel removes values Kafka marks as sensitive and also filters obvious secret-bearing configuration names such as passwords, tokens, credentials, JAAS, SASL, keystore, and truststore entries.
 
-Message browsing, topic management, message production, offset reset, and destructive operations are intentionally not part of this read-only panel.
+Topic management, message production, offset reset, and destructive operations are intentionally not part of this read-only panel.
 
 == Kafka Streams
 

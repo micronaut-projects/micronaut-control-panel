@@ -148,4 +148,40 @@ public final class KafkaClusterResponse {
                                          @Nullable Long endOffset,
                                          @Nullable Long lag) {
     }
+
+    @Introspected
+    @ReflectiveAccess
+    public record MessagePage(String topic,
+                              int partition,
+                              String mode,
+                              int limit,
+                              @Nullable Long startOffset,
+                              @Nullable Long endOffset,
+                              List<MessageRecord> records) {
+    }
+
+    @Introspected
+    @ReflectiveAccess
+    public record MessageRecord(long offset,
+                                long timestamp,
+                                String timestampType,
+                                @Nullable RenderedPayload key,
+                                @Nullable RenderedPayload value,
+                                List<MessageHeader> headers,
+                                int partition) {
+    }
+
+    @Introspected
+    @ReflectiveAccess
+    public record MessageHeader(String key, @Nullable RenderedPayload value) {
+    }
+
+    @Introspected
+    @ReflectiveAccess
+    public record RenderedPayload(String format,
+                                  @Nullable String text,
+                                  @Nullable String base64,
+                                  int size,
+                                  boolean truncated) {
+    }
 }

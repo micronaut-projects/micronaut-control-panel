@@ -32,6 +32,7 @@ import java.util.List;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.Broker;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.ConsumerGroupDetail;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.ConsumerGroupSummary;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.MessagePage;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.Overview;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.Section;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.TopicDetail;
@@ -86,5 +87,15 @@ public final class KafkaClusterController {
     @Get("/consumer-groups/{groupId}")
     public Section<ConsumerGroupDetail> consumerGroup(String groupId) {
         return service.consumerGroup(groupId);
+    }
+
+    @Get("/messages{?topic,partition,mode,offset,timestamp,limit}")
+    public Section<MessagePage> messages(@QueryValue String topic,
+                                         @QueryValue int partition,
+                                         @QueryValue(defaultValue = "beginning") String mode,
+                                         @Nullable @QueryValue Long offset,
+                                         @Nullable @QueryValue Long timestamp,
+                                         @QueryValue(defaultValue = "25") int limit) {
+        return service.messages(topic, partition, mode, offset, timestamp, limit);
     }
 }

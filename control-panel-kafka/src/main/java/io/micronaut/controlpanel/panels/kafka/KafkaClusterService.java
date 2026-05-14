@@ -18,6 +18,9 @@ package io.micronaut.controlpanel.panels.kafka;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.core.annotation.Internal;
 import io.micronaut.core.util.StringUtils;
+import io.micronaut.json.JsonMapper;
+import io.micronaut.json.tree.JsonNode;
+import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.Config;
@@ -40,15 +43,28 @@ import org.apache.kafka.clients.admin.OffsetSpec;
 import org.apache.kafka.clients.admin.TopicDescription;
 import org.apache.kafka.clients.admin.TopicListing;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.OffsetAndTimestamp;
 import org.apache.kafka.common.KafkaFuture;
 import org.apache.kafka.common.Node;
+import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.TopicCollection;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.TopicPartitionInfo;
 import org.apache.kafka.common.config.ConfigResource;
 import org.jspecify.annotations.Nullable;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.charset.CodingErrorAction;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -67,8 +83,12 @@ import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.Consum
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.ConsumerGroupMember;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.ConsumerGroupPartition;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.ConsumerGroupSummary;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.MessageHeader;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.MessagePage;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.MessageRecord;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.Overview;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.PartitionDetail;
+import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.RenderedPayload;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.Section;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.TopicDetail;
 import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.TopicPage;
@@ -84,8 +104,14 @@ import static io.micronaut.controlpanel.panels.kafka.KafkaClusterResponse.TopicS
 final class KafkaClusterService {
 
     private static final Duration ADMIN_TIMEOUT = Duration.ofSeconds(5);
+    private static final Duration CONSUMER_POLL_TIMEOUT = Duration.ofMillis(250);
+    private static final Duration CONSUMER_API_TIMEOUT = Duration.ofSeconds(5);
     private static final int DEFAULT_PAGE_LENGTH = 25;
     private static final int MAX_PAGE_LENGTH = 100;
+    private static final int DEFAULT_RECORD_LIMIT = 25;
+    private static final int MAX_RECORD_LIMIT = 100;
+    private static final int MAX_PAYLOAD_DISPLAY_BYTES = 8 * 1024;
+    private static final int MAX_POLLS = 8;
     private static final List<String> SECRET_NAME_PARTS = List.of(
         "password",
         "secret",
@@ -100,9 +126,25 @@ final class KafkaClusterService {
     );
 
     private final AdminClient adminClient;
+    private final KafkaMessageBrowserConsumerFactory consumerFactory;
+    private final JsonMapper jsonMapper;
+
+    @Inject
+    KafkaClusterService(AdminClient adminClient,
+                        KafkaMessageBrowserConsumerFactory consumerFactory,
+                        JsonMapper jsonMapper) {
+        this.adminClient = adminClient;
+        this.consumerFactory = consumerFactory;
+        this.jsonMapper = jsonMapper;
+    }
 
     KafkaClusterService(AdminClient adminClient) {
-        this.adminClient = adminClient;
+        this(adminClient, null, JsonMapper.createDefault());
+    }
+
+    KafkaClusterService(AdminClient adminClient,
+                        KafkaMessageBrowserConsumerFactory consumerFactory) {
+        this(adminClient, consumerFactory, JsonMapper.createDefault());
     }
 
     Section<Overview> overview() {
@@ -221,6 +263,42 @@ final class KafkaClusterService {
             Map<TopicPartition, OffsetAndMetadata> offsets = consumerGroupOffsets(List.of(groupId))
                 .getOrDefault(groupId, Map.of());
             return toConsumerGroupDetail(description, offsets);
+        });
+    }
+
+    Section<MessagePage> messages(String topic,
+                                  int partition,
+                                  String mode,
+                                  @Nullable Long offset,
+                                  @Nullable Long timestamp,
+                                  int limit) {
+        return section(() -> {
+            if (consumerFactory == null) {
+                throw new IllegalStateException("Kafka message browser consumer factory is unavailable");
+            }
+            if (topic.isBlank()) {
+                throw new IllegalArgumentException("Topic is required");
+            }
+            if (partition < 0) {
+                throw new IllegalArgumentException("Partition must be greater than or equal to 0");
+            }
+            String safeMode = normalizeMessageMode(mode);
+            int safeLimit = safeRecordLimit(limit);
+            TopicPartition topicPartition = new TopicPartition(topic, partition);
+            try (Consumer<byte[], byte[]> consumer = consumerFactory.createConsumer()) {
+                consumer.assign(List.of(topicPartition));
+                BrowseOffsets browseOffsets = seekForBrowse(consumer, topicPartition, safeMode, offset, timestamp, safeLimit);
+                List<MessageRecord> records = readRecords(consumer, topicPartition, safeLimit, browseOffsets.endOffset());
+                return new MessagePage(
+                    topic,
+                    partition,
+                    safeMode,
+                    safeLimit,
+                    browseOffsets.startOffset(),
+                    browseOffsets.endOffset(),
+                    records
+                );
+            }
         });
     }
 
@@ -538,6 +616,251 @@ final class KafkaClusterService {
         );
     }
 
+    private BrowseOffsets seekForBrowse(Consumer<byte[], byte[]> consumer,
+                                        TopicPartition partition,
+                                        String mode,
+                                        @Nullable Long offset,
+                                        @Nullable Long timestamp,
+                                        int limit) {
+        Long beginningOffset = null;
+        Long endOffset = null;
+        Long startOffset;
+        switch (mode) {
+            case "beginning" -> {
+                consumer.seekToBeginning(List.of(partition));
+                startOffset = consumer.position(partition, CONSUMER_API_TIMEOUT);
+            }
+            case "latest" -> {
+                Map<TopicPartition, Long> beginningOffsets = consumer.beginningOffsets(List.of(partition), CONSUMER_API_TIMEOUT);
+                Map<TopicPartition, Long> endOffsets = consumer.endOffsets(List.of(partition), CONSUMER_API_TIMEOUT);
+                beginningOffset = beginningOffsets.get(partition);
+                endOffset = endOffsets.get(partition);
+                if (endOffset == null) {
+                    consumer.seekToEnd(List.of(partition));
+                    startOffset = consumer.position(partition, CONSUMER_API_TIMEOUT);
+                } else {
+                    startOffset = Math.max(beginningOffset == null ? 0L : beginningOffset, endOffset - limit);
+                    consumer.seek(partition, startOffset);
+                }
+            }
+            case "offset" -> {
+                if (offset == null || offset < 0) {
+                    throw new IllegalArgumentException("Offset must be greater than or equal to 0");
+                }
+                startOffset = offset;
+                consumer.seek(partition, offset);
+            }
+            case "timestamp" -> {
+                if (timestamp == null || timestamp < 0) {
+                    throw new IllegalArgumentException("Timestamp must be greater than or equal to 0");
+                }
+                Map<TopicPartition, OffsetAndTimestamp> offsets = consumer.offsetsForTimes(
+                    Map.of(partition, timestamp),
+                    CONSUMER_API_TIMEOUT
+                );
+                OffsetAndTimestamp offsetAndTimestamp = offsets.get(partition);
+                if (offsetAndTimestamp == null) {
+                    consumer.seekToEnd(List.of(partition));
+                    startOffset = consumer.position(partition, CONSUMER_API_TIMEOUT);
+                } else {
+                    startOffset = offsetAndTimestamp.offset();
+                    consumer.seek(partition, startOffset);
+                }
+            }
+            default -> throw new IllegalArgumentException("Unsupported message browse mode: " + mode);
+        }
+        return new BrowseOffsets(startOffset, endOffset);
+    }
+
+    private List<MessageRecord> readRecords(Consumer<byte[], byte[]> consumer,
+                                            TopicPartition partition,
+                                            int limit,
+                                            @Nullable Long endOffset) {
+        List<MessageRecord> records = new ArrayList<>(limit);
+        for (int i = 0; i < MAX_POLLS && records.size() < limit; i++) {
+            ConsumerRecords<byte[], byte[]> consumerRecords = consumer.poll(CONSUMER_POLL_TIMEOUT);
+            for (ConsumerRecord<byte[], byte[]> record : consumerRecords.records(partition)) {
+                if (endOffset != null && record.offset() >= endOffset) {
+                    return records;
+                }
+                records.add(toMessageRecord(record));
+                if (records.size() >= limit) {
+                    break;
+                }
+            }
+            if (consumerRecords.isEmpty()) {
+                break;
+            }
+        }
+        return records;
+    }
+
+    private MessageRecord toMessageRecord(ConsumerRecord<byte[], byte[]> record) {
+        List<MessageHeader> headers = new ArrayList<>();
+        for (Header header : record.headers()) {
+            headers.add(new MessageHeader(header.key(), renderPayload(header.value())));
+        }
+        return new MessageRecord(
+            record.offset(),
+            record.timestamp(),
+            record.timestampType().toString(),
+            renderPayload(record.key()),
+            renderPayload(record.value()),
+            headers,
+            record.partition()
+        );
+    }
+
+    @Nullable
+    private RenderedPayload renderPayload(byte @Nullable [] bytes) {
+        if (bytes == null) {
+            return null;
+        }
+        boolean truncated = bytes.length > MAX_PAYLOAD_DISPLAY_BYTES;
+        byte[] displayBytes = truncated ? Arrays.copyOf(bytes, MAX_PAYLOAD_DISPLAY_BYTES) : bytes;
+        String text = decodeUtf8(displayBytes, truncated);
+        if (text != null) {
+            String trimmed = text.trim();
+            if (isJsonCandidate(trimmed)) {
+                String prettyJson = prettyJson(displayBytes);
+                if (prettyJson != null) {
+                    return new RenderedPayload("json", prettyJson, null, bytes.length, truncated);
+                }
+            }
+            return new RenderedPayload("utf8", text, null, bytes.length, truncated);
+        }
+        return new RenderedPayload(
+            "base64",
+            null,
+            Base64.getEncoder().encodeToString(displayBytes),
+            bytes.length,
+            truncated
+        );
+    }
+
+    @Nullable
+    private static String decodeUtf8(byte[] bytes, boolean allowTrim) {
+        byte[] candidate = bytes;
+        for (int i = 0; i < 4; i++) {
+            try {
+                return StandardCharsets.UTF_8.newDecoder()
+                    .onMalformedInput(CodingErrorAction.REPORT)
+                    .onUnmappableCharacter(CodingErrorAction.REPORT)
+                    .decode(ByteBuffer.wrap(candidate))
+                    .toString();
+            } catch (CharacterCodingException e) {
+                if (!allowTrim || candidate.length == 0) {
+                    return null;
+                }
+                candidate = Arrays.copyOf(candidate, candidate.length - 1);
+            }
+        }
+        return null;
+    }
+
+    private static boolean isJsonCandidate(String text) {
+        return (text.startsWith("{") && text.endsWith("}")) || (text.startsWith("[") && text.endsWith("]"));
+    }
+
+    @Nullable
+    private String prettyJson(byte[] bytes) {
+        try {
+            JsonNode node = jsonMapper.readValue(bytes, JsonNode.class);
+            StringBuilder builder = new StringBuilder();
+            appendJson(builder, node, 0);
+            return builder.toString();
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    private static void appendJson(StringBuilder builder, JsonNode node, int indent) {
+        if (node.isObject()) {
+            builder.append('{');
+            boolean first = true;
+            for (Map.Entry<String, JsonNode> entry : node.entries()) {
+                if (first) {
+                    first = false;
+                } else {
+                    builder.append(',');
+                }
+                builder.append('\n');
+                appendIndent(builder, indent + 2);
+                appendQuoted(builder, entry.getKey());
+                builder.append(": ");
+                appendJson(builder, entry.getValue(), indent + 2);
+            }
+            if (!first) {
+                builder.append('\n');
+                appendIndent(builder, indent);
+            }
+            builder.append('}');
+        } else if (node.isArray()) {
+            builder.append('[');
+            boolean first = true;
+            for (JsonNode value : node.values()) {
+                if (first) {
+                    first = false;
+                } else {
+                    builder.append(',');
+                }
+                builder.append('\n');
+                appendIndent(builder, indent + 2);
+                appendJson(builder, value, indent + 2);
+            }
+            if (!first) {
+                builder.append('\n');
+                appendIndent(builder, indent);
+            }
+            builder.append(']');
+        } else if (node.isString()) {
+            appendQuoted(builder, node.getStringValue());
+        } else if (node.isNumber() || node.isBoolean()) {
+            builder.append(node.getValue());
+        } else {
+            builder.append("null");
+        }
+    }
+
+    private static void appendIndent(StringBuilder builder, int indent) {
+        builder.append(" ".repeat(indent));
+    }
+
+    private static void appendQuoted(StringBuilder builder, String value) {
+        builder.append('"');
+        for (int i = 0; i < value.length(); i++) {
+            char character = value.charAt(i);
+            switch (character) {
+                case '"' -> builder.append("\\\"");
+                case '\\' -> builder.append("\\\\");
+                case '\b' -> builder.append("\\b");
+                case '\f' -> builder.append("\\f");
+                case '\n' -> builder.append("\\n");
+                case '\r' -> builder.append("\\r");
+                case '\t' -> builder.append("\\t");
+                default -> {
+                    if (character < 0x20) {
+                        builder.append("\\u%04x".formatted((int) character));
+                    } else {
+                        builder.append(character);
+                    }
+                }
+            }
+        }
+        builder.append('"');
+    }
+
+    private static String normalizeMessageMode(String mode) {
+        return switch (mode.toLowerCase(Locale.ROOT)) {
+            case "beginning", "latest", "offset", "timestamp" -> mode.toLowerCase(Locale.ROOT);
+            default -> throw new IllegalArgumentException("Unsupported message browse mode: " + mode);
+        };
+    }
+
+    private static int safeRecordLimit(int limit) {
+        return limit <= 0 ? DEFAULT_RECORD_LIMIT : Math.min(limit, MAX_RECORD_LIMIT);
+    }
+
     private Map<TopicPartition, ListOffsetsResult.ListOffsetsResultInfo> listOffsets(
         Collection<TopicPartition> partitions,
         OffsetSpec offsetSpec) throws Exception {
@@ -578,5 +901,8 @@ final class KafkaClusterService {
 
     private static <T> T await(KafkaFuture<T> future) throws Exception {
         return future.get(ADMIN_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS);
+    }
+
+    private record BrowseOffsets(@Nullable Long startOffset, @Nullable Long endOffset) {
     }
 }

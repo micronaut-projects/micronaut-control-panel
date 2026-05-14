@@ -235,7 +235,68 @@
             </div>
         </div>
     </div>
-    <div class="tabs-panel" id="panel-kafka-messages" role="tabpanel" aria-labelledby="tab-kafka-messages" data-tabs-panel="messages" hidden></div>
+    <div class="tabs-panel" id="panel-kafka-messages" role="tabpanel" aria-labelledby="tab-kafka-messages" data-tabs-panel="messages" hidden>
+        <div id="kafkaMessagesAlerts"></div>
+        <form id="kafkaMessageBrowserForm" class="mb-3">
+            <div class="form-row">
+                <div class="form-group col-md-4">
+                    <label for="kafkaMessageTopic">Topic</label>
+                    <input type="text" class="form-control" id="kafkaMessageTopic" required>
+                </div>
+                <div class="form-group col-md-2">
+                    <label for="kafkaMessagePartition">Partition</label>
+                    <input type="number" class="form-control" id="kafkaMessagePartition" min="0" value="0" required>
+                </div>
+                <div class="form-group col-md-2">
+                    <label for="kafkaMessageMode">Read from</label>
+                    <select class="form-control" id="kafkaMessageMode">
+                        <option value="beginning">Beginning</option>
+                        <option value="latest">Latest</option>
+                        <option value="offset">Offset</option>
+                        <option value="timestamp">Timestamp</option>
+                    </select>
+                </div>
+                <div class="form-group col-md-2" id="kafkaMessageOffsetGroup" hidden>
+                    <label for="kafkaMessageOffset">Offset</label>
+                    <input type="number" class="form-control" id="kafkaMessageOffset" min="0">
+                </div>
+                <div class="form-group col-md-2" id="kafkaMessageTimestampGroup" hidden>
+                    <label for="kafkaMessageTimestamp">Timestamp ms</label>
+                    <input type="number" class="form-control" id="kafkaMessageTimestamp" min="0">
+                </div>
+                <div class="form-group col-md-2">
+                    <label for="kafkaMessageLimit">Limit</label>
+                    <input type="number" class="form-control" id="kafkaMessageLimit" min="1" max="100" value="25">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Browse</button>
+        </form>
+        <dl class="row">
+            <dt class="col-sm-2">Start offset</dt>
+            <dd class="col-sm-10"><code id="kafkaMessagesStartOffset">-</code></dd>
+            <dt class="col-sm-2">End offset</dt>
+            <dd class="col-sm-10"><code id="kafkaMessagesEndOffset">-</code></dd>
+        </dl>
+        <div class="cp-data-table-container">
+            <table id="kafkaMessages" class="table cp-data-table-table table-bordered table-striped">
+                <thead>
+                <tr>
+                    <th>Offset</th>
+                    <th>Timestamp</th>
+                    <th>Partition</th>
+                    <th>Key</th>
+                    <th>Value</th>
+                    <th>Headers</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr id="kafkaMessagesEmpty">
+                    <td class="cp-data-table-empty-cell" colspan="6">No messages loaded.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
     <div class="tabs-panel" id="panel-kafka-app-consumers" role="tabpanel" aria-labelledby="tab-kafka-app-consumers" data-tabs-panel="app-consumers" hidden></div>
     <div class="tabs-panel" id="panel-kafka-schema-registry" role="tabpanel" aria-labelledby="tab-kafka-schema-registry" data-tabs-panel="schema-registry" hidden></div>
     <div class="tabs-panel" id="panel-kafka-connect" role="tabpanel" aria-labelledby="tab-kafka-connect" data-tabs-panel="kafka-connect" hidden></div>
@@ -362,6 +423,21 @@
 
     function valueOrDash(value) {
       return value == null || value === '' ? '-' : value;
+    }
+
+    function renderPayload(payload) {
+      if (!payload) return '<span class="text-muted">null</span>';
+      var label = payload.format + ', ' + payload.size + ' bytes' + (payload.truncated ? ', truncated' : '');
+      var body = payload.base64 == null ? payload.text : payload.base64;
+      return '<details><summary>' + escapeHtml(label) + '</summary><pre class="mb-0"><code>'
+        + escapeHtml(body || '') + '</code></pre></details>';
+    }
+
+    function renderHeaders(headers) {
+      if (!headers || headers.length === 0) return '-';
+      return '<dl>' + headers.map(function(header) {
+        return '<dt><code>' + escapeHtml(header.key) + '</code></dt><dd>' + renderPayload(header.value) + '</dd>';
+      }).join('') + '</dl>';
     }
 
     function renderConfig(selector, config) {
@@ -545,6 +621,41 @@
       });
     }
 
+    function loadMessages() {
+      var query = {
+        topic: $('#kafkaMessageTopic').val().trim(),
+        partition: Number($('#kafkaMessagePartition').val()) || 0,
+        mode: $('#kafkaMessageMode').val(),
+        limit: Number($('#kafkaMessageLimit').val()) || 25
+      };
+      if (query.mode === 'offset') {
+        query.offset = Number($('#kafkaMessageOffset').val()) || 0;
+      }
+      if (query.mode === 'timestamp') {
+        query.timestamp = Number($('#kafkaMessageTimestamp').val()) || 0;
+      }
+      loadSection(baseUrl + '/messages?' + $.param(query), 'Kafka message browser unavailable', '#kafkaMessagesAlerts', function(page) {
+        $('#kafkaMessagesStartOffset').text(valueOrDash(page.startOffset));
+        $('#kafkaMessagesEndOffset').text(valueOrDash(page.endOffset));
+        var tbody = $('#kafkaMessages tbody');
+        tbody.empty();
+        if (!page.records || page.records.length === 0) {
+          tbody.append('<tr id="kafkaMessagesEmpty"><td class="cp-data-table-empty-cell" colspan="6">No messages found.</td></tr>');
+          return;
+        }
+        page.records.forEach(function(record) {
+          tbody.append('<tr>'
+            + '<td>' + record.offset + '</td>'
+            + '<td><code>' + escapeHtml(record.timestamp + ' ' + record.timestampType) + '</code></td>'
+            + '<td>' + record.partition + '</td>'
+            + '<td>' + renderPayload(record.key) + '</td>'
+            + '<td>' + renderPayload(record.value) + '</td>'
+            + '<td>' + renderHeaders(record.headers) + '</td>'
+            + '</tr>');
+        });
+      });
+    }
+
     function loadTopicDetail(topicName) {
       $('#kafkaTopicDetailName').text(topicName);
       $('#kafkaTopicPartitions tbody').empty();
@@ -633,6 +744,15 @@
     });
     $('#kafkaConsumerGroups').on('click', '.kafka-consumer-group-detail', function() {
       loadConsumerGroupDetail($(this).data('group'));
+    });
+    $('#kafkaMessageMode').on('change', function() {
+      var mode = $(this).val();
+      $('#kafkaMessageOffsetGroup').prop('hidden', mode !== 'offset');
+      $('#kafkaMessageTimestampGroup').prop('hidden', mode !== 'timestamp');
+    });
+    $('#kafkaMessageBrowserForm').on('submit', function(event) {
+      event.preventDefault();
+      loadMessages();
     });
     $('#kafkaClusterTabs [data-tabs-trigger]').on('click', function() {
       activateKafkaTab(this.getAttribute('data-tabs-trigger'));

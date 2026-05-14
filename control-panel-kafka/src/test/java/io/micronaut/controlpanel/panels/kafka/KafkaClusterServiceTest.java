@@ -48,6 +48,11 @@ import org.apache.kafka.clients.admin.MemberDescription;
 import org.apache.kafka.clients.admin.TopicDescription;
 import org.apache.kafka.clients.admin.TopicListing;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.OffsetAndTimestamp;
 import org.apache.kafka.common.GroupState;
 import org.apache.kafka.common.GroupType;
 import org.apache.kafka.common.KafkaFuture;
@@ -57,16 +62,21 @@ import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.TopicPartitionInfo;
 import org.apache.kafka.common.Uuid;
 import org.apache.kafka.common.config.ConfigResource;
+import org.apache.kafka.common.header.internals.RecordHeaders;
+import org.apache.kafka.common.record.TimestampType;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -77,6 +87,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -342,6 +353,139 @@ final class KafkaClusterServiceTest {
     }
 
     @Test
+    void messageBrowserReadsFromBeginningWithSafeRenderingAndNoCommits() {
+        AdminClient admin = mock(AdminClient.class);
+        @SuppressWarnings("unchecked")
+        Consumer<byte[], byte[]> consumer = mock(Consumer.class);
+        KafkaMessageBrowserConsumerFactory factory = mock(KafkaMessageBrowserConsumerFactory.class);
+        TopicPartition partition = new TopicPartition("orders", 0);
+        when(factory.createConsumer()).thenReturn(consumer);
+        when(consumer.position(any(TopicPartition.class), any())).thenReturn(0L);
+        when(consumer.poll(any())).thenReturn(records(partition,
+            record(0L, "{\"id\":1}".getBytes(StandardCharsets.UTF_8), "order".getBytes(StandardCharsets.UTF_8)),
+            record(1L, new byte[] {(byte) 0xff, 0x01}, null)
+        ), ConsumerRecords.empty());
+
+        var section = new KafkaClusterService(admin, factory).messages("orders", 0, "beginning", null, null, 25);
+
+        assertNull(section.error());
+        assertNotNull(section.data());
+        assertEquals("beginning", section.data().mode());
+        assertEquals(0L, section.data().startOffset());
+        assertEquals(2, section.data().records().size());
+        KafkaClusterResponse.MessageRecord jsonRecord = section.data().records().stream()
+            .filter(record -> record.offset() == 0L)
+            .findFirst()
+            .orElseThrow();
+        KafkaClusterResponse.MessageRecord binaryRecord = section.data().records().stream()
+            .filter(record -> record.offset() == 1L)
+            .findFirst()
+            .orElseThrow();
+        assertEquals("utf8", jsonRecord.key().format());
+        assertEquals("json", jsonRecord.value().format());
+        assertEquals("""
+            {
+              "id": 1
+            }""", jsonRecord.value().text());
+        assertEquals("base64", binaryRecord.value().format());
+        assertEquals("/wE=", binaryRecord.value().base64());
+        assertEquals("utf8", jsonRecord.headers().getFirst().value().format());
+        verify(consumer).assign(List.of(partition));
+        verify(consumer).seekToBeginning(List.of(partition));
+        verify(consumer, never()).commitSync();
+        verify(consumer, never()).commitAsync();
+        verify(consumer).close();
+    }
+
+    @Test
+    void messageBrowserReadsLatestWindowWithCappedLimit() {
+        AdminClient admin = mock(AdminClient.class);
+        @SuppressWarnings("unchecked")
+        Consumer<byte[], byte[]> consumer = mock(Consumer.class);
+        KafkaMessageBrowserConsumerFactory factory = mock(KafkaMessageBrowserConsumerFactory.class);
+        TopicPartition partition = new TopicPartition("orders", 0);
+        when(factory.createConsumer()).thenReturn(consumer);
+        when(consumer.beginningOffsets(any(Collection.class), any())).thenReturn(Map.of(partition, 5L));
+        when(consumer.endOffsets(any(Collection.class), any())).thenReturn(Map.of(partition, 150L));
+        when(consumer.poll(any())).thenReturn(records(partition,
+            record(50L, "first".getBytes(StandardCharsets.UTF_8), null),
+            record(149L, "last".getBytes(StandardCharsets.UTF_8), null),
+            record(150L, "future".getBytes(StandardCharsets.UTF_8), null)
+        ));
+
+        var section = new KafkaClusterService(admin, factory).messages("orders", 0, "latest", null, null, 1_000);
+
+        assertNull(section.error());
+        assertNotNull(section.data());
+        assertEquals(100, section.data().limit());
+        assertEquals(50L, section.data().startOffset());
+        assertEquals(150L, section.data().endOffset());
+        assertEquals(List.of(50L, 149L), section.data().records().stream()
+            .map(KafkaClusterResponse.MessageRecord::offset)
+            .toList());
+        verify(consumer).seek(partition, 50L);
+        verify(consumer, never()).commitSync();
+        verify(consumer).close();
+    }
+
+    @Test
+    void messageBrowserReadsFromExplicitOffsetAndTimestamp() {
+        AdminClient admin = mock(AdminClient.class);
+        @SuppressWarnings("unchecked")
+        Consumer<byte[], byte[]> offsetConsumer = mock(Consumer.class);
+        @SuppressWarnings("unchecked")
+        Consumer<byte[], byte[]> timestampConsumer = mock(Consumer.class);
+        KafkaMessageBrowserConsumerFactory factory = mock(KafkaMessageBrowserConsumerFactory.class);
+        TopicPartition partition = new TopicPartition("orders", 0);
+        when(factory.createConsumer()).thenReturn(offsetConsumer, timestampConsumer);
+        when(offsetConsumer.poll(any())).thenReturn(records(partition,
+            record(42L, "offset".getBytes(StandardCharsets.UTF_8), null)
+        ));
+        when(timestampConsumer.offsetsForTimes(anyMap(), any())).thenReturn(Map.of(partition, new OffsetAndTimestamp(77L, 1234L)));
+        when(timestampConsumer.poll(any())).thenReturn(records(partition,
+            record(77L, "timestamp".getBytes(StandardCharsets.UTF_8), null)
+        ));
+
+        var offsetSection = new KafkaClusterService(admin, factory).messages("orders", 0, "offset", 42L, null, 10);
+        var timestampSection = new KafkaClusterService(admin, factory).messages("orders", 0, "timestamp", null, 1234L, 10);
+
+        assertNull(offsetSection.error());
+        assertNull(timestampSection.error());
+        assertEquals(42L, offsetSection.data().startOffset());
+        assertEquals(77L, timestampSection.data().startOffset());
+        verify(offsetConsumer).seek(partition, 42L);
+        verify(timestampConsumer).seek(partition, 77L);
+        verify(offsetConsumer, never()).commitSync();
+        verify(timestampConsumer, never()).commitSync();
+    }
+
+    @Test
+    void messageBrowserReportsInvalidRequestsAsSectionErrors() {
+        AdminClient admin = mock(AdminClient.class);
+        KafkaMessageBrowserConsumerFactory factory = mock(KafkaMessageBrowserConsumerFactory.class);
+
+        var section = new KafkaClusterService(admin, factory).messages("orders", -1, "offset", null, null, 25);
+
+        assertNull(section.data());
+        assertEquals("Partition must be greater than or equal to 0", section.error());
+    }
+
+    @Test
+    void messageBrowserConsumerConfigUsesTemporaryNonCommittingConsumer() {
+        Properties defaults = new Properties();
+        defaults.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        defaults.put(ConsumerConfig.GROUP_ID_CONFIG, "application-group");
+        defaults.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
+
+        Properties config = KafkaMessageBrowserConsumerFactory.browserConsumerConfig(defaults);
+
+        assertEquals("localhost:9092", config.get(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG));
+        assertFalse(config.containsKey(ConsumerConfig.GROUP_ID_CONFIG));
+        assertEquals("false", config.get(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG));
+        assertNotNull(config.get(ConsumerConfig.CLIENT_ID_CONFIG));
+    }
+
+    @Test
     void controllerIntroducesOnlyGetEndpoints() {
         assertEquals(ControlPanelSecurityPaths.KAFKA, KafkaClusterController.class.getAnnotation(Controller.class).value());
         for (Method method : KafkaClusterController.class.getDeclaredMethods()) {
@@ -353,6 +497,29 @@ final class KafkaClusterServiceTest {
                 assertTrue(Modifier.isPublic(method.getModifiers()), method.getName());
             }
         }
+    }
+
+    @SafeVarargs
+    private static ConsumerRecords<byte[], byte[]> records(
+        TopicPartition partition,
+        ConsumerRecord<byte[], byte[]>... records) {
+        return new ConsumerRecords<>(Map.of(partition, List.of(records)));
+    }
+
+    private static ConsumerRecord<byte[], byte[]> record(long offset, byte[] value, byte @Nullable [] key) {
+        return new ConsumerRecord<>(
+            "orders",
+            0,
+            offset,
+            1234L,
+            TimestampType.CREATE_TIME,
+            key == null ? ConsumerRecord.NULL_SIZE : key.length,
+            value == null ? ConsumerRecord.NULL_SIZE : value.length,
+            key,
+            value,
+            new RecordHeaders().add("trace", "abc".getBytes(StandardCharsets.UTF_8)),
+            Optional.empty()
+        );
     }
 
     private static void mockCluster(AdminClient admin) {
