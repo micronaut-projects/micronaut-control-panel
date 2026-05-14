@@ -63,6 +63,9 @@ dependencies {
     testImplementation(mnTest.micronaut.test.junit5)
     testImplementation(libs.playwright)
     testRuntimeOnly(mnTest.junit.platform.suite)
+
+    testResourcesRuntimeOnly(mn.micronaut.discovery.core)
+    testResourcesRuntimeOnly(mn.micronaut.management)
 }
 
 micronaut {
