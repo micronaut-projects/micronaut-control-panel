@@ -150,6 +150,25 @@ final class KafkaClusterService {
     static final String INTEGRATION_SCHEMA_REGISTRY = "Schema Registry";
     static final String INTEGRATION_CONNECT = "Kafka Connect";
     static final String INTEGRATION_KSQLDB = "ksqlDB";
+    static final String ACTION_CREATE_TOPIC = "topics.create";
+    static final String ACTION_UPDATE_TOPIC_CONFIG = "topics.update-config";
+    static final String ACTION_INCREASE_PARTITIONS = "topics.increase-partitions";
+    static final String ACTION_DELETE_TOPIC = "topics.delete";
+    static final String ACTION_PRODUCE_MESSAGE = "messages.produce";
+    static final String ACTION_DELETE_CONSUMER_GROUP = "consumer-groups.delete";
+    static final String ACTION_RESET_CONSUMER_GROUP_OFFSETS = "consumer-groups.reset-offsets";
+    static final String ACTION_PAUSE_APP_CONSUMER = "app-consumers.pause";
+    static final String ACTION_RESUME_APP_CONSUMER = "app-consumers.resume";
+    static final String ACTION_REGISTER_SCHEMA = "schema-registry.register";
+    static final String ACTION_UPDATE_SCHEMA_COMPATIBILITY = "schema-registry.update-compatibility";
+    static final String ACTION_DELETE_SCHEMA_SUBJECT = "schema-registry.delete-subject";
+    static final String ACTION_DELETE_SCHEMA_VERSION = "schema-registry.delete-version";
+    static final String ACTION_PAUSE_CONNECTOR = "kafka-connect.pause";
+    static final String ACTION_RESUME_CONNECTOR = "kafka-connect.resume";
+    static final String ACTION_RESTART_CONNECTOR = "kafka-connect.restart";
+    static final String ACTION_RESTART_CONNECTOR_TASK = "kafka-connect.restart-task";
+    static final String ACTION_UPDATE_CONNECTOR_CONFIG = "kafka-connect.update-config";
+    static final String ACTION_DELETE_CONNECTOR = "kafka-connect.delete";
 
     private static final Duration ADMIN_TIMEOUT = Duration.ofSeconds(5);
     private static final Duration CONSUMER_POLL_TIMEOUT = Duration.ofMillis(250);
@@ -160,6 +179,19 @@ final class KafkaClusterService {
     private static final int MAX_RECORD_LIMIT = 100;
     private static final int MAX_PAYLOAD_DISPLAY_BYTES = 8 * 1024;
     private static final int MAX_POLLS = 8;
+    private static final String METHOD_DELETE = "DELETE";
+    private static final String METHOD_GET = "GET";
+    private static final String METHOD_POST = "POST";
+    private static final String METHOD_PUT = "PUT";
+    private static final String TARGET_TOPIC = "Topic";
+    private static final String TARGET_SCHEMA_SUBJECT = "Schema subject";
+    private static final String TARGET_CONNECTOR = "Connector";
+    private static final String PATH_SUBJECTS = "/subjects/";
+    private static final String PATH_CONNECTORS = "/connectors/";
+    private static final String RESET_EARLIEST = "earliest";
+    private static final String RESET_LATEST = "latest";
+    private static final String RESET_OFFSET = "offset";
+    private static final String RESET_TIMESTAMP = "timestamp";
     private static final List<String> SECRET_NAME_PARTS = List.of(
         "password",
         "secret",
@@ -404,7 +436,7 @@ final class KafkaClusterService {
             if (!integrationConfiguration.getSchemaRegistry().isConfigured()) {
                 return new SchemaRegistryOverview(false, null, List.of());
             }
-            JsonNode subjectsNode = integrationRequest(INTEGRATION_SCHEMA_REGISTRY, "GET", "/subjects", null);
+            JsonNode subjectsNode = integrationRequest(INTEGRATION_SCHEMA_REGISTRY, METHOD_GET, "/subjects", null);
             List<SchemaSubject> subjects = jsonArrayStrings(subjectsNode).stream()
                 .sorted()
                 .map(subject -> new SchemaSubject(subject, schemaVersions(subject)))
@@ -415,14 +447,14 @@ final class KafkaClusterService {
 
     Section<SchemaVersionDetail> schemaRegistrySubject(String subject, int version) {
         return section(() -> {
-            String safeSubject = requireName(subject, "Schema subject");
+            String safeSubject = requireName(subject, TARGET_SCHEMA_SUBJECT);
             if (version <= 0) {
                 throw new IllegalArgumentException("Schema version must be greater than 0");
             }
             JsonNode detail = integrationRequest(
                 INTEGRATION_SCHEMA_REGISTRY,
-                "GET",
-                "/subjects/" + KafkaIntegrationClient.encodePath(safeSubject) + "/versions/" + version,
+                METHOD_GET,
+                PATH_SUBJECTS + KafkaIntegrationClient.encodePath(safeSubject) + "/versions/" + version,
                 null
             );
             return toSchemaVersionDetail(safeSubject, version, detail, schemaCompatibility(safeSubject));
@@ -434,7 +466,7 @@ final class KafkaClusterService {
             if (!integrationConfiguration.getConnect().isConfigured()) {
                 return new KafkaConnectOverview(false, null, List.of());
             }
-            List<ConnectorSummary> connectors = jsonArrayStrings(integrationRequest(INTEGRATION_CONNECT, "GET", "/connectors", null))
+            List<ConnectorSummary> connectors = jsonArrayStrings(integrationRequest(INTEGRATION_CONNECT, METHOD_GET, "/connectors", null))
                 .stream()
                 .sorted()
                 .map(this::connectorSummary)
@@ -468,12 +500,12 @@ final class KafkaClusterService {
 
     Section<ActionResult> createTopic(CreateTopicRequest request) {
         return section(() -> {
-            String topic = requireName(request.topic(), "Topic");
+            String topic = requireName(request.topic(), TARGET_TOPIC);
             validatePositive(request.partitions(), "Partitions");
             if (request.replicationFactor() <= 0) {
                 throw new IllegalArgumentException("Replication factor must be greater than 0");
             }
-            String action = "topics.create";
+            String action = ACTION_CREATE_TOPIC;
             guardWrite(action, false);
             String impact = "Create topic " + topic + " with " + request.partitions()
                 + " partitions and replication factor " + request.replicationFactor();
@@ -492,11 +524,11 @@ final class KafkaClusterService {
 
     Section<ActionResult> updateTopicConfig(UpdateTopicConfigRequest request) {
         return section(() -> {
-            String topic = requireName(request.topic(), "Topic");
+            String topic = requireName(request.topic(), TARGET_TOPIC);
             if (request.config() == null || request.config().isEmpty()) {
                 throw new IllegalArgumentException("At least one config entry is required");
             }
-            String action = "topics.update-config";
+            String action = ACTION_UPDATE_TOPIC_CONFIG;
             guardWrite(action, false);
             String impact = "Update " + request.config().size() + " config entries for topic " + topic;
             if (request.preview()) {
@@ -521,9 +553,9 @@ final class KafkaClusterService {
 
     Section<ActionResult> increasePartitions(IncreasePartitionsRequest request) {
         return section(() -> {
-            String topic = requireName(request.topic(), "Topic");
+            String topic = requireName(request.topic(), TARGET_TOPIC);
             validatePositive(request.totalPartitions(), "Total partitions");
-            String action = "topics.increase-partitions";
+            String action = ACTION_INCREASE_PARTITIONS;
             guardWrite(action, false);
             String impact = "Increase topic " + topic + " to " + request.totalPartitions() + " partitions";
             if (request.preview()) {
@@ -540,14 +572,14 @@ final class KafkaClusterService {
 
     Section<ActionResult> deleteTopic(DeleteTopicRequest request) {
         return section(() -> {
-            String topic = requireName(request.topic(), "Topic");
-            String action = "topics.delete";
+            String topic = requireName(request.topic(), TARGET_TOPIC);
+            String action = ACTION_DELETE_TOPIC;
             guardWrite(action, true);
             String impact = "Delete topic " + topic;
             if (request.preview()) {
                 return previewResult(action, topic, impact);
             }
-            requireConfirmation(request.confirmation(), confirmation("DELETE", topic));
+            requireConfirmation(request.confirmation(), confirmation(METHOD_DELETE, topic));
             await(adminClient.deleteTopics(TopicCollection.ofTopicNames(List.of(topic)), new DeleteTopicsOptions()).all());
             return appliedResult(action, topic, impact);
         });
@@ -555,8 +587,8 @@ final class KafkaClusterService {
 
     Section<ActionResult> produceMessage(ProduceMessageRequest request) {
         return section(() -> {
-            String topic = requireName(request.topic(), "Topic");
-            String action = "messages.produce";
+            String topic = requireName(request.topic(), TARGET_TOPIC);
+            String action = ACTION_PRODUCE_MESSAGE;
             guardWrite(action, false);
             byte[] value = payloadBytes(
                 request.value(),
@@ -600,7 +632,7 @@ final class KafkaClusterService {
     Section<ActionResult> deleteConsumerGroup(DeleteConsumerGroupRequest request) {
         return section(() -> {
             String groupId = requireName(request.groupId(), "Consumer group");
-            String action = "consumer-groups.delete";
+            String action = ACTION_DELETE_CONSUMER_GROUP;
             guardWrite(action, true);
             ConsumerGroupDescription description = requireInactiveConsumerGroup(groupId);
             String impact = "Delete inactive consumer group " + description.groupId();
@@ -616,7 +648,7 @@ final class KafkaClusterService {
     Section<ActionResult> resetConsumerGroupOffsets(ResetOffsetsRequest request) {
         return section(() -> {
             String groupId = requireName(request.groupId(), "Consumer group");
-            String action = "consumer-groups.reset-offsets";
+            String action = ACTION_RESET_CONSUMER_GROUP_OFFSETS;
             guardWrite(action, false);
             requireInactiveConsumerGroup(groupId);
             Map<TopicPartition, OffsetAndMetadata> currentOffsets = consumerGroupOffsets(List.of(groupId))
@@ -645,18 +677,18 @@ final class KafkaClusterService {
     }
 
     Section<ActionResult> pauseAppConsumer(AppConsumerActionRequest request) {
-        return appConsumerAction("app-consumers.pause", "PAUSE", request, true);
+        return appConsumerAction(ACTION_PAUSE_APP_CONSUMER, "PAUSE", request, true);
     }
 
     Section<ActionResult> resumeAppConsumer(AppConsumerActionRequest request) {
-        return appConsumerAction("app-consumers.resume", "RESUME", request, false);
+        return appConsumerAction(ACTION_RESUME_APP_CONSUMER, "RESUME", request, false);
     }
 
     Section<ActionResult> registerSchema(RegisterSchemaRequest request) {
         return section(() -> {
-            String subject = requireName(request.subject(), "Schema subject");
+            String subject = requireName(request.subject(), TARGET_SCHEMA_SUBJECT);
             String schema = requireName(request.schema(), "Schema");
-            String action = "schema-registry.register";
+            String action = ACTION_REGISTER_SCHEMA;
             guardWrite(action, false);
             requireIntegrationConfigured(INTEGRATION_SCHEMA_REGISTRY);
             String impact = "Register a new schema version for subject " + subject;
@@ -671,8 +703,8 @@ final class KafkaClusterService {
             }
             JsonNode response = integrationRequest(
                 INTEGRATION_SCHEMA_REGISTRY,
-                "POST",
-                "/subjects/" + KafkaIntegrationClient.encodePath(subject) + "/versions",
+                METHOD_POST,
+                PATH_SUBJECTS + KafkaIntegrationClient.encodePath(subject) + "/versions",
                 body
             );
             return appliedResult(action, subject, impact + responseIdSuffix(response));
@@ -681,9 +713,9 @@ final class KafkaClusterService {
 
     Section<ActionResult> updateSchemaCompatibility(UpdateSchemaCompatibilityRequest request) {
         return section(() -> {
-            String subject = requireName(request.subject(), "Schema subject");
+            String subject = requireName(request.subject(), TARGET_SCHEMA_SUBJECT);
             String compatibility = requireName(request.compatibility(), "Compatibility");
-            String action = "schema-registry.update-compatibility";
+            String action = ACTION_UPDATE_SCHEMA_COMPATIBILITY;
             guardWrite(action, false);
             requireIntegrationConfigured(INTEGRATION_SCHEMA_REGISTRY);
             String impact = "Update Schema Registry compatibility for subject " + subject + " to " + compatibility;
@@ -693,7 +725,7 @@ final class KafkaClusterService {
             requireConfirmation(request.confirmation(), confirmation("UPDATE COMPATIBILITY", subject));
             integrationRequest(
                 INTEGRATION_SCHEMA_REGISTRY,
-                "PUT",
+                METHOD_PUT,
                 "/config/" + KafkaIntegrationClient.encodePath(subject),
                 Map.of("compatibility", compatibility)
             );
@@ -703,8 +735,8 @@ final class KafkaClusterService {
 
     Section<ActionResult> deleteSchemaSubject(DeleteSchemaSubjectRequest request) {
         return section(() -> {
-            String subject = requireName(request.subject(), "Schema subject");
-            String action = "schema-registry.delete-subject";
+            String subject = requireName(request.subject(), TARGET_SCHEMA_SUBJECT);
+            String action = ACTION_DELETE_SCHEMA_SUBJECT;
             guardWrite(action, true);
             requireIntegrationConfigured(INTEGRATION_SCHEMA_REGISTRY);
             String impact = "Delete Schema Registry subject " + subject;
@@ -714,8 +746,8 @@ final class KafkaClusterService {
             requireConfirmation(request.confirmation(), confirmation("DELETE SCHEMA SUBJECT", subject));
             integrationRequest(
                 INTEGRATION_SCHEMA_REGISTRY,
-                "DELETE",
-                "/subjects/" + KafkaIntegrationClient.encodePath(subject),
+                METHOD_DELETE,
+                PATH_SUBJECTS + KafkaIntegrationClient.encodePath(subject),
                 null
             );
             return appliedResult(action, subject, impact);
@@ -724,12 +756,12 @@ final class KafkaClusterService {
 
     Section<ActionResult> deleteSchemaVersion(DeleteSchemaVersionRequest request) {
         return section(() -> {
-            String subject = requireName(request.subject(), "Schema subject");
+            String subject = requireName(request.subject(), TARGET_SCHEMA_SUBJECT);
             if (request.version() <= 0) {
                 throw new IllegalArgumentException("Schema version must be greater than 0");
             }
             String target = subject + " v" + request.version();
-            String action = "schema-registry.delete-version";
+            String action = ACTION_DELETE_SCHEMA_VERSION;
             guardWrite(action, true);
             requireIntegrationConfigured(INTEGRATION_SCHEMA_REGISTRY);
             String impact = "Delete Schema Registry subject version " + target;
@@ -739,8 +771,8 @@ final class KafkaClusterService {
             requireConfirmation(request.confirmation(), confirmation("DELETE SCHEMA VERSION", target));
             integrationRequest(
                 INTEGRATION_SCHEMA_REGISTRY,
-                "DELETE",
-                "/subjects/" + KafkaIntegrationClient.encodePath(subject) + "/versions/" + request.version(),
+                METHOD_DELETE,
+                PATH_SUBJECTS + KafkaIntegrationClient.encodePath(subject) + "/versions/" + request.version(),
                 null
             );
             return appliedResult(action, target, impact);
@@ -748,25 +780,25 @@ final class KafkaClusterService {
     }
 
     Section<ActionResult> pauseConnector(ConnectorActionRequest request) {
-        return connectorAction("kafka-connect.pause", "PAUSE CONNECTOR", "PUT", "/pause", request, false);
+        return connectorAction(ACTION_PAUSE_CONNECTOR, "PAUSE CONNECTOR", METHOD_PUT, "/pause", request, false);
     }
 
     Section<ActionResult> resumeConnector(ConnectorActionRequest request) {
-        return connectorAction("kafka-connect.resume", "RESUME CONNECTOR", "PUT", "/resume", request, false);
+        return connectorAction(ACTION_RESUME_CONNECTOR, "RESUME CONNECTOR", METHOD_PUT, "/resume", request, false);
     }
 
     Section<ActionResult> restartConnector(ConnectorActionRequest request) {
-        return connectorAction("kafka-connect.restart", "RESTART CONNECTOR", "POST", "/restart", request, false);
+        return connectorAction(ACTION_RESTART_CONNECTOR, "RESTART CONNECTOR", METHOD_POST, "/restart", request, false);
     }
 
     Section<ActionResult> restartConnectorTask(ConnectorTaskActionRequest request) {
         return section(() -> {
-            String connector = requireName(request.connector(), "Connector");
+            String connector = requireName(request.connector(), TARGET_CONNECTOR);
             if (request.task() < 0) {
                 throw new IllegalArgumentException("Connector task must be greater than or equal to 0");
             }
             String target = connector + " task " + request.task();
-            String action = "kafka-connect.restart-task";
+            String action = ACTION_RESTART_CONNECTOR_TASK;
             guardWrite(action, false);
             requireIntegrationConfigured(INTEGRATION_CONNECT);
             String impact = "Restart Kafka Connect " + target;
@@ -776,8 +808,8 @@ final class KafkaClusterService {
             requireConfirmation(request.confirmation(), confirmation("RESTART CONNECTOR TASK", target));
             integrationRequest(
                 INTEGRATION_CONNECT,
-                "POST",
-                "/connectors/" + KafkaIntegrationClient.encodePath(connector) + "/tasks/" + request.task() + "/restart",
+                METHOD_POST,
+                PATH_CONNECTORS + KafkaIntegrationClient.encodePath(connector) + "/tasks/" + request.task() + "/restart",
                 null
             );
             return appliedResult(action, target, impact);
@@ -786,11 +818,11 @@ final class KafkaClusterService {
 
     Section<ActionResult> updateConnectorConfig(UpdateConnectorConfigRequest request) {
         return section(() -> {
-            String connector = requireName(request.connector(), "Connector");
+            String connector = requireName(request.connector(), TARGET_CONNECTOR);
             if (request.config() == null || request.config().isEmpty()) {
                 throw new IllegalArgumentException("Connector config is required");
             }
-            String action = "kafka-connect.update-config";
+            String action = ACTION_UPDATE_CONNECTOR_CONFIG;
             guardWrite(action, false);
             requireIntegrationConfigured(INTEGRATION_CONNECT);
             String impact = "Update Kafka Connect config for connector " + connector;
@@ -800,8 +832,8 @@ final class KafkaClusterService {
             requireConfirmation(request.confirmation(), confirmation("UPDATE CONNECTOR CONFIG", connector));
             integrationRequest(
                 INTEGRATION_CONNECT,
-                "PUT",
-                "/connectors/" + KafkaIntegrationClient.encodePath(connector) + "/config",
+                METHOD_PUT,
+                PATH_CONNECTORS + KafkaIntegrationClient.encodePath(connector) + "/config",
                 new LinkedHashMap<>(request.config())
             );
             return appliedResult(action, connector, impact);
@@ -809,7 +841,7 @@ final class KafkaClusterService {
     }
 
     Section<ActionResult> deleteConnector(ConnectorActionRequest request) {
-        return connectorAction("kafka-connect.delete", "DELETE CONNECTOR", "DELETE", "", request, true);
+        return connectorAction(ACTION_DELETE_CONNECTOR, "DELETE CONNECTOR", METHOD_DELETE, "", request, true);
     }
 
     private Section<ActionResult> appConsumerAction(String action,
@@ -836,18 +868,28 @@ final class KafkaClusterService {
             }
             requireConfirmation(request.confirmation(), confirmation(confirmationAction, target));
             if (partitions.isEmpty()) {
-                if (pause) {
-                    registry.pause(consumerId);
-                } else {
-                    registry.resume(consumerId);
-                }
-            } else if (pause) {
-                registry.pause(consumerId, partitions);
+                pauseOrResume(registry, consumerId, pause);
             } else {
-                registry.resume(consumerId, partitions);
+                pauseOrResume(registry, consumerId, partitions, pause);
             }
             return appliedResult(action, target, impact);
         });
+    }
+
+    private static void pauseOrResume(ConsumerRegistry registry, String consumerId, boolean pause) {
+        if (pause) {
+            registry.pause(consumerId);
+        } else {
+            registry.resume(consumerId);
+        }
+    }
+
+    private static void pauseOrResume(ConsumerRegistry registry, String consumerId, List<TopicPartition> partitions, boolean pause) {
+        if (pause) {
+            registry.pause(consumerId, partitions);
+        } else {
+            registry.resume(consumerId, partitions);
+        }
     }
 
     private Section<ActionResult> connectorAction(String action,
@@ -857,7 +899,7 @@ final class KafkaClusterService {
                                                   ConnectorActionRequest request,
                                                   boolean destructive) {
         return section(() -> {
-            String connector = requireName(request.connector(), "Connector");
+            String connector = requireName(request.connector(), TARGET_CONNECTOR);
             guardWrite(action, destructive);
             requireIntegrationConfigured(INTEGRATION_CONNECT);
             String impact = confirmationAction.charAt(0) + confirmationAction.substring(1).toLowerCase(Locale.ROOT)
@@ -869,7 +911,7 @@ final class KafkaClusterService {
             integrationRequest(
                 INTEGRATION_CONNECT,
                 method,
-                "/connectors/" + KafkaIntegrationClient.encodePath(connector) + suffix,
+                PATH_CONNECTORS + KafkaIntegrationClient.encodePath(connector) + suffix,
                 null
             );
             return appliedResult(action, connector, impact);
@@ -890,25 +932,25 @@ final class KafkaClusterService {
 
     private Map<String, Boolean> writeActionMap() {
         Map<String, Boolean> actions = new LinkedHashMap<>();
-        actions.put("topics.create", writeConfiguration.actionEnabled("topics.create"));
-        actions.put("topics.update-config", writeConfiguration.actionEnabled("topics.update-config"));
-        actions.put("topics.increase-partitions", writeConfiguration.actionEnabled("topics.increase-partitions"));
-        actions.put("topics.delete", writeConfiguration.actionEnabled("topics.delete"));
-        actions.put("messages.produce", writeConfiguration.actionEnabled("messages.produce"));
-        actions.put("consumer-groups.delete", writeConfiguration.actionEnabled("consumer-groups.delete"));
-        actions.put("consumer-groups.reset-offsets", writeConfiguration.actionEnabled("consumer-groups.reset-offsets"));
-        actions.put("app-consumers.pause", writeConfiguration.actionEnabled("app-consumers.pause"));
-        actions.put("app-consumers.resume", writeConfiguration.actionEnabled("app-consumers.resume"));
-        actions.put("schema-registry.register", writeConfiguration.actionEnabled("schema-registry.register"));
-        actions.put("schema-registry.update-compatibility", writeConfiguration.actionEnabled("schema-registry.update-compatibility"));
-        actions.put("schema-registry.delete-subject", writeConfiguration.actionEnabled("schema-registry.delete-subject"));
-        actions.put("schema-registry.delete-version", writeConfiguration.actionEnabled("schema-registry.delete-version"));
-        actions.put("kafka-connect.pause", writeConfiguration.actionEnabled("kafka-connect.pause"));
-        actions.put("kafka-connect.resume", writeConfiguration.actionEnabled("kafka-connect.resume"));
-        actions.put("kafka-connect.restart", writeConfiguration.actionEnabled("kafka-connect.restart"));
-        actions.put("kafka-connect.restart-task", writeConfiguration.actionEnabled("kafka-connect.restart-task"));
-        actions.put("kafka-connect.update-config", writeConfiguration.actionEnabled("kafka-connect.update-config"));
-        actions.put("kafka-connect.delete", writeConfiguration.actionEnabled("kafka-connect.delete"));
+        actions.put(ACTION_CREATE_TOPIC, writeConfiguration.actionEnabled(ACTION_CREATE_TOPIC));
+        actions.put(ACTION_UPDATE_TOPIC_CONFIG, writeConfiguration.actionEnabled(ACTION_UPDATE_TOPIC_CONFIG));
+        actions.put(ACTION_INCREASE_PARTITIONS, writeConfiguration.actionEnabled(ACTION_INCREASE_PARTITIONS));
+        actions.put(ACTION_DELETE_TOPIC, writeConfiguration.actionEnabled(ACTION_DELETE_TOPIC));
+        actions.put(ACTION_PRODUCE_MESSAGE, writeConfiguration.actionEnabled(ACTION_PRODUCE_MESSAGE));
+        actions.put(ACTION_DELETE_CONSUMER_GROUP, writeConfiguration.actionEnabled(ACTION_DELETE_CONSUMER_GROUP));
+        actions.put(ACTION_RESET_CONSUMER_GROUP_OFFSETS, writeConfiguration.actionEnabled(ACTION_RESET_CONSUMER_GROUP_OFFSETS));
+        actions.put(ACTION_PAUSE_APP_CONSUMER, writeConfiguration.actionEnabled(ACTION_PAUSE_APP_CONSUMER));
+        actions.put(ACTION_RESUME_APP_CONSUMER, writeConfiguration.actionEnabled(ACTION_RESUME_APP_CONSUMER));
+        actions.put(ACTION_REGISTER_SCHEMA, writeConfiguration.actionEnabled(ACTION_REGISTER_SCHEMA));
+        actions.put(ACTION_UPDATE_SCHEMA_COMPATIBILITY, writeConfiguration.actionEnabled(ACTION_UPDATE_SCHEMA_COMPATIBILITY));
+        actions.put(ACTION_DELETE_SCHEMA_SUBJECT, writeConfiguration.actionEnabled(ACTION_DELETE_SCHEMA_SUBJECT));
+        actions.put(ACTION_DELETE_SCHEMA_VERSION, writeConfiguration.actionEnabled(ACTION_DELETE_SCHEMA_VERSION));
+        actions.put(ACTION_PAUSE_CONNECTOR, writeConfiguration.actionEnabled(ACTION_PAUSE_CONNECTOR));
+        actions.put(ACTION_RESUME_CONNECTOR, writeConfiguration.actionEnabled(ACTION_RESUME_CONNECTOR));
+        actions.put(ACTION_RESTART_CONNECTOR, writeConfiguration.actionEnabled(ACTION_RESTART_CONNECTOR));
+        actions.put(ACTION_RESTART_CONNECTOR_TASK, writeConfiguration.actionEnabled(ACTION_RESTART_CONNECTOR_TASK));
+        actions.put(ACTION_UPDATE_CONNECTOR_CONFIG, writeConfiguration.actionEnabled(ACTION_UPDATE_CONNECTOR_CONFIG));
+        actions.put(ACTION_DELETE_CONNECTOR, writeConfiguration.actionEnabled(ACTION_DELETE_CONNECTOR));
         return actions;
     }
 
@@ -1035,9 +1077,9 @@ final class KafkaClusterService {
                                                                 List<TopicPartition> partitions) throws Exception {
         String target = normalizeResetTarget(request.target());
         return switch (target) {
-            case "earliest" -> offsetsForReset(partitions, OffsetSpec.earliest());
-            case "latest" -> offsetsForReset(partitions, OffsetSpec.latest());
-            case "offset" -> {
+            case RESET_EARLIEST -> offsetsForReset(partitions, OffsetSpec.earliest());
+            case RESET_LATEST -> offsetsForReset(partitions, OffsetSpec.latest());
+            case RESET_OFFSET -> {
                 if (request.offset() == null || request.offset() < 0) {
                     throw new IllegalArgumentException("Offset must be greater than or equal to 0");
                 }
@@ -1049,7 +1091,7 @@ final class KafkaClusterService {
                         LinkedHashMap::new
                     ));
             }
-            case "timestamp" -> {
+            case RESET_TIMESTAMP -> {
                 if (request.timestamp() == null || request.timestamp() < 0) {
                     throw new IllegalArgumentException("Timestamp must be greater than or equal to 0");
                 }
@@ -1073,8 +1115,9 @@ final class KafkaClusterService {
     }
 
     private static String normalizeResetTarget(String target) {
-        return switch ((target == null ? "" : target).toLowerCase(Locale.ROOT)) {
-            case "earliest", "latest", "offset", "timestamp" -> target.toLowerCase(Locale.ROOT);
+        String normalized = target == null ? "" : target.toLowerCase(Locale.ROOT);
+        return switch (normalized) {
+            case RESET_EARLIEST, RESET_LATEST, RESET_OFFSET, RESET_TIMESTAMP -> normalized;
             default -> throw new IllegalArgumentException("Unsupported reset target: " + target);
         };
     }
@@ -1096,7 +1139,7 @@ final class KafkaClusterService {
         if (input.partition() < 0) {
             throw new IllegalArgumentException("Partition must be greater than or equal to 0");
         }
-        return new TopicPartition(requireName(input.topic(), "Topic"), input.partition());
+        return new TopicPartition(requireName(input.topic(), TARGET_TOPIC), input.partition());
     }
 
     static boolean isSafeConfig(ConfigEntry entry) {
@@ -1115,8 +1158,8 @@ final class KafkaClusterService {
         try {
             return jsonArrayNumbers(integrationRequest(
                 INTEGRATION_SCHEMA_REGISTRY,
-                "GET",
-                "/subjects/" + KafkaIntegrationClient.encodePath(subject) + "/versions",
+                METHOD_GET,
+                PATH_SUBJECTS + KafkaIntegrationClient.encodePath(subject) + "/versions",
                 null
             ));
         } catch (Exception e) {
@@ -1129,7 +1172,7 @@ final class KafkaClusterService {
         try {
             JsonNode config = integrationRequest(
                 INTEGRATION_SCHEMA_REGISTRY,
-                "GET",
+                METHOD_GET,
                 "/config/" + KafkaIntegrationClient.encodePath(subject),
                 null
             );
@@ -1143,14 +1186,14 @@ final class KafkaClusterService {
         try {
             JsonNode status = integrationRequest(
                 INTEGRATION_CONNECT,
-                "GET",
-                "/connectors/" + KafkaIntegrationClient.encodePath(connector) + "/status",
+                METHOD_GET,
+                PATH_CONNECTORS + KafkaIntegrationClient.encodePath(connector) + "/status",
                 null
             );
             JsonNode config = integrationRequest(
                 INTEGRATION_CONNECT,
-                "GET",
-                "/connectors/" + KafkaIntegrationClient.encodePath(connector) + "/config",
+                METHOD_GET,
+                PATH_CONNECTORS + KafkaIntegrationClient.encodePath(connector) + "/config",
                 null
             );
             JsonNode connectorStatus = status.get("connector");
@@ -1170,19 +1213,14 @@ final class KafkaClusterService {
     private List<Map<String, String>> ksqlRows(String statement) throws Exception {
         JsonNode response = integrationRequest(
             INTEGRATION_KSQLDB,
-            "POST",
+            METHOD_POST,
             "/ksql",
             Map.of("ksql", statement)
         );
         List<Map<String, String>> rows = new ArrayList<>();
         Iterable<JsonNode> resultNodes = response.isArray() ? response.values() : List.of(response);
         for (JsonNode result : resultNodes) {
-            JsonNode streams = result.get("streams");
-            JsonNode tables = result.get("tables");
-            JsonNode queries = result.get("queries");
-            JsonNode rowContainer = streams != null && streams.isArray()
-                ? streams
-                : tables != null && tables.isArray() ? tables : queries;
+            JsonNode rowContainer = firstArray(result.get("streams"), result.get("tables"), result.get("queries"));
             if (rowContainer != null && rowContainer.isArray()) {
                 for (JsonNode row : rowContainer.values()) {
                     rows.add(stringObject(row));
@@ -1190,6 +1228,17 @@ final class KafkaClusterService {
             }
         }
         return rows;
+    }
+
+    @Nullable
+    private static JsonNode firstArray(@Nullable JsonNode first, @Nullable JsonNode second, @Nullable JsonNode fallback) {
+        if (first != null && first.isArray()) {
+            return first;
+        }
+        if (second != null && second.isArray()) {
+            return second;
+        }
+        return fallback;
     }
 
     private static SchemaVersionDetail toSchemaVersionDetail(String subject,
@@ -1273,16 +1322,7 @@ final class KafkaClusterService {
     }
 
     private static Map<String, String> stringObject(JsonNode node) {
-        if (node == null || !node.isObject()) {
-            return Map.of();
-        }
-        Map<String, String> result = new LinkedHashMap<>();
-        for (Map.Entry<String, JsonNode> entry : node.entries()) {
-            if (isSafeConfigName(entry.getKey())) {
-                result.put(entry.getKey(), entry.getValue().coerceStringValue());
-            }
-        }
-        return result;
+        return filteredObject(node);
     }
 
     @Nullable
@@ -1664,54 +1704,58 @@ final class KafkaClusterService {
                                         @Nullable Long offset,
                                         @Nullable Long timestamp,
                                         int limit) {
-        Long beginningOffset = null;
-        Long endOffset = null;
-        Long startOffset;
-        switch (mode) {
+        return switch (mode) {
             case "beginning" -> {
                 consumer.seekToBeginning(List.of(partition));
-                startOffset = consumer.position(partition, CONSUMER_API_TIMEOUT);
+                yield new BrowseOffsets(consumer.position(partition, CONSUMER_API_TIMEOUT), null);
             }
-            case "latest" -> {
-                Map<TopicPartition, Long> beginningOffsets = consumer.beginningOffsets(List.of(partition), CONSUMER_API_TIMEOUT);
-                Map<TopicPartition, Long> endOffsets = consumer.endOffsets(List.of(partition), CONSUMER_API_TIMEOUT);
-                beginningOffset = beginningOffsets.get(partition);
-                endOffset = endOffsets.get(partition);
-                if (endOffset == null) {
-                    consumer.seekToEnd(List.of(partition));
-                    startOffset = consumer.position(partition, CONSUMER_API_TIMEOUT);
-                } else {
-                    startOffset = Math.max(beginningOffset == null ? 0L : beginningOffset, endOffset - limit);
-                    consumer.seek(partition, startOffset);
-                }
-            }
+            case "latest" -> seekLatest(consumer, partition, limit);
             case "offset" -> {
                 if (offset == null || offset < 0) {
                     throw new IllegalArgumentException("Offset must be greater than or equal to 0");
                 }
-                startOffset = offset;
                 consumer.seek(partition, offset);
+                yield new BrowseOffsets(offset, null);
             }
-            case "timestamp" -> {
-                if (timestamp == null || timestamp < 0) {
-                    throw new IllegalArgumentException("Timestamp must be greater than or equal to 0");
-                }
-                Map<TopicPartition, OffsetAndTimestamp> offsets = consumer.offsetsForTimes(
-                    Map.of(partition, timestamp),
-                    CONSUMER_API_TIMEOUT
-                );
-                OffsetAndTimestamp offsetAndTimestamp = offsets.get(partition);
-                if (offsetAndTimestamp == null) {
-                    consumer.seekToEnd(List.of(partition));
-                    startOffset = consumer.position(partition, CONSUMER_API_TIMEOUT);
-                } else {
-                    startOffset = offsetAndTimestamp.offset();
-                    consumer.seek(partition, startOffset);
-                }
-            }
+            case "timestamp" -> seekTimestamp(consumer, partition, timestamp);
             default -> throw new IllegalArgumentException("Unsupported message browse mode: " + mode);
+        };
+    }
+
+    private BrowseOffsets seekLatest(Consumer<byte[], byte[]> consumer,
+                                     TopicPartition partition,
+                                     int limit) {
+        Map<TopicPartition, Long> beginningOffsets = consumer.beginningOffsets(List.of(partition), CONSUMER_API_TIMEOUT);
+        Map<TopicPartition, Long> endOffsets = consumer.endOffsets(List.of(partition), CONSUMER_API_TIMEOUT);
+        Long endOffset = endOffsets.get(partition);
+        if (endOffset == null) {
+            consumer.seekToEnd(List.of(partition));
+            return new BrowseOffsets(consumer.position(partition, CONSUMER_API_TIMEOUT), null);
         }
+        Long beginningOffset = beginningOffsets.get(partition);
+        long startOffset = Math.max(beginningOffset == null ? 0L : beginningOffset, endOffset - limit);
+        consumer.seek(partition, startOffset);
         return new BrowseOffsets(startOffset, endOffset);
+    }
+
+    private BrowseOffsets seekTimestamp(Consumer<byte[], byte[]> consumer,
+                                        TopicPartition partition,
+                                        @Nullable Long timestamp) {
+        if (timestamp == null || timestamp < 0) {
+            throw new IllegalArgumentException("Timestamp must be greater than or equal to 0");
+        }
+        Map<TopicPartition, OffsetAndTimestamp> offsets = consumer.offsetsForTimes(
+            Map.of(partition, timestamp),
+            CONSUMER_API_TIMEOUT
+        );
+        OffsetAndTimestamp offsetAndTimestamp = offsets.get(partition);
+        if (offsetAndTimestamp == null) {
+            consumer.seekToEnd(List.of(partition));
+            return new BrowseOffsets(consumer.position(partition, CONSUMER_API_TIMEOUT), null);
+        }
+        long startOffset = offsetAndTimestamp.offset();
+        consumer.seek(partition, startOffset);
+        return new BrowseOffsets(startOffset, null);
     }
 
     private List<MessageRecord> readRecords(Consumer<byte[], byte[]> consumer,
@@ -1818,43 +1862,9 @@ final class KafkaClusterService {
 
     private static void appendJson(StringBuilder builder, JsonNode node, int indent) {
         if (node.isObject()) {
-            builder.append('{');
-            boolean first = true;
-            for (Map.Entry<String, JsonNode> entry : node.entries()) {
-                if (first) {
-                    first = false;
-                } else {
-                    builder.append(',');
-                }
-                builder.append('\n');
-                appendIndent(builder, indent + 2);
-                appendQuoted(builder, entry.getKey());
-                builder.append(": ");
-                appendJson(builder, entry.getValue(), indent + 2);
-            }
-            if (!first) {
-                builder.append('\n');
-                appendIndent(builder, indent);
-            }
-            builder.append('}');
+            appendJsonObject(builder, node, indent);
         } else if (node.isArray()) {
-            builder.append('[');
-            boolean first = true;
-            for (JsonNode value : node.values()) {
-                if (first) {
-                    first = false;
-                } else {
-                    builder.append(',');
-                }
-                builder.append('\n');
-                appendIndent(builder, indent + 2);
-                appendJson(builder, value, indent + 2);
-            }
-            if (!first) {
-                builder.append('\n');
-                appendIndent(builder, indent);
-            }
-            builder.append(']');
+            appendJsonArray(builder, node, indent);
         } else if (node.isString()) {
             appendQuoted(builder, node.getStringValue());
         } else if (node.isNumber() || node.isBoolean()) {
@@ -1862,6 +1872,45 @@ final class KafkaClusterService {
         } else {
             builder.append("null");
         }
+    }
+
+    private static void appendJsonObject(StringBuilder builder, JsonNode node, int indent) {
+        builder.append('{');
+        boolean first = true;
+        for (Map.Entry<String, JsonNode> entry : node.entries()) {
+            first = appendJsonEntryPrefix(builder, indent, first);
+            appendQuoted(builder, entry.getKey());
+            builder.append(": ");
+            appendJson(builder, entry.getValue(), indent + 2);
+        }
+        appendJsonContainerEnd(builder, indent, first, '}');
+    }
+
+    private static void appendJsonArray(StringBuilder builder, JsonNode node, int indent) {
+        builder.append('[');
+        boolean first = true;
+        for (JsonNode value : node.values()) {
+            first = appendJsonEntryPrefix(builder, indent, first);
+            appendJson(builder, value, indent + 2);
+        }
+        appendJsonContainerEnd(builder, indent, first, ']');
+    }
+
+    private static boolean appendJsonEntryPrefix(StringBuilder builder, int indent, boolean first) {
+        if (!first) {
+            builder.append(',');
+        }
+        builder.append('\n');
+        appendIndent(builder, indent + 2);
+        return false;
+    }
+
+    private static void appendJsonContainerEnd(StringBuilder builder, int indent, boolean empty, char suffix) {
+        if (!empty) {
+            builder.append('\n');
+            appendIndent(builder, indent);
+        }
+        builder.append(suffix);
     }
 
     private static void appendIndent(StringBuilder builder, int indent) {

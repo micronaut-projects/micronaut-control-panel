@@ -16,6 +16,7 @@
 package io.micronaut.controlpanel.panels.kafka;
 
 import io.micronaut.configuration.kafka.ConsumerRegistry;
+import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.controlpanel.core.security.ControlPanelSecurityPaths;
 import io.micronaut.http.annotation.Delete;
 import io.micronaut.http.annotation.Get;
@@ -23,6 +24,7 @@ import io.micronaut.http.annotation.Patch;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.http.annotation.Put;
 import io.micronaut.http.annotation.Controller;
+import io.micronaut.json.JsonMapper;
 import io.micronaut.json.tree.JsonNode;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.Config;
@@ -75,6 +77,8 @@ import org.mockito.ArgumentCaptor;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -83,11 +87,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpServer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
@@ -575,6 +583,95 @@ final class KafkaClusterServiceTest {
     }
 
     @Test
+    void writePreviewActionsReturnImpactWithoutMutatingKafkaOrIntegrations() {
+        AdminClient admin = mock(AdminClient.class);
+        FakeIntegrationClient client = new FakeIntegrationClient(Map.of());
+        KafkaClusterService service = new KafkaClusterService(
+            admin,
+            client,
+            integrationConfig("http://registry", "http://connect", null),
+            writeConfig(true, true)
+        );
+
+        assertPreview(service.updateTopicConfig(new KafkaClusterResponse.UpdateTopicConfigRequest(
+            "orders",
+            Map.of("cleanup.policy", "compact"),
+            true,
+            null
+        )), KafkaClusterService.ACTION_UPDATE_TOPIC_CONFIG);
+        assertPreview(service.increasePartitions(new KafkaClusterResponse.IncreasePartitionsRequest(
+            "orders",
+            6,
+            true,
+            null
+        )), KafkaClusterService.ACTION_INCREASE_PARTITIONS);
+        assertPreview(service.deleteTopic(new KafkaClusterResponse.DeleteTopicRequest(
+            "orders",
+            true,
+            null
+        )), KafkaClusterService.ACTION_DELETE_TOPIC);
+        assertPreview(service.registerSchema(new KafkaClusterResponse.RegisterSchemaRequest(
+            "orders-value",
+            "{}",
+            "JSON",
+            true,
+            null
+        )), KafkaClusterService.ACTION_REGISTER_SCHEMA);
+        assertPreview(service.updateSchemaCompatibility(new KafkaClusterResponse.UpdateSchemaCompatibilityRequest(
+            "orders-value",
+            "BACKWARD",
+            true,
+            null
+        )), KafkaClusterService.ACTION_UPDATE_SCHEMA_COMPATIBILITY);
+        assertPreview(service.deleteSchemaSubject(new KafkaClusterResponse.DeleteSchemaSubjectRequest(
+            "orders-value",
+            true,
+            null
+        )), KafkaClusterService.ACTION_DELETE_SCHEMA_SUBJECT);
+        assertPreview(service.deleteSchemaVersion(new KafkaClusterResponse.DeleteSchemaVersionRequest(
+            "orders-value",
+            2,
+            true,
+            null
+        )), KafkaClusterService.ACTION_DELETE_SCHEMA_VERSION);
+        assertPreview(service.pauseConnector(new KafkaClusterResponse.ConnectorActionRequest(
+            "jdbc-sink",
+            true,
+            null
+        )), KafkaClusterService.ACTION_PAUSE_CONNECTOR);
+        assertPreview(service.resumeConnector(new KafkaClusterResponse.ConnectorActionRequest(
+            "jdbc-sink",
+            true,
+            null
+        )), KafkaClusterService.ACTION_RESUME_CONNECTOR);
+        assertPreview(service.restartConnector(new KafkaClusterResponse.ConnectorActionRequest(
+            "jdbc-sink",
+            true,
+            null
+        )), KafkaClusterService.ACTION_RESTART_CONNECTOR);
+        assertPreview(service.restartConnectorTask(new KafkaClusterResponse.ConnectorTaskActionRequest(
+            "jdbc-sink",
+            0,
+            true,
+            null
+        )), KafkaClusterService.ACTION_RESTART_CONNECTOR_TASK);
+        assertPreview(service.updateConnectorConfig(new KafkaClusterResponse.UpdateConnectorConfigRequest(
+            "jdbc-sink",
+            Map.of("connector.class", "JdbcSinkConnector"),
+            true,
+            null
+        )), KafkaClusterService.ACTION_UPDATE_CONNECTOR_CONFIG);
+        assertPreview(service.deleteConnector(new KafkaClusterResponse.ConnectorActionRequest(
+            "jdbc-sink",
+            true,
+            null
+        )), KafkaClusterService.ACTION_DELETE_CONNECTOR);
+
+        assertNull(client.lastAction());
+        verify(admin, never()).deleteTopics(any(TopicCollection.class), any(DeleteTopicsOptions.class));
+    }
+
+    @Test
     void createTopicPreviewDoesNotMutateKafka() {
         AdminClient admin = mock(AdminClient.class);
 
@@ -682,6 +779,13 @@ final class KafkaClusterServiceTest {
         );
         assertFalse(config.containsKey(org.apache.kafka.clients.producer.ProducerConfig.TRANSACTIONAL_ID_CONFIG));
         assertNotNull(config.get(org.apache.kafka.clients.producer.ProducerConfig.CLIENT_ID_CONFIG));
+    }
+
+    private static void assertPreview(KafkaClusterResponse.Section<KafkaClusterResponse.ActionResult> section, String action) {
+        assertNull(section.error());
+        assertNotNull(section.data());
+        assertFalse(section.data().applied());
+        assertEquals(action, section.data().action());
     }
 
     @Test
@@ -890,11 +994,169 @@ final class KafkaClusterServiceTest {
         }
     }
 
+    @Test
+    void controllerEndpointsDelegateToServiceSections() {
+        KafkaClusterController controller = new KafkaClusterController(new KafkaClusterService(mock(AdminClient.class)));
+
+        assertNotNull(controller.summary());
+        assertNotNull(controller.brokers());
+        assertNotNull(controller.topics(null, false, 0, 25));
+        assertNotNull(controller.topic("orders"));
+        assertNotNull(controller.consumerGroups());
+        assertNotNull(controller.consumerGroup("orders-group"));
+        assertNotNull(controller.appConsumers());
+        assertNotNull(controller.messages("orders", 0, "beginning", null, null, 25));
+        assertNotNull(controller.writes());
+        assertNotNull(controller.schemaRegistry());
+        assertNotNull(controller.schemaRegistrySubject("orders-value", 1));
+        assertNotNull(controller.kafkaConnect());
+        assertNotNull(controller.ksqldb());
+        assertNotNull(controller.createTopic(new KafkaClusterResponse.CreateTopicRequest("orders", 1, (short) 1, Map.of(), true, null)));
+        assertNotNull(controller.updateTopicConfig(new KafkaClusterResponse.UpdateTopicConfigRequest("orders", Map.of("cleanup.policy", "delete"), true, null)));
+        assertNotNull(controller.increasePartitions(new KafkaClusterResponse.IncreasePartitionsRequest("orders", 2, true, null)));
+        assertNotNull(controller.deleteTopic(new KafkaClusterResponse.DeleteTopicRequest("orders", true, null)));
+        assertNotNull(controller.produceMessage(produceRequest("orders", null, "ok", List.of())));
+        assertNotNull(controller.deleteConsumerGroup(new KafkaClusterResponse.DeleteConsumerGroupRequest("orders-group", true, null)));
+        assertNotNull(controller.resetConsumerGroupOffsets(new KafkaClusterResponse.ResetOffsetsRequest("orders-group", "earliest", null, null, null, null, true, null)));
+        assertNotNull(controller.pauseAppConsumer(new KafkaClusterResponse.AppConsumerActionRequest("listener", List.of(), true, null)));
+        assertNotNull(controller.resumeAppConsumer(new KafkaClusterResponse.AppConsumerActionRequest("listener", List.of(), true, null)));
+        assertNotNull(controller.registerSchema(new KafkaClusterResponse.RegisterSchemaRequest("orders-value", "{}", null, true, null)));
+        assertNotNull(controller.updateSchemaCompatibility(new KafkaClusterResponse.UpdateSchemaCompatibilityRequest("orders-value", "BACKWARD", true, null)));
+        assertNotNull(controller.deleteSchemaSubject(new KafkaClusterResponse.DeleteSchemaSubjectRequest("orders-value", true, null)));
+        assertNotNull(controller.deleteSchemaVersion(new KafkaClusterResponse.DeleteSchemaVersionRequest("orders-value", 1, true, null)));
+        assertNotNull(controller.pauseConnector(new KafkaClusterResponse.ConnectorActionRequest("jdbc-sink", true, null)));
+        assertNotNull(controller.resumeConnector(new KafkaClusterResponse.ConnectorActionRequest("jdbc-sink", true, null)));
+        assertNotNull(controller.restartConnector(new KafkaClusterResponse.ConnectorActionRequest("jdbc-sink", true, null)));
+        assertNotNull(controller.restartConnectorTask(new KafkaClusterResponse.ConnectorTaskActionRequest("jdbc-sink", 0, true, null)));
+        assertNotNull(controller.updateConnectorConfig(new KafkaClusterResponse.UpdateConnectorConfigRequest("jdbc-sink", Map.of("connector.class", "JdbcSinkConnector"), true, null)));
+        assertNotNull(controller.deleteConnector(new KafkaClusterResponse.ConnectorActionRequest("jdbc-sink", true, null)));
+    }
+
+    @Test
+    void controlPanelMetadataUsesKafkaClusterContract() {
+        KafkaClusterControlPanel panel = new KafkaClusterControlPanel(new ControlPanelConfiguration(KafkaClusterControlPanel.NAME));
+
+        assertEquals(KafkaClusterControlPanel.NAME, panel.getName());
+        assertEquals("Kafka Cluster", panel.getTitle());
+        assertEquals(KafkaStreamsControlPanel.CATEGORY, panel.getCategory());
+        assertEquals("read-only", panel.getBadge());
+        assertEquals(KafkaClusterController.PATH, panel.getBody().controllerPath());
+    }
+
+    @Test
+    void writeConfigurationExposesDefaultLimitsAndActionOverrides() {
+        KafkaClusterWriteConfiguration configuration = new KafkaClusterWriteConfiguration();
+        KafkaClusterWriteConfiguration.Actions actions = new KafkaClusterWriteConfiguration.Actions();
+
+        configuration.setEnabled(true);
+        configuration.setDestructiveEnabled(true);
+        configuration.setMaxMessageValueBytes(10);
+        configuration.setMaxMessageKeyBytes(11);
+        configuration.setMaxMessageHeaders(12);
+        configuration.setMaxMessageHeaderKeyBytes(13);
+        configuration.setMaxMessageHeaderValueBytes(14);
+        actions.setCreateTopic(false);
+        actions.setUpdateTopicConfig(false);
+        actions.setIncreasePartitions(false);
+        actions.setDeleteTopic(false);
+        actions.setProduceMessage(false);
+        actions.setDeleteConsumerGroup(false);
+        actions.setResetConsumerGroupOffsets(false);
+        actions.setPauseAppConsumer(false);
+        actions.setResumeAppConsumer(false);
+        actions.setRegisterSchema(false);
+        actions.setUpdateSchemaCompatibility(false);
+        actions.setDeleteSchemaSubject(false);
+        actions.setDeleteSchemaVersion(false);
+        actions.setPauseConnector(false);
+        actions.setResumeConnector(false);
+        actions.setRestartConnector(false);
+        actions.setRestartConnectorTask(false);
+        actions.setUpdateConnectorConfig(false);
+        actions.setDeleteConnector(false);
+        configuration.setActions(actions);
+
+        assertTrue(configuration.isEnabled());
+        assertTrue(configuration.isDestructiveEnabled());
+        assertEquals(10, configuration.getMaxMessageValueBytes());
+        assertEquals(11, configuration.getMaxMessageKeyBytes());
+        assertEquals(12, configuration.getMaxMessageHeaders());
+        assertEquals(13, configuration.getMaxMessageHeaderKeyBytes());
+        assertEquals(14, configuration.getMaxMessageHeaderValueBytes());
+        assertFalse(configuration.actionEnabled(KafkaClusterService.ACTION_CREATE_TOPIC));
+        assertFalse(configuration.actionEnabled(KafkaClusterService.ACTION_UPDATE_TOPIC_CONFIG));
+        assertFalse(configuration.actionEnabled(KafkaClusterService.ACTION_INCREASE_PARTITIONS));
+        assertFalse(configuration.actionEnabled(KafkaClusterService.ACTION_DELETE_TOPIC));
+        assertFalse(configuration.actionEnabled(KafkaClusterService.ACTION_PRODUCE_MESSAGE));
+        assertFalse(configuration.actionEnabled(KafkaClusterService.ACTION_DELETE_CONSUMER_GROUP));
+        assertFalse(configuration.actionEnabled(KafkaClusterService.ACTION_RESET_CONSUMER_GROUP_OFFSETS));
+        assertFalse(configuration.actionEnabled(KafkaClusterService.ACTION_PAUSE_APP_CONSUMER));
+        assertFalse(configuration.actionEnabled(KafkaClusterService.ACTION_RESUME_APP_CONSUMER));
+        assertFalse(configuration.actionEnabled(KafkaClusterService.ACTION_REGISTER_SCHEMA));
+        assertFalse(configuration.actionEnabled(KafkaClusterService.ACTION_UPDATE_SCHEMA_COMPATIBILITY));
+        assertFalse(configuration.actionEnabled(KafkaClusterService.ACTION_DELETE_SCHEMA_SUBJECT));
+        assertFalse(configuration.actionEnabled(KafkaClusterService.ACTION_DELETE_SCHEMA_VERSION));
+        assertFalse(configuration.actionEnabled(KafkaClusterService.ACTION_PAUSE_CONNECTOR));
+        assertFalse(configuration.actionEnabled(KafkaClusterService.ACTION_RESUME_CONNECTOR));
+        assertFalse(configuration.actionEnabled(KafkaClusterService.ACTION_RESTART_CONNECTOR));
+        assertFalse(configuration.actionEnabled(KafkaClusterService.ACTION_RESTART_CONNECTOR_TASK));
+        assertFalse(configuration.actionEnabled(KafkaClusterService.ACTION_UPDATE_CONNECTOR_CONFIG));
+        assertFalse(configuration.actionEnabled(KafkaClusterService.ACTION_DELETE_CONNECTOR));
+        assertFalse(configuration.actionEnabled("unknown"));
+        assertEquals(actions, configuration.getActions());
+    }
+
+    @Test
+    void defaultIntegrationClientBuildsRequestsAndHandlesResponses() throws Exception {
+        AtomicReference<String> requestPath = new AtomicReference<>();
+        AtomicReference<String> requestBody = new AtomicReference<>();
+        HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        server.createContext("/api/subjects", exchange -> {
+            requestPath.set(exchange.getRequestURI().getRawPath());
+            requestBody.set(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
+            respond(exchange, 200, "{\"ok\":true}");
+        });
+        server.createContext("/api/empty", exchange -> respond(exchange, 204, ""));
+        server.createContext("/api/error", exchange -> respond(exchange, 500, "boom"));
+        server.start();
+        try {
+            KafkaIntegrationConfiguration configuration = integrationConfig("http://127.0.0.1:" + server.getAddress().getPort() + "/api/", null, null);
+            DefaultKafkaIntegrationClient client = new DefaultKafkaIntegrationClient(configuration, JsonMapper.createDefault());
+
+            JsonNode response = client.request(
+                KafkaClusterService.INTEGRATION_SCHEMA_REGISTRY,
+                "POST",
+                "subjects/" + KafkaIntegrationClient.encodePath("orders value"),
+                Map.of("schema", "{}")
+            );
+            JsonNode empty = client.request(KafkaClusterService.INTEGRATION_SCHEMA_REGISTRY, "GET", "/empty", null);
+            IOException error = assertThrows(IOException.class, () ->
+                client.request(KafkaClusterService.INTEGRATION_SCHEMA_REGISTRY, "GET", "/error", null));
+
+            assertEquals("/api/subjects/orders%20value", requestPath.get());
+            assertEquals("{\"schema\":\"{}\"}", requestBody.get());
+            assertEquals("true", response.get("ok").coerceStringValue());
+            assertTrue(empty.isNull());
+            assertTrue(error.getMessage().contains("HTTP 500"));
+            assertEquals("a%20b", KafkaIntegrationClient.encodePath("a b"));
+        } finally {
+            server.stop(0);
+        }
+    }
+
     @SafeVarargs
     private static ConsumerRecords<byte[], byte[]> records(
         TopicPartition partition,
         ConsumerRecord<byte[], byte[]>... records) {
         return new ConsumerRecords<>(Map.of(partition, List.of(records)));
+    }
+
+    private static void respond(HttpExchange exchange, int status, String body) throws IOException {
+        byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
+        exchange.sendResponseHeaders(status, bytes.length);
+        try (var responseBody = exchange.getResponseBody()) {
+            responseBody.write(bytes);
+        }
     }
 
     private static ConsumerRecord<byte[], byte[]> record(long offset, byte[] value, byte @Nullable [] key) {
