@@ -95,7 +95,7 @@
                                                                     Properties
                                                                 </button>
                                                                 {{#if statistics.cacheRegionName}}
-                                                                    <button type="button" class="cp-actions-menu-item cp-actions-menu-item-danger" data-toggle="modal" data-target="#hibernateDeleteConfirmModal" data-hibernate-delete-action="entity" data-hibernate-action-value="{{ hibernateEntityName }}">
+                                                                    <button type="button" class="cp-actions-menu-item cp-actions-menu-item-danger" data-toggle="modal" data-target="#hibernateDeleteConfirmModal" data-hibernate-delete-action="entity" data-hibernate-action-value="{{ hibernateEntityName }}"{{#unless ext.writeAccess.allowed}} disabled aria-disabled="true" title="{{ ext.writeAccess.reason }}"{{/unless}}>
                                                                         <i class="fas fa-trash"></i>
                                                                         Evict
                                                                     </button>
@@ -233,7 +233,7 @@
                                                                 {{/if}}
                                                             {{/if}}
                                                             {{#if statistics.cacheRegionName}}
-                                                                <button type="button" class="cp-actions-menu-item cp-actions-menu-item-danger" data-toggle="modal" data-target="#hibernateDeleteConfirmModal" data-hibernate-delete-action="collection" data-hibernate-action-value="{{ role }}">
+                                                                <button type="button" class="cp-actions-menu-item cp-actions-menu-item-danger" data-toggle="modal" data-target="#hibernateDeleteConfirmModal" data-hibernate-delete-action="collection" data-hibernate-action-value="{{ role }}"{{#unless ext.writeAccess.allowed}} disabled aria-disabled="true" title="{{ ext.writeAccess.reason }}"{{/unless}}>
                                                                     <i class="fas fa-trash"></i>
                                                                     Evict
                                                                 </button>

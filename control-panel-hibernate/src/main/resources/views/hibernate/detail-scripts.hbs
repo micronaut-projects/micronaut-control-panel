@@ -8,6 +8,10 @@
             }
 
             function mutate(method, url, title, message, modalSelector) {
+                if (!{{ ext.writeAccess.allowed }}) {
+                    globalAlertMessageDisplay('Write access denied', '{{ ext.writeAccess.reason }}', 'alert-warning', 'fa-lock');
+                    return;
+                }
                 $.ajax({
                     url: url,
                     type: method,
@@ -266,6 +270,9 @@
             }
 
             $('[data-hibernate-statistics-toggle]').click(function() {
+                if (!{{ ext.writeAccess.allowed }} || this.disabled) {
+                    return;
+                }
                 var toggle = $(this);
                 var enabled = $(this).attr('data-hibernate-statistics-enabled');
                 toggle.prop('disabled', true);
@@ -307,6 +314,9 @@
             });
 
             $('#hibernateDeleteConfirm').click(function() {
+                if (!{{ ext.writeAccess.allowed }} || this.disabled) {
+                    return;
+                }
                 var request = $(this).data('hibernateRequest');
                 if (!request) {
                     return;

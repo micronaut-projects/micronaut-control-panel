@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -76,6 +77,27 @@ class DataSourceTemplatesTest {
         assertTrue(html.contains("aria-controls=\"datasourceTablesTab\""));
         assertTrue(html.contains("aria-controls=\"datasourceQueryTab\""));
         assertFalse(html.contains("datasourcePoolTab"));
+    }
+
+    @Test
+    void queryPanelDisablesExecutionWhenWriteAccessIsDenied() throws IOException {
+        String reason = "Write operations are disabled for this control panel session.";
+        var model = Map.of(
+            "dataSourceInfo", new DataSourceInfo("test", "jdbc:postgresql://localhost/test", "user", "", DatabaseType.POSTGRES),
+            "ext", Map.of(
+                "writeAccess", Map.of(
+                    "allowed", false,
+                    "reason", reason
+                )
+            )
+        );
+
+        String html = render("views/datasource/detail-query-panel", model);
+
+        assertTrue(html.contains("id=\"executeQuery\" title=\"" + reason + "\" disabled aria-disabled=\"true\""));
+        assertTrue(html.contains("<strong>Query execution disabled</strong>"));
+        assertTrue(html.contains("<p>" + reason + "</p>"));
+        assertTrue(html.contains("const writeAllowed = false;"));
     }
 
     @Test

@@ -32,6 +32,8 @@ class ControlPanelSecurityConfigurationTest {
 
             assertEquals(ControlPanelSecurityConfiguration.Access.AUTHORIZED, configuration.access());
             assertEquals(ControlPanelSecurityConfiguration.DEFAULT_ROLE, configuration.role());
+            assertEquals(ControlPanelSecurityConfiguration.WriteAccess.INHERITED, configuration.writeAccess());
+            assertEquals(ControlPanelSecurityConfiguration.DEFAULT_ROLE, configuration.effectiveWriteRole());
         }
     }
 
@@ -67,6 +69,43 @@ class ControlPanelSecurityConfigurationTest {
 
             assertEquals(ControlPanelSecurityConfiguration.Access.AUTHORIZED, configuration.access());
             assertEquals("ROLE_ADMIN", configuration.role());
+            assertEquals("ROLE_ADMIN", configuration.effectiveWriteRole());
+        }
+    }
+
+    @Test
+    void bindsDeniedWriteAccess() {
+        try (ApplicationContext context = ApplicationContext.run(Map.of(
+            ControlPanelSecurityConfiguration.PROPERTY_WRITE_ACCESS, "DENIED"
+        ))) {
+            ControlPanelSecurityConfiguration configuration = context.getBean(ControlPanelSecurityConfiguration.class);
+
+            assertEquals(ControlPanelSecurityConfiguration.WriteAccess.DENIED, configuration.writeAccess());
+        }
+    }
+
+    @Test
+    void bindsAuthorizedWriteAccessAndCustomWriteRole() {
+        try (ApplicationContext context = ApplicationContext.run(Map.of(
+            ControlPanelSecurityConfiguration.PROPERTY_WRITE_ACCESS, "AUTHORIZED",
+            ControlPanelSecurityConfiguration.PROPERTY_WRITE_ROLE, "ROLE_WRITER"
+        ))) {
+            ControlPanelSecurityConfiguration configuration = context.getBean(ControlPanelSecurityConfiguration.class);
+
+            assertEquals(ControlPanelSecurityConfiguration.WriteAccess.AUTHORIZED, configuration.writeAccess());
+            assertEquals("ROLE_WRITER", configuration.effectiveWriteRole());
+        }
+    }
+
+    @Test
+    void inheritsCustomReadRoleAsEffectiveWriteRole() {
+        try (ApplicationContext context = ApplicationContext.run(Map.of(
+            ControlPanelSecurityConfiguration.PROPERTY_ROLE, "ROLE_ADMIN"
+        ))) {
+            ControlPanelSecurityConfiguration configuration = context.getBean(ControlPanelSecurityConfiguration.class);
+
+            assertEquals(ControlPanelSecurityConfiguration.WriteAccess.INHERITED, configuration.writeAccess());
+            assertEquals("ROLE_ADMIN", configuration.effectiveWriteRole());
         }
     }
 
@@ -75,6 +114,26 @@ class ControlPanelSecurityConfigurationTest {
         assertThrows(IllegalArgumentException.class, () -> new ControlPanelSecurityConfiguration(
             ControlPanelSecurityConfiguration.Access.AUTHORIZED,
             " "
+        ));
+    }
+
+    @Test
+    void rejectsBlankWriteRoleWhenConfigured() {
+        assertThrows(IllegalArgumentException.class, () -> new ControlPanelSecurityConfiguration(
+            ControlPanelSecurityConfiguration.Access.AUTHORIZED,
+            ControlPanelSecurityConfiguration.DEFAULT_ROLE,
+            ControlPanelSecurityConfiguration.WriteAccess.AUTHORIZED,
+            " "
+        ));
+    }
+
+    @Test
+    void rejectsBlankEffectiveWriteRoleWhenAuthorizedWriteAccessIsEnabled() {
+        assertThrows(IllegalArgumentException.class, () -> new ControlPanelSecurityConfiguration(
+            ControlPanelSecurityConfiguration.Access.ANONYMOUS,
+            " ",
+            ControlPanelSecurityConfiguration.WriteAccess.AUTHORIZED,
+            null
         ));
     }
 }

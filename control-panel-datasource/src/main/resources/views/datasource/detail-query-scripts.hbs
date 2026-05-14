@@ -10,6 +10,8 @@
         const type = "{{ dataSourceInfo.type }}";
         const schemaUrl = datasourceBaseUrl + "/schema.js";
         const cm = window.codemirror;
+        const writeAllowed = {{#if ext.writeAccess.allowed}}true{{else}}false{{/if}};
+        const writeDisabledReason = "{{ ext.writeAccess.reason }}";
 
         function initEditor() {
             if (!cm) {
@@ -19,6 +21,10 @@
                 const schemaConfig = { schema: cm.schema, defaultSchema: cm.defaultSchema };
                 const extensions = cm.getSQLExtensions(type, schemaConfig, {
                     executeQuery: function (view) {
+                        if (!writeAllowed) {
+                            renderQueryState('Query execution disabled', writeDisabledReason, 'error');
+                            return true;
+                        }
                         executeSqlQuery(view);
                         return true;
                     }
@@ -45,6 +51,10 @@
             const schemaConfig = {};
             const extensions = cm.getSQLExtensions(type, schemaConfig, {
                 executeQuery: function (view) {
+                    if (!writeAllowed) {
+                        renderQueryState('Query execution disabled', writeDisabledReason, 'error');
+                        return true;
+                    }
                     executeSqlQuery(view);
                     return true;
                 }
@@ -300,6 +310,10 @@
         }
 
         function loadQueryPage() {
+            if (!writeAllowed) {
+                renderQueryState('Query execution disabled', writeDisabledReason, 'error');
+                return;
+            }
             globalAlertMessageClear();
             $.ajax({
                 url: datasourceBaseUrl + '/query',
@@ -393,6 +407,10 @@
         }
 
         function executeSqlQuery(view) {
+            if (!writeAllowed) {
+                renderQueryState('Query execution disabled', writeDisabledReason, 'error');
+                return;
+            }
             try {
                 const sql = editorSql(view);
                 if (!sql) {
@@ -406,6 +424,9 @@
         }
 
         $('#executeQuery').on('click', function() {
+            if (this.disabled) {
+                return;
+            }
             executeSqlQuery();
         });
 

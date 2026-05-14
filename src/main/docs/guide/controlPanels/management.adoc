@@ -52,6 +52,39 @@ micronaut:
 
 Management endpoint security remains under the normal Micronaut management configuration for your application.
 
+Control panel write operations inherit the read access decision by default. This preserves the existing behavior:
+a user who can open the control panel can also use write actions such as cache invalidation, object storage upload and
+delete, datasource SQL execution, logger reconfiguration, and Hibernate statistics or cache mutations.
+
+You can disable all control-panel write operations while leaving read views available:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    security:
+      write-access: DENIED
+----
+
+When writes are denied, write controls remain visible in the UI but are disabled with an explanatory reason. Direct HTTP
+calls to the control-panel helper routes are rejected by the server-side security rule.
+
+You can also use separate read and write roles:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    security:
+      access: AUTHORIZED
+      role: ROLE_CONTROL_PANEL_READ
+      write-access: AUTHORIZED
+      write-role: ROLE_CONTROL_PANEL_WRITE
+----
+
+If `write-access: AUTHORIZED` is configured without `write-role`, the configured read `role` is used as the effective
+write role. The available write access modes are `INHERITED`, `ANONYMOUS`, `AUTHENTICATED`, `AUTHORIZED`, and `DENIED`.
+
 The `AUTHENTICATED` mode requires any logged-in user, but does not require a specific role. The `ANONYMOUS` mode keeps
 the UI and helper controllers anonymously reachable. Use these modes only for trusted development or test environments:
 

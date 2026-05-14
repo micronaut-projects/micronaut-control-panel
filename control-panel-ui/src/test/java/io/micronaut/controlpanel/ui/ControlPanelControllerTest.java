@@ -16,6 +16,7 @@
 package io.micronaut.controlpanel.ui;
 
 import io.micronaut.controlpanel.core.ControlPanel;
+import io.micronaut.http.HttpRequest;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
@@ -34,7 +35,7 @@ class ControlPanelControllerTest {
 
     @Test
     void testIndexView() {
-        var model = (Model) controller.index().body().getModel().get();
+        var model = (Model) controller.index(HttpRequest.GET("/control-panel")).body().getModel().get();
         assertEquals(3, model.categories().size());
         assertEquals("test-application", model.applicationName());
         assertEquals(java.util.Set.of("test"), model.activeEnvironments());
@@ -46,7 +47,7 @@ class ControlPanelControllerTest {
     @Test
     void testByCategoryView() {
         var categoryId = ControlPanel.Category.MAIN.id();
-        var model = (Model) controller.byCategory(categoryId).body().getModel().get();
+        var model = (Model) controller.byCategory(categoryId, HttpRequest.GET("/control-panel/categories/" + categoryId)).body().getModel().get();
         assertEquals(3, model.categories().size());
         assertEquals("test-application", model.applicationName());
         assertEquals(java.util.Set.of("test"), model.activeEnvironments());
@@ -54,13 +55,13 @@ class ControlPanelControllerTest {
         assertEquals(categoryId, ((ControlPanel.Category) model.ext().get("currentCategory")).id());
         assertEquals(5, ((java.util.Collection<?>) model.ext().get("controlPanels")).size());
 
-        var model2 = (Model) controller.byCategory("application").body().getModel().get();
+        var model2 = (Model) controller.byCategory("application", HttpRequest.GET("/control-panel/categories/application")).body().getModel().get();
         assertEquals(1, ((java.util.Collection<?>) model2.ext().get("controlPanels")).size());
     }
 
     @Test
     void testDetailView() {
-        var modelRoutes = (Model) controller.detail("routes").body().getModel().get();
+        var modelRoutes = (Model) controller.detail("routes", HttpRequest.GET("/control-panel/routes")).body().getModel().get();
         assertEquals(3, modelRoutes.categories().size());
         assertEquals("test-application", modelRoutes.applicationName());
         assertEquals(java.util.Set.of("test"), modelRoutes.activeEnvironments());
@@ -68,19 +69,19 @@ class ControlPanelControllerTest {
         assertEquals(ControlPanel.Category.MAIN.id(), ((ControlPanel.Category) modelRoutes.ext().get("currentCategory")).id());
         assertEquals("routes", ((ControlPanel<?>) modelRoutes.ext().get("controlPanel")).getName());
 
-        var modelEnv = (Model) controller.detail("env").body().getModel().get();
+        var modelEnv = (Model) controller.detail("env", HttpRequest.GET("/control-panel/env")).body().getModel().get();
         assertEquals(ControlPanel.Category.MAIN.id(), ((ControlPanel.Category) modelEnv.ext().get("currentCategory")).id());
 
-        var modelLoggers = (Model) controller.detail("loggers").body().getModel().get();
+        var modelLoggers = (Model) controller.detail("loggers", HttpRequest.GET("/control-panel/loggers")).body().getModel().get();
         assertEquals(ControlPanel.Category.MAIN.id(), ((ControlPanel.Category) modelLoggers.ext().get("currentCategory")).id());
 
-        var modelHealth = (Model) controller.detail("health").body().getModel().get();
+        var modelHealth = (Model) controller.detail("health", HttpRequest.GET("/control-panel/health")).body().getModel().get();
         assertEquals(ControlPanel.Category.MAIN.id(), ((ControlPanel.Category) modelHealth.ext().get("currentCategory")).id());
 
-        var modelInfo = (Model) controller.detail("info").body().getModel().get();
+        var modelInfo = (Model) controller.detail("info", HttpRequest.GET("/control-panel/info")).body().getModel().get();
         assertEquals(ControlPanel.Category.MAIN.id(), ((ControlPanel.Category) modelInfo.ext().get("currentCategory")).id());
 
-        var modelTest = (Model) controller.detail("test").body().getModel().get();
+        var modelTest = (Model) controller.detail("test", HttpRequest.GET("/control-panel/test")).body().getModel().get();
         assertEquals("application", ((ControlPanel.Category) modelTest.ext().get("currentCategory")).id());
     }
 
