@@ -15,9 +15,7 @@
  */
 package io.micronaut.controlpanel.core;
 
-import io.micronaut.context.BeanProvider;
 import io.micronaut.context.annotation.Requires;
-import io.micronaut.context.event.StartupEvent;
 import io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration;
 import io.micronaut.controlpanel.util.ControlPanelUtils;
 import io.micronaut.core.util.StringUtils;
@@ -25,6 +23,7 @@ import io.micronaut.http.server.HttpServerConfiguration;
 import io.micronaut.runtime.ApplicationConfiguration;
 import io.micronaut.runtime.event.annotation.EventListener;
 import io.micronaut.runtime.server.EmbeddedServer;
+import io.micronaut.runtime.server.event.ServerStartupEvent;
 import jakarta.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,31 +42,27 @@ public class ControlPanelUrlLogger {
     private final String applicationPath;
     private final String controlPanelPath;
     private final Optional<String> applicationName;
-    private final BeanProvider<EmbeddedServer> embeddedServer;
 
     public ControlPanelUrlLogger(HttpServerConfiguration serverConfiguration,
                                  ControlPanelModuleConfiguration controlPanelConfiguration,
-                                 ApplicationConfiguration applicationConfiguration,
-                                 BeanProvider<EmbeddedServer> embeddedServer) {
+                                 ApplicationConfiguration applicationConfiguration) {
         this.applicationPath = Optional.ofNullable(serverConfiguration.getContextPath()).orElse("");
         this.controlPanelPath = controlPanelConfiguration.getPath();
         this.applicationName = applicationConfiguration.getName();
-        this.embeddedServer = embeddedServer;
     }
 
     /**
-     * Logs the Control Panel URL when the application startup event is triggered.
+     * Logs the Control Panel URL when the embedded server startup event is triggered.
      *
-     * @param event the StartupEvent that triggered this method call
+     * @param event the ServerStartupEvent that triggered this method call
      */
     @EventListener
-    public void logUrl(StartupEvent event) {
-        embeddedServer.ifResolvable(server -> {
-            var baseUrl = server.getURI().toString();
-            var controlPanelUrl = baseUrl + ControlPanelUtils.computeControlPanelPath(applicationPath, controlPanelPath);
-            var prefix = applicationName.map("[%s]"::formatted).orElse("");
-            LOG.info("{} Control Panel available at {}", prefix, controlPanelUrl);
-        });
+    public void logUrl(ServerStartupEvent event) {
+        EmbeddedServer server = event.getSource();
+        var baseUrl = server.getURI().toString();
+        var controlPanelUrl = baseUrl + ControlPanelUtils.computeControlPanelPath(applicationPath, controlPanelPath);
+        var prefix = applicationName.map("[%s]"::formatted).orElse("");
+        LOG.info("{} Control Panel available at {}", prefix, controlPanelUrl);
     }
 
 }
