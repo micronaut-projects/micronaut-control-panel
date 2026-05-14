@@ -116,12 +116,12 @@
             {{#if canRefresh}}
                 <div class="cp-sidebar-group-label">Application Controls</div>
                 <div class="cp-sidebar-actions cp-sidebar-section">
-                    <button class="btn btn-outline" id="refreshButton" type="button" data-toggle="modal" data-target="#stopRefreshModal" data-action="refresh" title="Refresh application">
+                    <button class="btn btn-outline" id="refreshButton" type="button" data-toggle="modal" data-target="#stopRefreshModal" data-action="refresh" title="{{#if ext.writeAccess.allowed}}Refresh application{{else}}{{ ext.writeAccess.reason }}{{/if}}"{{#unless ext.writeAccess.allowed}} disabled aria-disabled="true"{{/unless}}>
                         <i class="fas fa-arrows-rotate"></i>
                         <span>Refresh</span>
                     </button>
                     {{#if canStop}}
-                        <button class="btn btn-danger" id="stopButton" type="button" data-toggle="modal" data-target="#stopRefreshModal" data-action="shutdown" title="Stop application">
+                        <button class="btn btn-danger" id="stopButton" type="button" data-toggle="modal" data-target="#stopRefreshModal" data-action="shutdown" title="{{#if ext.writeAccess.allowed}}Stop application{{else}}{{ ext.writeAccess.reason }}{{/if}}"{{#unless ext.writeAccess.allowed}} disabled aria-disabled="true"{{/unless}}>
                             <i class="fas fa-stop"></i>
                             <span>Stop</span>
                         </button>
@@ -131,7 +131,7 @@
                 {{#if canStop}}
                     <div class="cp-sidebar-group-label">Application Controls</div>
                     <div class="cp-sidebar-actions cp-sidebar-section">
-                        <button class="btn btn-danger" id="stopButton" type="button" data-toggle="modal" data-target="#stopRefreshModal" data-action="shutdown" title="Stop application">
+                        <button class="btn btn-danger" id="stopButton" type="button" data-toggle="modal" data-target="#stopRefreshModal" data-action="shutdown" title="{{#if ext.writeAccess.allowed}}Stop application{{else}}{{ ext.writeAccess.reason }}{{/if}}"{{#unless ext.writeAccess.allowed}} disabled aria-disabled="true"{{/unless}}>
                             <i class="fas fa-stop"></i>
                             <span>Stop</span>
                         </button>
@@ -243,9 +243,9 @@
             <div class="modal-body"></div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger" id="stopConfirm">Shutdown</button>
-                <button type="button" class="btn btn-warning" id="refreshConfirm">Refresh</button>
-                <button type="button" class="btn btn-danger" id="refreshForce">Force refresh</button>
+                <button type="button" class="btn btn-danger" id="stopConfirm"{{#unless ext.writeAccess.allowed}} disabled aria-disabled="true" title="{{ ext.writeAccess.reason }}"{{/unless}}>Shutdown</button>
+                <button type="button" class="btn btn-warning" id="refreshConfirm"{{#unless ext.writeAccess.allowed}} disabled aria-disabled="true" title="{{ ext.writeAccess.reason }}"{{/unless}}>Refresh</button>
+                <button type="button" class="btn btn-danger" id="refreshForce"{{#unless ext.writeAccess.allowed}} disabled aria-disabled="true" title="{{ ext.writeAccess.reason }}"{{/unless}}>Force refresh</button>
             </div>
         </div>
     </div>
@@ -265,6 +265,10 @@
     $('#stopRefreshModal').on('show.bs.modal', function (event) {
         var modal = $(this)
         var button = $(event.relatedTarget)
+        if (!{{ ext.writeAccess.allowed }} || button.prop('disabled')) {
+            event.preventDefault()
+            return;
+        }
         var action = button.data('action')
         var body = "Refreshing the application will cause all Refreshable beans in the context to be destroyed and re-instantiated upon further requests."
         var confirm = "Are you sure you want to continue?"
@@ -283,8 +287,11 @@
     })
 
     $('#stopConfirm').click(function() {
+        if (!{{ ext.writeAccess.allowed }} || this.disabled) {
+            return;
+        }
         $.ajax({
-            url: '{{ ext.appPath }}/stop',
+            url: '{{ ext.controlPanelPath }}/application-control-panel-controller/stop',
             type: 'POST',
             success: function(result) {
                 $('#stopRefreshModal').modal('hide')
@@ -294,8 +301,11 @@
     })
 
     $('#refreshConfirm').click(function() {
+        if (!{{ ext.writeAccess.allowed }} || this.disabled) {
+            return;
+        }
         $.ajax({
-            url: '{{ ext.appPath }}/refresh',
+            url: '{{ ext.controlPanelPath }}/application-control-panel-controller/refresh',
             type: 'POST',
             success: function(result) {
                 $('#stopRefreshModal').modal('hide')
@@ -305,8 +315,11 @@
     })
 
     $('#refreshForce').click(function() {
+        if (!{{ ext.writeAccess.allowed }} || this.disabled) {
+            return;
+        }
         $.ajax({
-            url: '{{ ext.appPath }}/refresh',
+            url: '{{ ext.controlPanelPath }}/application-control-panel-controller/refresh',
             data: JSON.stringify({force: true}),
             contentType: "application/json; charset=utf-8",
             type: 'POST',
