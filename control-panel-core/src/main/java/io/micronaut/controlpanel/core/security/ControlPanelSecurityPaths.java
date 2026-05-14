@@ -73,6 +73,7 @@ public final class ControlPanelSecurityPaths {
         }
         if (method == HttpMethod.POST) {
             return isHelperPath(controlPanelPath, LOGGERS_PATH, path)
+                || isHelperPath(controlPanelPath, KAFKA_PATH, path)
                 || isHelperPath(controlPanelPath, APPLICATION_PATH, path)
                 || isObjectStorageUpload(controlPanelPath, path)
                 || isDatasourceQuery(controlPanelPath, path)

@@ -74,6 +74,7 @@ The write model includes:
 
 * Topic management: create topics, update topic configs, increase partitions, and delete topics only when destructive actions are enabled.
 * Message production: produce string or JSON test messages with optional key, headers, and partition by using an isolated management producer.
+  Produced message values, keys, header count, header keys, and header values are bounded server-side before a producer record is created.
 * Consumer group operations: delete empty groups and reset offsets to earliest, latest, a specific offset, or a timestamp.
 * App consumer operations: pause and resume Micronaut consumers through `ConsumerRegistry`.
 * Schema Registry writes: register schemas, update compatibility, and delete subjects or versions behind the destructive gate.
@@ -128,6 +129,11 @@ micronaut:
       writes:
         enabled: true
         destructive-enabled: false
+        max-message-value-bytes: 1048576
+        max-message-key-bytes: 1024
+        max-message-headers: 20
+        max-message-header-key-bytes: 256
+        max-message-header-value-bytes: 4096
         actions:
           create-topic: true
           update-topic-config: true

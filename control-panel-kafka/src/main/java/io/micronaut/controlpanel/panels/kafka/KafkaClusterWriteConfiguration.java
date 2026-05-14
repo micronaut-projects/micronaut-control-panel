@@ -30,6 +30,11 @@ final class KafkaClusterWriteConfiguration {
 
     private boolean enabled;
     private boolean destructiveEnabled;
+    private int maxMessageValueBytes = 1024 * 1024;
+    private int maxMessageKeyBytes = 1024;
+    private int maxMessageHeaders = 20;
+    private int maxMessageHeaderKeyBytes = 256;
+    private int maxMessageHeaderValueBytes = 4096;
     private Actions actions = new Actions();
 
     boolean isEnabled() {
@@ -46,6 +51,46 @@ final class KafkaClusterWriteConfiguration {
 
     void setDestructiveEnabled(boolean destructiveEnabled) {
         this.destructiveEnabled = destructiveEnabled;
+    }
+
+    int getMaxMessageValueBytes() {
+        return maxMessageValueBytes;
+    }
+
+    void setMaxMessageValueBytes(int maxMessageValueBytes) {
+        this.maxMessageValueBytes = maxMessageValueBytes;
+    }
+
+    int getMaxMessageKeyBytes() {
+        return maxMessageKeyBytes;
+    }
+
+    void setMaxMessageKeyBytes(int maxMessageKeyBytes) {
+        this.maxMessageKeyBytes = maxMessageKeyBytes;
+    }
+
+    int getMaxMessageHeaders() {
+        return maxMessageHeaders;
+    }
+
+    void setMaxMessageHeaders(int maxMessageHeaders) {
+        this.maxMessageHeaders = maxMessageHeaders;
+    }
+
+    int getMaxMessageHeaderKeyBytes() {
+        return maxMessageHeaderKeyBytes;
+    }
+
+    void setMaxMessageHeaderKeyBytes(int maxMessageHeaderKeyBytes) {
+        this.maxMessageHeaderKeyBytes = maxMessageHeaderKeyBytes;
+    }
+
+    int getMaxMessageHeaderValueBytes() {
+        return maxMessageHeaderValueBytes;
+    }
+
+    void setMaxMessageHeaderValueBytes(int maxMessageHeaderValueBytes) {
+        this.maxMessageHeaderValueBytes = maxMessageHeaderValueBytes;
     }
 
     Actions getActions() {

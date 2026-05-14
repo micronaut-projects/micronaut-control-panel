@@ -558,8 +558,15 @@ final class KafkaClusterService {
             String topic = requireName(request.topic(), "Topic");
             String action = "messages.produce";
             guardWrite(action, false);
-            byte[] value = payloadBytes(request.value(), request.format(), "Value");
-            byte @Nullable [] key = request.key() == null ? null : request.key().getBytes(StandardCharsets.UTF_8);
+            byte[] value = payloadBytes(
+                request.value(),
+                request.format(),
+                "Value",
+                writeConfiguration.getMaxMessageValueBytes()
+            );
+            byte @Nullable [] key = request.key() == null
+                ? null
+                : boundedBytes(request.key(), "Key", writeConfiguration.getMaxMessageKeyBytes());
             Integer partition = request.partition();
             if (partition != null && partition < 0) {
                 throw new IllegalArgumentException("Partition must be greater than or equal to 0");
@@ -580,7 +587,7 @@ final class KafkaClusterService {
                     partition,
                     key,
                     value,
-                    producerHeaders(request.headers())
+                    producerHeaders(request.headers(), writeConfiguration)
                 );
                 RecordMetadata metadata = producer.send(record).get(ADMIN_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS);
                 producer.flush();
@@ -959,7 +966,7 @@ final class KafkaClusterService {
         }
     }
 
-    private static byte[] payloadBytes(String value, String format, String label) {
+    private static byte[] payloadBytes(String value, String format, String label, int maxBytes) {
         if (value == null) {
             throw new IllegalArgumentException(label + " is required");
         }
@@ -970,7 +977,15 @@ final class KafkaClusterService {
                 throw new IllegalArgumentException(label + " must be a JSON object or array");
             }
         }
-        return value.getBytes(StandardCharsets.UTF_8);
+        return boundedBytes(value, label, maxBytes);
+    }
+
+    private static byte[] boundedBytes(String value, String label, int maxBytes) {
+        byte[] bytes = value.getBytes(StandardCharsets.UTF_8);
+        if (bytes.length > maxBytes) {
+            throw new IllegalArgumentException(label + " must be " + maxBytes + " bytes or less");
+        }
+        return bytes;
     }
 
     private static String normalizePayloadFormat(String format) {
@@ -981,17 +996,27 @@ final class KafkaClusterService {
         };
     }
 
-    private static List<Header> producerHeaders(@Nullable List<MessageHeaderInput> headers) {
+    private static List<Header> producerHeaders(@Nullable List<MessageHeaderInput> headers,
+                                                KafkaClusterWriteConfiguration writeConfiguration) {
         if (headers == null || headers.isEmpty()) {
             return List.of();
         }
+        if (headers.size() > writeConfiguration.getMaxMessageHeaders()) {
+            throw new IllegalArgumentException("Header count must be " + writeConfiguration.getMaxMessageHeaders() + " or less");
+        }
         return headers.stream()
             .map(header -> new RecordHeader(
-                requireName(header.key(), "Header key"),
-                header.value() == null ? null : header.value().getBytes(StandardCharsets.UTF_8)
+                headerKey(header, writeConfiguration),
+                header.value() == null ? null : boundedBytes(header.value(), "Header value", writeConfiguration.getMaxMessageHeaderValueBytes())
             ))
             .map(Header.class::cast)
             .toList();
+    }
+
+    private static String headerKey(MessageHeaderInput header, KafkaClusterWriteConfiguration writeConfiguration) {
+        String key = requireName(header.key(), "Header key");
+        boundedBytes(key, "Header key", writeConfiguration.getMaxMessageHeaderKeyBytes());
+        return key;
     }
 
     private ConsumerGroupDescription requireInactiveConsumerGroup(String groupId) throws Exception {

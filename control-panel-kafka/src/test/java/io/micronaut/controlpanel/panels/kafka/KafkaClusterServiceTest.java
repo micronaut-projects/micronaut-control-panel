@@ -685,6 +685,65 @@ final class KafkaClusterServiceTest {
     }
 
     @Test
+    void produceMessageRejectsOversizedValueBeforeCreatingProducerRecord() {
+        var section = serviceWithProduceLimits().produceMessage(produceRequest("orders", null, "too-long", List.of()));
+
+        assertNull(section.data());
+        assertEquals("Value must be 4 bytes or less", section.error());
+    }
+
+    @Test
+    void produceMessageRejectsOversizedKeyBeforeCreatingProducerRecord() {
+        var section = serviceWithProduceLimits().produceMessage(produceRequest("orders", "wide-key", "ok", List.of()));
+
+        assertNull(section.data());
+        assertEquals("Key must be 3 bytes or less", section.error());
+    }
+
+    @Test
+    void produceMessageRejectsTooManyHeadersBeforeCreatingProducerRecord() {
+        var section = serviceWithProduceLimits().produceMessage(produceRequest(
+            "orders",
+            null,
+            "ok",
+            List.of(
+                new KafkaClusterResponse.MessageHeaderInput("a", "1"),
+                new KafkaClusterResponse.MessageHeaderInput("b", "2"),
+                new KafkaClusterResponse.MessageHeaderInput("c", "3")
+            )
+        ));
+
+        assertNull(section.data());
+        assertEquals("Header count must be 2 or less", section.error());
+    }
+
+    @Test
+    void produceMessageRejectsOversizedHeaderKeyBeforeCreatingProducerRecord() {
+        var section = serviceWithProduceLimits().produceMessage(produceRequest(
+            "orders",
+            null,
+            "ok",
+            List.of(new KafkaClusterResponse.MessageHeaderInput("wide", "1"))
+        ));
+
+        assertNull(section.data());
+        assertEquals("Header key must be 3 bytes or less", section.error());
+    }
+
+    @Test
+    void produceMessageRejectsOversizedHeaderValueBeforeCreatingProducerRecord() {
+        var section = serviceWithProduceLimits().produceMessage(produceRequest(
+            "orders",
+            null,
+            "ok",
+            List.of(new KafkaClusterResponse.MessageHeaderInput("ok", "wide"))
+        ));
+
+        assertNull(section.data());
+        assertEquals("Header value must be 3 bytes or less", section.error());
+    }
+
+    @Test
     void optionalIntegrationsAreAbsentUntilConfigured() {
         AdminClient admin = mock(AdminClient.class);
 
@@ -859,6 +918,32 @@ final class KafkaClusterServiceTest {
         configuration.setEnabled(enabled);
         configuration.setDestructiveEnabled(destructiveEnabled);
         return configuration;
+    }
+
+    private static KafkaClusterService serviceWithProduceLimits() {
+        KafkaClusterWriteConfiguration configuration = writeConfig(true, false);
+        configuration.setMaxMessageValueBytes(4);
+        configuration.setMaxMessageKeyBytes(3);
+        configuration.setMaxMessageHeaders(2);
+        configuration.setMaxMessageHeaderKeyBytes(3);
+        configuration.setMaxMessageHeaderValueBytes(3);
+        return new KafkaClusterService(mock(AdminClient.class), null, null, null, configuration);
+    }
+
+    private static KafkaClusterResponse.ProduceMessageRequest produceRequest(String topic,
+                                                                            @Nullable String key,
+                                                                            String value,
+                                                                            List<KafkaClusterResponse.MessageHeaderInput> headers) {
+        return new KafkaClusterResponse.ProduceMessageRequest(
+            topic,
+            null,
+            key,
+            value,
+            "string",
+            headers,
+            false,
+            "PRODUCE " + topic
+        );
     }
 
     private static KafkaIntegrationConfiguration integrationConfig(@Nullable String schemaRegistryUrl,
