@@ -19,10 +19,10 @@ import io.micronaut.context.annotation.Requires;
 import io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration;
 import io.micronaut.controlpanel.util.ControlPanelUtils;
 import io.micronaut.core.util.StringUtils;
-import io.micronaut.discovery.event.ServiceReadyEvent;
 import io.micronaut.http.server.HttpServerConfiguration;
 import io.micronaut.runtime.ApplicationConfiguration;
 import io.micronaut.runtime.event.annotation.EventListener;
+import io.micronaut.runtime.server.event.ServerStartupEvent;
 import jakarta.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,12 +51,12 @@ public class ControlPanelUrlLogger {
     }
 
     /**
-     * Logs the Control Panel URL when the ServiceReadyEvent is triggered.
+     * Logs the Control Panel URL when the server startup event is triggered.
      *
-     * @param event the ServiceReadyEvent that triggered this method call
+     * @param event the server startup event that triggered this method call
      */
     @EventListener
-    public void logUrl(ServiceReadyEvent event) {
+    public void logUrl(ServerStartupEvent event) {
         var baseUrl = event.getSource().getURI().toString();
         var controlPanelUrl = baseUrl + ControlPanelUtils.computeControlPanelPath(applicationPath, controlPanelPath);
         var prefix = applicationName.map("[%s]"::formatted).orElse("");
