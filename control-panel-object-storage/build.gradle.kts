@@ -24,7 +24,3 @@ dependencies {
     testRuntimeOnly(mnTest.junit.jupiter.engine)
     testAnnotationProcessor(mn.micronaut.inject.java)
 }
-
-micronautBuild {
-    binaryCompatibility.enabledAfter("1.10.0")
-}
