@@ -1,64 +1,77 @@
 {{#with controlPanel.body }}
-    <div class="cp-data-table-container cp-vertical-table">
-        <table class="table cp-data-table-table">
-            <tbody>
-            <tr>
-                <th scope="row">Tables</th>
-                <td>{{tables.size}} tables</td>
-            </tr>
-            <tr>
-                <th scope="row">Type</th>
-                <td><code class="cp-table-code">{{ dataSourceInfo.type }}</code></td>
-            </tr>
-            {{#if dataSourceInfo.jdbcInfo.database}}
-                <tr>
-                    <th scope="row">Database</th>
-                    <td><code class="cp-table-code">{{ dataSourceInfo.jdbcInfo.database }}</code></td>
-                </tr>
-            {{/if}}
-            {{#if dataSourceInfo.jdbcInfo.version}}
-                <tr>
-                    <th scope="row">Version</th>
-                    <td><code class="cp-table-code">{{ dataSourceInfo.jdbcInfo.version }}</code></td>
-                </tr>
-            {{/if}}
-            {{#if dataSourceInfo.jdbcInfo.driverName}}
-                <tr>
-                    <th scope="row">Driver</th>
-                    <td><code class="cp-table-code">{{ dataSourceInfo.jdbcInfo.driverName }}</code></td>
-                </tr>
-            {{/if}}
-            {{#if dataSourceInfo.jdbcInfo.driverVersion}}
-                <tr>
-                    <th scope="row">Driver version</th>
-                    <td><code class="cp-table-code">{{ dataSourceInfo.jdbcInfo.driverVersion }}</code></td>
-                </tr>
-            {{/if}}
-            {{#if dataSourceInfo.jdbcInfo.catalog}}
-                <tr>
-                    <th scope="row">Catalog</th>
-                    <td><code class="cp-table-code">{{ dataSourceInfo.jdbcInfo.catalog }}</code></td>
-                </tr>
-            {{/if}}
-            {{#if dataSourceInfo.jdbcInfo.schema}}
-                <tr>
-                    <th scope="row">Schema</th>
-                    <td><code class="cp-table-code">{{ dataSourceInfo.jdbcInfo.schema }}</code></td>
-                </tr>
-            {{/if}}
-            <tr>
-                <th scope="row">URL</th>
-                <td><code class="cp-table-code">{{ dataSourceInfo.jdbcUrl }}</code></td>
-            </tr>
-            <tr>
-                <th scope="row">Username</th>
-                <td><code class="cp-table-code">{{ dataSourceInfo.username }}</code></td>
-            </tr>
-            <tr>
-                <th scope="row">Password</th>
-                <td><code class="cp-table-code">{{ dataSourceInfo.password }}</code></td>
-            </tr>
-            </tbody>
-        </table>
+    <div class="cp-datasource-summary">
+        <section class="cp-datasource-summary-group">
+            <h3>Connection data</h3>
+            <dl>
+                <div>
+                    <dt>URL</dt>
+                    <dd><code class="cp-table-code">{{ dataSourceInfo.jdbcUrl }}</code></dd>
+                </div>
+                <div>
+                    <dt>Username</dt>
+                    <dd><code class="cp-table-code">{{ dataSourceInfo.username }}</code></dd>
+                </div>
+                <div>
+                    <dt>Password</dt>
+                    <dd><code class="cp-table-code">{{ dataSourceInfo.password }}</code></dd>
+                </div>
+                {{#if dataSourceInfo.jdbcInfo.catalog}}
+                    <div>
+                        <dt>Catalog</dt>
+                        <dd><code class="cp-table-code">{{ dataSourceInfo.jdbcInfo.catalog }}</code></dd>
+                    </div>
+                {{/if}}
+                {{#if dataSourceInfo.jdbcInfo.schema}}
+                    <div>
+                        <dt>Schema</dt>
+                        <dd><code class="cp-table-code">{{ dataSourceInfo.jdbcInfo.schema }}</code></dd>
+                    </div>
+                {{/if}}
+            </dl>
+        </section>
+
+        <section class="cp-datasource-summary-group">
+            <h3>Database</h3>
+            <dl>
+                <div>
+                    <dt>Type</dt>
+                    <dd><code class="cp-table-code">{{ dataSourceInfo.type }}</code></dd>
+                </div>
+                {{#if dataSourceInfo.jdbcInfo.database}}
+                    <div>
+                        <dt>Product</dt>
+                        <dd><code class="cp-table-code">{{ dataSourceInfo.jdbcInfo.database }}</code></dd>
+                    </div>
+                {{/if}}
+                {{#if dataSourceInfo.jdbcInfo.version}}
+                    <div>
+                        <dt>Version</dt>
+                        <dd><code class="cp-table-code">{{ dataSourceInfo.jdbcInfo.version }}</code></dd>
+                    </div>
+                {{/if}}
+                <div>
+                    <dt>Tables</dt>
+                    <dd>{{tables.size}} tables</dd>
+                </div>
+            </dl>
+        </section>
+
+        <section class="cp-datasource-summary-group">
+            <h3>Driver</h3>
+            <dl>
+                {{#if dataSourceInfo.jdbcInfo.driverName}}
+                    <div>
+                        <dt>Name</dt>
+                        <dd><code class="cp-table-code">{{ dataSourceInfo.jdbcInfo.driverName }}</code></dd>
+                    </div>
+                {{/if}}
+                {{#if dataSourceInfo.jdbcInfo.driverVersion}}
+                    <div>
+                        <dt>Version</dt>
+                        <dd><code class="cp-table-code">{{ dataSourceInfo.jdbcInfo.driverVersion }}</code></dd>
+                    </div>
+                {{/if}}
+            </dl>
+        </section>
     </div>
 {{/with}}

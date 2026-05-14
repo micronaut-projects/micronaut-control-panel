@@ -19,3 +19,7 @@ dependencies {
 tasks.withType<Test> {
     jvmArgs("-XX:+EnableDynamicAgentLoading")
 }
+
+micronautBuild {
+    binaryCompatibility.enabledAfter("2.0.0")
+}

@@ -1,0 +1,16 @@
+<div class="tabs-list" role="tablist" aria-label="Datasource detail">
+    <button type="button" class="tabs-trigger active" role="tab" aria-selected="true" aria-controls="datasourceTablesTab" data-tabs-trigger="tables">
+        <i class="fas fa-table-list" aria-hidden="true"></i>
+        Tables
+    </button>
+    <button type="button" class="tabs-trigger" role="tab" aria-selected="false" aria-controls="datasourceQueryTab" data-tabs-trigger="query">
+        <i class="fas fa-terminal" aria-hidden="true"></i>
+        Query
+    </button>
+    {{#if poolInfo}}
+        <button type="button" class="tabs-trigger" role="tab" aria-selected="false" aria-controls="datasourcePoolTab" data-tabs-trigger="pool">
+            <i class="fas fa-gauge-high" aria-hidden="true"></i>
+            Pool
+        </button>
+    {{/if}}
+</div>

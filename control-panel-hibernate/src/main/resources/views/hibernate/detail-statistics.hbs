@@ -25,11 +25,11 @@
                                 {{/if}}
                             </div>
                             {{#if statistics.statisticsEnabled}}
-                                <button type="button" class="cp-switch cp-switch-checked" role="switch" aria-checked="true" aria-label="Statistics collection" data-hibernate-statistics-toggle data-hibernate-statistics-enabled="false">
+                                <button type="button" class="cp-switch cp-switch-checked" role="switch" aria-checked="true" aria-label="Statistics collection" data-hibernate-statistics-toggle data-hibernate-statistics-enabled="false"{{#unless ext.writeAccess.allowed}} disabled aria-disabled="true" title="{{ ext.writeAccess.reason }}"{{/unless}}>
                                     <span class="cp-switch-thumb"></span>
                                 </button>
                             {{else}}
-                                <button type="button" class="cp-switch" role="switch" aria-checked="false" aria-label="Statistics collection" data-hibernate-statistics-toggle data-hibernate-statistics-enabled="true">
+                                <button type="button" class="cp-switch" role="switch" aria-checked="false" aria-label="Statistics collection" data-hibernate-statistics-toggle data-hibernate-statistics-enabled="true"{{#unless ext.writeAccess.allowed}} disabled aria-disabled="true" title="{{ ext.writeAccess.reason }}"{{/unless}}>
                                     <span class="cp-switch-thumb"></span>
                                 </button>
                             {{/if}}
@@ -137,7 +137,7 @@
                                         <i class="fas fa-chevron-down"></i>
                                     </summary>
                                     <div class="cp-actions-menu-content">
-                                        <button type="button" class="cp-actions-menu-item cp-actions-menu-item-danger" data-toggle="modal" data-target="#hibernateDeleteConfirmModal" data-hibernate-delete-action="statistics" title="Clear statistics">
+                                        <button type="button" class="cp-actions-menu-item cp-actions-menu-item-danger" data-toggle="modal" data-target="#hibernateDeleteConfirmModal" data-hibernate-delete-action="statistics" title="{{#if ext.writeAccess.allowed}}Clear statistics{{else}}{{ ext.writeAccess.reason }}{{/if}}"{{#unless ext.writeAccess.allowed}} disabled aria-disabled="true"{{/unless}}>
                                             <i class="fas fa-eraser"></i>
                                             Clear statistics
                                         </button>

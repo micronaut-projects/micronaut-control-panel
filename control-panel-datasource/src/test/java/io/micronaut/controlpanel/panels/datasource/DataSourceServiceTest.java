@@ -15,9 +15,15 @@
  */
 package io.micronaut.controlpanel.panels.datasource;
 
+import com.zaxxer.hikari.HikariDataSource;
+import com.zaxxer.hikari.HikariPoolMXBean;
 import io.micronaut.controlpanel.panels.datasource.model.Column;
 import io.micronaut.controlpanel.panels.datasource.model.ColumnType;
+import io.micronaut.controlpanel.panels.datasource.model.PoolInfo;
 import io.micronaut.controlpanel.panels.datasource.model.Table;
+import oracle.ucp.ShardConnectionStatistics;
+import oracle.ucp.jdbc.JDBCConnectionPoolStatistics;
+import oracle.ucp.jdbc.PoolDataSource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,7 +38,10 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.time.Duration;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -138,6 +147,130 @@ class DataSourceServiceTest {
     }
 
     @Test
+    @DisplayName("getPoolInfo returns empty when no optional pool inspector supports the datasource")
+    void testGetPoolInfoWithoutPoolInspector() {
+        assertTrue(dataSourceService.getPoolInfo().isEmpty());
+    }
+
+    @Test
+    @DisplayName("getPoolInfo maps Hikari pool options and statistics")
+    void testGetPoolInfoForHikari() throws SQLException {
+        HikariDataSource hikariDataSource = mock(HikariDataSource.class);
+        DataSource nestedDataSource = mock(DataSource.class);
+        HikariPoolMXBean poolMxBean = mock(HikariPoolMXBean.class);
+        when(hikariDataSource.getHikariPoolMXBean()).thenReturn(poolMxBean);
+        when(hikariDataSource.getPoolName()).thenReturn("main-pool");
+        when(hikariDataSource.getJdbcUrl()).thenReturn("jdbc:postgresql://localhost/test");
+        when(hikariDataSource.getUsername()).thenReturn("user");
+        when(hikariDataSource.getDataSource()).thenReturn(nestedDataSource);
+        when(hikariDataSource.getMaximumPoolSize()).thenReturn(10);
+        when(hikariDataSource.getMinimumIdle()).thenReturn(2);
+        when(hikariDataSource.getConnectionTimeout()).thenReturn(30_000L);
+        when(hikariDataSource.getValidationTimeout()).thenReturn(5_000L);
+        when(hikariDataSource.getIdleTimeout()).thenReturn(600_000L);
+        when(hikariDataSource.getMaxLifetime()).thenReturn(1_800_000L);
+        when(hikariDataSource.getLeakDetectionThreshold()).thenReturn(0L);
+        when(hikariDataSource.getKeepaliveTime()).thenReturn(120_000L);
+        when(hikariDataSource.getLoginTimeout()).thenReturn(4);
+        when(hikariDataSource.getConnectionTestQuery()).thenReturn("SELECT 1");
+        when(hikariDataSource.getConnectionInitSql()).thenReturn("SET application_name = 'control-panel'");
+        when(hikariDataSource.getTransactionIsolation()).thenReturn("TRANSACTION_READ_COMMITTED");
+        when(hikariDataSource.isRunning()).thenReturn(true);
+        when(hikariDataSource.isClosed()).thenReturn(false);
+        when(hikariDataSource.getDataSourceProperties()).thenReturn(properties("ApplicationName", "socketTimeout"));
+        when(hikariDataSource.getHealthCheckProperties()).thenReturn(properties("connectivityCheck"));
+        when(poolMxBean.getActiveConnections()).thenReturn(3);
+        when(poolMxBean.getIdleConnections()).thenReturn(4);
+        when(poolMxBean.getTotalConnections()).thenReturn(7);
+        when(poolMxBean.getThreadsAwaitingConnection()).thenReturn(1);
+        var service = new DataSourceService(hikariDataSource, List.of(new HikariConnectionPoolInspector()));
+
+        var poolInfo = service.getPoolInfo().orElseThrow();
+
+        assertEquals("HikariCP", poolInfo.provider());
+        assertEquals("main-pool", poolInfo.poolName());
+        assertEquals(3, poolInfo.stats().active());
+        assertEquals(4, poolInfo.stats().idle());
+        assertEquals(7, poolInfo.stats().total());
+        assertEquals(10, poolInfo.stats().max());
+        assertEquals(2, poolInfo.stats().min());
+        assertEquals(1, poolInfo.stats().awaiting());
+        assertEquals("30%", poolInfo.stats().activeWidth());
+        assertEquals("40%", poolInfo.stats().idleWidth());
+        assertEquals("30%", poolInfo.stats().remainingWidth());
+        assertTrue(poolInfo.optionGroups().stream().anyMatch(group -> group.title().equals("Timeouts")));
+        assertTrue(poolInfo.optionGroups().stream()
+            .flatMap(group -> group.options().stream())
+            .anyMatch(option -> option.label().equals("Connection test query") && option.value().equals("SELECT 1")));
+        assertTrue(hasPoolOption(poolInfo, "Datasource properties", "ApplicationName, socketTimeout"));
+        assertTrue(hasPoolOption(poolInfo, "Login timeout", "4s"));
+        assertTrue(hasPoolOption(poolInfo, "Running", "true"));
+        assertTrue(hasPoolOption(poolInfo, "Health check properties", "connectivityCheck"));
+    }
+
+    @Test
+    @DisplayName("getPoolInfo maps Oracle UCP pool options and statistics")
+    void testGetPoolInfoForOracleUcp() throws SQLException {
+        PoolDataSource poolDataSource = mock(PoolDataSource.class);
+        JDBCConnectionPoolStatistics statistics = mock(JDBCConnectionPoolStatistics.class);
+        when(poolDataSource.getStatistics()).thenReturn(statistics);
+        when(poolDataSource.getConnectionPoolName()).thenReturn("oracle-pool");
+        when(poolDataSource.getURL()).thenReturn("jdbc:oracle:thin:@localhost:1521/FREEPDB1");
+        when(poolDataSource.getUser()).thenReturn("user");
+        when(poolDataSource.getMaxPoolSize()).thenReturn(12);
+        when(poolDataSource.getMinPoolSize()).thenReturn(3);
+        when(poolDataSource.getInitialPoolSize()).thenReturn(4);
+        when(poolDataSource.getMinIdle()).thenReturn(2);
+        when(poolDataSource.getMaxStatements()).thenReturn(50);
+        when(poolDataSource.getSQLForValidateConnection()).thenReturn("SELECT 1 FROM DUAL");
+        when(poolDataSource.getDescription()).thenReturn("Oracle reporting pool");
+        when(poolDataSource.getServiceName()).thenReturn("FREEPDB1");
+        when(poolDataSource.getONSConfiguration()).thenReturn("nodes=host1:6200");
+        when(poolDataSource.getPdbRoles()).thenReturn(properties("FREEPDB1"));
+        when(poolDataSource.getConnectionProperties()).thenReturn(properties("oracle.jdbc.ReadTimeout"));
+        when(poolDataSource.getConnectionWaitDuration()).thenReturn(Duration.ofSeconds(7));
+        when(poolDataSource.getLoginTimeout()).thenReturn(3);
+        when(poolDataSource.getUCPEventListenerProvider()).thenReturn("example.Provider");
+        when(statistics.getBorrowedConnectionsCount()).thenReturn(5);
+        when(statistics.getAvailableConnectionsCount()).thenReturn(4);
+        when(statistics.getTotalConnectionsCount()).thenReturn(9);
+        when(statistics.getPendingRequestsCount()).thenReturn(2);
+        when(statistics.getPeakConnectionsCount()).thenReturn(10);
+        when(statistics.getConnectionsCreatedCount()).thenReturn(11);
+        when(statistics.getCumulativeConnectionBorrowedCount()).thenReturn(21L);
+        when(statistics.getCumulativeConnectionUseTime()).thenReturn(4_000L);
+        when(statistics.getShardConnectionStats()).thenReturn(Map.of("shard-1", mock(ShardConnectionStatistics.class)));
+        var service = new DataSourceService(poolDataSource, List.of(new OracleUcpConnectionPoolInspector()));
+
+        var poolInfo = service.getPoolInfo().orElseThrow();
+
+        assertEquals("Oracle UCP", poolInfo.provider());
+        assertEquals("oracle-pool", poolInfo.poolName());
+        assertEquals(5, poolInfo.stats().active());
+        assertEquals(4, poolInfo.stats().idle());
+        assertEquals(9, poolInfo.stats().total());
+        assertEquals(12, poolInfo.stats().max());
+        assertEquals(3, poolInfo.stats().min());
+        assertEquals(2, poolInfo.stats().awaiting());
+        assertEquals("42%", poolInfo.stats().activeWidth());
+        assertEquals("33%", poolInfo.stats().idleWidth());
+        assertEquals("25%", poolInfo.stats().remainingWidth());
+        assertTrue(poolInfo.optionGroups().stream().anyMatch(group -> group.title().equals("Connection")));
+        assertTrue(poolInfo.optionGroups().stream()
+            .flatMap(group -> group.options().stream())
+            .anyMatch(option -> option.label().equals("Validation SQL") && option.value().equals("SELECT 1 FROM DUAL")));
+        assertTrue(hasPoolOption(poolInfo, "Created connections", "11"));
+        assertTrue(hasPoolOption(poolInfo, "Description", "Oracle reporting pool"));
+        assertTrue(hasPoolOption(poolInfo, "ONS configuration", "nodes=host1:6200"));
+        assertTrue(hasPoolOption(poolInfo, "PDB roles", "FREEPDB1"));
+        assertTrue(hasPoolOption(poolInfo, "Login timeout", "3s"));
+        assertTrue(hasPoolOption(poolInfo, "Event listener provider", "example.Provider"));
+        assertTrue(hasPoolOption(poolInfo, "Borrowed connections", "21"));
+        assertTrue(hasPoolOption(poolInfo, "Connection use", "4s"));
+        assertTrue(hasPoolOption(poolInfo, "Shard stats", "shard-1"));
+    }
+
+    @Test
     @DisplayName("getTables with SQLException throws RuntimeException")
     void testGetTablesWithSQLException() throws SQLException {
         // Given
@@ -160,6 +293,9 @@ class DataSourceServiceTest {
         // Then
         assertEquals(1, result.total());
         assertEquals(List.of("id", "name"), result.cols());
+        assertEquals(2, result.columns().size());
+        assertEquals("id", result.columns().getFirst().label());
+        assertEquals("INTEGER", result.columns().getFirst().typeName());
         assertEquals(1, result.rows().size());
         assertEquals(List.of("1", "John"), result.rows().getFirst());
     }
@@ -179,6 +315,7 @@ class DataSourceServiceTest {
             // Then
             assertEquals(1, result.total());
             assertEquals(List.of("Affected Rows"), result.cols());
+            assertEquals("INTEGER", result.columns().getFirst().typeName());
             assertEquals(List.of("1 rows affected"), result.rows().getFirst());
         }
     }
@@ -342,6 +479,9 @@ class DataSourceServiceTest {
         when(md.getColumnCount()).thenReturn(cols.size());
         for (int j = 0; j < cols.size(); j++) {
             when(md.getColumnLabel(j + 1)).thenReturn(cols.get(j));
+            when(md.getColumnTypeName(j + 1)).thenReturn(j == 0 ? "INTEGER" : "VARCHAR");
+            when(md.getColumnType(j + 1)).thenReturn(j == 0 ? Types.INTEGER : Types.VARCHAR);
+            when(md.getColumnClassName(j + 1)).thenReturn(String.class.getName());
         }
 
         AtomicInteger rowIndex = new AtomicInteger(0);
@@ -367,5 +507,19 @@ class DataSourceServiceTest {
 
         when(ps.executeQuery()).thenReturn(rs);
         when(connection.prepareStatement(sql)).thenReturn(ps);
+    }
+
+    private static Properties properties(String... names) {
+        var properties = new Properties();
+        for (String name : names) {
+            properties.setProperty(name, "configured");
+        }
+        return properties;
+    }
+
+    private static boolean hasPoolOption(PoolInfo poolInfo, String label, String value) {
+        return poolInfo.optionGroups().stream()
+            .flatMap(group -> group.options().stream())
+            .anyMatch(option -> option.label().equals(label) && option.value().equals(value));
     }
 }

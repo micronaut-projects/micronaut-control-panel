@@ -37,10 +37,6 @@ dependencies {
     testImplementation(mnCache.micronaut.cache.infinispan)
 }
 
-micronautBuild {
-    binaryCompatibility.enabledAfter("2.0.0")
-}
-
 tasks.named("internalStartTestResourcesService") {
     setProperty("useClassDataSharing", false)
 }

@@ -2,9 +2,29 @@ datasources:
   my-postgres:
     db-type: postgres
     driver-class-name: org.postgresql.Driver
+    pool-name: example-postgres-pool
+    maximum-pool-size: 8
+    minimum-idle: 2
+    connection-timeout: 15000
+    validation-timeout: 3000
+    idle-timeout: 120000
+    max-lifetime: 900000
+    keepalive-time: 300000
+    connection-test-query: SELECT 1
+    register-mbeans: true
   hibernate-reporting:
     db-type: postgres
     driver-class-name: org.postgresql.Driver
+    pool-name: reporting-postgres-pool
+    maximum-pool-size: 4
+    minimum-idle: 1
+    connection-timeout: 10000
+    validation-timeout: 2500
+    idle-timeout: 60000
+    max-lifetime: 600000
+    keepalive-time: 180000
+    connection-test-query: SELECT 1
+    isolate-internal-queries: true
 
 jpa:
   default:

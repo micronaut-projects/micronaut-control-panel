@@ -13,7 +13,3 @@ dependencies {
     testImplementation(mnSql.hibernate.core)
     testRuntimeOnly(mnTest.junit.jupiter.engine)
 }
-
-micronautBuild {
-    binaryCompatibility.enabledAfter("2.0.0")
-}

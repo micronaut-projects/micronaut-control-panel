@@ -1,0 +1,449 @@
+<script>
+    $(function() {
+        const cpDatasourceDetail = window.cpDatasourceDetail;
+        if (!cpDatasourceDetail) {
+            return;
+        }
+        const allSchemasFilterValue = '__all__';
+        const datasourceBaseUrl = cpDatasourceDetail.datasourceBaseUrl;
+        const tableBrowserState = cpDatasourceDetail.tableBrowserState;
+        const escapeHtml = cpDatasourceDetail.escapeHtml;
+        let tableSearchTimer = null;
+
+        function formatTableIdentity(schema, table) {
+            const tableName = table || '';
+            const schemaName = schema || '';
+            return schemaName ? schemaName + '.' + tableName : tableName;
+        }
+
+        function setTableDetailSubtitle(schema, table) {
+            const $subtitle = $('#tableDetailSubtitle');
+            if (!table) {
+                $subtitle.text('').attr('hidden', true);
+                return;
+            }
+            $subtitle.text(formatTableIdentity(schema, table)).removeAttr('hidden');
+        }
+
+        function setTableDetailCollapsed(collapsed, railCollapsed) {
+            const $card = $('#tableDetailCard');
+            const $body = $card.children('.card-body');
+            const $button = $('#toggleTableDetail');
+            const compact = collapsed && !!railCollapsed;
+            $card.toggleClass('collapsed-card', collapsed);
+            $card.toggleClass('detail-rail-collapsed', compact);
+            $('.cp-datasource-table-browser').toggleClass('detail-collapsed', compact);
+            $body.css('display', collapsed ? 'none' : '');
+            $button.attr('aria-expanded', collapsed ? 'false' : 'true');
+        }
+
+        function applyTableBrowserLayout() {
+            const width = Math.max(25, Math.min(75, tableBrowserState.tableListWidth || 50));
+            tableBrowserState.tableListWidth = width;
+            $('.cp-datasource-table-browser')
+                .css('--cp-table-list-width', width + '%')
+                .removeClass('tables-collapsed');
+            $('#tableBrowserSplitter').attr('aria-valuenow', String(Math.round(width)));
+        }
+
+        function setTableListWidthFromClientX(clientX) {
+            if ($('#tableDetailCard').hasClass('detail-rail-collapsed')) {
+                return;
+            }
+            const browser = document.querySelector('.cp-datasource-table-browser');
+            if (!browser) {
+                return;
+            }
+            const rect = browser.getBoundingClientRect();
+            if (rect.width <= 0) {
+                return;
+            }
+            tableBrowserState.tableListWidth = Math.max(25, Math.min(75, ((clientX - rect.left) / rect.width) * 100));
+            applyTableBrowserLayout();
+        }
+
+        function resizeTableListBy(delta) {
+            if ($('#tableDetailCard').hasClass('detail-rail-collapsed')) {
+                return;
+            }
+            tableBrowserState.tableListWidth = Math.max(25, Math.min(75, tableBrowserState.tableListWidth + delta));
+            applyTableBrowserLayout();
+        }
+
+        function setTableDetailAvailable(available) {
+            $('#toggleTableDetail').prop('disabled', !available);
+        }
+
+        function optionalSql(value) {
+            if (value === undefined || value === null) {
+                return '';
+            }
+            const sql = String(value).trim();
+            const normalized = sql.toLowerCase();
+            return normalized === 'null' || normalized === 'undefined' ? '' : sql;
+        }
+
+        function clearTableDetailAction() {
+            $('#tableDetailActions').attr('hidden', true).removeAttr('open');
+            $('#selectAllTableQuery').attr({
+                'data-table-schema': '',
+                'data-table-name': '',
+                'data-table-select-sql': ''
+            }).prop('disabled', true);
+            $('#displayTableAsJson').attr({
+                'data-table-schema': '',
+                'data-table-name': '',
+                'data-table-json-sql': ''
+            }).prop('disabled', true).attr('hidden', true);
+            $('#displayTableRelationshipsAsJson').attr({
+                'data-table-schema': '',
+                'data-table-name': '',
+                'data-table-relationship-json-sql': ''
+            }).prop('disabled', true).attr('hidden', true);
+        }
+
+        function setTableDetailAction(schema, table, sql, jsonSql, relationshipJsonSql) {
+            const $selectButton = $('#selectAllTableQuery');
+            const $jsonButton = $('#displayTableAsJson');
+            const $relationshipJsonButton = $('#displayTableRelationshipsAsJson');
+            const tableJsonSql = optionalSql(jsonSql);
+            const tableRelationshipJsonSql = optionalSql(relationshipJsonSql);
+            if (!table || !sql) {
+                clearTableDetailAction();
+                return;
+            }
+            $('#tableDetailActions').removeAttr('hidden');
+            $selectButton.attr({
+                'data-table-schema': schema || '',
+                'data-table-name': table,
+                'data-table-select-sql': sql
+            }).prop('disabled', false);
+            if (tableJsonSql) {
+                $jsonButton.attr({
+                    'data-table-schema': schema || '',
+                    'data-table-name': table,
+                    'data-table-json-sql': tableJsonSql
+                }).prop('disabled', false).removeAttr('hidden');
+            } else {
+                $jsonButton.attr({
+                    'data-table-schema': '',
+                    'data-table-name': '',
+                    'data-table-json-sql': ''
+                }).prop('disabled', true).attr('hidden', true);
+            }
+            if (tableRelationshipJsonSql) {
+                $relationshipJsonButton.attr({
+                    'data-table-schema': schema || '',
+                    'data-table-name': table,
+                    'data-table-relationship-json-sql': tableRelationshipJsonSql
+                }).prop('disabled', false).removeAttr('hidden');
+            } else {
+                $relationshipJsonButton.attr({
+                    'data-table-schema': '',
+                    'data-table-name': '',
+                    'data-table-relationship-json-sql': ''
+                }).prop('disabled', true).attr('hidden', true);
+            }
+        }
+
+        function renderTableState(title, message, variant) {
+            const icon = variant === 'error' ? 'fa-circle-exclamation' : 'fa-table';
+            const extraClass = variant === 'error' ? ' cp-query-state-error' : '';
+            const description = message ? '<p>' + escapeHtml(message) + '</p>' : '';
+            $('#tableDetailContainer').html(
+                '<div class="cp-query-state' + extraClass + '">' +
+                '<i class="fas ' + icon + '" aria-hidden="true"></i>' +
+                '<strong>' + escapeHtml(title) + '</strong>' +
+                description +
+                '</div>'
+            );
+        }
+
+        function markSelectedTable() {
+            $('#tablesPageContainer [data-table-row]').each(function () {
+                const active = this.getAttribute('data-table-schema') === tableBrowserState.selectedTableSchema
+                    && this.getAttribute('data-table-name') === tableBrowserState.selectedTable;
+                this.classList.toggle('active', active);
+            });
+        }
+
+        function isSelectedTableElement(element) {
+            return element.getAttribute('data-table-schema') === tableBrowserState.selectedTableSchema
+                && element.getAttribute('data-table-name') === tableBrowserState.selectedTable;
+        }
+
+        function resetTableDetail() {
+            tableBrowserState.selectedTableSchema = '';
+            tableBrowserState.selectedTable = '';
+            setTableDetailSubtitle('', '');
+            setTableDetailAvailable(false);
+            clearTableDetailAction();
+            renderTableState('Select a table to inspect it.', '', 'empty');
+            setTableDetailCollapsed(true, true);
+            markSelectedTable();
+        }
+
+        function loadTableDetail(schema, table) {
+            if (!table) {
+                resetTableDetail();
+                return;
+            }
+
+            setTableDetailSubtitle(schema, table);
+            setTableDetailAvailable(true);
+            clearTableDetailAction();
+            setTableDetailCollapsed(false, false);
+            renderTableState('Loading table detail...', '', 'empty');
+            $.ajax({
+                url: datasourceBaseUrl + '/tables/detail',
+                type: 'GET',
+                dataType: 'html',
+                data: {
+                    schema: schema || '',
+                    table: table
+                }
+            }).done(function(html) {
+                tableBrowserState.selectedTableSchema = schema || '';
+                tableBrowserState.selectedTable = table;
+                const $fragment = $(html).filter('[data-table-detail-fragment]');
+                if ($fragment.length) {
+                    setTableDetailSubtitle($fragment.attr('data-table-schema'), $fragment.attr('data-table-name'));
+                    setTableDetailAction(
+                        $fragment.attr('data-table-schema'),
+                        $fragment.attr('data-table-name'),
+                        $fragment.attr('data-table-select-sql'),
+                        $fragment.attr('data-table-json-sql'),
+                        $fragment.attr('data-table-relationship-json-sql')
+                    );
+                }
+                $('#tableDetailContainer').html(html);
+                markSelectedTable();
+                renderTableErDiagram();
+            }).fail(function(xhr) {
+                const err = xhr.responseText || 'Table detail failed to load';
+                clearTableDetailAction();
+                renderTableState('Table detail failed to load', err, 'error');
+            });
+        }
+
+        function loadTableDetailFromElement(element) {
+            loadTableDetail(element.getAttribute('data-table-schema'), element.getAttribute('data-table-name'));
+        }
+
+        function loadTablePage(page) {
+            $('#tablesPageContainer').html(
+                '<div class="cp-query-state">' +
+                '<i class="fas fa-spinner" aria-hidden="true"></i>' +
+                '<strong>Loading tables...</strong>' +
+                '</div>'
+            );
+            const requestData = {
+                page: page,
+                size: tableBrowserState.pageSize
+            };
+            if (tableBrowserState.schemaFilter !== null) {
+                requestData.schema = tableBrowserState.schemaFilter;
+            }
+            if (tableBrowserState.search !== '') {
+                requestData.search = tableBrowserState.search;
+            }
+            $.ajax({
+                url: datasourceBaseUrl + '/tables',
+                type: 'GET',
+                dataType: 'html',
+                data: requestData
+            }).done(function(html) {
+                const $container = $('#tablesPageContainer');
+                $container.html(html);
+                const pageNumber = Number($container.find('[data-table-page-number]').first().attr('data-table-page-number'));
+                if (Number.isFinite(pageNumber) && pageNumber > 0) {
+                    tableBrowserState.page = pageNumber;
+                }
+                markSelectedTable();
+            }).fail(function(xhr) {
+                const err = xhr.responseText || 'Tables failed to load';
+                $('#tablesPageContainer').html(
+                    '<div class="cp-query-state cp-query-state-error">' +
+                    '<i class="fas fa-circle-exclamation" aria-hidden="true"></i>' +
+                    '<strong>Tables failed to load</strong>' +
+                    '<p>' + escapeHtml(err) + '</p>' +
+                    '</div>'
+                );
+            });
+        }
+
+        function renderTableErDiagram() {
+            let code = $('#tableErDiagramCode').text();
+            if (!code) {
+                return;
+            }
+            code = code.replace(/\r\n/g, '\n').trimStart();
+
+            const container = document.getElementById('tableErDiagramContainer');
+            if (!container) {
+                return;
+            }
+            container.innerHTML = '';
+            const renderId = 'tableErDiagramSvg_' + Date.now();
+            if (window.mermaid && typeof window.mermaid.render === 'function') {
+                try {
+                    window.mermaid.render(renderId, code, (svgCode) => {
+                        container.innerHTML = svgCode;
+                    }, container);
+                } catch (e) {
+                    container.innerHTML = '<div class="cp-query-state cp-query-state-error"><strong>Diagram failed to render.</strong></div>';
+                }
+            }
+        }
+
+        function setEditorSql(sql) {
+            const pendingEditorSql = (sql || '').trim() + '\n\n';
+            cpDatasourceDetail.setPendingEditorSql(pendingEditorSql);
+            cpDatasourceDetail.activateDatasourceTab('query');
+            const cm = window.codemirror;
+            const view = cm && cm.view ? cm.view : null;
+            if (!view) {
+                return;
+            }
+            view.dispatch({
+                changes: { from: 0, to: view.state.doc.length, insert: pendingEditorSql }
+            });
+            cpDatasourceDetail.setPendingEditorSql(null);
+            view.focus();
+        }
+
+        function reloadFirstTablePage() {
+            tableBrowserState.page = 1;
+            resetTableDetail();
+            loadTablePage(1);
+        }
+
+        function updateTableSearch(value) {
+            const search = (value || '').trim();
+            if (tableBrowserState.search === search) {
+                return;
+            }
+            tableBrowserState.search = search;
+            reloadFirstTablePage();
+        }
+
+        $('#tablesPageContainer').on('click', '[data-table-page]', function () {
+            const direction = this.getAttribute('data-table-page');
+            const nextPage = direction === 'next' ? tableBrowserState.page + 1 : tableBrowserState.page - 1;
+            loadTablePage(Math.max(1, nextPage));
+        }).on('change', '[data-table-page-size]', function () {
+            tableBrowserState.pageSize = Number(this.value);
+            reloadFirstTablePage();
+        }).on('click', '[data-table-row]', function (event) {
+            if ($(event.target).closest('[data-actions-menu], [data-table-select-all], [data-table-display-json], [data-table-display-relationships-json]').length) {
+                return;
+            }
+            if (isSelectedTableElement(this)) {
+                resetTableDetail();
+                return;
+            }
+            loadTableDetailFromElement(this);
+        });
+
+        $('#tableDetailContainer').on('click', '[data-table-detail-link]', function (event) {
+            event.preventDefault();
+            loadTableDetailFromElement(this);
+        });
+
+        $('#tableSchemaFilter').on('change', function () {
+            tableBrowserState.schemaFilter = this.value === allSchemasFilterValue ? null : this.value;
+            reloadFirstTablePage();
+        });
+
+        $('#tableSearch').on('input', function () {
+            const value = this.value;
+            clearTimeout(tableSearchTimer);
+            tableSearchTimer = setTimeout(function () {
+                updateTableSearch(value);
+            }, 200);
+        }).on('keydown', function (event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                clearTimeout(tableSearchTimer);
+                updateTableSearch(this.value);
+            }
+        });
+
+        $('.cp-datasource-page').on('click', '[data-table-select-all]', function () {
+            setEditorSql(this.getAttribute('data-table-select-sql'));
+            $(this).closest('[data-actions-menu]').removeAttr('open');
+        }).on('click', '[data-table-display-json]', function () {
+            const sql = this.getAttribute('data-table-json-sql');
+            if (sql) {
+                setEditorSql(sql);
+            }
+            $(this).closest('[data-actions-menu]').removeAttr('open');
+        }).on('click', '[data-table-display-relationships-json]', function () {
+            const sql = this.getAttribute('data-table-relationship-json-sql');
+            if (sql) {
+                setEditorSql(sql);
+            }
+            $(this).closest('[data-actions-menu]').removeAttr('open');
+        });
+
+        $('#tableBrowserSplitter').on('pointerdown', function (event) {
+            if ($('#tableDetailCard').hasClass('detail-rail-collapsed')) {
+                return;
+            }
+            event.preventDefault();
+            document.body.classList.add('cp-table-browser-resizing');
+            const move = function (moveEvent) {
+                setTableListWidthFromClientX(moveEvent.clientX);
+            };
+            const stop = function () {
+                document.body.classList.remove('cp-table-browser-resizing');
+                document.removeEventListener('pointermove', move);
+                document.removeEventListener('pointerup', stop);
+                document.removeEventListener('pointercancel', stop);
+            };
+            document.addEventListener('pointermove', move);
+            document.addEventListener('pointerup', stop);
+            document.addEventListener('pointercancel', stop);
+            const pointerEvent = event.originalEvent || event;
+            setTableListWidthFromClientX(pointerEvent.clientX);
+        }).on('keydown', function (event) {
+            if (event.key === 'ArrowLeft') {
+                event.preventDefault();
+                resizeTableListBy(-5);
+            } else if (event.key === 'ArrowRight') {
+                event.preventDefault();
+                resizeTableListBy(5);
+            } else if (event.key === 'Home') {
+                event.preventDefault();
+                tableBrowserState.tableListWidth = 25;
+                applyTableBrowserLayout();
+            } else if (event.key === 'End') {
+                event.preventDefault();
+                tableBrowserState.tableListWidth = 75;
+                applyTableBrowserLayout();
+            }
+        });
+
+        $('#toggleTableDetail').on('click', function (event) {
+            event.preventDefault();
+            if (!tableBrowserState.selectedTable) {
+                setTableDetailCollapsed(true, true);
+                return;
+            }
+            if ($('#tableDetailCard').hasClass('detail-rail-collapsed')) {
+                setTableDetailCollapsed(false, false);
+                return;
+            }
+            setTableDetailCollapsed(true, true);
+        });
+
+        $('#refreshTables').on('click', function() {
+            resetTableDetail();
+            loadTablePage(tableBrowserState.page);
+        });
+
+        clearTableDetailAction();
+        applyTableBrowserLayout();
+        loadTablePage(1);
+    });
+</script>

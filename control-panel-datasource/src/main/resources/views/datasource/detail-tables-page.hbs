@@ -1,0 +1,85 @@
+<div class="cp-data-table-toolbar" data-table-page-number="{{ page }}" data-table-page-count="{{ pageCount }}">
+    <div class="cp-data-table-summary">{{ summary }}</div>
+    <label class="cp-data-table-page-size">Tables per page
+        <select data-table-page-size>
+            {{#each pageSizes}}
+                <option value="{{ value }}"{{#if selected}} selected{{/if}}>{{ value }}</option>
+            {{/each}}
+        </select>
+    </label>
+</div>
+
+<div class="cp-data-table-container">
+    <table class="table cp-data-table-table cp-datasource-table-list">
+        <thead>
+            <tr>
+                <th scope="col">Table</th>
+                <th scope="col">Schema</th>
+                <th scope="col">Columns</th>
+                <th scope="col">Relationships</th>
+                <th scope="col" class="cp-table-actions-column">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#if empty}}
+                <tr>
+                    <td class="cp-data-table-empty-cell" colspan="5">No tables found.</td>
+                </tr>
+            {{else}}
+                {{#each tables}}
+                    <tr data-table-row data-table-schema="{{ schema }}" data-table-name="{{ name }}">
+                        <td>
+                            <button type="button" class="cp-table-name-button" data-table-schema="{{ schema }}" data-table-name="{{ name }}" title="Open table detail">
+                                <i class="fas fa-table" aria-hidden="true"></i>
+                                <span>{{ name }}</span>
+                            </button>
+                        </td>
+                        <td>
+                            {{#if defaultSchema}}
+                                <span class="cp-data-table-muted">default</span>
+                            {{else}}
+                                <code class="cp-table-code">{{ schema }}</code>
+                            {{/if}}
+                        </td>
+                        <td>{{ columnCount }}</td>
+                        <td>{{ relationshipCount }}</td>
+                        <td class="cp-table-actions-column">
+                            <details class="cp-actions-menu" data-actions-menu>
+                                <summary class="btn btn-outline btn-sm btn-icon" aria-label="Table actions for {{ name }}" title="Actions">
+                                    <i class="fas fa-ellipsis" aria-hidden="true"></i>
+                                </summary>
+                                <div class="cp-actions-menu-content">
+                                    <button type="button" class="cp-actions-menu-item" data-table-schema="{{ schema }}" data-table-name="{{ name }}" data-table-select-sql="{{ selectAllSql }}" data-table-select-all>
+                                        <i class="fas fa-terminal" aria-hidden="true"></i>
+                                        Select all query
+                                    </button>
+                                    {{#if jsonQuerySql}}
+                                        <button type="button" class="cp-actions-menu-item" data-table-schema="{{ schema }}" data-table-name="{{ name }}" data-table-json-sql="{{ jsonQuerySql }}" data-table-display-json>
+                                            <i class="fas fa-code" aria-hidden="true"></i>
+                                            Display as JSON
+                                        </button>
+                                    {{/if}}
+                                    {{#if relationshipJsonSql}}
+                                        <button type="button" class="cp-actions-menu-item" data-table-schema="{{ schema }}" data-table-name="{{ name }}" data-table-relationship-json-sql="{{ relationshipJsonSql }}" data-table-display-relationships-json>
+                                            <i class="fas fa-diagram-project" aria-hidden="true"></i>
+                                            Display JSON with relationships
+                                        </button>
+                                    {{/if}}
+                                </div>
+                            </details>
+                        </td>
+                    </tr>
+                {{/each}}
+            {{/if}}
+        </tbody>
+    </table>
+</div>
+
+<div class="cp-data-table-footer">
+    <div class="cp-data-table-summary">{{ range }}</div>
+    <div class="cp-data-table-pagination">
+        <span class="cp-data-table-page">Page {{ page }} of {{ pageCount }}</span>
+        <button type="button" class="btn btn-outline btn-sm" data-table-page="previous"{{#if previousDisabled}} disabled{{/if}}>Previous</button>
+        <button type="button" class="btn btn-outline btn-sm" data-table-page="next"{{#if nextDisabled}} disabled{{/if}}>Next</button>
+    </div>
+</div>

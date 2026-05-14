@@ -14,16 +14,16 @@
                                         <i class="fas fa-chevron-down"></i>
                                     </summary>
                                     <div class="cp-actions-menu-content">
-                                        <button type="button" class="cp-actions-menu-item cp-actions-menu-item-danger" data-toggle="modal" data-target="#hibernateDeleteConfirmModal" data-hibernate-delete-action="all-cache" title="Evict all cache regions">
+                                        <button type="button" class="cp-actions-menu-item cp-actions-menu-item-danger" data-toggle="modal" data-target="#hibernateDeleteConfirmModal" data-hibernate-delete-action="all-cache" title="{{#if ext.writeAccess.allowed}}Evict all cache regions{{else}}{{ ext.writeAccess.reason }}{{/if}}"{{#unless ext.writeAccess.allowed}} disabled aria-disabled="true"{{/unless}}>
                                             <i class="fas fa-trash"></i>
                                             Evict all regions
                                         </button>
                                         {{#if sessionFactory.queryCacheEnabled}}
-                                            <button type="button" class="cp-actions-menu-item cp-actions-menu-item-danger" data-toggle="modal" data-target="#hibernateDeleteConfirmModal" data-hibernate-delete-action="default-query-region" title="Evict default query region">
+                                            <button type="button" class="cp-actions-menu-item cp-actions-menu-item-danger" data-toggle="modal" data-target="#hibernateDeleteConfirmModal" data-hibernate-delete-action="default-query-region" title="{{#if ext.writeAccess.allowed}}Evict default query region{{else}}{{ ext.writeAccess.reason }}{{/if}}"{{#unless ext.writeAccess.allowed}} disabled aria-disabled="true"{{/unless}}>
                                                 <i class="fas fa-trash"></i>
                                                 Evict default query region
                                             </button>
-                                            <button type="button" class="cp-actions-menu-item cp-actions-menu-item-danger" data-toggle="modal" data-target="#hibernateDeleteConfirmModal" data-hibernate-delete-action="query-regions" title="Evict query regions">
+                                            <button type="button" class="cp-actions-menu-item cp-actions-menu-item-danger" data-toggle="modal" data-target="#hibernateDeleteConfirmModal" data-hibernate-delete-action="query-regions" title="{{#if ext.writeAccess.allowed}}Evict query regions{{else}}{{ ext.writeAccess.reason }}{{/if}}"{{#unless ext.writeAccess.allowed}} disabled aria-disabled="true"{{/unless}}>
                                                 <i class="fas fa-trash"></i>
                                                 Evict query regions
                                             </button>
@@ -88,7 +88,7 @@
                                                                 <i class="fas fa-ellipsis"></i>
                                                             </summary>
                                                             <div class="cp-actions-menu-content">
-                                                                <button type="button" class="cp-actions-menu-item cp-actions-menu-item-danger" data-toggle="modal" data-target="#hibernateDeleteConfirmModal" data-hibernate-delete-action="region" data-hibernate-action-value="{{ name }}">
+                                                                <button type="button" class="cp-actions-menu-item cp-actions-menu-item-danger" data-toggle="modal" data-target="#hibernateDeleteConfirmModal" data-hibernate-delete-action="region" data-hibernate-action-value="{{ name }}"{{#unless ext.writeAccess.allowed}} disabled aria-disabled="true" title="{{ ext.writeAccess.reason }}"{{/unless}}>
                                                                     <i class="fas fa-trash"></i>
                                                                     Evict
                                                                 </button>

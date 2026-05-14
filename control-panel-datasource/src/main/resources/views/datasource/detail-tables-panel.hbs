@@ -1,0 +1,88 @@
+<section class="tabs-panel cp-datasource-tables-panel" id="datasourceTablesTab" role="tabpanel" data-tabs-panel="tables">
+    <div class="cp-datasource-table-browser detail-collapsed">
+        <div class="card card-light cp-table-list-card">
+            <div class="card-header">
+                <div class="cp-card-heading">
+                    <span class="cp-card-icon cp-table-list-toggle" id="toggleTablesList" aria-hidden="true" title="Tables">
+                        <i class="fas fa-table-list" aria-hidden="true"></i>
+                    </span>
+                    <h3 class="card-title">Tables</h3>
+                </div>
+                <div class="card-tools cp-table-list-tools">
+                    <label class="cp-table-search-control" for="tableSearch">
+                        <span class="sr-only">Search tables</span>
+                        <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
+                        <input type="text" id="tableSearch" data-table-search placeholder="Search tables" autocomplete="off" spellcheck="false">
+                    </label>
+                    <label class="cp-table-schema-control" for="tableSchemaFilter">
+                        <span class="sr-only">Filter tables by schema</span>
+                        <select id="tableSchemaFilter" data-table-schema-filter aria-label="Filter tables by schema">
+                            <option value="__all__">All schemas</option>
+                            {{#each tableSchemas}}
+                                <option value="{{ this }}">{{#if this}}{{ this }}{{else}}default schema{{/if}}</option>
+                            {{/each}}
+                        </select>
+                    </label>
+                    <button type="button" class="btn btn-outline btn-sm btn-icon" id="refreshTables" title="Refresh tables" aria-label="Refresh tables">
+                        <i class="fas fa-rotate" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="tablesPageContainer" class="cp-data-table">
+                    <div class="cp-query-state">
+                        <i class="fas fa-spinner" aria-hidden="true"></i>
+                        <strong>Loading tables...</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cp-table-browser-splitter" id="tableBrowserSplitter" role="separator" aria-orientation="vertical" aria-label="Resize tables and table detail" aria-valuemin="25" aria-valuemax="75" aria-valuenow="50" tabindex="0" title="Drag to resize table list"></div>
+
+        <div class="card card-light cp-table-detail-card collapsed-card detail-rail-collapsed" id="tableDetailCard">
+            <div class="card-header">
+                <div class="cp-card-heading">
+                    <button type="button" class="cp-card-icon cp-table-detail-toggle" id="toggleTableDetail" aria-label="Toggle table detail" aria-expanded="false" title="Toggle table detail" disabled>
+                        <i class="fas fa-circle-info" aria-hidden="true"></i>
+                    </button>
+                    <div class="cp-card-header-text">
+                        <h3 class="card-title">Table detail</h3>
+                        <p class="card-description" id="tableDetailSubtitle" hidden></p>
+                    </div>
+                </div>
+                <div class="card-tools">
+                    <details class="cp-actions-menu" id="tableDetailActions" data-actions-menu hidden>
+                        <summary class="btn btn-outline btn-sm btn-icon" aria-label="Table detail actions" title="Actions">
+                            <i class="fas fa-ellipsis" aria-hidden="true"></i>
+                        </summary>
+                        <div class="cp-actions-menu-content">
+                            <button type="button" class="cp-actions-menu-item" id="selectAllTableQuery" data-table-select-all disabled>
+                                <i class="fas fa-terminal" aria-hidden="true"></i>
+                                Select all query
+                            </button>
+                            <button type="button" class="cp-actions-menu-item" id="displayTableAsJson" data-table-display-json hidden disabled>
+                                <i class="fas fa-code" aria-hidden="true"></i>
+                                Display as JSON
+                            </button>
+                            <button type="button" class="cp-actions-menu-item" id="displayTableRelationshipsAsJson" data-table-display-relationships-json hidden disabled>
+                                <i class="fas fa-diagram-project" aria-hidden="true"></i>
+                                Display JSON with relationships
+                            </button>
+                        </div>
+                    </details>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="tableDetailContainer" class="cp-table-detail-container">
+                    <div class="cp-query-state">
+                        <i class="fas fa-table" aria-hidden="true"></i>
+                        <strong>Select a table to inspect it.</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{{> "views/datasource/detail-table-browser-scripts" }}

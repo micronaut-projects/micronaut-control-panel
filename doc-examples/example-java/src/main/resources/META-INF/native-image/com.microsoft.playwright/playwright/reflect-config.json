@@ -350,7 +350,7 @@
 },
 {
   "condition":{"typeReachable":"com.microsoft.playwright.impl.junit.OptionsExtension"},
-  "name":"example.e2e.ControlPanelE2ETest$HeadlessBrowserOptions",
+  "name":"example.e2e.ControlPanelBrowserOptions",
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {

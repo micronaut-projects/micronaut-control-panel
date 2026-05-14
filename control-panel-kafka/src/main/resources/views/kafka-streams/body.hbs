@@ -1,11 +1,15 @@
-<p class="card-text">
-    <strong>{{badge}}</strong> sub-topologies in this Kafka Streams application.
-</p>
-<p class="card-text">
-    <strong>Runtime</strong>:
-    {{#if body.runtimeState.available}}
-        <span class="badge badge-primary">{{body.runtimeState.status}}</span>
-    {{else}}
-        <span class="badge badge-secondary">Unavailable</span>
-    {{/if}}
-</p>
+<div class="cp-kafka-card-summary">
+    <div class="cp-kafka-card-metric">
+        <span class="cp-kafka-card-label">Topology</span>
+        <strong>{{badge}}</strong>
+        <span>sub-topologies</span>
+    </div>
+    <div class="cp-kafka-card-metric">
+        <span class="cp-kafka-card-label">Runtime</span>
+        {{#if body.runtimeState.available}}
+            <span class="badge {{body.runtimeState.statusBadgeClass}}">{{body.runtimeState.status}}</span>
+        {{else}}
+            <span class="badge badge-secondary">Unavailable</span>
+        {{/if}}
+    </div>
+</div>

@@ -14,6 +14,7 @@ dependency:io.micronaut.micrometer:micronaut-micrometer-core[scope=runtimeOnly]
 The following panels are available:
 
 * `health`: Application Health
+* `info`: Application Info
 * `env`: Environment Properties
 * `metrics`: Metrics
 * `beans`: Bean Definitions
@@ -51,6 +52,39 @@ micronaut:
 
 Management endpoint security remains under the normal Micronaut management configuration for your application.
 
+Control panel write operations inherit the read access decision by default. This preserves the existing behavior:
+a user who can open the control panel can also use write actions such as cache invalidation, object storage upload and
+delete, datasource SQL execution, logger reconfiguration, and Hibernate statistics or cache mutations.
+
+You can disable all control-panel write operations while leaving read views available:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    security:
+      write-access: DENIED
+----
+
+When writes are denied, write controls remain visible in the UI but are disabled with an explanatory reason. Direct HTTP
+calls to the control-panel helper routes are rejected by the server-side security rule.
+
+You can also use separate read and write roles:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    security:
+      access: AUTHORIZED
+      role: ROLE_CONTROL_PANEL_READ
+      write-access: AUTHORIZED
+      write-role: ROLE_CONTROL_PANEL_WRITE
+----
+
+If `write-access: AUTHORIZED` is configured without `write-role`, the configured read `role` is used as the effective
+write role. The available write access modes are `INHERITED`, `ANONYMOUS`, `AUTHENTICATED`, `AUTHORIZED`, and `DENIED`.
+
 The `AUTHENTICATED` mode requires any logged-in user, but does not require a specific role. The `ANONYMOUS` mode keeps
 the UI and helper controllers anonymously reachable. Use these modes only for trusted development or test environments:
 
@@ -84,6 +118,43 @@ endpoints:
 
 If you opt into `micronaut.control-panel.security.access=ANONYMOUS`, anonymous control-panel requests continue to see the
 anonymous health view.
+
+=== Application Info
+
+This panel displays application information, and relies on the
+https://docs.micronaut.io/latest/guide/#infoEndpoint[Info Endpoint] to display its information. The panel appears when
+the Info endpoint is available and can be disabled independently:
+
+.Disabling the Application Info panel
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      info:
+        enabled: false
+----
+
+The Info endpoint can expose configuration-backed `info.*` values, build and git metadata, and values from custom
+`InfoSource` beans. Configure it only in environments where the Control Panel should be available:
+
+IMPORTANT: Make sure this is done in an environment-specific configuration file, for example, `application-dev.yml` or
+`application-test.yml`.
+
+.Configuring the Info Endpoint
+[configuration]
+----
+endpoints:
+  info:
+    enabled: true
+
+info:
+  app:
+    name: my-service
+    version: 1.0.0
+----
+
+The panel renders nested maps and lists from `info.*`, git/build property files, and custom `InfoSource` output.
 
 === Environment Properties
 

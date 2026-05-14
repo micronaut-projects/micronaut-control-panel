@@ -1,0 +1,84 @@
+<script>
+    (function () {
+        const controlPanelPath = '{{ ext.controlPanelPath }}';
+        const ds = '{{ controlPanel.title }}';
+        const datasourceBaseUrl = controlPanelPath + '/datasource-control-panel-controller/' + encodeURIComponent(ds);
+        const tableBrowserState = {
+            page: 1,
+            pageSize: 10,
+            schemaFilter: null,
+            search: '',
+            tableListWidth: 50,
+            queryEditorHeight: 15,
+            selectedTableSchema: '',
+            selectedTable: ''
+        };
+        let pendingEditorSql = null;
+        let suppressDatasourceTabHistory = false;
+
+        function escapeHtml(value) {
+            return $('<div>').text(value == null ? '' : String(value)).html();
+        }
+
+        function currentDatasourceTab() {
+            return $('[data-datasource-tabs] [data-tabs-trigger].active').first().attr('data-tabs-trigger') || 'tables';
+        }
+
+        function replaceDatasourceTabHistory(target) {
+            if (!window.history || typeof window.history.replaceState !== 'function') {
+                return;
+            }
+            const state = Object.assign({}, window.history.state || {}, { datasourceTab: target });
+            window.history.replaceState(state, '', window.location.href);
+        }
+
+        function pushDatasourceTabHistory(target) {
+            if (!window.history || typeof window.history.pushState !== 'function') {
+                return;
+            }
+            const state = Object.assign({}, window.history.state || {}, { datasourceTab: target });
+            window.history.pushState(state, '', window.location.href);
+        }
+
+        function activateDatasourceTab(target, suppressHistory) {
+            const trigger = document.querySelector('[data-datasource-tabs] [data-tabs-trigger="' + target + '"]');
+            if (trigger) {
+                suppressDatasourceTabHistory = !!suppressHistory;
+                trigger.click();
+                suppressDatasourceTabHistory = false;
+            }
+        }
+
+        window.cpDatasourceDetail = {
+            datasourceBaseUrl: datasourceBaseUrl,
+            tableBrowserState: tableBrowserState,
+            activateDatasourceTab: activateDatasourceTab,
+            escapeHtml: escapeHtml,
+            getPendingEditorSql: function () {
+                return pendingEditorSql;
+            },
+            setPendingEditorSql: function (sql) {
+                pendingEditorSql = sql;
+            }
+        };
+
+        $(function() {
+            $('[data-datasource-tabs] [data-tabs-trigger]').on('click', function () {
+                const target = this.getAttribute('data-tabs-trigger');
+                if (!suppressDatasourceTabHistory && target !== 'tables' && currentDatasourceTab() !== target) {
+                    pushDatasourceTabHistory(target);
+                }
+            });
+
+            window.addEventListener('popstate', function (event) {
+                const state = event.state || {};
+                const target = state.datasourceTab && document.querySelector('[data-datasource-tabs] [data-tabs-trigger="' + state.datasourceTab + '"]')
+                    ? state.datasourceTab
+                    : 'tables';
+                activateDatasourceTab(target, true);
+            });
+
+            replaceDatasourceTabHistory(currentDatasourceTab());
+        });
+    })();
+</script>

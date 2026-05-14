@@ -1,0 +1,435 @@
+<script>
+    $(function() {
+        const cpDatasourceDetail = window.cpDatasourceDetail;
+        if (!cpDatasourceDetail) {
+            return;
+        }
+        const datasourceBaseUrl = cpDatasourceDetail.datasourceBaseUrl;
+        const tableBrowserState = cpDatasourceDetail.tableBrowserState;
+        const escapeHtml = cpDatasourceDetail.escapeHtml;
+        const type = "{{ dataSourceInfo.type }}";
+        const schemaUrl = datasourceBaseUrl + "/schema.js";
+        const cm = window.codemirror;
+        const writeAllowed = {{#if ext.writeAccess.allowed}}true{{else}}false{{/if}};
+        const writeDisabledReason = "{{ ext.writeAccess.reason }}";
+
+        function initEditor() {
+            if (!cm) {
+                return;
+            }
+            if (cm.schema !== undefined && cm.defaultSchema !== undefined) {
+                const schemaConfig = { schema: cm.schema, defaultSchema: cm.defaultSchema };
+                const extensions = cm.getSQLExtensions(type, schemaConfig, {
+                    executeQuery: function (view) {
+                        if (!writeAllowed) {
+                            renderQueryState('Query execution disabled', writeDisabledReason, 'error');
+                            return true;
+                        }
+                        executeSqlQuery(view);
+                        return true;
+                    }
+                });
+                const state = cm.EditorState.create({
+                    doc: cpDatasourceDetail.getPendingEditorSql() || "\n\n",
+                    extensions: extensions
+                });
+                const view = new cm.EditorView({
+                    state,
+                    parent: document.querySelector("#sql-console")
+                });
+                cm.view = view;
+                cpDatasourceDetail.setPendingEditorSql(null);
+            }
+        }
+
+        const script = document.createElement('script');
+        script.src = schemaUrl;
+        script.onload = function() {
+            initEditor();
+        };
+        script.onerror = function() {
+            const schemaConfig = {};
+            const extensions = cm.getSQLExtensions(type, schemaConfig, {
+                executeQuery: function (view) {
+                    if (!writeAllowed) {
+                        renderQueryState('Query execution disabled', writeDisabledReason, 'error');
+                        return true;
+                    }
+                    executeSqlQuery(view);
+                    return true;
+                }
+            });
+            const state = cm.EditorState.create({
+                doc: cpDatasourceDetail.getPendingEditorSql() || "\n\n",
+                extensions: extensions
+            });
+            const view = new cm.EditorView({
+                state,
+                parent: document.querySelector("#sql-console")
+            });
+            cm.view = view;
+            cpDatasourceDetail.setPendingEditorSql(null);
+        };
+        document.head.appendChild(script);
+
+        setTimeout(() => {
+            if (cm && cm.schema === undefined) {
+                initEditor();
+            }
+        }, 2000);
+
+        $(document).on('keydown', function(e) {
+            if (isQueryExecuteShortcut(e) && $(e.target).closest('.cm-editor').length === 0) {
+                e.preventDefault();
+                executeSqlQuery();
+            }
+        });
+
+        var queryTableState = {
+            sql: '',
+            page: 0,
+            pageSize: 10,
+            draw: 0
+        };
+
+        function clampQueryEditorHeight(height) {
+            return Math.max(15, Math.min(80, height));
+        }
+
+        function applyQueryLayout() {
+            const height = clampQueryEditorHeight(tableBrowserState.queryEditorHeight || 15);
+            tableBrowserState.queryEditorHeight = height;
+            $('.cp-datasource-query-layout').css('--cp-query-editor-height', height + '%');
+            $('#queryLayoutSplitter').attr('aria-valuenow', String(Math.round(height)));
+            if (cm && cm.view && typeof cm.view.requestMeasure === 'function') {
+                cm.view.requestMeasure();
+            }
+        }
+
+        function setQueryEditorHeightFromClientY(clientY) {
+            const layout = document.querySelector('.cp-datasource-query-layout');
+            if (!layout) {
+                return;
+            }
+            const rect = layout.getBoundingClientRect();
+            if (rect.height <= 0) {
+                return;
+            }
+            tableBrowserState.queryEditorHeight = clampQueryEditorHeight(((clientY - rect.top) / rect.height) * 100);
+            applyQueryLayout();
+        }
+
+        function resizeQueryEditorBy(delta) {
+            tableBrowserState.queryEditorHeight = clampQueryEditorHeight(tableBrowserState.queryEditorHeight + delta);
+            applyQueryLayout();
+        }
+
+        function resolveTotal(resp, rows) {
+            if (resp && typeof resp.recordsFiltered === 'number') {
+                return resp.recordsFiltered;
+            }
+            if (resp && typeof resp.recordsTotal === 'number') {
+                return resp.recordsTotal;
+            }
+            return rows.length;
+        }
+
+        function renderQueryState(title, message, variant) {
+            const icon = variant === 'error' ? 'fa-circle-exclamation' : 'fa-table-list';
+            const extraClass = variant === 'error' ? ' cp-query-state-error' : '';
+            const description = message ? '<p>' + escapeHtml(message) + '</p>' : '';
+            $('#queryResultsContainer').html(
+                '<div class="cp-query-state' + extraClass + '">' +
+                '<i class="fas ' + icon + '" aria-hidden="true"></i>' +
+                '<strong>' + escapeHtml(title) + '</strong>' +
+                description +
+                '</div>'
+            );
+        }
+
+        function queryColumns(resp, cols) {
+            if (resp && Array.isArray(resp.columns) && resp.columns.length) {
+                return resp.columns;
+            }
+            return cols.map(function (col) {
+                return {
+                    label: col,
+                    typeName: '',
+                    jdbcType: '',
+                    className: ''
+                };
+            });
+        }
+
+        function escapeAttribute(value) {
+            return escapeHtml(value)
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function columnTypeLabel(column) {
+            const typeName = column && column.typeName ? String(column.typeName) : '';
+            return typeName.trim();
+        }
+
+        function isJsonColumn(column) {
+            const typeName = columnTypeLabel(column).toLowerCase();
+            return /(^|[^a-z0-9])jsonb?([^a-z0-9]|$)/.test(typeName);
+        }
+
+        function parseJsonCellValue(value) {
+            if (value == null) {
+                return { valid: false };
+            }
+            const text = String(value).trim();
+            if (!text) {
+                return { valid: false };
+            }
+            try {
+                return { valid: true, value: JSON.parse(text) };
+            } catch (e) {
+                return { valid: false };
+            }
+        }
+
+        function renderQueryHeader(column, fallbackLabel) {
+            const label = column && column.label ? column.label : fallbackLabel;
+            const type = columnTypeLabel(column);
+            const title = type ? ' title="' + escapeAttribute(type) + '"' : '';
+            return '<th' + title + '><span class="cp-query-column-heading">' +
+                '<span>' + escapeHtml(label) + '</span>' +
+                (type ? '<span class="cp-query-column-type">' + escapeHtml(type) + '</span>' : '') +
+                '</span></th>';
+        }
+
+        function renderQueryCell(value, column) {
+            const parsedJson = isJsonColumn(column) ? parseJsonCellValue(value) : { valid: false };
+            if (parsedJson.valid) {
+                return '<td class="cp-query-json-cell" data-query-json-cell>' +
+                    '<code class="language-json cp-query-json-raw" data-query-json-raw title="Format JSON">' + escapeHtml(value) + '</code>' +
+                    '</td>';
+            }
+            return '<td>' + escapeHtml(value) + '</td>';
+        }
+
+        function highlightQueryJsonElement(code) {
+            if (!window.hljs || typeof window.hljs.highlightElement !== 'function') {
+                return;
+            }
+            window.hljs.highlightElement(code);
+        }
+
+        function highlightQueryJson() {
+            document.querySelectorAll('#queryResults [data-query-json-raw]').forEach(function (code) {
+                highlightQueryJsonElement(code);
+            });
+        }
+
+        function rawQueryJsonCellContent(raw) {
+            const code = document.createElement('code');
+            code.className = 'language-json cp-query-json-raw';
+            code.setAttribute('data-query-json-raw', '');
+            code.setAttribute('title', 'Format JSON');
+            code.textContent = raw;
+            return code;
+        }
+
+        function toggleQueryJsonCell(target) {
+            const $cell = $(target).closest('[data-query-json-cell]');
+            if ($cell.hasClass('cp-query-json-cell-formatted')) {
+                const code = rawQueryJsonCellContent($cell.data('query-json-raw') || '');
+                $cell.removeClass('cp-query-json-cell-formatted');
+                $cell.empty().append(code);
+                highlightQueryJsonElement(code);
+                return;
+            }
+            const raw = $cell.find('[data-query-json-raw]').first().text();
+            const parsedJson = parseJsonCellValue(raw);
+            if (!parsedJson.valid) {
+                return;
+            }
+            const code = document.createElement('code');
+            code.className = 'language-json';
+            code.setAttribute('title', 'Show raw JSON');
+            code.textContent = JSON.stringify(parsedJson.value, null, 2);
+
+            $cell.data('query-json-raw', raw);
+            $cell.addClass('cp-query-json-cell-formatted');
+            $cell.empty().append(code);
+            highlightQueryJsonElement(code);
+        }
+
+        function renderQueryTable(resp) {
+            const cols = resp && resp.cols ? resp.cols : [];
+            const columns = queryColumns(resp, cols);
+            const rows = resp && resp.data ? resp.data : [];
+            const total = resolveTotal(resp, rows);
+            const pageSize = queryTableState.pageSize;
+            const pageCount = Math.max(1, Math.ceil(total / pageSize));
+            const page = Math.min(queryTableState.page, pageCount - 1);
+            queryTableState.page = page;
+
+            const $container = $('#queryResultsContainer');
+            if (cols.length === 0) {
+                renderQueryState('No columns returned.', '', 'empty');
+                return;
+            }
+
+            const start = total === 0 ? 0 : page * pageSize + 1;
+            const end = Math.min(total, page * pageSize + rows.length);
+            const isPreviousDisabled = page <= 0 ? ' disabled' : '';
+            const isNextDisabled = page >= pageCount - 1 ? ' disabled' : '';
+
+            const thead = '<thead><tr>' + cols.map(function (col, index) {
+                return renderQueryHeader(columns[index], col);
+            }).join('') + '</tr></thead>';
+
+            const tbody = rows.length === 0
+                ? '<tbody><tr><td class="cp-data-table-empty-cell" colspan="' + cols.length + '">No results.</td></tr></tbody>'
+                : '<tbody>' + rows.map(function (row) {
+                    return '<tr>' + cols.map(function (_, index) {
+                        return renderQueryCell(row[index], columns[index]);
+                    }).join('') + '</tr>';
+            }).join('') + '</tbody>';
+
+            const tableHtml =
+                '<div class="cp-data-table-container">' +
+                '<table id="queryResults" class="table cp-data-table-table">' + thead + tbody + '</table>' +
+                '</div>' +
+                '<div class="cp-data-table-footer">' +
+                '<div class="cp-data-table-summary">Showing ' + escapeHtml(start) + '-' + escapeHtml(end) + ' of ' + escapeHtml(total) + '</div>' +
+                '<div class="cp-data-table-pagination">' +
+                '<span class="cp-data-table-page">Page ' + escapeHtml(page + 1) + ' of ' + escapeHtml(pageCount) + '</span>' +
+                '<button type="button" class="btn btn-outline btn-sm" data-query-page="previous"' + isPreviousDisabled + '>Previous</button>' +
+                '<button type="button" class="btn btn-outline btn-sm" data-query-page="next"' + isNextDisabled + '>Next</button>' +
+                '</div>' +
+                '</div>';
+
+            $container.html(tableHtml);
+            highlightQueryJson();
+        }
+
+        function loadQueryPage() {
+            if (!writeAllowed) {
+                renderQueryState('Query execution disabled', writeDisabledReason, 'error');
+                return;
+            }
+            globalAlertMessageClear();
+            $.ajax({
+                url: datasourceBaseUrl + '/query',
+                type: 'POST',
+                dataType: 'json',
+                contentType: 'application/json; charset=utf-8',
+                data: JSON.stringify({
+                    sql: queryTableState.sql,
+                    start: queryTableState.page * queryTableState.pageSize,
+                    length: queryTableState.pageSize,
+                    draw: ++queryTableState.draw
+                })
+            }).done(function(resp) {
+                if (resp && resp.error) {
+                    renderQueryState('Query failed', resp.error, 'error');
+                    return;
+                }
+                renderQueryTable(resp);
+            }).fail(function(xhr) {
+                const err = (xhr.responseJSON && xhr.responseJSON.error) ? xhr.responseJSON.error : 'Query failed';
+                renderQueryState('Query failed', err, 'error');
+            });
+        }
+
+        function initQueryTable(sql) {
+            queryTableState.sql = sql;
+            queryTableState.page = 0;
+            queryTableState.draw = 0;
+            $('[data-query-page-size]').prop('disabled', false).val(String(queryTableState.pageSize));
+            loadQueryPage();
+        }
+
+        $('.cp-query-results-card').on('change', '[data-query-page-size]', function () {
+            queryTableState.pageSize = Number($(this).val());
+            queryTableState.page = 0;
+            loadQueryPage();
+        });
+
+        $('#queryResultsContainer').on('click', '[data-query-page]', function () {
+            const direction = $(this).data('query-page');
+            queryTableState.page += direction === 'next' ? 1 : -1;
+            queryTableState.page = Math.max(0, queryTableState.page);
+            loadQueryPage();
+        }).on('click', '[data-query-json-cell]', function () {
+            toggleQueryJsonCell(this);
+        });
+
+        $('#queryLayoutSplitter').on('pointerdown', function (event) {
+            event.preventDefault();
+            document.body.classList.add('cp-query-layout-resizing');
+            const move = function (moveEvent) {
+                setQueryEditorHeightFromClientY(moveEvent.clientY);
+            };
+            const stop = function () {
+                document.body.classList.remove('cp-query-layout-resizing');
+                document.removeEventListener('pointermove', move);
+                document.removeEventListener('pointerup', stop);
+                document.removeEventListener('pointercancel', stop);
+            };
+            document.addEventListener('pointermove', move);
+            document.addEventListener('pointerup', stop);
+            document.addEventListener('pointercancel', stop);
+            const pointerEvent = event.originalEvent || event;
+            setQueryEditorHeightFromClientY(pointerEvent.clientY);
+        }).on('keydown', function (event) {
+            if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                resizeQueryEditorBy(-5);
+            } else if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                resizeQueryEditorBy(5);
+            } else if (event.key === 'Home') {
+                event.preventDefault();
+                tableBrowserState.queryEditorHeight = 15;
+                applyQueryLayout();
+            } else if (event.key === 'End') {
+                event.preventDefault();
+                tableBrowserState.queryEditorHeight = 80;
+                applyQueryLayout();
+            }
+        });
+
+        function isQueryExecuteShortcut(event) {
+            return (event.metaKey || event.ctrlKey) && event.key === 'Enter' && !event.shiftKey && !event.altKey;
+        }
+
+        function editorSql(view) {
+            const editorView = view || (window.codemirror && window.codemirror.view) || null;
+            const doc = editorView && editorView.state && editorView.state.doc ? editorView.state.doc : null;
+            return doc ? String(doc.toString()).trim() : '';
+        }
+
+        function executeSqlQuery(view) {
+            if (!writeAllowed) {
+                renderQueryState('Query execution disabled', writeDisabledReason, 'error');
+                return;
+            }
+            try {
+                const sql = editorSql(view);
+                if (!sql) {
+                    renderQueryState('SQL must not be empty', 'Type a query in the SQL editor before running it.', 'error');
+                    return;
+                }
+                initQueryTable(sql);
+            } catch (e) {
+                renderQueryState('Cannot read SQL from editor', 'The query editor is not ready yet. Try again after the page finishes loading.', 'error');
+            }
+        }
+
+        $('#executeQuery').on('click', function() {
+            if (this.disabled) {
+                return;
+            }
+            executeSqlQuery();
+        });
+
+        applyQueryLayout();
+    });
+</script>
