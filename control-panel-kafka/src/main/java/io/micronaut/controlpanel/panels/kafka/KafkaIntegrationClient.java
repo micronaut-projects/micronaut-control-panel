@@ -15,6 +15,7 @@
  */
 package io.micronaut.controlpanel.panels.kafka;
 
+import io.micronaut.context.annotation.Property;
 import io.micronaut.core.annotation.Internal;
 import io.micronaut.json.JsonMapper;
 import io.micronaut.json.tree.JsonNode;
@@ -52,10 +53,14 @@ final class DefaultKafkaIntegrationClient implements KafkaIntegrationClient {
     private final KafkaIntegrationConfiguration configuration;
     private final JsonMapper jsonMapper;
     private final HttpClient httpClient;
+    private final @Nullable String schemaRegistryUrl;
 
-    DefaultKafkaIntegrationClient(KafkaIntegrationConfiguration configuration, JsonMapper jsonMapper) {
+    DefaultKafkaIntegrationClient(KafkaIntegrationConfiguration configuration,
+                                  JsonMapper jsonMapper,
+                                  @Nullable @Property(name = "kafka.schema.registry.url") String schemaRegistryUrl) {
         this.configuration = configuration;
         this.jsonMapper = jsonMapper;
+        this.schemaRegistryUrl = schemaRegistryUrl;
         this.httpClient = HttpClient.newBuilder()
             .connectTimeout(REQUEST_TIMEOUT)
             .build();
@@ -92,11 +97,20 @@ final class DefaultKafkaIntegrationClient implements KafkaIntegrationClient {
     @Nullable
     private String baseUrl(String integration) {
         return switch (integration) {
-            case KafkaClusterService.INTEGRATION_SCHEMA_REGISTRY -> configuration.getSchemaRegistry().getUrl();
+            case KafkaClusterService.INTEGRATION_SCHEMA_REGISTRY -> schemaRegistryUrl();
             case KafkaClusterService.INTEGRATION_CONNECT -> configuration.getConnect().getUrl();
             case KafkaClusterService.INTEGRATION_KSQLDB -> configuration.getKsqldb().getUrl();
             default -> null;
         };
+    }
+
+    @Nullable
+    private String schemaRegistryUrl() {
+        String standardUrl = schemaRegistryUrl;
+        if (standardUrl != null && !standardUrl.isBlank()) {
+            return standardUrl;
+        }
+        return configuration.getSchemaRegistry().getUrl();
     }
 
     private static String trimTrailingSlash(String value) {

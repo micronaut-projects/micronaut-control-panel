@@ -455,6 +455,7 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         assertThat(page.locator("#kafkaTopicDetailModal")).isVisible();
         assertThat(page.locator("#kafkaTopicDetailModal")).containsText("Beginning offset");
         assertThat(page.locator("#kafkaTopicDetailModal")).containsText("Topic config");
+        assertThat(page.locator("#kafkaTopicConfigTable [data-filter-table-page]")).containsText("Page");
         page.locator("#kafkaTopicDetailModal .modal-footer [data-dismiss='modal']").click();
         assertThat(page.locator("#kafkaTopicDetailModal")).isHidden();
 
@@ -462,17 +463,23 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         assertThat(page.getByLabel("Search consumer groups")).isVisible();
         assertThat(page.locator("#kafkaConsumerGroups")).containsText("Total lag");
 
+        page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("Messages")).click();
+        assertThat(page.locator("#kafkaMessageTopic")).isVisible();
+        assertThat(page.locator("#kafkaMessageTopic")).containsText("product_description_v1");
+        assertThat(page.locator("#kafkaMessagesTable [data-filter-table-page]")).containsText("Page");
+
         page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("Writes/Management")).click();
-        assertThat(page.locator("#kafkaWritesEnabled")).containsText("disabled");
-        assertThat(page.locator("#kafkaDestructiveEnabled")).containsText("disabled");
-        assertThat(page.locator("#kafkaCreateTopicForm button[type='submit']")).isDisabled();
+        assertThat(page.locator("#kafkaWritesEnabled")).containsText("enabled");
+        assertThat(page.locator("#kafkaDestructiveEnabled")).containsText("enabled");
+        assertThat(page.locator("#kafkaCreateTopicForm button[type='submit']")).isEnabled();
+        assertThat(page.locator("#kafkaProduceTopic")).containsText("product_description_v1");
 
         page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("Schema Registry")).click();
-        assertThat(page.locator("#kafkaSchemaRegistryConfigured")).containsText("not configured");
+        assertThat(page.locator("#kafkaSchemaRegistryConfigured")).containsText("configured");
         page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("Kafka Connect")).click();
-        assertThat(page.locator("#kafkaConnectConfigured")).containsText("not configured");
+        assertThat(page.locator("#kafkaConnectConfigured")).containsText("configured");
         page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("ksqlDB")).click();
-        assertThat(page.locator("#kafkaKsqlDbConfigured")).containsText("not configured");
+        assertThat(page.locator("#kafkaKsqlDbConfigured")).containsText("configured");
 
         page.navigate(baseUrl());
         categoryLink(page, "Kafka").click();

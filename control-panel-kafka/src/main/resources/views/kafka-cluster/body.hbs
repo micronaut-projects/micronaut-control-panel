@@ -1,3 +1,40 @@
 <p class="card-text">
     Inspect brokers, topics, partitions, offsets, and safe configuration values using Kafka AdminClient read APIs.
 </p>
+{{#with controlPanel.body }}
+<dl class="row mb-0 small" id="kafkaClusterCardOverview">
+    <dt class="col-6">Cluster id</dt>
+    <dd class="col-6"><code data-kafka-card-cluster-id>-</code></dd>
+    <dt class="col-6">Controller</dt>
+    <dd class="col-6"><code data-kafka-card-controller>-</code></dd>
+    <dt class="col-6">Brokers</dt>
+    <dd class="col-6" data-kafka-card-brokers>-</dd>
+    <dt class="col-6">Topics</dt>
+    <dd class="col-6" data-kafka-card-topics>-</dd>
+    <dt class="col-6">Partitions</dt>
+    <dd class="col-6" data-kafka-card-partitions>-</dd>
+    <dt class="col-6">Consumer groups</dt>
+    <dd class="col-6" data-kafka-card-consumer-groups>-</dd>
+</dl>
+<script>
+  (function() {
+    var baseUrl = '{{ ext.controlPanelPath }}{{ controllerPath }}';
+    function brokerLabel(broker) {
+      if (!broker) return '-';
+      return broker.id + ' (' + broker.host + ':' + broker.port + ')';
+    }
+    $.getJSON(baseUrl + '/summary').done(function(section) {
+      if (!section || section.error || !section.data) {
+        return;
+      }
+      var summary = section.data;
+      $('[data-kafka-card-cluster-id]').text(summary.clusterId || '-');
+      $('[data-kafka-card-controller]').text(brokerLabel(summary.controller));
+      $('[data-kafka-card-brokers]').text(summary.brokerCount);
+      $('[data-kafka-card-topics]').text(summary.topicCount);
+      $('[data-kafka-card-partitions]').text(summary.partitionCount);
+      $('[data-kafka-card-consumer-groups]').text(summary.consumerGroupCount);
+    });
+  })();
+</script>
+{{/with}}

@@ -9,9 +9,9 @@
         <button type="button" class="tabs-trigger" id="tab-kafka-messages" role="tab" aria-selected="false" aria-controls="panel-kafka-messages" data-tabs-trigger="messages">Messages</button>
         <button type="button" class="tabs-trigger" id="tab-kafka-app-consumers" role="tab" aria-selected="false" aria-controls="panel-kafka-app-consumers" data-tabs-trigger="app-consumers">App Consumers</button>
         <button type="button" class="tabs-trigger" id="tab-kafka-management" role="tab" aria-selected="false" aria-controls="panel-kafka-management" data-tabs-trigger="management">Writes/Management</button>
-        <button type="button" class="tabs-trigger" id="tab-kafka-schema-registry" role="tab" aria-selected="false" aria-controls="panel-kafka-schema-registry" data-tabs-trigger="schema-registry">Schema Registry</button>
-        <button type="button" class="tabs-trigger" id="tab-kafka-connect" role="tab" aria-selected="false" aria-controls="panel-kafka-connect" data-tabs-trigger="kafka-connect">Kafka Connect</button>
-        <button type="button" class="tabs-trigger" id="tab-kafka-ksqldb" role="tab" aria-selected="false" aria-controls="panel-kafka-ksqldb" data-tabs-trigger="ksqldb">ksqlDB</button>
+        <button type="button" class="tabs-trigger" id="tab-kafka-schema-registry" role="tab" aria-selected="false" aria-controls="panel-kafka-schema-registry" data-tabs-trigger="schema-registry" hidden>Schema Registry</button>
+        <button type="button" class="tabs-trigger" id="tab-kafka-connect" role="tab" aria-selected="false" aria-controls="panel-kafka-connect" data-tabs-trigger="kafka-connect" hidden>Kafka Connect</button>
+        <button type="button" class="tabs-trigger" id="tab-kafka-ksqldb" role="tab" aria-selected="false" aria-controls="panel-kafka-ksqldb" data-tabs-trigger="ksqldb" hidden>ksqlDB</button>
     </div>
 
     <div class="tabs-panel" id="panel-kafka-overview" role="tabpanel" aria-labelledby="tab-kafka-overview" data-tabs-panel="overview">
@@ -242,7 +242,9 @@
             <div class="form-row">
                 <div class="form-group col-md-4">
                     <label for="kafkaMessageTopic">Topic</label>
-                    <input type="text" class="form-control" id="kafkaMessageTopic" required>
+                    <select class="form-control" id="kafkaMessageTopic" required>
+                        <option value="">Loading topics...</option>
+                    </select>
                 </div>
                 <div class="form-group col-md-2">
                     <label for="kafkaMessagePartition">Partition</label>
@@ -278,24 +280,47 @@
             <dt class="col-sm-2">End offset</dt>
             <dd class="col-sm-10"><code id="kafkaMessagesEndOffset">-</code></dd>
         </dl>
-        <div class="cp-data-table-container">
-            <table id="kafkaMessages" class="table cp-data-table-table table-bordered table-striped">
-                <thead>
-                <tr>
-                    <th>Offset</th>
-                    <th>Timestamp</th>
-                    <th>Partition</th>
-                    <th>Key</th>
-                    <th>Value</th>
-                    <th>Headers</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr id="kafkaMessagesEmpty">
-                    <td class="cp-data-table-empty-cell" colspan="6">No messages loaded.</td>
-                </tr>
-                </tbody>
-            </table>
+        <div class="cp-data-table cp-data-table-paged" id="kafkaMessagesTable" data-filter-table data-filter-table-page-size="10" data-filter-table-label="message" data-filter-table-label-plural="messages">
+            <div class="cp-data-table-toolbar">
+                <div class="cp-data-table-summary" data-filter-table-summary>0 messages</div>
+                <div class="cp-data-table-search">
+                    <input type="search" class="form-control" data-filter-table-search placeholder="Search messages" aria-label="Search messages">
+                </div>
+            </div>
+            <div class="cp-data-table-container">
+                <table id="kafkaMessages" class="table cp-data-table-table table-bordered table-striped">
+                    <thead>
+                    <tr>
+                        <th>Offset</th>
+                        <th>Timestamp</th>
+                        <th>Partition</th>
+                        <th>Key</th>
+                        <th>Value</th>
+                        <th>Headers</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr data-filter-table-empty hidden>
+                        <td class="cp-data-table-empty-cell" colspan="6">No messages loaded.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="cp-data-table-footer">
+                <label class="cp-data-table-page-size">
+                    Rows per page
+                    <select class="form-control" data-filter-table-page-size-select aria-label="Messages per page">
+                        <option value="10" selected>10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                    </select>
+                </label>
+                <div class="cp-data-table-pagination">
+                    <span class="cp-data-table-page" data-filter-table-page>Page 1 of 1</span>
+                    <button type="button" class="btn btn-secondary btn-sm" data-filter-table-prev>Previous</button>
+                    <button type="button" class="btn btn-secondary btn-sm" data-filter-table-next>Next</button>
+                </div>
+            </div>
         </div>
     </div>
     <div class="tabs-panel" id="panel-kafka-app-consumers" role="tabpanel" aria-labelledby="tab-kafka-app-consumers" data-tabs-panel="app-consumers" hidden>
@@ -367,7 +392,9 @@
                         <div class="form-row">
                             <div class="form-group col-md-8">
                                 <label for="kafkaProduceTopic">Topic</label>
-                                <input type="text" class="form-control" id="kafkaProduceTopic" data-target required>
+                                <select class="form-control" id="kafkaProduceTopic" data-target required>
+                                    <option value="">Loading topics...</option>
+                                </select>
                             </div>
                             <div class="form-group col-md-4">
                                 <label for="kafkaProducePartition">Partition</label>
@@ -503,6 +530,62 @@
     </div>
 </div>
 
+<div class="modal fade cp-dialog" id="kafkaBrokerConfigModal" tabindex="-1" role="dialog" aria-labelledby="kafkaBrokerConfigModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content cp-dialog-content">
+            <div class="modal-header cp-dialog-header">
+                <h5 class="modal-title cp-dialog-title" id="kafkaBrokerConfigModalLabel">Broker config: <code id="kafkaBrokerConfigName"></code></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" title="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="cp-data-table cp-data-table-paged" id="kafkaBrokerConfigTable" data-filter-table data-filter-table-page-size="10" data-filter-table-label="config value" data-filter-table-label-plural="config values">
+                    <div class="cp-data-table-toolbar">
+                        <div class="cp-data-table-summary" data-filter-table-summary>0 config values</div>
+                        <div class="cp-data-table-search">
+                            <input type="search" class="form-control" data-filter-table-search placeholder="Search broker config" aria-label="Search broker config">
+                        </div>
+                    </div>
+                    <div class="cp-data-table-container">
+                        <table id="kafkaBrokerConfig" class="table cp-data-table-table table-bordered table-striped table-sm">
+                            <thead>
+                            <tr>
+                                <th>Config</th>
+                                <th>Value</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr data-filter-table-empty hidden>
+                                <td class="cp-data-table-empty-cell" colspan="2">No safe config values available.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="cp-data-table-footer">
+                        <label class="cp-data-table-page-size">
+                            Rows per page
+                            <select class="form-control" data-filter-table-page-size-select aria-label="Broker config per page">
+                                <option value="10" selected>10</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                            </select>
+                        </label>
+                        <div class="cp-data-table-pagination">
+                            <span class="cp-data-table-page" data-filter-table-page>Page 1 of 1</span>
+                            <button type="button" class="btn btn-secondary btn-sm" data-filter-table-prev>Previous</button>
+                            <button type="button" class="btn btn-secondary btn-sm" data-filter-table-next>Next</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade cp-dialog" id="kafkaConsumerGroupDetailModal" tabindex="-1" role="dialog" aria-labelledby="kafkaConsumerGroupDetailModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content cp-dialog-content">
@@ -538,19 +621,48 @@
                 </table>
 
                 <h6>Offsets and lag</h6>
-                <table id="kafkaConsumerGroupPartitions" class="table table-bordered table-striped">
-                    <thead>
-                    <tr>
-                        <th>Topic</th>
-                        <th>Partition</th>
-                        <th>Assigned</th>
-                        <th>Committed offset</th>
-                        <th>End offset</th>
-                        <th>Lag</th>
-                    </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+                <div class="cp-data-table cp-data-table-paged" id="kafkaConsumerGroupPartitionsTable" data-filter-table data-filter-table-page-size="10" data-filter-table-label="partition" data-filter-table-label-plural="partitions">
+                    <div class="cp-data-table-toolbar">
+                        <div class="cp-data-table-summary" data-filter-table-summary>0 partitions</div>
+                        <div class="cp-data-table-search">
+                            <input type="search" class="form-control" data-filter-table-search placeholder="Search offsets and lag" aria-label="Search offsets and lag">
+                        </div>
+                    </div>
+                    <div class="cp-data-table-container">
+                        <table id="kafkaConsumerGroupPartitions" class="table cp-data-table-table table-bordered table-striped">
+                            <thead>
+                            <tr>
+                                <th>Topic</th>
+                                <th>Partition</th>
+                                <th>Assigned</th>
+                                <th>Committed offset</th>
+                                <th>End offset</th>
+                                <th>Lag</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr data-filter-table-empty hidden>
+                                <td class="cp-data-table-empty-cell" colspan="6">No offsets found.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="cp-data-table-footer">
+                        <label class="cp-data-table-page-size">
+                            Rows per page
+                            <select class="form-control" data-filter-table-page-size-select aria-label="Offsets and lag per page">
+                                <option value="10" selected>10</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                            </select>
+                        </label>
+                        <div class="cp-data-table-pagination">
+                            <span class="cp-data-table-page" data-filter-table-page>Page 1 of 1</span>
+                            <button type="button" class="btn btn-secondary btn-sm" data-filter-table-prev>Previous</button>
+                            <button type="button" class="btn btn-secondary btn-sm" data-filter-table-next>Next</button>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -586,15 +698,44 @@
                 </table>
 
                 <h6>Topic config</h6>
-                <table id="kafkaTopicConfig" class="table table-bordered table-striped table-sm">
-                    <thead>
-                    <tr>
-                        <th>Config</th>
-                        <th>Value</th>
-                    </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+                <div class="cp-data-table cp-data-table-paged" id="kafkaTopicConfigTable" data-filter-table data-filter-table-page-size="10" data-filter-table-label="config value" data-filter-table-label-plural="config values">
+                    <div class="cp-data-table-toolbar">
+                        <div class="cp-data-table-summary" data-filter-table-summary>0 config values</div>
+                        <div class="cp-data-table-search">
+                            <input type="search" class="form-control" data-filter-table-search placeholder="Search topic config" aria-label="Search topic config">
+                        </div>
+                    </div>
+                    <div class="cp-data-table-container">
+                        <table id="kafkaTopicConfig" class="table cp-data-table-table table-bordered table-striped table-sm">
+                            <thead>
+                            <tr>
+                                <th>Config</th>
+                                <th>Value</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr data-filter-table-empty hidden>
+                                <td class="cp-data-table-empty-cell" colspan="2">No safe config values available.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="cp-data-table-footer">
+                        <label class="cp-data-table-page-size">
+                            Rows per page
+                            <select class="form-control" data-filter-table-page-size-select aria-label="Topic config per page">
+                                <option value="10" selected>10</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                            </select>
+                        </label>
+                        <div class="cp-data-table-pagination">
+                            <span class="cp-data-table-page" data-filter-table-page>Page 1 of 1</span>
+                            <button type="button" class="btn btn-secondary btn-sm" data-filter-table-prev>Previous</button>
+                            <button type="button" class="btn btn-secondary btn-sm" data-filter-table-next>Next</button>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -611,6 +752,7 @@
       length: 10,
       search: ''
     };
+    var brokersById = {};
 
     function escapeHtml(value) {
       return $('<div>').text(value == null ? '' : value).html();
@@ -664,18 +806,22 @@
 
     function renderConfig(selector, config) {
       var tbody = $(selector + ' tbody');
+      var table = $(selector).closest('[data-filter-table]');
       tbody.find('[data-filter-table-row]').remove();
       tbody.find('tr:not([data-filter-table-empty])').remove();
       var keys = Object.keys(config || {});
       if (keys.length === 0) {
-        $(selector).closest('[data-filter-table]').find('[data-filter-table-empty]').prop('hidden', false);
+        table.find('[data-filter-table-empty]').prop('hidden', false);
+        refreshFilterTable(table);
         return;
       }
+      table.find('[data-filter-table-empty]').prop('hidden', true);
       keys.forEach(function(key) {
         tbody.append('<tr><td><code>' + escapeHtml(key) + '</code></td><td><code>' + escapeHtml(config[key]) + '</code></td></tr>');
         tbody.find('tr:last').attr('data-filter-table-row', '');
       });
-      refreshFilterTable($(selector).closest('[data-filter-table]'));
+      table.attr('data-filter-table-current-page', '1');
+      refreshFilterTable(table);
     }
 
     function inlineConfig(config) {
@@ -714,6 +860,39 @@
       $(selectorOrTable).find('[data-filter-table-search]').trigger('input');
     }
 
+    function toggleKafkaTab(target, visible) {
+      var trigger = $('#kafkaClusterTabs [data-tabs-trigger="' + target + '"]');
+      var panel = $('#kafkaClusterTabs [data-tabs-panel="' + target + '"]');
+      trigger.prop('hidden', !visible);
+      panel.prop('hidden', true).attr('data-kafka-tab-available', visible ? 'true' : 'false');
+      if (!visible && trigger.hasClass('active')) {
+        activateKafkaTab('overview');
+      }
+    }
+
+    function populateTopicSelect(selector, topics) {
+      var select = $(selector);
+      var current = select.val();
+      select.empty();
+      if (!topics || topics.length === 0) {
+        select.append('<option value="">No topics available</option>');
+        return;
+      }
+      topics.forEach(function(topic) {
+        select.append('<option value="' + escapeHtml(topic) + '">' + escapeHtml(topic) + '</option>');
+      });
+      if (current && topics.indexOf(current) !== -1) {
+        select.val(current);
+      }
+    }
+
+    function loadTopicOptions() {
+      loadSection(baseUrl + '/topic-names?includeInternal=false', 'Kafka topics unavailable', '#kafkaMessagesAlerts', function(topics) {
+        populateTopicSelect('#kafkaMessageTopic', topics);
+        populateTopicSelect('#kafkaProduceTopic', topics);
+      });
+    }
+
     function pluralize(count, singular, plural) {
       return count === 1 ? singular : plural;
     }
@@ -749,7 +928,8 @@
         this.setAttribute('aria-selected', active ? 'true' : 'false');
       });
       $('#kafkaClusterTabs [data-tabs-panel]').each(function() {
-        var active = this.getAttribute('data-tabs-panel') === target;
+        var active = this.getAttribute('data-tabs-panel') === target
+          && this.getAttribute('data-kafka-tab-available') !== 'false';
         this.hidden = !active;
         if (active) {
           $(this).find('[data-filter-table-search]').trigger('input');
@@ -774,7 +954,9 @@
       loadSection(baseUrl + '/brokers', 'Kafka brokers unavailable', '#kafkaBrokersAlerts', function(brokers) {
         var tbody = $('#kafkaBrokers tbody');
         tbody.find('[data-filter-table-row]').remove();
+        brokersById = {};
         brokers.forEach(function(broker) {
+          brokersById[String(broker.id)] = broker;
           tbody.append('<tr>'
             + '<td><code>' + broker.id + '</code></td>'
             + '<td><code>' + escapeHtml(broker.host) + '</code></td>'
@@ -784,7 +966,7 @@
             + '<td>' + broker.leaderPartitions + '</td>'
             + '<td>' + broker.replicaPartitions + '</td>'
             + '<td>' + broker.underReplicatedPartitions + '</td>'
-            + '<td>' + inlineConfig(broker.config) + '</td>'
+            + '<td><button type="button" class="btn btn-secondary btn-xs kafka-broker-config" data-broker="' + broker.id + '" data-toggle="modal" data-target="#kafkaBrokerConfigModal">Config</button></td>'
             + '</tr>');
           tbody.find('tr:last').attr('data-filter-table-row', '');
         });
@@ -862,7 +1044,7 @@
 
     function loadMessages() {
       var query = {
-        topic: $('#kafkaMessageTopic').val().trim(),
+        topic: $('#kafkaMessageTopic').val(),
         partition: Number($('#kafkaMessagePartition').val()) || 0,
         mode: $('#kafkaMessageMode').val(),
         limit: Number($('#kafkaMessageLimit').val()) || 25
@@ -877,11 +1059,14 @@
         $('#kafkaMessagesStartOffset').text(valueOrDash(page.startOffset));
         $('#kafkaMessagesEndOffset').text(valueOrDash(page.endOffset));
         var tbody = $('#kafkaMessages tbody');
-        tbody.empty();
+        tbody.find('[data-filter-table-row]').remove();
         if (!page.records || page.records.length === 0) {
-          tbody.append('<tr id="kafkaMessagesEmpty"><td class="cp-data-table-empty-cell" colspan="6">No messages found.</td></tr>');
+          $('#kafkaMessagesTable [data-filter-table-empty]').prop('hidden', false)
+            .find('.cp-data-table-empty-cell').text('No messages found.');
+          refreshFilterTable('#kafkaMessagesTable');
           return;
         }
+        $('#kafkaMessagesTable [data-filter-table-empty]').prop('hidden', true);
         page.records.forEach(function(record) {
           tbody.append('<tr>'
             + '<td>' + record.offset + '</td>'
@@ -891,7 +1076,10 @@
             + '<td>' + renderPayload(record.value) + '</td>'
             + '<td>' + renderHeaders(record.headers) + '</td>'
             + '</tr>');
+          tbody.find('tr:last').attr('data-filter-table-row', '');
         });
+        $('#kafkaMessagesTable').attr('data-filter-table-current-page', '1');
+        refreshFilterTable('#kafkaMessagesTable');
       });
     }
 
@@ -919,6 +1107,7 @@
           .toggleClass('badge-secondary', !registry.configured)
           .text(registry.configured ? 'configured' : 'not configured');
         $('#kafkaSchemaRegistryUrl').text(registry.url || '-');
+        toggleKafkaTab('schema-registry', registry.configured);
         var tbody = $('#kafkaSchemaRegistrySubjects tbody');
         tbody.empty();
         if (!registry.subjects || registry.subjects.length === 0) {
@@ -941,6 +1130,7 @@
           .toggleClass('badge-secondary', !connect.configured)
           .text(connect.configured ? 'configured' : 'not configured');
         $('#kafkaConnectUrl').text(connect.url || '-');
+        toggleKafkaTab('kafka-connect', connect.configured);
         var tbody = $('#kafkaConnectConnectors tbody');
         tbody.empty();
         if (!connect.connectors || connect.connectors.length === 0) {
@@ -970,6 +1160,7 @@
           .toggleClass('badge-secondary', !ksqldb.configured)
           .text(ksqldb.configured ? 'configured' : 'not configured');
         $('#kafkaKsqlDbUrl').text(ksqldb.url || '-');
+        toggleKafkaTab('ksqldb', ksqldb.configured);
         renderObjectRows('#kafkaKsqlDbStreams', ksqldb.streams, 'No streams found.');
         renderObjectRows('#kafkaKsqlDbTables', ksqldb.tables, 'No tables found.');
         renderObjectRows('#kafkaKsqlDbQueries', ksqldb.queries, 'No queries found.');
@@ -1008,7 +1199,8 @@
         $('[data-kafka-management-form]').each(function() {
           var action = this.getAttribute('data-action');
           var enabled = Boolean(capabilities.writesEnabled && capabilities.actions && capabilities.actions[action]);
-          $(this).find('input, textarea, select, button').prop('disabled', !enabled);
+          $(this).prop('hidden', !enabled);
+          $(this).find('input, textarea, select, button').prop('disabled', false);
         });
       });
     }
@@ -1026,7 +1218,7 @@
         };
       }
       if (form.id === 'kafkaProduceMessageForm') {
-        var produceTopic = $('#kafkaProduceTopic').val().trim();
+        var produceTopic = $('#kafkaProduceTopic').val();
         var partitionValue = $('#kafkaProducePartition').val();
         var target = partitionValue === '' ? produceTopic : produceTopic + '-' + Number(partitionValue);
         return {
@@ -1070,10 +1262,17 @@
       );
     }
 
+    function openBrokerConfig(brokerId) {
+      var broker = brokersById[String(brokerId)];
+      $('#kafkaBrokerConfigName').text(brokerId);
+      renderConfig('#kafkaBrokerConfig', broker ? broker.config : {});
+    }
+
     function loadTopicDetail(topicName) {
       $('#kafkaTopicDetailName').text(topicName);
       $('#kafkaTopicPartitions tbody').empty();
-      $('#kafkaTopicConfig tbody').empty();
+      $('#kafkaTopicConfig tbody').find('[data-filter-table-row]').remove();
+      $('#kafkaTopicConfigTable').attr('data-filter-table-current-page', '1');
       loadSection(baseUrl + '/topics/' + encodeURIComponent(topicName), 'Kafka topic detail unavailable', '#kafkaTopicDetailAlerts', function(detail) {
         $('#kafkaTopicDetailName').text(detail.topic.name);
         var tbody = $('#kafkaTopicPartitions tbody');
@@ -1123,7 +1322,7 @@
             + '</tr>');
         });
         var partitionRows = $('#kafkaConsumerGroupPartitions tbody');
-        partitionRows.empty();
+        partitionRows.find('[data-filter-table-row]').remove();
         detail.partitions.forEach(function(partition) {
           partitionRows.append('<tr>'
             + '<td><code>' + escapeHtml(partition.topic) + '</code></td>'
@@ -1133,7 +1332,10 @@
             + '<td>' + valueOrDash(partition.endOffset) + '</td>'
             + '<td>' + valueOrDash(partition.lag) + '</td>'
             + '</tr>');
+          partitionRows.find('tr:last').attr('data-filter-table-row', '');
         });
+        $('#kafkaConsumerGroupPartitionsTable').attr('data-filter-table-current-page', '1');
+        refreshFilterTable('#kafkaConsumerGroupPartitionsTable');
       });
     }
 
@@ -1161,6 +1363,9 @@
     });
     $('#kafkaTopics').on('click', '.kafka-topic-detail', function() {
       loadTopicDetail($(this).data('topic'));
+    });
+    $('#kafkaBrokers').on('click', '.kafka-broker-config', function() {
+      openBrokerConfig($(this).data('broker'));
     });
     $('#kafkaClusterTabs').on('click', '.kafka-topic-open', function() {
       openTopicDetail($(this).data('topic'));
@@ -1190,6 +1395,7 @@
     });
 
     loadSummary();
+    loadTopicOptions();
     loadBrokers();
     loadTopics();
     loadConsumerGroups();

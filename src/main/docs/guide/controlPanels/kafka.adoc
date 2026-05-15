@@ -14,13 +14,13 @@ Read views use Kafka AdminClient metadata APIs and temporary non-committing cons
 Features include:
 
 * View cluster id, controller broker, broker count, topic count, partition count, and consumer group count.
-* Navigate the Kafka Cluster detail page by section tabs for overview, cluster configuration, brokers, topics, consumer groups, messages, app consumers, writes/management, Schema Registry, Kafka Connect, and ksqlDB.
+* Navigate the Kafka Cluster detail page by section tabs for overview, cluster configuration, brokers, topics, consumer groups, messages, app consumers, writes/management, Schema Registry, Kafka Connect, and ksqlDB. Optional integration tabs are hidden until their endpoints are configured.
 * Page and search the safe cluster configuration summary.
-* Inspect brokers, host/port/rack metadata, controller status, leader/replica partition counts, and under-replicated partition indicators.
+* Inspect brokers, host/port/rack metadata, controller status, leader/replica partition counts, under-replicated partition indicators, and broker configuration in a paginated modal.
 * Search and page topics, optionally showing internal topics.
-* View topic cleanup policy, retention settings, segment settings, and open topic partition details in a modal with leaders, replicas, ISR, and beginning/end offsets.
+* View topic cleanup policy, retention settings, segment settings, and open topic partition details in a modal with leaders, replicas, ISR, beginning/end offsets, and paginated topic configuration.
 * Inspect consumer groups, state, protocol, member count, assigned partitions, committed partitions, total lag, member client id/host/assignment, and per-partition committed offset, end offset, and lag.
-* Browse messages by topic and partition from the beginning, latest bounded window, a specific offset, or a timestamp.
+* Browse messages by selecting an available topic and partition from the beginning, latest bounded window, a specific offset, or a timestamp.
   The browser uses temporary consumers with auto-commit disabled and no consumer group id, caps requested record counts, and renders payloads as UTF-8, pretty JSON, or base64 for binary data.
 * Inspect Micronaut Kafka application consumers from `ConsumerRegistry`, including consumer ids, subscriptions, assignments, and pause state.
 * Display readable section-level errors when Kafka metadata, broker, topic, or offset calls are unavailable or unauthorized.
@@ -31,16 +31,19 @@ The panel removes values Kafka marks as sensitive and also filters obvious secre
 == Optional Integrations
 
 Schema Registry, Kafka Connect, and ksqlDB tabs are available in the Kafka Cluster page without adding mandatory dependencies to applications that only use Kafka cluster or Kafka Streams views.
-Each integration is absent until its base URL is configured:
+Each integration tab is hidden until its base URL is configured.
+Schema Registry uses Micronaut Kafka's standard `kafka.schema.registry.url` property; Kafka Connect and ksqlDB use control-panel integration URLs:
 
 [configuration]
 ----
+kafka:
+  schema:
+    registry:
+      url: http://localhost:8081
 micronaut:
   control-panel:
     kafka:
       integrations:
-        schema-registry:
-          url: http://localhost:8081
         connect:
           url: http://localhost:8083
         ksqldb:
@@ -55,7 +58,7 @@ Sensitive Schema Registry, Kafka Connect, and ksqlDB values are filtered before 
 == Write Safety
 
 Kafka management actions are disabled by default.
-The UI may show management forms, but every mutating endpoint also validates the write gates on the server.
+The UI hides unavailable management forms, and every mutating endpoint also validates the write gates on the server.
 
 [configuration]
 ----

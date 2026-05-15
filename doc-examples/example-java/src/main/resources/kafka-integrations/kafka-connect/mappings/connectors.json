@@ -1,0 +1,15 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "/connectors"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": [
+      "demo-source"
+    ]
+  }
+}

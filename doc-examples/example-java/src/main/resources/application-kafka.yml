@@ -1,8 +1,11 @@
 kafka:
   enabled: true
+  schema:
+    registry:
+      url: http://${auto.test.resources.kafka.schema.registry.host}:${auto.test.resources.kafka.schema.registry.port}
   streams:
     default:
-      schema.registry.url: http://localhost:8081
+      schema.registry.url: ${kafka.schema.registry.url}
       session.timeout.ms: 10000
       internal.leave.group.on.close: true
       topology.optimization: "reuse.ktable.source.topics"
@@ -13,6 +16,38 @@ kafka:
 micronaut:
   control-panel:
     kafka:
+      integrations:
+        connect:
+          url: http://${auto.test.resources.kafka.connect.host}:${auto.test.resources.kafka.connect.port}
+        ksqldb:
+          url: http://${auto.test.resources.kafka.ksqldb.host}:${auto.test.resources.kafka.ksqldb.port}
       writes:
         enabled: true
         destructive-enabled: true
+
+test-resources:
+  containers:
+    schema-registry:
+      image-name: wiremock/wiremock:3.9.1
+      hostnames:
+        - kafka.schema.registry.host
+      exposed-ports:
+        - kafka.schema.registry.port: 8080
+      copy-to-container:
+        classpath:kafka-integrations/schema-registry/mappings: /home/wiremock/mappings
+    kafka-connect:
+      image-name: wiremock/wiremock:3.9.1
+      hostnames:
+        - kafka.connect.host
+      exposed-ports:
+        - kafka.connect.port: 8080
+      copy-to-container:
+        classpath:kafka-integrations/kafka-connect/mappings: /home/wiremock/mappings
+    ksqldb:
+      image-name: wiremock/wiremock:3.9.1
+      hostnames:
+        - kafka.ksqldb.host
+      exposed-ports:
+        - kafka.ksqldb.port: 8080
+      copy-to-container:
+        classpath:kafka-integrations/ksqldb/mappings: /home/wiremock/mappings

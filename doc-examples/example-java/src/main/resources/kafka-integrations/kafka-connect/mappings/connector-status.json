@@ -1,0 +1,27 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "/connectors/demo-source/status"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "name": "demo-source",
+      "type": "source",
+      "connector": {
+        "state": "RUNNING",
+        "worker_id": "worker:8083"
+      },
+      "tasks": [
+        {
+          "id": 0,
+          "state": "RUNNING",
+          "worker_id": "worker:8083"
+        }
+      ]
+    }
+  }
+}

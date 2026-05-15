@@ -1,0 +1,27 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "/ksql",
+    "bodyPatterns": [
+      {
+        "contains": "SHOW QUERIES;"
+      }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": [
+      {
+        "queries": [
+          {
+            "id": "CSAS_PRODUCTS",
+            "state": "RUNNING"
+          }
+        ]
+      }
+    ]
+  }
+}

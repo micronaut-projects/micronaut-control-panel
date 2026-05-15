@@ -98,6 +98,11 @@ public final class KafkaClusterController {
         return service.topics(search, includeInternal, start, length);
     }
 
+    @Get("/topic-names{?includeInternal}")
+    public Section<List<String>> topicNames(@QueryValue(defaultValue = "false") boolean includeInternal) {
+        return service.topicNames(includeInternal);
+    }
+
     @Get("/topics/{topic}")
     public Section<TopicDetail> topic(String topic) {
         return service.topic(topic);

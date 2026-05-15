@@ -16,6 +16,7 @@
 package io.micronaut.controlpanel.panels.kafka;
 
 import io.micronaut.configuration.kafka.ConsumerRegistry;
+import io.micronaut.context.annotation.Property;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.core.annotation.Internal;
 import io.micronaut.core.util.StringUtils;
@@ -214,6 +215,7 @@ final class KafkaClusterService {
     private final JsonMapper jsonMapper;
     private final KafkaClusterWriteConfiguration writeConfiguration;
     private final KafkaIntegrationConfiguration integrationConfiguration;
+    private final @Nullable String schemaRegistryUrl;
 
     @Inject
     KafkaClusterService(AdminClient adminClient,
@@ -223,7 +225,8 @@ final class KafkaClusterService {
                         @Nullable KafkaIntegrationClient integrationClient,
                         JsonMapper jsonMapper,
                         KafkaClusterWriteConfiguration writeConfiguration,
-                        KafkaIntegrationConfiguration integrationConfiguration) {
+                        KafkaIntegrationConfiguration integrationConfiguration,
+                        @Nullable @Property(name = "kafka.schema.registry.url") String schemaRegistryUrl) {
         this.adminClient = adminClient;
         this.consumerRegistry = consumerRegistry;
         this.consumerFactory = consumerFactory;
@@ -232,20 +235,21 @@ final class KafkaClusterService {
         this.jsonMapper = jsonMapper;
         this.writeConfiguration = writeConfiguration;
         this.integrationConfiguration = integrationConfiguration;
+        this.schemaRegistryUrl = schemaRegistryUrl;
     }
 
     KafkaClusterService(AdminClient adminClient) {
-        this(adminClient, null, null, null, null, JsonMapper.createDefault(), new KafkaClusterWriteConfiguration(), new KafkaIntegrationConfiguration());
+        this(adminClient, null, null, null, null, JsonMapper.createDefault(), new KafkaClusterWriteConfiguration(), new KafkaIntegrationConfiguration(), null);
     }
 
     KafkaClusterService(AdminClient adminClient,
                         KafkaMessageBrowserConsumerFactory consumerFactory) {
-        this(adminClient, null, consumerFactory, null, null, JsonMapper.createDefault(), new KafkaClusterWriteConfiguration(), new KafkaIntegrationConfiguration());
+        this(adminClient, null, consumerFactory, null, null, JsonMapper.createDefault(), new KafkaClusterWriteConfiguration(), new KafkaIntegrationConfiguration(), null);
     }
 
     KafkaClusterService(AdminClient adminClient,
                         ConsumerRegistry consumerRegistry) {
-        this(adminClient, consumerRegistry, null, null, null, JsonMapper.createDefault(), new KafkaClusterWriteConfiguration(), new KafkaIntegrationConfiguration());
+        this(adminClient, consumerRegistry, null, null, null, JsonMapper.createDefault(), new KafkaClusterWriteConfiguration(), new KafkaIntegrationConfiguration(), null);
     }
 
     KafkaClusterService(AdminClient adminClient,
@@ -253,14 +257,22 @@ final class KafkaClusterService {
                         @Nullable KafkaMessageBrowserConsumerFactory consumerFactory,
                         @Nullable KafkaManagementProducerFactory producerFactory,
                         KafkaClusterWriteConfiguration writeConfiguration) {
-        this(adminClient, consumerRegistry, consumerFactory, producerFactory, null, JsonMapper.createDefault(), writeConfiguration, new KafkaIntegrationConfiguration());
+        this(adminClient, consumerRegistry, consumerFactory, producerFactory, null, JsonMapper.createDefault(), writeConfiguration, new KafkaIntegrationConfiguration(), null);
     }
 
     KafkaClusterService(AdminClient adminClient,
                         KafkaIntegrationClient integrationClient,
                         KafkaIntegrationConfiguration integrationConfiguration,
                         KafkaClusterWriteConfiguration writeConfiguration) {
-        this(adminClient, null, null, null, integrationClient, JsonMapper.createDefault(), writeConfiguration, integrationConfiguration);
+        this(adminClient, integrationClient, integrationConfiguration, writeConfiguration, null);
+    }
+
+    KafkaClusterService(AdminClient adminClient,
+                        KafkaIntegrationClient integrationClient,
+                        KafkaIntegrationConfiguration integrationConfiguration,
+                        KafkaClusterWriteConfiguration writeConfiguration,
+                        @Nullable String schemaRegistryUrl) {
+        this(adminClient, null, null, null, integrationClient, JsonMapper.createDefault(), writeConfiguration, integrationConfiguration, schemaRegistryUrl);
     }
 
     Section<Overview> overview() {
@@ -325,6 +337,13 @@ final class KafkaClusterService {
                 .toList();
             return new TopicPage(safeStart, safeLength, allTopics.size(), filtered.size(), page);
         });
+    }
+
+    Section<List<String>> topicNames(boolean includeInternal) {
+        return section(() -> await(adminClient.listTopics(new ListTopicsOptions().listInternal(includeInternal)).names())
+            .stream()
+            .sorted()
+            .toList());
     }
 
     Section<TopicDetail> topic(String topicName) {
@@ -434,7 +453,8 @@ final class KafkaClusterService {
 
     Section<SchemaRegistryOverview> schemaRegistry() {
         return section(() -> {
-            if (!integrationConfiguration.getSchemaRegistry().isConfigured()) {
+            String url = schemaRegistryUrl();
+            if (url == null) {
                 return new SchemaRegistryOverview(false, null, List.of());
             }
             JsonNode subjectsNode = integrationRequest(INTEGRATION_SCHEMA_REGISTRY, METHOD_GET, "/subjects", null);
@@ -442,7 +462,7 @@ final class KafkaClusterService {
                 .sorted()
                 .map(subject -> new SchemaSubject(subject, schemaVersions(subject)))
                 .toList();
-            return new SchemaRegistryOverview(true, integrationConfiguration.getSchemaRegistry().getUrl(), subjects);
+            return new SchemaRegistryOverview(true, url, subjects);
         });
     }
 
@@ -956,8 +976,8 @@ final class KafkaClusterService {
     }
 
     private void requireIntegrationConfigured(String integration) {
-        KafkaIntegrationConfiguration.Endpoint endpoint = integrationEndpoint(integration);
-        if (!endpoint.isConfigured()) {
+        String url = integrationUrl(integration);
+        if (url == null) {
             throw new IllegalStateException(integration + " is not configured");
         }
         if (integrationClient == null) {
@@ -970,13 +990,24 @@ final class KafkaClusterService {
         return integrationClient.request(integration, method, path, body);
     }
 
-    private KafkaIntegrationConfiguration.Endpoint integrationEndpoint(String integration) {
+    @Nullable
+    private String integrationUrl(String integration) {
         return switch (integration) {
-            case INTEGRATION_SCHEMA_REGISTRY -> integrationConfiguration.getSchemaRegistry();
-            case INTEGRATION_CONNECT -> integrationConfiguration.getConnect();
-            case INTEGRATION_KSQLDB -> integrationConfiguration.getKsqldb();
+            case INTEGRATION_SCHEMA_REGISTRY -> schemaRegistryUrl();
+            case INTEGRATION_CONNECT -> integrationConfiguration.getConnect().getUrl();
+            case INTEGRATION_KSQLDB -> integrationConfiguration.getKsqldb().getUrl();
             default -> throw new IllegalArgumentException("Unknown integration: " + integration);
         };
+    }
+
+    @Nullable
+    private String schemaRegistryUrl() {
+        String standardUrl = schemaRegistryUrl;
+        if (standardUrl != null && !standardUrl.isBlank()) {
+            return standardUrl;
+        }
+        String controlPanelUrl = integrationConfiguration.getSchemaRegistry().getUrl();
+        return controlPanelUrl == null || controlPanelUrl.isBlank() ? null : controlPanelUrl;
     }
 
     private static ActionResult previewResult(String action, String target, String impact) {

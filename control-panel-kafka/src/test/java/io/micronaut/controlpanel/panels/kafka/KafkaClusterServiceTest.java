@@ -204,6 +204,21 @@ final class KafkaClusterServiceTest {
     }
 
     @Test
+    void topicNamesReturnSortedTopicChoices() {
+        AdminClient admin = mock(AdminClient.class);
+        mockTopics(admin, Map.of(
+            "payments", topic("payments", false, partition(0, BROKER_0, List.of(BROKER_0), List.of(BROKER_0))),
+            "orders", topic("orders", false, partition(0, BROKER_0, List.of(BROKER_0), List.of(BROKER_0)))
+        ));
+
+        var section = new KafkaClusterService(admin).topicNames(false);
+
+        assertNull(section.error());
+        assertEquals(List.of("orders", "payments"), section.data());
+    }
+
+
+    @Test
     void topicsCapPageLengthBeforeFetchingConfigs() {
         AdminClient admin = mock(AdminClient.class);
         Map<String, TopicDescription> topics = new LinkedHashMap<>();
@@ -1032,6 +1047,30 @@ final class KafkaClusterServiceTest {
     }
 
     @Test
+    void schemaRegistryUsesStandardKafkaProperty() {
+        AdminClient admin = mock(AdminClient.class);
+        FakeIntegrationClient client = new FakeIntegrationClient(Map.of(
+            "Schema Registry GET /subjects", KafkaClusterService.json("[\"orders-value\"]"),
+            "Schema Registry GET /subjects/orders-value/versions", KafkaClusterService.json("[1]")
+        ));
+        KafkaClusterService service = new KafkaClusterService(
+            admin,
+            client,
+            new KafkaIntegrationConfiguration(),
+            writeConfig(false, false),
+            "http://schema-registry"
+        );
+
+        var overview = service.schemaRegistry();
+
+        assertNull(overview.error());
+        assertTrue(overview.data().configured());
+        assertEquals("http://schema-registry", overview.data().url());
+        assertEquals(List.of(1), overview.data().subjects().get(0).versions());
+    }
+
+
+    @Test
     void schemaRegistryWritesUseWriteAndDestructiveGates() {
         AdminClient admin = mock(AdminClient.class);
         KafkaIntegrationConfiguration configuration = integrationConfig("http://schema-registry", null, null);
@@ -1138,11 +1177,14 @@ final class KafkaClusterServiceTest {
 
     @Test
     void controllerEndpointsDelegateToServiceSections() {
-        KafkaClusterController controller = new KafkaClusterController(new KafkaClusterService(mock(AdminClient.class)));
+        AdminClient admin = mock(AdminClient.class);
+        mockTopics(admin, Map.of("orders", topic("orders", false, partition(0, BROKER_0, List.of(BROKER_0), List.of(BROKER_0)))));
+        KafkaClusterController controller = new KafkaClusterController(new KafkaClusterService(admin));
 
         assertNotNull(controller.summary());
         assertNotNull(controller.brokers());
         assertNotNull(controller.topics(null, false, 0, 25));
+        assertNotNull(controller.topicNames(false));
         assertNotNull(controller.topic("orders"));
         assertNotNull(controller.consumerGroups());
         assertNotNull(controller.consumerGroup("orders-group"));
@@ -1176,7 +1218,7 @@ final class KafkaClusterServiceTest {
 
     @Test
     void controlPanelMetadataUsesKafkaClusterContract() {
-        KafkaClusterControlPanel panel = new KafkaClusterControlPanel(new ControlPanelConfiguration(KafkaClusterControlPanel.NAME));
+        KafkaClusterControlPanel panel = new KafkaClusterControlPanel(new ControlPanelConfiguration(KafkaClusterControlPanel.NAME), new KafkaClusterWriteConfiguration());
 
         assertEquals(KafkaClusterControlPanel.NAME, panel.getName());
         assertEquals("Kafka Cluster", panel.getTitle());
@@ -1263,7 +1305,7 @@ final class KafkaClusterServiceTest {
         server.start();
         try {
             KafkaIntegrationConfiguration configuration = integrationConfig("http://127.0.0.1:" + server.getAddress().getPort() + "/api/", null, null);
-            DefaultKafkaIntegrationClient client = new DefaultKafkaIntegrationClient(configuration, JsonMapper.createDefault());
+            DefaultKafkaIntegrationClient client = new DefaultKafkaIntegrationClient(configuration, JsonMapper.createDefault(), null);
 
             JsonNode response = client.request(
                 KafkaClusterService.INTEGRATION_SCHEMA_REGISTRY,
@@ -1405,6 +1447,7 @@ final class KafkaClusterServiceTest {
         when(listTopicsResult.listings()).thenReturn(KafkaFuture.completedFuture(topics.values().stream()
             .map(topic -> new TopicListing(topic.name(), Uuid.randomUuid(), topic.isInternal()))
             .toList()));
+        when(listTopicsResult.names()).thenReturn(KafkaFuture.completedFuture(topics.keySet()));
 
         DescribeTopicsResult describeTopicsResult = mock(DescribeTopicsResult.class);
         when(admin.describeTopics(any(TopicCollection.class), any(DescribeTopicsOptions.class))).thenReturn(describeTopicsResult);

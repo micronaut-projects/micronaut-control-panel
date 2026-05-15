@@ -38,8 +38,12 @@ public final class KafkaClusterControlPanel extends AbstractControlPanel<KafkaCl
 
     private static final Body BODY = new Body(KafkaClusterController.PATH);
 
-    public KafkaClusterControlPanel(@Named(NAME) ControlPanelConfiguration configuration) {
+    private final KafkaClusterWriteConfiguration writeConfiguration;
+
+    public KafkaClusterControlPanel(@Named(NAME) ControlPanelConfiguration configuration,
+                                    KafkaClusterWriteConfiguration writeConfiguration) {
         super(NAME, configuration);
+        this.writeConfiguration = writeConfiguration;
     }
 
     @Override
@@ -59,7 +63,7 @@ public final class KafkaClusterControlPanel extends AbstractControlPanel<KafkaCl
 
     @Override
     public String getBadge() {
-        return "read-only";
+        return writeConfiguration.isEnabled() ? "writes enabled" : "read-only";
     }
 
     @ReflectiveAccess

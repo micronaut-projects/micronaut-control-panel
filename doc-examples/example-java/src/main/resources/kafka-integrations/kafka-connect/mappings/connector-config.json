@@ -1,0 +1,16 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "/connectors/demo-source/config"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "connector.class": "FileStreamSource",
+      "topic": "product_description_v1"
+    }
+  }
+}
