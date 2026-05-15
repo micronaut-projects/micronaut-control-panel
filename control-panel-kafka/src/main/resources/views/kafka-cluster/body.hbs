@@ -1,35 +1,42 @@
-<p class="card-text">
-    Inspect brokers, topics, partitions, offsets, and safe configuration values using Kafka AdminClient read APIs.
-</p>
 {{#with controlPanel.body }}
-<dl class="row mb-0 small" id="kafkaClusterCardOverview">
-    <dt class="col-6">Cluster id</dt>
-    <dd class="col-6"><code data-kafka-card-cluster-id>-</code></dd>
-    <dt class="col-6">Controller</dt>
-    <dd class="col-6"><code data-kafka-card-controller>-</code></dd>
-    <dt class="col-6">Brokers</dt>
-    <dd class="col-6" data-kafka-card-brokers>-</dd>
-    <dt class="col-6">Topics</dt>
-    <dd class="col-6" data-kafka-card-topics>-</dd>
-    <dt class="col-6">Partitions</dt>
-    <dd class="col-6" data-kafka-card-partitions>-</dd>
-    <dt class="col-6">Consumer groups</dt>
-    <dd class="col-6" data-kafka-card-consumer-groups>-</dd>
-</dl>
+<div class="cp-kafka-card-summary" id="kafkaClusterCardOverview" aria-label="Kafka cluster summary">
+    <div class="cp-kafka-card-metric">
+        <div>
+            <div class="cp-kafka-card-value" data-kafka-card-brokers>-</div>
+            <div class="cp-kafka-card-label">Brokers</div>
+        </div>
+        <i class="fas fa-network-wired cp-kafka-card-icon" aria-hidden="true"></i>
+    </div>
+    <div class="cp-kafka-card-metric">
+        <div>
+            <div class="cp-kafka-card-value" data-kafka-card-topics>-</div>
+            <div class="cp-kafka-card-label">Topics</div>
+        </div>
+        <i class="fas fa-layer-group cp-kafka-card-icon cp-kafka-card-icon-accent" aria-hidden="true"></i>
+    </div>
+    <div class="cp-kafka-card-metric">
+        <div>
+            <div class="cp-kafka-card-value" data-kafka-card-partitions>-</div>
+            <div class="cp-kafka-card-label">Partitions</div>
+        </div>
+        <i class="fas fa-diagram-project cp-kafka-card-icon" aria-hidden="true"></i>
+    </div>
+    <div class="cp-kafka-card-metric">
+        <div>
+            <div class="cp-kafka-card-value" data-kafka-card-consumer-groups>-</div>
+            <div class="cp-kafka-card-label">Consumer groups</div>
+        </div>
+        <i class="fas fa-users cp-kafka-card-icon" aria-hidden="true"></i>
+    </div>
+</div>
 <script>
   (function() {
     var baseUrl = '{{ ext.controlPanelPath }}{{ controllerPath }}';
-    function brokerLabel(broker) {
-      if (!broker) return '-';
-      return broker.id + ' (' + broker.host + ':' + broker.port + ')';
-    }
     $.getJSON(baseUrl + '/summary').done(function(section) {
       if (!section || section.error || !section.data) {
         return;
       }
       var summary = section.data;
-      $('[data-kafka-card-cluster-id]').text(summary.clusterId || '-');
-      $('[data-kafka-card-controller]').text(brokerLabel(summary.controller));
       $('[data-kafka-card-brokers]').text(summary.brokerCount);
       $('[data-kafka-card-topics]').text(summary.topicCount);
       $('[data-kafka-card-partitions]').text(summary.partitionCount);

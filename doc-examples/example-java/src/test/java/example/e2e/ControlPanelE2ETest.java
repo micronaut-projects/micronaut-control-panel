@@ -432,6 +432,11 @@ class ControlPanelE2ETest extends AbstractE2ETest {
     void testKafka(Page page) {
         page.navigate(baseUrl());
         categoryLink(page, "Kafka").click();
+        assertThat(page.locator("#kafkaClusterCardOverview .cp-kafka-card-metric")).hasCount(4);
+        assertThat(page.locator("#kafkaClusterCardOverview")).containsText("Brokers");
+        assertThat(page.locator("#kafkaClusterCardOverview")).containsText("Topics");
+        assertThat(page.locator("#kafkaClusterCardOverview")).containsText("Partitions");
+        assertThat(page.locator("#kafkaClusterCardOverview")).containsText("Consumer groups");
 
         page.locator("a[href$='/control-panel/kafka-cluster']").click();
         assertThat(body(page)).containsText("Cluster id");
