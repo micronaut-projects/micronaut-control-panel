@@ -9,3 +9,10 @@ kafka:
       default.key.serde: org.apache.kafka.common.serialization.Serdes$StringSerde
       default.value.serde: io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
       auto.offset.reset: earliest
+
+micronaut:
+  control-panel:
+    kafka:
+      writes:
+        enabled: true
+        destructive-enabled: true
