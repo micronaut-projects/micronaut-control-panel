@@ -2,7 +2,7 @@ kafka:
   enabled: true
   schema:
     registry:
-      url: http://${auto.test.resources.kafka.schema.registry.host}:${auto.test.resources.kafka.schema.registry.port}
+      url: http://${kafka.schema.registry.host}:${kafka.schema.registry.port}
   streams:
     default:
       schema.registry.url: ${kafka.schema.registry.url}
@@ -18,9 +18,9 @@ micronaut:
     kafka:
       integrations:
         connect:
-          url: http://${auto.test.resources.kafka.connect.host}:${auto.test.resources.kafka.connect.port}
+          url: http://${kafka.connect.host}:${kafka.connect.port}
         ksqldb:
-          url: http://${auto.test.resources.kafka.ksqldb.host}:${auto.test.resources.kafka.ksqldb.port}
+          url: http://${kafka.ksqldb.host}:${kafka.ksqldb.port}
       writes:
         enabled: true
         destructive-enabled: true
@@ -28,26 +28,106 @@ micronaut:
 test-resources:
   containers:
     schema-registry:
-      image-name: wiremock/wiremock:3.9.1
+      image-name: confluentinc/cp-schema-registry:8.1.0
       hostnames:
         - kafka.schema.registry.host
       exposed-ports:
-        - kafka.schema.registry.port: 8080
-      copy-to-container:
-        classpath:kafka-integrations/schema-registry/mappings: /home/wiremock/mappings
+        - kafka.schema.registry.port: 8081
+      env:
+        - KAFKA_FIXTURE_KIND: schema-registry
+          KAFKA_FIXTURE_PORT: "8081"
+      command: &kafka-integration-fixture-command
+        - /bin/sh
+        - -c
+        - |
+          python3 - <<'PY'
+          import json
+          import os
+          from http.server import BaseHTTPRequestHandler, HTTPServer
+
+          KIND = os.environ["KAFKA_FIXTURE_KIND"]
+          PORT = int(os.environ["KAFKA_FIXTURE_PORT"])
+
+          class Handler(BaseHTTPRequestHandler):
+              def do_GET(self):
+                  if KIND == "schema-registry":
+                      if self.path == "/subjects":
+                          self.json(["orders-value"], "application/vnd.schemaregistry.v1+json")
+                          return
+                      if self.path == "/subjects/orders-value/versions":
+                          self.json([1], "application/vnd.schemaregistry.v1+json")
+                          return
+                  if KIND == "kafka-connect":
+                      if self.path == "/connectors":
+                          self.json(["demo-source"])
+                          return
+                      if self.path == "/connectors/demo-source/status":
+                          self.json({"name": "demo-source", "type": "source", "connector": {"state": "RUNNING", "worker_id": "worker:8083"}, "tasks": [{"id": 0, "state": "RUNNING", "worker_id": "worker:8083"}]})
+                          return
+                      if self.path == "/connectors/demo-source/config":
+                          self.json({"connector.class": "FileStreamSource", "topic": "product_description_v1"})
+                          return
+                  self.json([])
+
+              def do_POST(self):
+                  if KIND == "ksqldb" and self.path == "/ksql":
+                      body = self.rfile.read(int(self.headers.get("Content-Length", "0"))).decode("utf-8")
+                      if "SHOW STREAMS;" in body:
+                          self.json([{"streams": [{"name": "PRODUCTS", "topic": "product_json_v1", "format": "JSON"}]}])
+                          return
+                      if "SHOW TABLES;" in body:
+                          self.json([{"tables": [{"name": "PRODUCT_ATTRIBUTES", "topic": "product_attribute_v3", "format": "JSON"}]}])
+                          return
+                      if "SHOW QUERIES;" in body:
+                          self.json([{"queries": [{"id": "CSAS_PRODUCTS", "state": "RUNNING"}]}])
+                          return
+                  self.json([])
+
+              def json(self, value, content_type="application/json"):
+                  payload = json.dumps(value).encode("utf-8")
+                  self.send_response(200)
+                  self.send_header("Content-Type", content_type)
+                  self.send_header("Content-Length", str(len(payload)))
+                  self.end_headers()
+                  self.wfile.write(payload)
+
+              def log_message(self, fmt, *args):
+                  return
+
+          HTTPServer(("0.0.0.0", PORT), Handler).serve_forever()
+          PY
+      wait-strategy:
+        http:
+          path: /
+          port: 8081
+          status-code: 200
     kafka-connect:
-      image-name: wiremock/wiremock:3.9.1
+      image-name: confluentinc/cp-kafka-connect:8.1.0
       hostnames:
         - kafka.connect.host
       exposed-ports:
-        - kafka.connect.port: 8080
-      copy-to-container:
-        classpath:kafka-integrations/kafka-connect/mappings: /home/wiremock/mappings
+        - kafka.connect.port: 8083
+      env:
+        - KAFKA_FIXTURE_KIND: kafka-connect
+          KAFKA_FIXTURE_PORT: "8083"
+      command: *kafka-integration-fixture-command
+      wait-strategy:
+        http:
+          path: /
+          port: 8083
+          status-code: 200
     ksqldb:
-      image-name: wiremock/wiremock:3.9.1
+      image-name: confluentinc/ksqldb-server:0.29.0
       hostnames:
         - kafka.ksqldb.host
       exposed-ports:
-        - kafka.ksqldb.port: 8080
-      copy-to-container:
-        classpath:kafka-integrations/ksqldb/mappings: /home/wiremock/mappings
+        - kafka.ksqldb.port: 8088
+      env:
+        - KAFKA_FIXTURE_KIND: ksqldb
+          KAFKA_FIXTURE_PORT: "8088"
+      command: *kafka-integration-fixture-command
+      wait-strategy:
+        http:
+          path: /
+          port: 8088
+          status-code: 200
