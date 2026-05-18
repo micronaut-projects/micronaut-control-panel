@@ -41,6 +41,7 @@ public class ControlPanelConfiguration implements ConfigurableControlPanel {
 
     public ControlPanelConfiguration(@Parameter String name) {
         this.name = name;
+        this.title = name;
     }
 
     /**

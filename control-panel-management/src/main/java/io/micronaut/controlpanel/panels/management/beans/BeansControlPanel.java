@@ -26,7 +26,6 @@ import io.micronaut.management.endpoint.beans.BeansEndpoint;
 import io.micronaut.management.endpoint.beans.impl.DefaultBeanDefinitionData;
 import io.micronaut.runtime.context.scope.Refreshable;
 import jakarta.inject.Named;
-import jakarta.inject.Singleton;
 
 import java.util.Comparator;
 import java.util.List;
@@ -44,7 +43,6 @@ import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
  * @author Álvaro Sánchez-Mariscal
  * @since 1.0.0
  */
-@Singleton
 @Refreshable
 @Requires(beans = BeansEndpoint.class)
 @Requires(property = BeansControlPanel.ENABLED_PROPERTY, notEquals = StringUtils.FALSE)

@@ -26,6 +26,7 @@ import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import reactor.core.publisher.Mono;
 
+import java.util.Objects;
 import java.security.Principal;
 
 /**
@@ -54,7 +55,7 @@ public class HealthControlPanel extends AbstractControlPanel<HealthResult> {
         Principal principal = ServerRequestContext.currentRequest()
             .flatMap(request -> request.getUserPrincipal(Principal.class))
             .orElse(null);
-        return Mono.from(endpoint.getHealth(principal)).block();
+        return Objects.requireNonNull(Mono.from(endpoint.getHealth(principal)).block());
     }
 
 }

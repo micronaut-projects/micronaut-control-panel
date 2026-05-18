@@ -23,7 +23,6 @@ import io.micronaut.core.util.StringUtils;
 import io.micronaut.management.endpoint.env.EnvironmentEndpoint;
 import io.micronaut.runtime.context.scope.Refreshable;
 import jakarta.inject.Named;
-import jakarta.inject.Singleton;
 
 import java.util.Map;
 
@@ -35,7 +34,6 @@ import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
  * @author Álvaro Sánchez-Mariscal
  * @since 1.0.0
  */
-@Singleton
 @Refreshable
 @Requires(beans = EnvironmentEndpoint.class)
 @Requires(property = EnvironmentControlPanel.ENABLED_PROPERTY, notEquals = StringUtils.FALSE)

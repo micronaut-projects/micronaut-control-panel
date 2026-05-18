@@ -73,7 +73,7 @@ class RoutesControlPanelTest {
     void routesAreNotDuplicated() {
         RoutesControlPanel panel = ctx.getBean(RoutesControlPanel.class);
         var body = panel.getBody();
-        assertTrue(body.appRoutes().size() >= 0);
+        assertNotNull(body.appRoutes());
         assertTrue(body.micronautRoutes().size() > 0);
 
         var allRoutes = new java.util.ArrayList<>(body.appRoutes().values().stream().flatMap(java.util.Collection::stream).toList());
