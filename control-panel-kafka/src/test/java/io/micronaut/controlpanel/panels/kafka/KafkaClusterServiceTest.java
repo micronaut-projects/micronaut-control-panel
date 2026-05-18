@@ -25,6 +25,7 @@ import io.micronaut.http.annotation.Patch;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.http.annotation.Put;
 import io.micronaut.http.annotation.Controller;
+import io.micronaut.json.JsonMapper;
 import io.micronaut.json.tree.JsonNode;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AlterConfigsResult;
@@ -444,30 +445,34 @@ final class KafkaClusterServiceTest {
             record(1L, new byte[] {(byte) 0xff, 0x01}, null)
         ), ConsumerRecords.empty());
 
-        var section = new KafkaClusterService(admin, factory).messages("orders", 0, "beginning", null, null, 25);
+        try (ApplicationContext context = ApplicationContext.run(Map.of("micronaut.serde.jackson.pretty-print", true))) {
+            var section = new KafkaClusterService(admin, null, factory, null, null, context.getBean(JsonMapper.class),
+                new KafkaClusterWriteConfiguration(), new KafkaIntegrationConfiguration(), null, null, null)
+                .messages("orders", 0, "beginning", null, null, 25);
 
-        assertNull(section.error());
-        assertNotNull(section.data());
-        assertEquals("beginning", section.data().mode());
-        assertEquals(0L, section.data().startOffset());
-        assertEquals(2, section.data().records().size());
-        KafkaClusterResponse.MessageRecord jsonRecord = section.data().records().stream()
-            .filter(record -> record.offset() == 0L)
-            .findFirst()
-            .orElseThrow();
-        KafkaClusterResponse.MessageRecord binaryRecord = section.data().records().stream()
-            .filter(record -> record.offset() == 1L)
-            .findFirst()
-            .orElseThrow();
-        assertEquals("utf8", jsonRecord.key().format());
-        assertEquals("json", jsonRecord.value().format());
-        assertEquals("""
-            {
-              "id": 1
-            }""", jsonRecord.value().text());
-        assertEquals("base64", binaryRecord.value().format());
-        assertEquals("/wE=", binaryRecord.value().base64());
-        assertEquals("utf8", jsonRecord.headers().getFirst().value().format());
+            assertNull(section.error());
+            assertNotNull(section.data());
+            assertEquals("beginning", section.data().mode());
+            assertEquals(0L, section.data().startOffset());
+            assertEquals(2, section.data().records().size());
+            KafkaClusterResponse.MessageRecord jsonRecord = section.data().records().stream()
+                .filter(record -> record.offset() == 0L)
+                .findFirst()
+                .orElseThrow();
+            KafkaClusterResponse.MessageRecord binaryRecord = section.data().records().stream()
+                .filter(record -> record.offset() == 1L)
+                .findFirst()
+                .orElseThrow();
+            assertEquals("utf8", jsonRecord.key().format());
+            assertEquals("json", jsonRecord.value().format());
+            assertEquals("""
+                {
+                  "id" : 1
+                }""", jsonRecord.value().text());
+            assertEquals("base64", binaryRecord.value().format());
+            assertEquals("/wE=", binaryRecord.value().base64());
+            assertEquals("utf8", jsonRecord.headers().getFirst().value().format());
+        }
         verify(consumer).assign(List.of(partition));
         verify(consumer).seekToBeginning(List.of(partition));
         verify(consumer, never()).commitSync();

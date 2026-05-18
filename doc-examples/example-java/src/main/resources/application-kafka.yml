@@ -11,6 +11,9 @@ kafka:
       auto.offset.reset: earliest
 
 micronaut:
+  serde:
+    jackson:
+      pretty-print: true
   control-panel:
     panels:
       kafka:

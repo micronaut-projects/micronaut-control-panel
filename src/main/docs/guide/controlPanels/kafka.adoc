@@ -21,7 +21,8 @@ Features include:
 * View topic cleanup policy, retention settings, segment settings, and open topic partition details in a modal with leaders, replicas, ISR, beginning/end offsets, and paginated topic configuration.
 * Inspect consumer groups, state, protocol, member count, assigned partitions, committed partitions, total lag, member client id/host/assignment, and per-partition committed offset, end offset, and lag.
 * Browse messages by selecting an available topic and partition from the beginning, latest bounded window, a specific offset, or a timestamp.
-  The browser uses temporary consumers with auto-commit disabled and no consumer group id, caps requested record counts, and renders payloads as UTF-8, pretty JSON, or base64 for binary data.
+  The browser uses temporary consumers with auto-commit disabled and no consumer group id, caps requested record counts, and renders payloads as UTF-8, JSON, or base64 for binary data.
+  JSON payload formatting follows the application's configured `JsonMapper`; set `micronaut.serde.jackson.pretty-print=true` to display formatted JSON.
 * Inspect Micronaut Kafka application consumers from `ConsumerRegistry`, including consumer ids, subscriptions, assignments, and pause state.
 * Display readable section-level errors when Kafka metadata, broker, topic, or offset calls are unavailable or unauthorized.
 

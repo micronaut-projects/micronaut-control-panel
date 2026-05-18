@@ -1861,9 +1861,9 @@ final class KafkaClusterService {
         if (text != null) {
             String trimmed = text.trim();
             if (isJsonCandidate(trimmed)) {
-                String prettyJson = prettyJson(displayBytes);
-                if (prettyJson != null) {
-                    return new RenderedPayload("json", prettyJson, null, bytes.length, truncated);
+                String json = renderJson(displayBytes);
+                if (json != null) {
+                    return new RenderedPayload("json", json, null, bytes.length, truncated);
                 }
             }
             return new RenderedPayload("utf8", text, null, bytes.length, truncated);
@@ -1902,96 +1902,13 @@ final class KafkaClusterService {
     }
 
     @Nullable
-    private String prettyJson(byte[] bytes) {
+    private String renderJson(byte[] bytes) {
         try {
             JsonNode node = jsonMapper.readValue(bytes, JsonNode.class);
-            StringBuilder builder = new StringBuilder();
-            appendJson(builder, node, 0);
-            return builder.toString();
+            return jsonMapper.writeValueAsString(node);
         } catch (IOException e) {
             return null;
         }
-    }
-
-    private static void appendJson(StringBuilder builder, JsonNode node, int indent) {
-        if (node.isObject()) {
-            appendJsonObject(builder, node, indent);
-        } else if (node.isArray()) {
-            appendJsonArray(builder, node, indent);
-        } else if (node.isString()) {
-            appendQuoted(builder, node.getStringValue());
-        } else if (node.isNumber() || node.isBoolean()) {
-            builder.append(node.getValue());
-        } else {
-            builder.append("null");
-        }
-    }
-
-    private static void appendJsonObject(StringBuilder builder, JsonNode node, int indent) {
-        builder.append('{');
-        boolean first = true;
-        for (Map.Entry<String, JsonNode> entry : node.entries()) {
-            first = appendJsonEntryPrefix(builder, indent, first);
-            appendQuoted(builder, entry.getKey());
-            builder.append(": ");
-            appendJson(builder, entry.getValue(), indent + 2);
-        }
-        appendJsonContainerEnd(builder, indent, first, '}');
-    }
-
-    private static void appendJsonArray(StringBuilder builder, JsonNode node, int indent) {
-        builder.append('[');
-        boolean first = true;
-        for (JsonNode value : node.values()) {
-            first = appendJsonEntryPrefix(builder, indent, first);
-            appendJson(builder, value, indent + 2);
-        }
-        appendJsonContainerEnd(builder, indent, first, ']');
-    }
-
-    private static boolean appendJsonEntryPrefix(StringBuilder builder, int indent, boolean first) {
-        if (!first) {
-            builder.append(',');
-        }
-        builder.append('\n');
-        appendIndent(builder, indent + 2);
-        return false;
-    }
-
-    private static void appendJsonContainerEnd(StringBuilder builder, int indent, boolean empty, char suffix) {
-        if (!empty) {
-            builder.append('\n');
-            appendIndent(builder, indent);
-        }
-        builder.append(suffix);
-    }
-
-    private static void appendIndent(StringBuilder builder, int indent) {
-        builder.append(" ".repeat(indent));
-    }
-
-    private static void appendQuoted(StringBuilder builder, String value) {
-        builder.append('"');
-        for (int i = 0; i < value.length(); i++) {
-            char character = value.charAt(i);
-            switch (character) {
-                case '"' -> builder.append("\\\"");
-                case '\\' -> builder.append("\\\\");
-                case '\b' -> builder.append("\\b");
-                case '\f' -> builder.append("\\f");
-                case '\n' -> builder.append("\\n");
-                case '\r' -> builder.append("\\r");
-                case '\t' -> builder.append("\\t");
-                default -> {
-                    if (character < 0x20) {
-                        builder.append("\\u%04x".formatted((int) character));
-                    } else {
-                        builder.append(character);
-                    }
-                }
-            }
-        }
-        builder.append('"');
     }
 
     private static String normalizeMessageMode(String mode) {
