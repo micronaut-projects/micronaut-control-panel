@@ -271,6 +271,18 @@ class DataSourceServiceTest {
     }
 
     @Test
+    @DisplayName("Oracle UCP optional boolean methods are displayed when present")
+    void testOracleUcpOptionalBooleanPresent() {
+        assertEquals("true", OracleUcpConnectionPoolInspector.safeOptionalBoolean(Boolean.TRUE, "booleanValue"));
+    }
+
+    @Test
+    @DisplayName("Oracle UCP optional boolean methods return unknown when absent")
+    void testOracleUcpOptionalBooleanAbsent() {
+        assertEquals(PoolInfoSupport.UNKNOWN, OracleUcpConnectionPoolInspector.safeOptionalBoolean(Boolean.TRUE, "missing"));
+    }
+
+    @Test
     @DisplayName("getTables with SQLException throws RuntimeException")
     void testGetTablesWithSQLException() throws SQLException {
         // Given
