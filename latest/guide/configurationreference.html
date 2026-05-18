@@ -12,7 +12,7 @@
     <script src="../js/guide.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
     <script src="../js/docs.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.5.13/clipboard.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.11/clipboard.min.js"></script>
 </head>
 <body class="body">
     <div id="main">
@@ -46,7 +46,7 @@
         <div class="docs-content">
             <div class="project">
                 <h1>Configuration Reference</h1>
-                <p><strong>Version:</strong>1.9.1</p>
+                <p><strong>Version:</strong>2.0.0</p>
                 <p></p>
             </div>
 <div class="sect2">
@@ -55,15 +55,17 @@
 <table class="tableblock frame-all grid-all stretch">
 <caption class="title">Table 1. Configuration Properties for <a href="../api/io/micronaut/controlpanel/core/config/ControlPanelModuleConfiguration.html">ControlPanelModuleConfiguration</a></caption>
 <colgroup>
-<col style="width: 33.3333%;">
-<col style="width: 33.3333%;">
-<col style="width: 33.3334%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
 </colgroup>
 <thead>
 <tr>
 <th class="tableblock halign-left valign-top">Property</th>
 <th class="tableblock halign-left valign-top">Type</th>
 <th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Default value</th>
 </tr>
 </thead>
 <tbody>
@@ -71,17 +73,26 @@
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.enabled</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">boolean</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Enables/disables the control panel module. Default value: "true".</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.allowed-environments</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">java.util.Set</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Configures the environments where the control panel module is enabled. By default, it is
  only enabled in the "dev" and "test" environments.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">dev,test</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.path</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">java.lang.String</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Configures the path where the control panel can be accessed. Default value: "/control-panel".</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/control-panel</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.log-url</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">boolean</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Whether to print the Control Panel URL in the logs on application startup. Default: StringUtils.TRUE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
 </tr>
 </tbody>
 </table>
@@ -90,42 +101,94 @@
 <table class="tableblock frame-all grid-all stretch">
 <caption class="title">Table 2. Configuration Properties for <a href="../api/io/micronaut/controlpanel/core/config/ControlPanelConfiguration.html">ControlPanelConfiguration</a></caption>
 <colgroup>
-<col style="width: 33.3333%;">
-<col style="width: 33.3333%;">
-<col style="width: 33.3334%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
 </colgroup>
 <thead>
 <tr>
 <th class="tableblock halign-left valign-top">Property</th>
 <th class="tableblock halign-left valign-top">Type</th>
 <th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Default value</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.panels.*.enabled</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">boolean</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Enables/disables this control panel. Default value: true.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Sets whether this control panel is enabled or not.</p></td>
+<td class="tableblock halign-left valign-top"></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.panels.*.order</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">int</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Sets the order of this control panel, since they will be displayed sorted by order.</p></td>
+<td class="tableblock halign-left valign-top"></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.panels.*.title</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">java.lang.String</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The title is displayed in the header of the card UI element.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Sets the title of this control panel.</p></td>
+<td class="tableblock halign-left valign-top"></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.panels.*.icon</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">java.lang.String</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Icon class of the card UI element.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Sets the icon of this control panel.</p></td>
+<td class="tableblock halign-left valign-top"></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.panels.*.name</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">java.lang.String</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The unique name of the control panel. Can be used in URLs.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Sets the unique name of the control panel. Can be used in URLs.</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+</tbody>
+</table>
+<div style="page-break-after: always;"></div>
+<a id="io.micronaut.controlpanel.core.security.ControlPanelSecurityConfiguration" href="#io.micronaut.controlpanel.core.security.ControlPanelSecurityConfiguration">&#128279;</a>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 3. Configuration Properties for <a href="../api/io/micronaut/controlpanel/core/security/ControlPanelSecurityConfiguration.html">ControlPanelSecurityConfiguration</a></caption>
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Property</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Default value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.security.access</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="../api/io/micronaut/controlpanel/core/security/ControlPanelSecurityConfiguration.Access.html">ControlPanelSecurityConfiguration$Access</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">the configured read access mode</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AUTHORIZED</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.security.role</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">java.lang.String</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">role required when authorized read access is enabled</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ROLE_CONTROL_PANEL</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.security.write-access</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="../api/io/micronaut/controlpanel/core/security/ControlPanelSecurityConfiguration.WriteAccess.html">ControlPanelSecurityConfiguration$WriteAccess</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">the configured write access mode</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">INHERITED</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.security.write-role</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">java.lang.String</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">role required when authorized write access is enabled</p></td>
+<td class="tableblock halign-left valign-top"></td>
 </tr>
 </tbody>
 </table>
