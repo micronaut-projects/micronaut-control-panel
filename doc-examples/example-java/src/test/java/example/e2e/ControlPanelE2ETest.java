@@ -253,7 +253,7 @@ class ControlPanelE2ETest extends AbstractE2ETest {
             assertThat(page.locator("#invalidateConfirmModal")).isVisible();
             id(page, "invalidateConfirm").click();
 
-            assertThat(page.locator("#globalAlertTitle")).containsText("Success");
+            assertGlobalAlert(page, "Success");
             assertThat(page.locator("#globalAlertMessage")).containsText("Object with key foo successfully removed from the cache");
 
             page.navigate(baseUrl());
@@ -272,7 +272,7 @@ class ControlPanelE2ETest extends AbstractE2ETest {
             assertThat(page.locator("#invalidateAllConfirmModal")).isVisible();
             id(page, "invalidateAllConfirm").click();
 
-            assertThat(page.locator("#globalAlertTitle")).containsText("Success");
+            assertGlobalAlert(page, "Success");
             assertThat(page.locator("#globalAlertMessage")).containsText("emptied successfully");
             assertThat(body(page)).not().containsText("foo");
             assertThat(body(page)).not().containsText("counter");
