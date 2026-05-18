@@ -21,7 +21,6 @@ import io.micronaut.core.annotation.ReflectiveAccess;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Model to be passed to the view for rendering.
@@ -38,7 +37,7 @@ import java.util.Set;
 public record Model(
     List<ControlPanel.Category> categories,
     String applicationName,
-    Set<String> activeEnvironments,
+    List<String> activeEnvironments,
     ContentView contentView,
     boolean canRefresh,
     boolean canStop,

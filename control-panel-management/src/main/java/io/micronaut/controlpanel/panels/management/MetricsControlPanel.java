@@ -24,7 +24,7 @@ import io.micronaut.core.util.StringUtils;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 
-import java.util.SortedSet;
+import java.util.List;
 
 /**
  * Control panel that displays Micrometer metric names and details.
@@ -49,7 +49,7 @@ public class MetricsControlPanel extends AbstractControlPanel<MetricsControlPane
 
     @Override
     public MetricsBody getBody() {
-        return new MetricsBody(endpoint.listNames().getNames());
+        return new MetricsBody(List.copyOf(endpoint.listNames().getNames()));
     }
 
     @Override
@@ -63,6 +63,6 @@ public class MetricsControlPanel extends AbstractControlPanel<MetricsControlPane
      * @param names sorted metric names
      */
     @ReflectiveAccess
-    public record MetricsBody(SortedSet<String> names) {
+    public record MetricsBody(List<String> names) {
     }
 }

@@ -24,6 +24,9 @@ import io.micronaut.management.endpoint.env.EnvironmentEndpoint;
 import io.micronaut.runtime.context.scope.Refreshable;
 import jakarta.inject.Named;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
@@ -50,7 +53,11 @@ public class EnvironmentControlPanel extends AbstractControlPanel<Map<String, Ob
 
     @Override
     public Map<String, Object> getBody() {
-        return endpoint.getEnvironmentInfo();
+        var body = new HashMap<>(endpoint.getEnvironmentInfo());
+        if (body.get("activeEnvironments") instanceof Collection<?> activeEnvironments) {
+            body.put("activeEnvironments", List.copyOf(activeEnvironments));
+        }
+        return body;
     }
 
     @Override
