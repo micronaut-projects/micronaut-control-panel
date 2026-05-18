@@ -23,10 +23,10 @@ import io.micronaut.core.annotation.ReflectiveAccess;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.uri.UriMatchTemplate;
-import io.micronaut.runtime.context.scope.Refreshable;
 import io.micronaut.web.router.Router;
 import io.micronaut.web.router.UriRouteInfo;
 import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -49,7 +49,7 @@ import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
  * @author Álvaro Sánchez-Mariscal
  * @since 1.0.0
  */
-@Refreshable
+@Singleton
 @Requires(property = RoutesControlPanel.ENABLED_PROPERTY, notEquals = StringUtils.FALSE)
 public class RoutesControlPanel extends AbstractControlPanel<RoutesControlPanel.Body> {
 

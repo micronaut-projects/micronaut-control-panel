@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 package io.micronaut.controlpanel.core.panels;
- 
+
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.http.MediaType;
@@ -26,7 +26,7 @@ import io.micronaut.inject.qualifiers.Qualifiers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
- 
+
 import static org.junit.jupiter.api.Assertions.*;
 
 
@@ -73,20 +73,19 @@ class RoutesControlPanelTest {
     void routesAreNotDuplicated() {
         RoutesControlPanel panel = ctx.getBean(RoutesControlPanel.class);
         var body = panel.getBody();
-        assertNotNull(body.appRoutes());
         assertTrue(body.micronautRoutes().size() > 0);
 
         var allRoutes = new java.util.ArrayList<>(body.appRoutes().values().stream().flatMap(java.util.Collection::stream).toList());
         allRoutes.addAll(body.micronautRoutes().values().stream().flatMap(java.util.Collection::stream).toList());
+        assertFalse(allRoutes.isEmpty());
 
         var routeSignatures = allRoutes.stream()
                 .map(route -> route.getHttpMethodName() + "-" + route.getUriMatchTemplate().toPathString() + "-" + route.getTargetMethod().getName())
                 .toList();
 
         assertEquals(routeSignatures.size(), new java.util.HashSet<>(routeSignatures).size());
-        assertTrue(allRoutes.size() > 0);
+        assertTrue(allRoutes.stream().anyMatch(route -> "index".equals(route.getTargetMethod().getName())));
 
-        // new: verify lists are unmodifiable
         var grouped = body.micronautRoutes();
         var firstKey = grouped.keySet().stream().findFirst().orElse(null);
         if (firstKey != null) {

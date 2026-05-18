@@ -20,6 +20,8 @@ import io.micronaut.context.annotation.Parameter;
 import io.micronaut.controlpanel.core.ConfigurableControlPanel;
 import org.jspecify.annotations.NonNull;
 
+import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
+
 /**
  * Per-panel configuration properties.
  *
@@ -36,12 +38,11 @@ public class ControlPanelConfiguration implements ConfigurableControlPanel {
     private String name;
     private boolean enabled = DEFAULT_ENABLED;
     private int order;
-    private String title;
+    private String title = EMPTY_STRING;
     private String icon = DEFAULT_ICON;
 
     public ControlPanelConfiguration(@Parameter String name) {
         this.name = name;
-        this.title = name;
     }
 
     /**
@@ -62,7 +63,6 @@ public class ControlPanelConfiguration implements ConfigurableControlPanel {
 
     /**
      * The title is displayed in the header of the card UI element.
-     * Defaults to the panel name when no explicit title is configured.
      *
      * @return the title of the control panel.
      */

@@ -24,8 +24,8 @@ import io.micronaut.core.annotation.ReflectiveAccess;
 import io.micronaut.core.annotation.TypeHint;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.inject.BeanDefinition;
-import io.micronaut.runtime.context.scope.Refreshable;
 import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -39,7 +39,7 @@ import static io.micronaut.controlpanel.panels.management.beans.BeansControlPane
  * @author Álvaro Sánchez-Mariscal
  * @since 2.0.0
  */
-@Refreshable
+@Singleton
 @Requires(property = DisabledBeansControlPanel.ENABLED_PROPERTY, notEquals = StringUtils.FALSE)
 public class DisabledBeansControlPanel extends AbstractControlPanel<DisabledBeansControlPanel.Body> {
 
