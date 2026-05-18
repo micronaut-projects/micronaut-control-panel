@@ -12,7 +12,8 @@ kafka:
 
 micronaut:
   control-panel:
-    kafka:
-      writes:
-        enabled: true
-        destructive-enabled: true
+    panels:
+      kafka:
+        writes:
+          enabled: true
+          destructive-enabled: true

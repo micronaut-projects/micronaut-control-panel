@@ -32,22 +32,21 @@ The panel removes values Kafka marks as sensitive and also filters obvious secre
 
 Schema Registry, Kafka Connect, and ksqlDB tabs are available in the Kafka Cluster page without adding mandatory dependencies to applications that only use Kafka cluster or Kafka Streams views.
 Each integration tab is hidden until its base URL is configured.
-Schema Registry uses Micronaut Kafka's standard `kafka.schema.registry.url` property; Kafka Connect and ksqlDB use control-panel integration URLs:
+Schema Registry, Kafka Connect, and ksqlDB use control-panel integration URLs:
 
 [configuration]
 ----
-kafka:
-  schema:
-    registry:
-      url: http://localhost:8081
 micronaut:
   control-panel:
-    kafka:
-      integrations:
-        connect:
-          url: http://localhost:8083
-        ksqldb:
-          url: http://localhost:8088
+    panels:
+      kafka:
+        integrations:
+          schema-registry:
+            url: http://localhost:8081
+          connect:
+            url: http://localhost:8083
+          ksqldb:
+            url: http://localhost:8088
 ----
 
 When configured, the Schema Registry tab shows subjects, versions, schema text, compatibility, and schema references.
@@ -64,14 +63,15 @@ The UI hides unavailable management forms, and every mutating endpoint also vali
 ----
 micronaut:
   control-panel:
-    kafka:
-      writes:
-        enabled: false
-        destructive-enabled: false
+    panels:
+      kafka:
+        writes:
+          enabled: false
+          destructive-enabled: false
 ----
 
-Set `micronaut.control-panel.kafka.writes.enabled=true` only in trusted development environments.
-Destructive operations, such as deleting topics, deleting Schema Registry subjects or versions, and deleting Kafka Connect connectors, additionally require `micronaut.control-panel.kafka.writes.destructive-enabled=true`.
+Set `micronaut.control-panel.panels.kafka.writes.enabled=true` only in trusted development environments.
+Destructive operations, such as deleting topics, deleting Schema Registry subjects or versions, and deleting Kafka Connect connectors, additionally require `micronaut.control-panel.panels.kafka.writes.destructive-enabled=true`.
 
 The write model includes:
 
@@ -122,41 +122,42 @@ micronaut:
 === Per-Action Write Toggles
 
 After the top-level write gate is enabled, individual actions can still be disabled.
-Per-action toggles default to enabled so `micronaut.control-panel.kafka.writes.enabled` remains the primary safety switch.
+Per-action toggles default to enabled so `micronaut.control-panel.panels.kafka.writes.enabled` remains the primary safety switch.
 
 [configuration]
 ----
 micronaut:
   control-panel:
-    kafka:
-      writes:
-        enabled: true
-        destructive-enabled: false
-        max-message-value-bytes: 1048576
-        max-message-key-bytes: 1024
-        max-message-headers: 20
-        max-message-header-key-bytes: 256
-        max-message-header-value-bytes: 4096
-        actions:
-          create-topic: true
-          update-topic-config: true
-          increase-partitions: true
-          delete-topic: false
-          produce-message: true
-          delete-consumer-group: false
-          reset-consumer-group-offsets: true
-          pause-app-consumer: true
-          resume-app-consumer: true
-          register-schema: true
-          update-schema-compatibility: true
-          delete-schema-subject: false
-          delete-schema-version: false
-          pause-connector: true
-          resume-connector: true
-          restart-connector: true
-          restart-connector-task: true
-          update-connector-config: true
-          delete-connector: false
+    panels:
+      kafka:
+        writes:
+          enabled: true
+          destructive-enabled: false
+          max-message-value-bytes: 1048576
+          max-message-key-bytes: 1024
+          max-message-headers: 20
+          max-message-header-key-bytes: 256
+          max-message-header-value-bytes: 4096
+          actions:
+            create-topic: true
+            update-topic-config: true
+            increase-partitions: true
+            delete-topic: false
+            produce-message: true
+            delete-consumer-group: false
+            reset-consumer-group-offsets: true
+            pause-app-consumer: true
+            resume-app-consumer: true
+            register-schema: true
+            update-schema-compatibility: true
+            delete-schema-subject: false
+            delete-schema-version: false
+            pause-connector: true
+            resume-connector: true
+            restart-connector: true
+            restart-connector-task: true
+            update-connector-config: true
+            delete-connector: false
 ----
 
 == Limitations

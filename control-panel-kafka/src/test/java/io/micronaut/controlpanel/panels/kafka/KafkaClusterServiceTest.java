@@ -16,6 +16,7 @@
 package io.micronaut.controlpanel.panels.kafka;
 
 import io.micronaut.configuration.kafka.ConsumerRegistry;
+import io.micronaut.context.ApplicationContext;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.controlpanel.core.security.ControlPanelSecurityPaths;
 import io.micronaut.http.annotation.Delete;
@@ -24,7 +25,6 @@ import io.micronaut.http.annotation.Patch;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.http.annotation.Put;
 import io.micronaut.http.annotation.Controller;
-import io.micronaut.json.JsonMapper;
 import io.micronaut.json.tree.JsonNode;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AlterConfigsResult;
@@ -619,7 +619,7 @@ final class KafkaClusterServiceTest {
         ));
 
         assertNull(section.data());
-        assertEquals("Kafka writes are disabled. Set micronaut.control-panel.kafka.writes.enabled=true to enable write endpoints.", section.error());
+        assertEquals("Kafka writes are disabled. Set micronaut.control-panel.panels.kafka.writes.enabled=true to enable write endpoints.", section.error());
         verify(admin, never()).createTopics(any(Collection.class), any(CreateTopicsOptions.class));
     }
 
@@ -631,7 +631,7 @@ final class KafkaClusterServiceTest {
             .deleteTopic(new KafkaClusterResponse.DeleteTopicRequest("orders", false, "DELETE orders"));
 
         assertNull(section.data());
-        assertEquals("Kafka destructive actions are disabled. Set micronaut.control-panel.kafka.writes.destructive-enabled=true to enable this action.", section.error());
+        assertEquals("Kafka destructive actions are disabled. Set micronaut.control-panel.panels.kafka.writes.destructive-enabled=true to enable this action.", section.error());
         verify(admin, never()).deleteTopics(any(TopicCollection.class), any(DeleteTopicsOptions.class));
     }
 
@@ -1021,7 +1021,7 @@ final class KafkaClusterServiceTest {
     }
 
     @Test
-    void optionalIntegrationsUseStandardKafkaServiceUrlsWhenConfigured() {
+    void optionalIntegrationsUsePanelScopedUrlsWhenConfigured() {
         AdminClient admin = mock(AdminClient.class);
         FakeIntegrationClient client = new FakeIntegrationClient(Map.of(
             "Schema Registry GET /subjects", KafkaClusterService.json("[]"),
@@ -1074,7 +1074,7 @@ final class KafkaClusterServiceTest {
     }
 
     @Test
-    void schemaRegistryUsesStandardKafkaProperty() {
+    void schemaRegistryUsesPanelScopedIntegrationUrl() {
         AdminClient admin = mock(AdminClient.class);
         FakeIntegrationClient client = new FakeIntegrationClient(Map.of(
             "Schema Registry GET /subjects", KafkaClusterService.json("[\"orders-value\"]"),
@@ -1113,8 +1113,8 @@ final class KafkaClusterServiceTest {
         var applied = new KafkaClusterService(admin, client, configuration, writeConfig(true, true))
             .registerSchema(new KafkaClusterResponse.RegisterSchemaRequest("orders-value", "{}", "JSON", false, "REGISTER SCHEMA orders-value"));
 
-        assertEquals("Kafka writes are disabled. Set micronaut.control-panel.kafka.writes.enabled=true to enable write endpoints.", disabled.error());
-        assertEquals("Kafka destructive actions are disabled. Set micronaut.control-panel.kafka.writes.destructive-enabled=true to enable this action.", destructiveDisabled.error());
+        assertEquals("Kafka writes are disabled. Set micronaut.control-panel.panels.kafka.writes.enabled=true to enable write endpoints.", disabled.error());
+        assertEquals("Kafka destructive actions are disabled. Set micronaut.control-panel.panels.kafka.writes.destructive-enabled=true to enable this action.", destructiveDisabled.error());
         assertNull(applied.error());
         assertTrue(applied.data().applied());
         assertEquals("Schema Registry POST /subjects/orders-value/versions", client.lastAction());
@@ -1256,36 +1256,13 @@ final class KafkaClusterServiceTest {
 
     @Test
     void writeConfigurationExposesDefaultLimitsAndActionOverrides() {
-        KafkaClusterWriteConfiguration configuration = new KafkaClusterWriteConfiguration();
-        KafkaClusterWriteConfiguration.Actions actions = new KafkaClusterWriteConfiguration.Actions();
-
-        configuration.setEnabled(true);
-        configuration.setDestructiveEnabled(true);
-        configuration.setMaxMessageValueBytes(10);
-        configuration.setMaxMessageKeyBytes(11);
-        configuration.setMaxMessageHeaders(12);
-        configuration.setMaxMessageHeaderKeyBytes(13);
-        configuration.setMaxMessageHeaderValueBytes(14);
-        actions.setCreateTopic(false);
-        actions.setUpdateTopicConfig(false);
-        actions.setIncreasePartitions(false);
-        actions.setDeleteTopic(false);
-        actions.setProduceMessage(false);
-        actions.setDeleteConsumerGroup(false);
-        actions.setResetConsumerGroupOffsets(false);
-        actions.setPauseAppConsumer(false);
-        actions.setResumeAppConsumer(false);
-        actions.setRegisterSchema(false);
-        actions.setUpdateSchemaCompatibility(false);
-        actions.setDeleteSchemaSubject(false);
-        actions.setDeleteSchemaVersion(false);
-        actions.setPauseConnector(false);
-        actions.setResumeConnector(false);
-        actions.setRestartConnector(false);
-        actions.setRestartConnectorTask(false);
-        actions.setUpdateConnectorConfig(false);
-        actions.setDeleteConnector(false);
-        configuration.setActions(actions);
+        KafkaClusterWriteConfiguration.Actions actions = new KafkaClusterWriteConfiguration.Actions(
+            false, false, false, false, false, false, false, false, false, false,
+            false, false, false, false, false, false, false, false, false
+        );
+        KafkaClusterWriteConfiguration configuration = new KafkaClusterWriteConfiguration(
+            true, true, 10, 11, 12, 13, 14, actions
+        );
 
         assertTrue(configuration.isEnabled());
         assertTrue(configuration.isDestructiveEnabled());
@@ -1314,7 +1291,7 @@ final class KafkaClusterServiceTest {
         assertFalse(configuration.actionEnabled(KafkaClusterService.ACTION_UPDATE_CONNECTOR_CONFIG));
         assertFalse(configuration.actionEnabled(KafkaClusterService.ACTION_DELETE_CONNECTOR));
         assertFalse(configuration.actionEnabled("unknown"));
-        assertEquals(actions, configuration.getActions());
+        assertEquals(actions, configuration.actions());
     }
 
     @Test
@@ -1331,25 +1308,28 @@ final class KafkaClusterServiceTest {
         server.createContext("/api/error", exchange -> respond(exchange, 500, "boom"));
         server.start();
         try {
-            KafkaIntegrationConfiguration configuration = integrationConfig("http://127.0.0.1:" + server.getAddress().getPort() + "/api/", null, null);
-            DefaultKafkaIntegrationClient client = new DefaultKafkaIntegrationClient(configuration, JsonMapper.createDefault(), null, null, null);
+            try (ApplicationContext context = ApplicationContext.run(Map.of(
+                KafkaIntegrationConfiguration.PROPERTY_SCHEMA_REGISTRY_URL, "http://127.0.0.1:" + server.getAddress().getPort() + "/api/"
+            ))) {
+                DefaultKafkaIntegrationClient client = context.getBean(DefaultKafkaIntegrationClient.class);
 
-            JsonNode response = client.request(
-                KafkaClusterService.INTEGRATION_SCHEMA_REGISTRY,
-                "POST",
-                "subjects/" + KafkaIntegrationClient.encodePath("orders value"),
-                Map.of("schema", "{}")
-            );
-            JsonNode empty = client.request(KafkaClusterService.INTEGRATION_SCHEMA_REGISTRY, "GET", "/empty", null);
-            IOException error = assertThrows(IOException.class, () ->
-                client.request(KafkaClusterService.INTEGRATION_SCHEMA_REGISTRY, "GET", "/error", null));
+                JsonNode response = client.request(
+                    KafkaClusterService.INTEGRATION_SCHEMA_REGISTRY,
+                    "POST",
+                    "subjects/" + KafkaIntegrationClient.encodePath("orders value"),
+                    Map.of("schema", "{}")
+                );
+                JsonNode empty = client.request(KafkaClusterService.INTEGRATION_SCHEMA_REGISTRY, "GET", "/empty", null);
+                IOException error = assertThrows(IOException.class, () ->
+                    client.request(KafkaClusterService.INTEGRATION_SCHEMA_REGISTRY, "GET", "/error", null));
 
-            assertEquals("/api/subjects/orders%20value", requestPath.get());
-            assertEquals("{\"schema\":\"{}\"}", requestBody.get());
-            assertEquals("true", response.get("ok").coerceStringValue());
-            assertTrue(empty.isNull());
-            assertTrue(error.getMessage().contains("HTTP 500"));
-            assertEquals("a%20b", KafkaIntegrationClient.encodePath("a b"));
+                assertEquals("/api/subjects/orders%20value", requestPath.get());
+                assertEquals("{\"schema\":\"{}\"}", requestBody.get());
+                assertEquals("true", response.get("ok").coerceStringValue());
+                assertTrue(empty.isNull());
+                assertTrue(error.getMessage().contains("HTTP 500"));
+                assertEquals("a%20b", KafkaIntegrationClient.encodePath("a b"));
+            }
         } finally {
             server.stop(0);
         }
@@ -1387,19 +1367,30 @@ final class KafkaClusterServiceTest {
     }
 
     private static KafkaClusterWriteConfiguration writeConfig(boolean enabled, boolean destructiveEnabled) {
-        KafkaClusterWriteConfiguration configuration = new KafkaClusterWriteConfiguration();
-        configuration.setEnabled(enabled);
-        configuration.setDestructiveEnabled(destructiveEnabled);
-        return configuration;
+        KafkaClusterWriteConfiguration defaults = new KafkaClusterWriteConfiguration();
+        return new KafkaClusterWriteConfiguration(
+            enabled,
+            destructiveEnabled,
+            defaults.maxMessageValueBytes(),
+            defaults.maxMessageKeyBytes(),
+            defaults.maxMessageHeaders(),
+            defaults.maxMessageHeaderKeyBytes(),
+            defaults.maxMessageHeaderValueBytes(),
+            defaults.actions()
+        );
     }
 
     private static KafkaClusterService serviceWithProduceLimits() {
-        KafkaClusterWriteConfiguration configuration = writeConfig(true, false);
-        configuration.setMaxMessageValueBytes(4);
-        configuration.setMaxMessageKeyBytes(3);
-        configuration.setMaxMessageHeaders(2);
-        configuration.setMaxMessageHeaderKeyBytes(3);
-        configuration.setMaxMessageHeaderValueBytes(3);
+        KafkaClusterWriteConfiguration configuration = new KafkaClusterWriteConfiguration(
+            true,
+            false,
+            4,
+            3,
+            2,
+            3,
+            3,
+            new KafkaClusterWriteConfiguration.Actions()
+        );
         return new KafkaClusterService(mock(AdminClient.class), null, null, null, configuration);
     }
 
@@ -1422,11 +1413,11 @@ final class KafkaClusterServiceTest {
     private static KafkaIntegrationConfiguration integrationConfig(@Nullable String schemaRegistryUrl,
                                                                   @Nullable String connectUrl,
                                                                   @Nullable String ksqlDbUrl) {
-        KafkaIntegrationConfiguration configuration = new KafkaIntegrationConfiguration();
-        configuration.getSchemaRegistry().setUrl(schemaRegistryUrl);
-        configuration.getConnect().setUrl(connectUrl);
-        configuration.getKsqldb().setUrl(ksqlDbUrl);
-        return configuration;
+        return new KafkaIntegrationConfiguration(
+            new KafkaIntegrationConfiguration.Endpoint(schemaRegistryUrl),
+            new KafkaIntegrationConfiguration.Endpoint(connectUrl),
+            new KafkaIntegrationConfiguration.Endpoint(ksqlDbUrl)
+        );
     }
 
     private static final class FakeIntegrationClient implements KafkaIntegrationClient {

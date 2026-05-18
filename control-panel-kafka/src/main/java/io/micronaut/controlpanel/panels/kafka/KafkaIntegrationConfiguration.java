@@ -16,7 +16,7 @@
 package io.micronaut.controlpanel.panels.kafka;
 
 import io.micronaut.context.annotation.ConfigurationProperties;
-import io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration;
+import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.core.annotation.Internal;
 import org.jspecify.annotations.Nullable;
 
@@ -25,50 +25,38 @@ import org.jspecify.annotations.Nullable;
  */
 @Internal
 @ConfigurationProperties(KafkaIntegrationConfiguration.PREFIX)
-final class KafkaIntegrationConfiguration {
+record KafkaIntegrationConfiguration(
+    @Nullable
+    Endpoint schemaRegistry,
+    @Nullable
+    Endpoint connect,
+    @Nullable
+    Endpoint ksqldb
+) {
 
-    static final String PREFIX = ControlPanelModuleConfiguration.PREFIX + ".kafka.integrations";
+    static final String PREFIX = ControlPanelConfiguration.PREFIX + ".kafka.integrations";
+    static final String PROPERTY_SCHEMA_REGISTRY_URL = PREFIX + ".schema-registry.url";
+    static final String PROPERTY_CONNECT_URL = PREFIX + ".connect.url";
+    static final String PROPERTY_KSQLDB_URL = PREFIX + ".ksqldb.url";
 
-    private Endpoint schemaRegistry = new Endpoint();
-    private Endpoint connect = new Endpoint();
-    private Endpoint ksqldb = new Endpoint();
-
-    Endpoint getSchemaRegistry() {
-        return schemaRegistry;
+    KafkaIntegrationConfiguration() {
+        this(new Endpoint(null), new Endpoint(null), new Endpoint(null));
     }
 
-    void setSchemaRegistry(Endpoint schemaRegistry) {
-        this.schemaRegistry = schemaRegistry;
-    }
-
-    Endpoint getConnect() {
-        return connect;
-    }
-
-    void setConnect(Endpoint connect) {
-        this.connect = connect;
-    }
-
-    Endpoint getKsqldb() {
-        return ksqldb;
-    }
-
-    void setKsqldb(Endpoint ksqldb) {
-        this.ksqldb = ksqldb;
+    KafkaIntegrationConfiguration {
+        if (schemaRegistry == null) {
+            schemaRegistry = new Endpoint(null);
+        }
+        if (connect == null) {
+            connect = new Endpoint(null);
+        }
+        if (ksqldb == null) {
+            ksqldb = new Endpoint(null);
+        }
     }
 
     @Internal
-    static final class Endpoint {
-        private @Nullable String url;
-
-        @Nullable
-        String getUrl() {
-            return url;
-        }
-
-        void setUrl(@Nullable String url) {
-            this.url = url;
-        }
+    record Endpoint(@Nullable String url) {
 
         boolean isConfigured() {
             return url != null && !url.isBlank();

@@ -228,9 +228,9 @@ final class KafkaClusterService {
                         JsonMapper jsonMapper,
                         KafkaClusterWriteConfiguration writeConfiguration,
                         KafkaIntegrationConfiguration integrationConfiguration,
-                        @Nullable @Value("${kafka.schema.registry.url:}") String schemaRegistryUrl,
-                        @Nullable @Value("${kafka.connect.url:}") String kafkaConnectUrl,
-                        @Nullable @Value("${kafka.ksqldb.url:}") String kafkaKsqlDbUrl) {
+                        @Nullable @Value("${micronaut.control-panel.panels.kafka.integrations.schema-registry.url:}") String schemaRegistryUrl,
+                        @Nullable @Value("${micronaut.control-panel.panels.kafka.integrations.connect.url:}") String kafkaConnectUrl,
+                        @Nullable @Value("${micronaut.control-panel.panels.kafka.integrations.ksqldb.url:}") String kafkaKsqlDbUrl) {
         this.adminClient = adminClient;
         this.consumerRegistry = consumerRegistry;
         this.consumerFactory = consumerFactory;
@@ -1012,15 +1012,15 @@ final class KafkaClusterService {
     private String integrationUrl(String integration) {
         return switch (integration) {
             case INTEGRATION_SCHEMA_REGISTRY -> schemaRegistryUrl();
-            case INTEGRATION_CONNECT -> configuredUrl(integrationConfiguration.getConnect().getUrl(), kafkaConnectUrl);
-            case INTEGRATION_KSQLDB -> configuredUrl(integrationConfiguration.getKsqldb().getUrl(), kafkaKsqlDbUrl);
+            case INTEGRATION_CONNECT -> configuredUrl(integrationConfiguration.connect().url(), kafkaConnectUrl);
+            case INTEGRATION_KSQLDB -> configuredUrl(integrationConfiguration.ksqldb().url(), kafkaKsqlDbUrl);
             default -> throw new IllegalArgumentException("Unknown integration: " + integration);
         };
     }
 
     @Nullable
     private String schemaRegistryUrl() {
-        return configuredUrl(schemaRegistryUrl, integrationConfiguration.getSchemaRegistry().getUrl());
+        return configuredUrl(schemaRegistryUrl, integrationConfiguration.schemaRegistry().url());
     }
 
     @Nullable
