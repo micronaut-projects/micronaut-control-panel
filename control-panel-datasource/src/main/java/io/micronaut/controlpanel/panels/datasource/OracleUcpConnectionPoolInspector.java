@@ -23,7 +23,6 @@ import oracle.ucp.UniversalConnectionPoolStatistics;
 import oracle.ucp.jdbc.PoolDataSource;
 
 import javax.sql.DataSource;
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -118,7 +117,6 @@ final class OracleUcpConnectionPoolInspector implements ConnectionPoolInspector 
             PoolInfoSupport.group(
                 "Behavior",
                 option("Fast connection failover", safeBoolean(dataSource::getFastConnectionFailoverEnabled)),
-                option("Fail fast on chunk unavailable", safeOptionalBoolean(dataSource, "getFailFastOnChunkUnavailable")),
                 option("Read-only instances", dataSource.isReadOnlyInstanceAllowed()),
                 option("Create in borrow thread", dataSource.isCreateConnectionInBorrowThread()),
                 option("Commit on return", dataSource.isCommitOnConnectionReturn()),
@@ -166,14 +164,6 @@ final class OracleUcpConnectionPoolInspector implements ConnectionPoolInspector 
                 durationMillis("Failed wait", statLong(stats, UniversalConnectionPoolStatistics::getCumulativeFailedConnectionWaitTime))
             )
         );
-    }
-
-    static String safeOptionalBoolean(Object target, String methodName) {
-        try {
-            return PoolInfoSupport.display(target.getClass().getMethod(methodName).invoke(target));
-        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException _) {
-            return PoolInfoSupport.UNKNOWN;
-        }
     }
 
     private static String safeType(Supplier<Object> supplier) {
