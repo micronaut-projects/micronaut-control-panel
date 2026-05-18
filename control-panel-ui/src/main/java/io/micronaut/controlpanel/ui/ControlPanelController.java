@@ -157,6 +157,8 @@ public class ControlPanelController implements ControlPanelApi {
         baseExtra.put("controlPanelPath", controlPanelPath);
         baseExtra.put("appPath", appPath);
         baseExtra.put("categoryCount", categoryCount);
+        baseExtra.put("activeEnvironments", List.copyOf(activeEnvironments));
+        baseExtra.put("hasActiveEnvironments", !activeEnvironments.isEmpty());
         baseExtra.put("writeAccess", writeAccessEvaluator.evaluate(request));
         repository.findByName("health")
             .map(ControlPanel::getBody)

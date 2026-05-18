@@ -62,6 +62,7 @@ public class ControlPanelConfiguration implements ConfigurableControlPanel {
 
     /**
      * The title is displayed in the header of the card UI element.
+     * Defaults to the panel name when no explicit title is configured.
      *
      * @return the title of the control panel.
      */

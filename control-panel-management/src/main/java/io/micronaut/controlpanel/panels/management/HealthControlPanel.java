@@ -55,7 +55,7 @@ public class HealthControlPanel extends AbstractControlPanel<HealthResult> {
         Principal principal = ServerRequestContext.currentRequest()
             .flatMap(request -> request.getUserPrincipal(Principal.class))
             .orElse(null);
-        return Objects.requireNonNull(Mono.from(endpoint.getHealth(principal)).block());
+        return Objects.requireNonNull(Mono.from(endpoint.getHealth(principal)).block(), "Health endpoint returned no result");
     }
 
 }
