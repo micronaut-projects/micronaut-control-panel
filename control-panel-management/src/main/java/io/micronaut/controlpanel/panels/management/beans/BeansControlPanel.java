@@ -24,6 +24,7 @@ import io.micronaut.core.util.StringUtils;
 import io.micronaut.inject.BeanDefinition;
 import io.micronaut.management.endpoint.beans.BeansEndpoint;
 import io.micronaut.management.endpoint.beans.impl.DefaultBeanDefinitionData;
+import io.micronaut.runtime.context.scope.Refreshable;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 
@@ -44,8 +45,10 @@ import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
  * @since 1.0.0
  */
 @Singleton
+@Refreshable
 @Requires(beans = BeansEndpoint.class)
 @Requires(property = BeansControlPanel.ENABLED_PROPERTY, notEquals = StringUtils.FALSE)
+@SuppressWarnings("InjectMoreThanOneScopeAnnotationOnClass")
 public class BeansControlPanel extends AbstractControlPanel<BeansControlPanel.Body> {
 
     public static final String NAME = "beans";

@@ -21,12 +21,10 @@ import io.micronaut.controlpanel.core.AbstractControlPanel;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.management.endpoint.env.EnvironmentEndpoint;
+import io.micronaut.runtime.context.scope.Refreshable;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
@@ -38,8 +36,10 @@ import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
  * @since 1.0.0
  */
 @Singleton
+@Refreshable
 @Requires(beans = EnvironmentEndpoint.class)
 @Requires(property = EnvironmentControlPanel.ENABLED_PROPERTY, notEquals = StringUtils.FALSE)
+@SuppressWarnings("InjectMoreThanOneScopeAnnotationOnClass")
 public class EnvironmentControlPanel extends AbstractControlPanel<Map<String, Object>> {
 
     public static final String NAME = EnvironmentEndpoint.NAME;
@@ -53,11 +53,7 @@ public class EnvironmentControlPanel extends AbstractControlPanel<Map<String, Ob
 
     @Override
     public Map<String, Object> getBody() {
-        var body = new HashMap<>(endpoint.getEnvironmentInfo());
-        if (body.get("activeEnvironments") instanceof Collection<?> activeEnvironments) {
-            body.put("activeEnvironments", List.copyOf(activeEnvironments));
-        }
-        return body;
+        return endpoint.getEnvironmentInfo();
     }
 
     @Override

@@ -38,7 +38,7 @@ class ControlPanelControllerTest {
         var model = (Model) controller.index(HttpRequest.GET("/control-panel")).body().getModel().get();
         assertEquals(3, model.categories().size());
         assertEquals("test-application", model.applicationName());
-        assertEquals(java.util.List.of("test"), model.activeEnvironments());
+        assertEquals(java.util.Set.of("test"), model.activeEnvironments());
         assertEquals(Model.ContentView.INDEX, model.contentView());
         assertEquals(ControlPanel.Category.MAIN, model.ext().get("currentCategory"));
         assertEquals(5, ((java.util.Collection<?>) model.ext().get("controlPanels")).size());
@@ -50,7 +50,7 @@ class ControlPanelControllerTest {
         var model = (Model) controller.byCategory(categoryId, HttpRequest.GET("/control-panel/categories/" + categoryId)).body().getModel().get();
         assertEquals(3, model.categories().size());
         assertEquals("test-application", model.applicationName());
-        assertEquals(java.util.List.of("test"), model.activeEnvironments());
+        assertEquals(java.util.Set.of("test"), model.activeEnvironments());
         assertEquals(Model.ContentView.INDEX, model.contentView());
         assertEquals(categoryId, ((ControlPanel.Category) model.ext().get("currentCategory")).id());
         assertEquals(5, ((java.util.Collection<?>) model.ext().get("controlPanels")).size());
@@ -64,7 +64,7 @@ class ControlPanelControllerTest {
         var modelRoutes = (Model) controller.detail("routes", HttpRequest.GET("/control-panel/routes")).body().getModel().get();
         assertEquals(3, modelRoutes.categories().size());
         assertEquals("test-application", modelRoutes.applicationName());
-        assertEquals(java.util.List.of("test"), modelRoutes.activeEnvironments());
+        assertEquals(java.util.Set.of("test"), modelRoutes.activeEnvironments());
         assertEquals(Model.ContentView.DETAIL, modelRoutes.contentView());
         assertEquals(ControlPanel.Category.MAIN.id(), ((ControlPanel.Category) modelRoutes.ext().get("currentCategory")).id());
         assertEquals("routes", ((ControlPanel<?>) modelRoutes.ext().get("controlPanel")).getName());

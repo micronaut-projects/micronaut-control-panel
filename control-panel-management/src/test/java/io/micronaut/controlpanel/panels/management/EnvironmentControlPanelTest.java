@@ -34,8 +34,8 @@ class EnvironmentControlPanelTest {
             @SuppressWarnings("unchecked")
             var body = (java.util.Map<String, Object>) panel.getBody();
             @SuppressWarnings("unchecked")
-            var activeEnvironments = (java.util.List<String>) body.get("activeEnvironments");
-            assertEquals(java.util.List.of(Environment.TEST), activeEnvironments);
+            var activeEnvironments = (java.util.Set<String>) body.get("activeEnvironments");
+            assertEquals(java.util.Set.of(Environment.TEST), activeEnvironments);
             @SuppressWarnings("unchecked")
             var packages = (java.util.Collection<String>) body.get("packages");
             assertNotNull(packages);

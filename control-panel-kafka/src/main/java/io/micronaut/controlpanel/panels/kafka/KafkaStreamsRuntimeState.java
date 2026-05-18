@@ -49,9 +49,6 @@ public record KafkaStreamsRuntimeState(boolean available,
         return new KafkaStreamsRuntimeState(false, STATUS_UNKNOWN, message, List.of(), false);
     }
 
-    /**
-     * Creates an available runtime state, normalizing null or blank Health statuses to {@value #STATUS_UNKNOWN}.
-     */
     static KafkaStreamsRuntimeState available(@Nullable String status, @Nullable String message, List<ThreadState> threads) {
         List<ThreadState> threadStates = List.copyOf(threads);
         return new KafkaStreamsRuntimeState(true, emptyToUnknown(status), message, threadStates, !threadStates.isEmpty());

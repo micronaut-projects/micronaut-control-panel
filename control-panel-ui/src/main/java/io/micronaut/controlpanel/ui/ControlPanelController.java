@@ -37,10 +37,10 @@ import jakarta.inject.Inject;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import static io.micronaut.controlpanel.util.ControlPanelUtils.computeControlPanelPath;
@@ -102,7 +102,7 @@ public class ControlPanelController implements ControlPanelApi {
             var extraProperties = new HashMap<>(common.baseExtra());
             extraProperties.put("controlPanels", controlPanels);
             extraProperties.put("currentCategory", optionalCategory.get());
-            var model = new Model(common.categories(), applicationName, common.activeEnvironments(), Model.ContentView.INDEX,
+            var model = new Model(common.categories(), applicationName, activeEnvironments, Model.ContentView.INDEX,
                 canRefresh, canStop, extraProperties);
             return HttpResponse.ok(new ModelAndView<>("layout", model));
         } else {
@@ -119,7 +119,7 @@ public class ControlPanelController implements ControlPanelApi {
             extraProperties.put("controlPanel", optionalControlPanel.get());
             var optionalCategory = repository.findCategoryById(optionalControlPanel.get().getCategory().id());
             optionalCategory.ifPresent(category -> extraProperties.put("currentCategory", category));
-            var model = new Model(common.categories(), applicationName, common.activeEnvironments(), Model.ContentView.DETAIL,
+            var model = new Model(common.categories(), applicationName, activeEnvironments, Model.ContentView.DETAIL,
                 canRefresh, canStop, extraProperties);
             return HttpResponse.ok(new ModelAndView<>("layout", model));
         } else {
@@ -157,15 +157,14 @@ public class ControlPanelController implements ControlPanelApi {
         baseExtra.put("controlPanelPath", controlPanelPath);
         baseExtra.put("appPath", appPath);
         baseExtra.put("categoryCount", categoryCount);
-        var activeEnvironmentNames = List.copyOf(activeEnvironments);
-        baseExtra.put("activeEnvironments", activeEnvironmentNames);
+        baseExtra.put("activeEnvironments", activeEnvironments);
         baseExtra.put("hasActiveEnvironments", !activeEnvironments.isEmpty());
         baseExtra.put("writeAccess", writeAccessEvaluator.evaluate(request));
         repository.findByName("health")
             .map(ControlPanel::getBody)
             .ifPresent(body -> baseExtra.put("applicationHealth", body));
-        return new CommonData(categories, activeEnvironmentNames, baseExtra);
+        return new CommonData(categories, baseExtra);
     }
 
-    private record CommonData(List<ControlPanel.Category> categories, List<String> activeEnvironments, Map<String, Object> baseExtra) { }
+    private record CommonData(List<ControlPanel.Category> categories, Map<String, Object> baseExtra) { }
 }

@@ -23,6 +23,7 @@ import io.micronaut.core.annotation.ReflectiveAccess;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.uri.UriMatchTemplate;
+import io.micronaut.runtime.context.scope.Refreshable;
 import io.micronaut.web.router.Router;
 import io.micronaut.web.router.UriRouteInfo;
 import jakarta.inject.Named;
@@ -50,7 +51,9 @@ import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
  * @since 1.0.0
  */
 @Singleton
+@Refreshable
 @Requires(property = RoutesControlPanel.ENABLED_PROPERTY, notEquals = StringUtils.FALSE)
+@SuppressWarnings("InjectMoreThanOneScopeAnnotationOnClass")
 public class RoutesControlPanel extends AbstractControlPanel<RoutesControlPanel.Body> {
 
     public static final String NAME = "routes";

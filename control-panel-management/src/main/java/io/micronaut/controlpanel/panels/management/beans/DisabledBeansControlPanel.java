@@ -24,6 +24,7 @@ import io.micronaut.core.annotation.ReflectiveAccess;
 import io.micronaut.core.annotation.TypeHint;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.inject.BeanDefinition;
+import io.micronaut.runtime.context.scope.Refreshable;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 
@@ -40,7 +41,9 @@ import static io.micronaut.controlpanel.panels.management.beans.BeansControlPane
  * @since 2.0.0
  */
 @Singleton
+@Refreshable
 @Requires(property = DisabledBeansControlPanel.ENABLED_PROPERTY, notEquals = StringUtils.FALSE)
+@SuppressWarnings("InjectMoreThanOneScopeAnnotationOnClass")
 public class DisabledBeansControlPanel extends AbstractControlPanel<DisabledBeansControlPanel.Body> {
 
     public static final String NAME = "disabled-beans";
