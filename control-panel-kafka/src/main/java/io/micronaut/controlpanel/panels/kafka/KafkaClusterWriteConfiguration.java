@@ -24,16 +24,16 @@ import io.micronaut.core.util.Toggleable;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Default-off Kafka write safety configuration for the Kafka cluster panel.
+ * Configures the write capabilities exposed by the Kafka cluster panel.
  *
- * @param enabled Whether Kafka writes are enabled.
- * @param destructiveEnabled Whether destructive Kafka writes are enabled.
- * @param maxMessageValueBytes The maximum message value size for produce requests.
- * @param maxMessageKeyBytes The maximum message key size for produce requests.
- * @param maxMessageHeaders The maximum number of message headers for produce requests.
- * @param maxMessageHeaderKeyBytes The maximum message header key size for produce requests.
- * @param maxMessageHeaderValueBytes The maximum message header value size for produce requests.
- * @param actions Per-action write toggles.
+ * @param enabled Enables non-destructive Kafka write actions such as producing records and updating mutable resources.
+ * @param destructiveEnabled Enables destructive Kafka write actions such as deleting topics, consumer groups, connectors, or schemas.
+ * @param maxMessageValueBytes Maximum number of bytes allowed for a produced record value.
+ * @param maxMessageKeyBytes Maximum number of bytes allowed for a produced record key.
+ * @param maxMessageHeaders Maximum number of headers allowed on a produced record.
+ * @param maxMessageHeaderKeyBytes Maximum number of bytes allowed for each produced record header key.
+ * @param maxMessageHeaderValueBytes Maximum number of bytes allowed for each produced record header value.
+ * @param actions Per-action Kafka write toggles that can disable individual write operations after the top-level write gate is enabled.
  */
 @Internal
 @ConfigurationProperties(KafkaClusterWriteConfiguration.PREFIX)
@@ -123,27 +123,27 @@ record KafkaClusterWriteConfiguration(
     }
 
     /**
-     * Per-action write toggles. Actions default to true so the top-level write gate remains the main safety switch.
+     * Configures individual Kafka write actions after the top-level write gate is enabled.
      *
-     * @param createTopic Whether topic creation is enabled.
-     * @param updateTopicConfig Whether topic config updates are enabled.
-     * @param increasePartitions Whether partition increases are enabled.
-     * @param deleteTopic Whether topic deletion is enabled.
-     * @param produceMessage Whether message production is enabled.
-     * @param deleteConsumerGroup Whether consumer group deletion is enabled.
-     * @param resetConsumerGroupOffsets Whether consumer group offset resets are enabled.
-     * @param pauseAppConsumer Whether app consumer pause is enabled.
-     * @param resumeAppConsumer Whether app consumer resume is enabled.
-     * @param registerSchema Whether schema registration is enabled.
-     * @param updateSchemaCompatibility Whether schema compatibility updates are enabled.
-     * @param deleteSchemaSubject Whether schema subject deletion is enabled.
-     * @param deleteSchemaVersion Whether schema version deletion is enabled.
-     * @param pauseConnector Whether Kafka Connect pause is enabled.
-     * @param resumeConnector Whether Kafka Connect resume is enabled.
-     * @param restartConnector Whether Kafka Connect restart is enabled.
-     * @param restartConnectorTask Whether Kafka Connect task restart is enabled.
-     * @param updateConnectorConfig Whether Kafka Connect config updates are enabled.
-     * @param deleteConnector Whether Kafka Connect deletion is enabled.
+     * @param createTopic Enables creating Kafka topics from the control panel.
+     * @param updateTopicConfig Enables updating Kafka topic configuration entries.
+     * @param increasePartitions Enables increasing the partition count for Kafka topics.
+     * @param deleteTopic Enables deleting Kafka topics.
+     * @param produceMessage Enables producing records to Kafka topics.
+     * @param deleteConsumerGroup Enables deleting Kafka consumer groups.
+     * @param resetConsumerGroupOffsets Enables resetting committed offsets for Kafka consumer groups.
+     * @param pauseAppConsumer Enables pausing application-managed Kafka consumers.
+     * @param resumeAppConsumer Enables resuming application-managed Kafka consumers.
+     * @param registerSchema Enables registering Schema Registry schemas.
+     * @param updateSchemaCompatibility Enables updating Schema Registry compatibility settings.
+     * @param deleteSchemaSubject Enables deleting Schema Registry subjects.
+     * @param deleteSchemaVersion Enables deleting Schema Registry schema versions.
+     * @param pauseConnector Enables pausing Kafka Connect connectors.
+     * @param resumeConnector Enables resuming Kafka Connect connectors.
+     * @param restartConnector Enables restarting Kafka Connect connectors.
+     * @param restartConnectorTask Enables restarting Kafka Connect connector tasks.
+     * @param updateConnectorConfig Enables updating Kafka Connect connector configurations.
+     * @param deleteConnector Enables deleting Kafka Connect connectors.
      */
     record Actions(
         @Bindable(defaultValue = StringUtils.TRUE)

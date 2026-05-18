@@ -62,7 +62,7 @@ dependencies {
     testImplementation(mn.micronaut.http.client)
     testImplementation(mnTest.micronaut.test.junit5)
     testImplementation(libs.playwright)
-    testResourcesImplementation("io.micronaut:micronaut-jackson-databind")
+    testResourcesImplementation(mn.micronaut.jackson.databind)
     testRuntimeOnly(mnTest.junit.platform.suite)
 }
 
