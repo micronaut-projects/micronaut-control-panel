@@ -117,7 +117,6 @@ final class OracleUcpConnectionPoolInspector implements ConnectionPoolInspector 
             PoolInfoSupport.group(
                 "Behavior",
                 option("Fast connection failover", safeBoolean(dataSource::getFastConnectionFailoverEnabled)),
-                option("Fail fast on chunk unavailable", optionalBoolean(dataSource, "getFailFastOnChunkUnavailable")),
                 option("Read-only instances", dataSource.isReadOnlyInstanceAllowed()),
                 option("Create in borrow thread", dataSource.isCreateConnectionInBorrowThread()),
                 option("Commit on return", dataSource.isCommitOnConnectionReturn()),
@@ -165,14 +164,6 @@ final class OracleUcpConnectionPoolInspector implements ConnectionPoolInspector 
                 durationMillis("Failed wait", statLong(stats, UniversalConnectionPoolStatistics::getCumulativeFailedConnectionWaitTime))
             )
         );
-    }
-
-    private static String optionalBoolean(Object target, String methodName) {
-        try {
-            return PoolInfoSupport.display(target.getClass().getMethod(methodName).invoke(target));
-        } catch (ReflectiveOperationException | RuntimeException _) {
-            return PoolInfoSupport.UNKNOWN;
-        }
     }
 
     private static String safeType(Supplier<Object> supplier) {
