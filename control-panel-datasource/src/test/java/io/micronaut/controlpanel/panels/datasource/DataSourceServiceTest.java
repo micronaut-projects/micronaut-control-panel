@@ -264,6 +264,7 @@ class DataSourceServiceTest {
         assertTrue(hasPoolOption(poolInfo, "ONS configuration", "nodes=host1:6200"));
         assertTrue(hasPoolOption(poolInfo, "PDB roles", "FREEPDB1"));
         assertTrue(hasPoolOption(poolInfo, "Login timeout", "3s"));
+        assertTrue(hasPoolOption(poolInfo, "Fail fast on chunk unavailable", "Unknown"));
         assertTrue(hasPoolOption(poolInfo, "Event listener provider", "example.Provider"));
         assertTrue(hasPoolOption(poolInfo, "Borrowed connections", "21"));
         assertTrue(hasPoolOption(poolInfo, "Connection use", "4s"));
