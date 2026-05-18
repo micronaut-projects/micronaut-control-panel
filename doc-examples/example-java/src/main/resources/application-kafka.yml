@@ -1,11 +1,8 @@
 kafka:
   enabled: true
-  schema:
-    registry:
-      url: ${auto.test.resources.kafka.schema.registry.url}
   streams:
     default:
-      schema.registry.url: ${kafka.schema.registry.url}
+      schema.registry.url: ${kafka.schema.registry.url:mock://control-panel-example}
       session.timeout.ms: 10000
       internal.leave.group.on.close: true
       topology.optimization: "reuse.ktable.source.topics"
@@ -16,11 +13,6 @@ kafka:
 micronaut:
   control-panel:
     kafka:
-      integrations:
-        connect:
-          url: ${auto.test.resources.kafka.connect.url}
-        ksqldb:
-          url: ${auto.test.resources.kafka.ksqldb.url}
       writes:
         enabled: true
         destructive-enabled: true

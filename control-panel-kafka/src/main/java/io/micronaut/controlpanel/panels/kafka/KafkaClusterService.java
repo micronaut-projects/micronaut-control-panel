@@ -16,7 +16,7 @@
 package io.micronaut.controlpanel.panels.kafka;
 
 import io.micronaut.configuration.kafka.ConsumerRegistry;
-import io.micronaut.context.annotation.Property;
+import io.micronaut.context.annotation.Value;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.core.annotation.Internal;
 import io.micronaut.core.util.StringUtils;
@@ -216,6 +216,8 @@ final class KafkaClusterService {
     private final KafkaClusterWriteConfiguration writeConfiguration;
     private final KafkaIntegrationConfiguration integrationConfiguration;
     private final @Nullable String schemaRegistryUrl;
+    private final @Nullable String kafkaConnectUrl;
+    private final @Nullable String kafkaKsqlDbUrl;
 
     @Inject
     KafkaClusterService(AdminClient adminClient,
@@ -226,7 +228,9 @@ final class KafkaClusterService {
                         JsonMapper jsonMapper,
                         KafkaClusterWriteConfiguration writeConfiguration,
                         KafkaIntegrationConfiguration integrationConfiguration,
-                        @Nullable @Property(name = "kafka.schema.registry.url") String schemaRegistryUrl) {
+                        @Nullable @Value("${kafka.schema.registry.url:}") String schemaRegistryUrl,
+                        @Nullable @Value("${kafka.connect.url:}") String kafkaConnectUrl,
+                        @Nullable @Value("${kafka.ksqldb.url:}") String kafkaKsqlDbUrl) {
         this.adminClient = adminClient;
         this.consumerRegistry = consumerRegistry;
         this.consumerFactory = consumerFactory;
@@ -236,20 +240,22 @@ final class KafkaClusterService {
         this.writeConfiguration = writeConfiguration;
         this.integrationConfiguration = integrationConfiguration;
         this.schemaRegistryUrl = schemaRegistryUrl;
+        this.kafkaConnectUrl = kafkaConnectUrl;
+        this.kafkaKsqlDbUrl = kafkaKsqlDbUrl;
     }
 
     KafkaClusterService(AdminClient adminClient) {
-        this(adminClient, null, null, null, null, JsonMapper.createDefault(), new KafkaClusterWriteConfiguration(), new KafkaIntegrationConfiguration(), null);
+        this(adminClient, null, null, null, null, JsonMapper.createDefault(), new KafkaClusterWriteConfiguration(), new KafkaIntegrationConfiguration(), null, null, null);
     }
 
     KafkaClusterService(AdminClient adminClient,
                         KafkaMessageBrowserConsumerFactory consumerFactory) {
-        this(adminClient, null, consumerFactory, null, null, JsonMapper.createDefault(), new KafkaClusterWriteConfiguration(), new KafkaIntegrationConfiguration(), null);
+        this(adminClient, null, consumerFactory, null, null, JsonMapper.createDefault(), new KafkaClusterWriteConfiguration(), new KafkaIntegrationConfiguration(), null, null, null);
     }
 
     KafkaClusterService(AdminClient adminClient,
                         ConsumerRegistry consumerRegistry) {
-        this(adminClient, consumerRegistry, null, null, null, JsonMapper.createDefault(), new KafkaClusterWriteConfiguration(), new KafkaIntegrationConfiguration(), null);
+        this(adminClient, consumerRegistry, null, null, null, JsonMapper.createDefault(), new KafkaClusterWriteConfiguration(), new KafkaIntegrationConfiguration(), null, null, null);
     }
 
     KafkaClusterService(AdminClient adminClient,
@@ -257,7 +263,7 @@ final class KafkaClusterService {
                         @Nullable KafkaMessageBrowserConsumerFactory consumerFactory,
                         @Nullable KafkaManagementProducerFactory producerFactory,
                         KafkaClusterWriteConfiguration writeConfiguration) {
-        this(adminClient, consumerRegistry, consumerFactory, producerFactory, null, JsonMapper.createDefault(), writeConfiguration, new KafkaIntegrationConfiguration(), null);
+        this(adminClient, consumerRegistry, consumerFactory, producerFactory, null, JsonMapper.createDefault(), writeConfiguration, new KafkaIntegrationConfiguration(), null, null, null);
     }
 
     KafkaClusterService(AdminClient adminClient,
@@ -272,7 +278,17 @@ final class KafkaClusterService {
                         KafkaIntegrationConfiguration integrationConfiguration,
                         KafkaClusterWriteConfiguration writeConfiguration,
                         @Nullable String schemaRegistryUrl) {
-        this(adminClient, null, null, null, integrationClient, JsonMapper.createDefault(), writeConfiguration, integrationConfiguration, schemaRegistryUrl);
+        this(adminClient, integrationClient, integrationConfiguration, writeConfiguration, schemaRegistryUrl, null, null);
+    }
+
+    KafkaClusterService(AdminClient adminClient,
+                        KafkaIntegrationClient integrationClient,
+                        KafkaIntegrationConfiguration integrationConfiguration,
+                        KafkaClusterWriteConfiguration writeConfiguration,
+                        @Nullable String schemaRegistryUrl,
+                        @Nullable String kafkaConnectUrl,
+                        @Nullable String kafkaKsqlDbUrl) {
+        this(adminClient, null, null, null, integrationClient, JsonMapper.createDefault(), writeConfiguration, integrationConfiguration, schemaRegistryUrl, kafkaConnectUrl, kafkaKsqlDbUrl);
     }
 
     Section<Overview> overview() {
@@ -484,7 +500,8 @@ final class KafkaClusterService {
 
     Section<KafkaConnectOverview> kafkaConnect() {
         return section(() -> {
-            if (!integrationConfiguration.getConnect().isConfigured()) {
+            String url = integrationUrl(INTEGRATION_CONNECT);
+            if (url == null) {
                 return new KafkaConnectOverview(false, null, List.of());
             }
             List<ConnectorSummary> connectors = jsonArrayStrings(integrationRequest(INTEGRATION_CONNECT, METHOD_GET, "/connectors", null))
@@ -492,18 +509,19 @@ final class KafkaClusterService {
                 .sorted()
                 .map(this::connectorSummary)
                 .toList();
-            return new KafkaConnectOverview(true, integrationConfiguration.getConnect().getUrl(), connectors);
+            return new KafkaConnectOverview(true, url, connectors);
         });
     }
 
     Section<KsqlDbOverview> ksqldb() {
         return section(() -> {
-            if (!integrationConfiguration.getKsqldb().isConfigured()) {
+            String url = integrationUrl(INTEGRATION_KSQLDB);
+            if (url == null) {
                 return new KsqlDbOverview(false, null, List.of(), List.of(), List.of());
             }
             return new KsqlDbOverview(
                 true,
-                integrationConfiguration.getKsqldb().getUrl(),
+                url,
                 ksqlRows("SHOW STREAMS;"),
                 ksqlRows("SHOW TABLES;"),
                 ksqlRows("SHOW QUERIES;")
@@ -994,20 +1012,23 @@ final class KafkaClusterService {
     private String integrationUrl(String integration) {
         return switch (integration) {
             case INTEGRATION_SCHEMA_REGISTRY -> schemaRegistryUrl();
-            case INTEGRATION_CONNECT -> integrationConfiguration.getConnect().getUrl();
-            case INTEGRATION_KSQLDB -> integrationConfiguration.getKsqldb().getUrl();
+            case INTEGRATION_CONNECT -> configuredUrl(integrationConfiguration.getConnect().getUrl(), kafkaConnectUrl);
+            case INTEGRATION_KSQLDB -> configuredUrl(integrationConfiguration.getKsqldb().getUrl(), kafkaKsqlDbUrl);
             default -> throw new IllegalArgumentException("Unknown integration: " + integration);
         };
     }
 
     @Nullable
     private String schemaRegistryUrl() {
-        String standardUrl = schemaRegistryUrl;
-        if (standardUrl != null && !standardUrl.isBlank()) {
-            return standardUrl;
+        return configuredUrl(schemaRegistryUrl, integrationConfiguration.getSchemaRegistry().getUrl());
+    }
+
+    @Nullable
+    private static String configuredUrl(@Nullable String primaryUrl, @Nullable String fallbackUrl) {
+        if (primaryUrl != null && !primaryUrl.isBlank()) {
+            return primaryUrl;
         }
-        String controlPanelUrl = integrationConfiguration.getSchemaRegistry().getUrl();
-        return controlPanelUrl == null || controlPanelUrl.isBlank() ? null : controlPanelUrl;
+        return fallbackUrl == null || fallbackUrl.isBlank() ? null : fallbackUrl;
     }
 
     private static ActionResult previewResult(String action, String target, String impact) {

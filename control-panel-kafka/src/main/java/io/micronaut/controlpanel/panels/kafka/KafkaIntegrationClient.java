@@ -15,7 +15,7 @@
  */
 package io.micronaut.controlpanel.panels.kafka;
 
-import io.micronaut.context.annotation.Property;
+import io.micronaut.context.annotation.Value;
 import io.micronaut.core.annotation.Internal;
 import io.micronaut.json.JsonMapper;
 import io.micronaut.json.tree.JsonNode;
@@ -54,13 +54,19 @@ final class DefaultKafkaIntegrationClient implements KafkaIntegrationClient {
     private final JsonMapper jsonMapper;
     private final HttpClient httpClient;
     private final @Nullable String schemaRegistryUrl;
+    private final @Nullable String kafkaConnectUrl;
+    private final @Nullable String kafkaKsqlDbUrl;
 
     DefaultKafkaIntegrationClient(KafkaIntegrationConfiguration configuration,
                                   JsonMapper jsonMapper,
-                                  @Nullable @Property(name = "kafka.schema.registry.url") String schemaRegistryUrl) {
+                                  @Nullable @Value("${kafka.schema.registry.url:}") String schemaRegistryUrl,
+                                  @Nullable @Value("${kafka.connect.url:}") String kafkaConnectUrl,
+                                  @Nullable @Value("${kafka.ksqldb.url:}") String kafkaKsqlDbUrl) {
         this.configuration = configuration;
         this.jsonMapper = jsonMapper;
         this.schemaRegistryUrl = schemaRegistryUrl;
+        this.kafkaConnectUrl = kafkaConnectUrl;
+        this.kafkaKsqlDbUrl = kafkaKsqlDbUrl;
         this.httpClient = HttpClient.newBuilder()
             .connectTimeout(REQUEST_TIMEOUT)
             .build();
@@ -98,19 +104,23 @@ final class DefaultKafkaIntegrationClient implements KafkaIntegrationClient {
     private String baseUrl(String integration) {
         return switch (integration) {
             case KafkaClusterService.INTEGRATION_SCHEMA_REGISTRY -> schemaRegistryUrl();
-            case KafkaClusterService.INTEGRATION_CONNECT -> configuration.getConnect().getUrl();
-            case KafkaClusterService.INTEGRATION_KSQLDB -> configuration.getKsqldb().getUrl();
+            case KafkaClusterService.INTEGRATION_CONNECT -> configuredUrl(configuration.getConnect().getUrl(), kafkaConnectUrl);
+            case KafkaClusterService.INTEGRATION_KSQLDB -> configuredUrl(configuration.getKsqldb().getUrl(), kafkaKsqlDbUrl);
             default -> null;
         };
     }
 
     @Nullable
     private String schemaRegistryUrl() {
-        String standardUrl = schemaRegistryUrl;
-        if (standardUrl != null && !standardUrl.isBlank()) {
-            return standardUrl;
+        return configuredUrl(schemaRegistryUrl, configuration.getSchemaRegistry().getUrl());
+    }
+
+    @Nullable
+    private static String configuredUrl(@Nullable String primaryUrl, @Nullable String fallbackUrl) {
+        if (primaryUrl != null && !primaryUrl.isBlank()) {
+            return primaryUrl;
         }
-        return configuration.getSchemaRegistry().getUrl();
+        return fallbackUrl == null || fallbackUrl.isBlank() ? null : fallbackUrl;
     }
 
     private static String trimTrailingSlash(String value) {

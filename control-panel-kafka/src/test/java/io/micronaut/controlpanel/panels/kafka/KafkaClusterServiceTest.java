@@ -1021,6 +1021,33 @@ final class KafkaClusterServiceTest {
     }
 
     @Test
+    void optionalIntegrationsUseStandardKafkaServiceUrlsWhenConfigured() {
+        AdminClient admin = mock(AdminClient.class);
+        FakeIntegrationClient client = new FakeIntegrationClient(Map.of(
+            "Schema Registry GET /subjects", KafkaClusterService.json("[]"),
+            "Kafka Connect GET /connectors", KafkaClusterService.json("[]"),
+            "ksqlDB POST /ksql {ksql=SHOW STREAMS;}", KafkaClusterService.json("[{\"streams\":[]}]"),
+            "ksqlDB POST /ksql {ksql=SHOW TABLES;}", KafkaClusterService.json("[{\"tables\":[]}]"),
+            "ksqlDB POST /ksql {ksql=SHOW QUERIES;}", KafkaClusterService.json("[{\"queries\":[]}]")
+        ));
+        KafkaClusterService service = new KafkaClusterService(
+            admin,
+            client,
+            new KafkaIntegrationConfiguration(),
+            writeConfig(false, false),
+            "http://schema-registry",
+            "http://connect",
+            "http://ksqldb"
+        );
+
+        assertTrue(service.schemaRegistry().data().configured());
+        assertTrue(service.kafkaConnect().data().configured());
+        assertEquals("http://connect", service.kafkaConnect().data().url());
+        assertTrue(service.ksqldb().data().configured());
+        assertEquals("http://ksqldb", service.ksqldb().data().url());
+    }
+
+    @Test
     void schemaRegistryReadViewsLoadSubjectsVersionsAndDetails() {
         AdminClient admin = mock(AdminClient.class);
         KafkaIntegrationConfiguration configuration = integrationConfig("http://schema-registry", null, null);
@@ -1305,7 +1332,7 @@ final class KafkaClusterServiceTest {
         server.start();
         try {
             KafkaIntegrationConfiguration configuration = integrationConfig("http://127.0.0.1:" + server.getAddress().getPort() + "/api/", null, null);
-            DefaultKafkaIntegrationClient client = new DefaultKafkaIntegrationClient(configuration, JsonMapper.createDefault(), null);
+            DefaultKafkaIntegrationClient client = new DefaultKafkaIntegrationClient(configuration, JsonMapper.createDefault(), null, null, null);
 
             JsonNode response = client.request(
                 KafkaClusterService.INTEGRATION_SCHEMA_REGISTRY,
