@@ -22,6 +22,10 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Optional Kafka ecosystem integration endpoints for the Kafka cluster panel.
+ *
+ * @param schemaRegistry The optional Schema Registry endpoint.
+ * @param connect The optional Kafka Connect endpoint.
+ * @param ksqldb The optional ksqlDB endpoint.
  */
 @Internal
 @ConfigurationProperties(KafkaIntegrationConfiguration.PREFIX)

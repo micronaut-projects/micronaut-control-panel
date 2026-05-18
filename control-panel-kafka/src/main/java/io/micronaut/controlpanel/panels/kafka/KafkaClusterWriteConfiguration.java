@@ -25,6 +25,15 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Default-off Kafka write safety configuration for the Kafka cluster panel.
+ *
+ * @param enabled Whether Kafka writes are enabled.
+ * @param destructiveEnabled Whether destructive Kafka writes are enabled.
+ * @param maxMessageValueBytes The maximum message value size for produce requests.
+ * @param maxMessageKeyBytes The maximum message key size for produce requests.
+ * @param maxMessageHeaders The maximum number of message headers for produce requests.
+ * @param maxMessageHeaderKeyBytes The maximum message header key size for produce requests.
+ * @param maxMessageHeaderValueBytes The maximum message header value size for produce requests.
+ * @param actions Per-action write toggles.
  */
 @Internal
 @ConfigurationProperties(KafkaClusterWriteConfiguration.PREFIX)
@@ -115,6 +124,26 @@ record KafkaClusterWriteConfiguration(
 
     /**
      * Per-action write toggles. Actions default to true so the top-level write gate remains the main safety switch.
+     *
+     * @param createTopic Whether topic creation is enabled.
+     * @param updateTopicConfig Whether topic config updates are enabled.
+     * @param increasePartitions Whether partition increases are enabled.
+     * @param deleteTopic Whether topic deletion is enabled.
+     * @param produceMessage Whether message production is enabled.
+     * @param deleteConsumerGroup Whether consumer group deletion is enabled.
+     * @param resetConsumerGroupOffsets Whether consumer group offset resets are enabled.
+     * @param pauseAppConsumer Whether app consumer pause is enabled.
+     * @param resumeAppConsumer Whether app consumer resume is enabled.
+     * @param registerSchema Whether schema registration is enabled.
+     * @param updateSchemaCompatibility Whether schema compatibility updates are enabled.
+     * @param deleteSchemaSubject Whether schema subject deletion is enabled.
+     * @param deleteSchemaVersion Whether schema version deletion is enabled.
+     * @param pauseConnector Whether Kafka Connect pause is enabled.
+     * @param resumeConnector Whether Kafka Connect resume is enabled.
+     * @param restartConnector Whether Kafka Connect restart is enabled.
+     * @param restartConnectorTask Whether Kafka Connect task restart is enabled.
+     * @param updateConnectorConfig Whether Kafka Connect config updates are enabled.
+     * @param deleteConnector Whether Kafka Connect deletion is enabled.
      */
     record Actions(
         @Bindable(defaultValue = StringUtils.TRUE)
