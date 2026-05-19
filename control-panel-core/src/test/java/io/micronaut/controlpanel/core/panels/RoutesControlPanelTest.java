@@ -53,7 +53,7 @@ class RoutesControlPanelTest {
         assertEquals("HTTP Routes", panel.getTitle());
         assertEquals("fa-route", panel.getIcon());
         assertEquals(20, panel.getOrder());
-        assertEquals(0, panel.getBody().appRoutes().size());
+        assertFalse(panel.getBody().appRoutes().isEmpty());
 
         assertTrue(panel.getBody().micronautRoutes().size() > 0);
         assertEquals("", panel.getBadge());
@@ -73,6 +73,7 @@ class RoutesControlPanelTest {
     void routesAreNotDuplicated() {
         RoutesControlPanel panel = ctx.getBean(RoutesControlPanel.class);
         var body = panel.getBody();
+        assertFalse(body.appRoutes().isEmpty());
         assertTrue(body.micronautRoutes().size() > 0);
 
         var allRoutes = new java.util.ArrayList<>(body.appRoutes().values().stream().flatMap(java.util.Collection::stream).toList());
@@ -181,11 +182,5 @@ class RoutesControlPanelTest {
 
         @Head("/only")
         Object headOnly() { return null; }
-    }
-
-    @Controller
-    static class DummyController {
-        @Get
-        Object index() { return null; }
     }
 }
