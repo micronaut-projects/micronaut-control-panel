@@ -9,8 +9,8 @@
                     <code>{{this}}</code>{{#unless @last}}{{#lt @index 7}}, {{/lt}}{{/unless}}
                 {{/lt}}
             {{/each}}
-            {{#gt names.size 8}}
-                and {{minus names.size 8}} more.
+            {{#gt (size names) 8}}
+                and {{minus (size names) 8}} more.
             {{/gt}}
         </p>
     {{else}}

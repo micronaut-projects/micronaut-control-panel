@@ -30,6 +30,7 @@ import org.opensearch.client.opensearch._types.mapping.Property;
 import org.opensearch.client.opensearch._types.mapping.TypeMapping;
 import org.opensearch.client.opensearch.cat.indices.IndicesRecord;
 import org.opensearch.client.opensearch.cluster.HealthResponse;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -262,7 +263,7 @@ final class OpenSearchDiagnosticsService {
         return values;
     }
 
-    static String sanitizedEndpoint(String endpoint) {
+    static String sanitizedEndpoint(@Nullable String endpoint) {
         String value = value(endpoint);
         if (value.isBlank()) {
             return "";
@@ -318,15 +319,15 @@ final class OpenSearchDiagnosticsService {
         return Math.clamp(configured, 1, hardMax);
     }
 
-    private static String value(String value) {
+    private static String value(@Nullable String value) {
         return value == null ? "" : value.trim();
     }
 
-    private static boolean valuePresent(String value) {
+    private static boolean valuePresent(@Nullable String value) {
         return value != null && !value.isBlank();
     }
 
-    private record IndexResult(List<IndexSummary> indices, String partialMessage, boolean truncated) {
+    private record IndexResult(List<IndexSummary> indices, @Nullable String partialMessage, boolean truncated) {
     }
 
     private record MappingSummary(List<MappingField> fields, boolean truncated) {

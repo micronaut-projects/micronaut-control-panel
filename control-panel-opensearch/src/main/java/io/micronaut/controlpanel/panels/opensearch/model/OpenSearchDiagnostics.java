@@ -16,6 +16,7 @@
 package io.micronaut.controlpanel.panels.opensearch.model;
 
 import io.micronaut.core.annotation.ReflectiveAccess;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.Locale;
@@ -40,7 +41,7 @@ import java.util.Locale;
 public record OpenSearchDiagnostics(String beanName,
                                     ConnectionContext connection,
                                     DiagnosticState state,
-                                    ClusterHealth clusterHealth,
+                                    @Nullable ClusterHealth clusterHealth,
                                     List<IndexSummary> indices,
                                     String message,
                                     boolean partial,
@@ -62,20 +63,20 @@ public record OpenSearchDiagnostics(String beanName,
     public static OpenSearchDiagnostics available(String beanName,
                                                   ConnectionContext connection,
                                                   DiagnosticState state,
-                                                  ClusterHealth clusterHealth,
+                                                  @Nullable ClusterHealth clusterHealth,
                                                   List<IndexSummary> indices,
-                                                  String message,
+                                                  @Nullable String message,
                                                   boolean indicesTruncated) {
         boolean partial = message != null && !message.isBlank();
         DiagnosticState resolved = partial ? DiagnosticState.PARTIAL : state;
-        return new OpenSearchDiagnostics(beanName, connection, resolved, clusterHealth, indices, message, partial, indicesTruncated, false, false, "", "");
+        return new OpenSearchDiagnostics(beanName, connection, resolved, clusterHealth, indices, value(message), partial, indicesTruncated, false, false, "", "");
     }
 
     public static OpenSearchDiagnostics failure(String beanName, ConnectionContext connection, DiagnosticState state, String message) {
         return new OpenSearchDiagnostics(beanName, connection, state, null, List.of(), message, false, false, false, false, "", "");
     }
 
-    private static String statusLabel(DiagnosticState state, ClusterHealth health) {
+    private static String statusLabel(DiagnosticState state, @Nullable ClusterHealth health) {
         if (health != null && health.status() != null && !health.status().isBlank()) {
             return health.status().toUpperCase(Locale.ENGLISH);
         }
@@ -90,7 +91,7 @@ public record OpenSearchDiagnostics(String beanName,
         };
     }
 
-    private static String statusBadgeClass(DiagnosticState state, ClusterHealth health) {
+    private static String statusBadgeClass(DiagnosticState state, @Nullable ClusterHealth health) {
         String status = health == null ? "" : health.status();
         if ("green".equalsIgnoreCase(status)) {
             return "badge-success";
@@ -106,5 +107,9 @@ public record OpenSearchDiagnostics(String beanName,
             return "badge-danger";
         }
         return "badge-secondary";
+    }
+
+    private static String value(@Nullable String value) {
+        return value == null ? "" : value;
     }
 }
