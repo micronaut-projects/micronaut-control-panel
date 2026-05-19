@@ -39,6 +39,7 @@ import org.opensearch.client.opensearch.indices.get_alias.IndexAliases;
 import org.opensearch.client.opensearch.indices.get_mapping.IndexMappingRecord;
 import org.opensearch.client.util.ObjectBuilder;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -155,15 +156,7 @@ class OpenSearchDiagnosticsServiceTest {
 
     @Test
     void classifiesAuthorizationFailureWithoutRawResponseBody() throws Exception {
-        OpenSearchClient client = mock(OpenSearchClient.class);
-        OpenSearchClusterClient cluster = mock(OpenSearchClusterClient.class);
-        when(client.cluster()).thenReturn(cluster);
-        when(cluster.health()).thenThrow(new OpenSearchException(ErrorResponse.of(e -> e
-            .status(403)
-            .error(error -> error.type("security_exception").reason("raw secret details"))
-        )));
-
-        try (ServiceFixture fixture = service(Map.of(), client, 25, 20)) {
+        try (ServiceFixture fixture = service(Map.of(), client(OpenSearchException.class, 403, "security_exception", "raw secret details"), 25, 20)) {
             var diagnostics = fixture.service().diagnostics();
 
             assertEquals(DiagnosticState.AUTHORIZATION_FAILED, diagnostics.state());
@@ -174,7 +167,54 @@ class OpenSearchDiagnosticsServiceTest {
     }
 
     @Test
+    void classifiesAuthenticationFailure() throws Exception {
+        try (ServiceFixture fixture = service(Map.of(), client(OpenSearchException.class, 401, "security_exception", "raw secret details"), 25, 20)) {
+            var diagnostics = fixture.service().diagnostics();
+
+            assertEquals(DiagnosticState.AUTHENTICATION_FAILED, diagnostics.state());
+            assertEquals("Authentication", diagnostics.statusLabel());
+            assertTrue(diagnostics.message().contains("Authentication failed"));
+            assertFalse(diagnostics.message().contains("raw secret details"));
+        }
+    }
+
+    @Test
+    void classifiesUnsupportedResponse() throws Exception {
+        try (ServiceFixture fixture = service(Map.of(), client(OpenSearchException.class, 404, "missing_endpoint_exception", "raw secret details"), 25, 20)) {
+            var diagnostics = fixture.service().diagnostics();
+
+            assertEquals(DiagnosticState.UNSUPPORTED, diagnostics.state());
+            assertEquals("Unsupported", diagnostics.statusLabel());
+            assertTrue(diagnostics.message().contains("missing_endpoint_exception"));
+            assertFalse(diagnostics.message().contains("raw secret details"));
+        }
+    }
+
+    @Test
+    void reportsUnavailableClusterForIoFailure() throws Exception {
+        try (ServiceFixture fixture = service(Map.of(), client(IOException.class, 0, "", ""), 25, 20)) {
+            var diagnostics = fixture.service().diagnostics();
+
+            assertEquals(DiagnosticState.UNAVAILABLE, diagnostics.state());
+            assertEquals("Unavailable", diagnostics.statusLabel());
+            assertTrue(diagnostics.message().contains("Cluster unavailable"));
+        }
+    }
+
+    @Test
+    void reportsGenericErrorForUnexpectedRuntimeFailure() throws Exception {
+        try (ServiceFixture fixture = service(Map.of(), client(RuntimeException.class, 0, "", ""), 25, 20)) {
+            var diagnostics = fixture.service().diagnostics();
+
+            assertEquals(DiagnosticState.ERROR, diagnostics.state());
+            assertEquals("Error", diagnostics.statusLabel());
+            assertTrue(diagnostics.message().contains("could not be collected"));
+        }
+    }
+
+    @Test
     void redactsSecretLikeEndpointSegments() {
+        assertEquals("", OpenSearchDiagnosticsService.sanitizedEndpoint(null));
         assertEquals("https://***@localhost:9200/path", OpenSearchDiagnosticsService.sanitizedEndpoint("https://user:pass@localhost:9200/path?access_key=secret"));
         assertEquals("https://example.com/path/***", OpenSearchDiagnosticsService.sanitizedEndpoint("https://example.com/path/secret_key=value"));
     }
@@ -205,6 +245,23 @@ class OpenSearchDiagnosticsServiceTest {
         when(cat.indices(anyCatIndicesRequest())).thenReturn(indicesResponse);
         when(indices.getAlias(anyGetAliasRequest())).thenReturn(aliasResponse);
         when(indices.getMapping(anyGetMappingRequest())).thenReturn(mappingResponse);
+        return client;
+    }
+
+    private static OpenSearchClient client(Class<? extends Exception> exceptionType, int status, String errorType, String reason) throws Exception {
+        OpenSearchClient client = mock(OpenSearchClient.class);
+        OpenSearchClusterClient cluster = mock(OpenSearchClusterClient.class);
+        when(client.cluster()).thenReturn(cluster);
+        if (exceptionType == IOException.class) {
+            when(cluster.health()).thenThrow(new IOException("connection failed"));
+        } else if (exceptionType == RuntimeException.class) {
+            when(cluster.health()).thenThrow(new IllegalStateException("unexpected failure"));
+        } else {
+            when(cluster.health()).thenThrow(new OpenSearchException(ErrorResponse.of(e -> e
+                .status(status)
+                .error(error -> error.type(errorType).reason(reason))
+            )));
+        }
         return client;
     }
 
