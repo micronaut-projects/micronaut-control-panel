@@ -34,6 +34,7 @@ import org.neo4j.driver.exceptions.Neo4jException;
 import org.neo4j.driver.exceptions.ServiceUnavailableException;
 import org.neo4j.driver.summary.ResultSummary;
 import org.neo4j.driver.summary.ServerInfo;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -199,7 +200,7 @@ public class Neo4jDiagnosticsService {
         return "Neo4j probe failed with " + exception.getClass().getSimpleName() + ".";
     }
 
-    private static String valueOrEmpty(String value) {
+    private static String valueOrEmpty(@Nullable String value) {
         return value == null ? "" : Neo4jConnectionSummaryResolver.maskSecretValue(value);
     }
 }

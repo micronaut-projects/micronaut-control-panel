@@ -17,6 +17,7 @@ package io.micronaut.controlpanel.panels.neo4j;
 
 import io.micronaut.context.env.Environment;
 import io.micronaut.controlpanel.panels.neo4j.model.Neo4jConnectionInfo;
+import org.jspecify.annotations.Nullable;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -94,7 +95,7 @@ public class Neo4jConnectionSummaryResolver {
         }
     }
 
-    private static String userInfo(URI uri) {
+    private static @Nullable String userInfo(URI uri) {
         return uri.getRawUserInfo() == null ? null : "***";
     }
 
