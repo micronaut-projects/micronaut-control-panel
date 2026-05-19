@@ -1079,6 +1079,28 @@ final class KafkaClusterServiceTest {
     }
 
     @Test
+    void schemaRegistryReadFallsBackToCompatibilityAndNullDetailFields() {
+        AdminClient admin = mock(AdminClient.class);
+        KafkaIntegrationConfiguration configuration = integrationConfig("http://schema-registry", null, null);
+        FakeIntegrationClient client = new FakeIntegrationClient(Map.of(
+            "Schema Registry GET /subjects/orders-value/versions/1", KafkaClusterService.json("""
+                {"subject":"orders-value","version":"1","id":null,"schemaType":null,"schema":null,"references":null}
+                """),
+            "Schema Registry GET /config/orders-value", KafkaClusterService.json("{\"compatibility\":\"FULL\"}")
+        ));
+        KafkaClusterService service = new KafkaClusterService(admin, client, configuration, writeConfig(false, false));
+
+        var detail = service.schemaRegistrySubject("orders-value", 1);
+
+        assertNull(detail.error());
+        assertNull(detail.data().id());
+        assertNull(detail.data().schemaType());
+        assertNull(detail.data().schema());
+        assertEquals("FULL", detail.data().compatibility());
+        assertTrue(detail.data().references().isEmpty());
+    }
+
+    @Test
     void schemaRegistryUsesPanelScopedIntegrationUrl() {
         AdminClient admin = mock(AdminClient.class);
         FakeIntegrationClient client = new FakeIntegrationClient(Map.of(
@@ -1148,6 +1170,27 @@ final class KafkaClusterServiceTest {
         assertFalse(overview.data().connectors().get(0).config().containsKey("connection.password"));
         assertNull(pause.error());
         assertTrue(pause.data().applied());
+    }
+
+    @Test
+    void kafkaConnectReadToleratesMissingNestedStatusAndConfig() {
+        AdminClient admin = mock(AdminClient.class);
+        KafkaIntegrationConfiguration configuration = integrationConfig(null, "http://connect", null);
+        FakeIntegrationClient client = new FakeIntegrationClient(Map.of(
+            "Kafka Connect GET /connectors", KafkaClusterService.json("[\"jdbc-sink\"]"),
+            "Kafka Connect GET /connectors/jdbc-sink/status", KafkaClusterService.json("{\"type\":\"sink\"}"),
+            "Kafka Connect GET /connectors/jdbc-sink/config", JsonNode.nullNode()
+        ));
+        KafkaClusterService service = new KafkaClusterService(admin, client, configuration, writeConfig(false, false));
+
+        var overview = service.kafkaConnect();
+
+        assertNull(overview.error());
+        assertEquals("sink", overview.data().connectors().get(0).type());
+        assertNull(overview.data().connectors().get(0).state());
+        assertNull(overview.data().connectors().get(0).workerId());
+        assertTrue(overview.data().connectors().get(0).tasks().isEmpty());
+        assertTrue(overview.data().connectors().get(0).config().isEmpty());
     }
 
     @Test
@@ -1297,6 +1340,33 @@ final class KafkaClusterServiceTest {
         assertFalse(configuration.actionEnabled(KafkaClusterService.ACTION_DELETE_CONNECTOR));
         assertFalse(configuration.actionEnabled("unknown"));
         assertEquals(actions, configuration.actions());
+    }
+
+    @Test
+    void defaultIntegrationClientHandlesBlankAndNullMappedResponses() throws Exception {
+        SchemaRegistryIntegrationHttpClient schemaRegistryClient = mock(SchemaRegistryIntegrationHttpClient.class);
+        KafkaConnectIntegrationHttpClient connectClient = mock(KafkaConnectIntegrationHttpClient.class);
+        KsqlDbIntegrationHttpClient ksqlDbClient = mock(KsqlDbIntegrationHttpClient.class);
+        JsonMapper jsonMapper = mock(JsonMapper.class);
+        when(schemaRegistryClient.get("empty")).thenReturn(" ");
+        when(connectClient.get("connectors")).thenReturn("{}");
+        when(jsonMapper.readValue(any(byte[].class), org.mockito.ArgumentMatchers.eq(JsonNode.class))).thenReturn(null);
+        DefaultKafkaIntegrationClient client = new DefaultKafkaIntegrationClient(
+            integrationConfig("http://schema-registry", "http://connect", "http://ksqldb"),
+            schemaRegistryClient,
+            connectClient,
+            ksqlDbClient,
+            null,
+            null,
+            null,
+            jsonMapper
+        );
+
+        JsonNode blank = client.request(KafkaClusterService.INTEGRATION_SCHEMA_REGISTRY, "GET", "/empty", null);
+        JsonNode nullMapped = client.request(KafkaClusterService.INTEGRATION_CONNECT, "GET", "/connectors", null);
+
+        assertTrue(blank.isNull());
+        assertTrue(nullMapped.isNull());
     }
 
     @Test
