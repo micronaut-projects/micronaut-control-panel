@@ -96,7 +96,7 @@ loadScripts(document, 'script');</script>
 </dl>
 <hr>
 <div class="horizontal-scroll">
-<div class="type-signature"><span class="modifiers">public record </span><span class="element-name type-name-label">Body</span>(<a href="DataSourceInfo.html" title="class in io.micronaut.controlpanel.panels.datasource.model">DataSourceInfo</a>&nbsp;dataSourceInfo, <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="Table.html" title="class in io.micronaut.controlpanel.panels.datasource.model">Table</a>&gt;&nbsp;tables, <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;mermaidEr, <a href="PoolInfo.html" title="class in io.micronaut.controlpanel.panels.datasource.model">PoolInfo</a>&nbsp;poolInfo)
+<div class="type-signature"><span class="modifiers">public record </span><span class="element-name type-name-label">Body</span>(<a href="DataSourceInfo.html" title="class in io.micronaut.controlpanel.panels.datasource.model">DataSourceInfo</a>&nbsp;dataSourceInfo, <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="Table.html" title="class in io.micronaut.controlpanel.panels.datasource.model">Table</a>&gt;&nbsp;tables, <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;mermaidEr, @Nullable <a href="PoolInfo.html" title="class in io.micronaut.controlpanel.panels.datasource.model">PoolInfo</a>&nbsp;poolInfo)
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Record.html" title="class or interface in java.lang" class="external-link">Record</a></span></div>
 <div class="block">Body of the control panel containing DataSource info and tables.</div>
 </div>
@@ -118,7 +118,7 @@ loadScripts(document, 'script');</script>
 <div class="col-constructor-name odd-row-color"><code><a href="#%3Cinit%3E(io.micronaut.controlpanel.panels.datasource.model.DataSourceInfo,java.util.List,java.lang.String,io.micronaut.controlpanel.panels.datasource.model.PoolInfo)" class="member-name-link">Body</a><wbr>(<a href="DataSourceInfo.html" title="class in io.micronaut.controlpanel.panels.datasource.model">DataSourceInfo</a>&nbsp;dataSourceInfo,
  <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="Table.html" title="class in io.micronaut.controlpanel.panels.datasource.model">Table</a>&gt;&nbsp;tables,
  <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;mermaidEr,
- <a href="PoolInfo.html" title="class in io.micronaut.controlpanel.panels.datasource.model">PoolInfo</a>&nbsp;poolInfo)</code></div>
+ @Nullable <a href="PoolInfo.html" title="class in io.micronaut.controlpanel.panels.datasource.model">PoolInfo</a>&nbsp;poolInfo)</code></div>
 <div class="col-last odd-row-color">
 <div class="block">Creates an instance of a <code>Body</code> record class.</div>
 </div>
@@ -156,7 +156,7 @@ loadScripts(document, 'script');</script>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns the value of the <a href="#param-mermaidEr"><code>mermaidEr</code></a> record component.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="PoolInfo.html" title="class in io.micronaut.controlpanel.panels.datasource.model">PoolInfo</a></code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>@Nullable <a href="PoolInfo.html" title="class in io.micronaut.controlpanel.panels.datasource.model">PoolInfo</a></code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#poolInfo()" class="member-name-link">poolInfo</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns the value of the <a href="#param-poolInfo"><code>poolInfo</code></a> record component.</div>
@@ -208,7 +208,7 @@ loadScripts(document, 'script');</script>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">Body</span><wbr><span class="parameters">(<a href="DataSourceInfo.html" title="class in io.micronaut.controlpanel.panels.datasource.model">DataSourceInfo</a>&nbsp;dataSourceInfo,
  <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="Table.html" title="class in io.micronaut.controlpanel.panels.datasource.model">Table</a>&gt;&nbsp;tables,
  <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;mermaidEr,
- <a href="PoolInfo.html" title="class in io.micronaut.controlpanel.panels.datasource.model">PoolInfo</a>&nbsp;poolInfo)</span></div>
+ @Nullable <a href="PoolInfo.html" title="class in io.micronaut.controlpanel.panels.datasource.model">PoolInfo</a>&nbsp;poolInfo)</span></div>
 <div class="block">Creates an instance of a <code>Body</code> record class.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
@@ -330,7 +330,7 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="poolInfo()">
 <h3>poolInfo</h3>
 <div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="PoolInfo.html" title="class in io.micronaut.controlpanel.panels.datasource.model">PoolInfo</a></span>&nbsp;<span class="element-name">poolInfo</span>()</div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">@Nullable <a href="PoolInfo.html" title="class in io.micronaut.controlpanel.panels.datasource.model">PoolInfo</a></span>&nbsp;<span class="element-name">poolInfo</span>()</div>
 <div class="block">Returns the value of the <a href="#param-poolInfo"><code>poolInfo</code></a> record component.</div>
 <dl class="notes">
 <dt>Returns:</dt>
