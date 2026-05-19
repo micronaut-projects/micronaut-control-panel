@@ -25,6 +25,7 @@ import io.micronaut.management.endpoint.health.HealthEndpoint;
 import io.micronaut.management.health.indicator.HealthResult;
 import jakarta.inject.Singleton;
 import org.apache.kafka.streams.StreamsConfig;
+import org.jspecify.annotations.Nullable;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Mono;
 
@@ -78,7 +79,7 @@ final class HealthKafkaStreamsRuntimeStateResolver implements KafkaStreamsRuntim
         return stateFromApplicationHealth(application);
     }
 
-    private HealthResult readVisibleHealth() {
+    private @Nullable HealthResult readVisibleHealth() {
         Principal principal = ServerRequestContext.currentRequest()
                 .flatMap(request -> request.getUserPrincipal(Principal.class))
                 .orElse(null);
@@ -86,7 +87,7 @@ final class HealthKafkaStreamsRuntimeStateResolver implements KafkaStreamsRuntim
         return Mono.from(health).block();
     }
 
-    private static HealthResult kafkaStreamsHealth(HealthResult health) {
+    private static @Nullable HealthResult kafkaStreamsHealth(HealthResult health) {
         if (KAFKA_STREAMS.equals(normalizeKey(health.getName()))) {
             return health;
         }
@@ -100,7 +101,7 @@ final class HealthKafkaStreamsRuntimeStateResolver implements KafkaStreamsRuntim
         return null;
     }
 
-    private static HealthResult applicationHealth(HealthResult kafkaStreams, Set<String> candidates) {
+    private static @Nullable HealthResult applicationHealth(HealthResult kafkaStreams, Set<String> candidates) {
         Object details = kafkaStreams.getDetails();
         if (!(details instanceof Map<?, ?> applications)) {
             return null;
@@ -143,7 +144,7 @@ final class HealthKafkaStreamsRuntimeStateResolver implements KafkaStreamsRuntim
         );
     }
 
-    private static KafkaStreamsRuntimeState.TaskSummary taskSummary(Object value) {
+    private static KafkaStreamsRuntimeState.TaskSummary taskSummary(@Nullable Object value) {
         if (!(value instanceof Map<?, ?> taskMap)) {
             return KafkaStreamsRuntimeState.TaskSummary.empty();
         }
@@ -161,7 +162,7 @@ final class HealthKafkaStreamsRuntimeStateResolver implements KafkaStreamsRuntim
         return candidates;
     }
 
-    private static Object findValue(Map<?, ?> map, String key) {
+    private static @Nullable Object findValue(Map<?, ?> map, String key) {
         for (Map.Entry<?, ?> entry : map.entrySet()) {
             if (key.equals(normalizeKey(stringValue(entry.getKey())))) {
                 return entry.getValue();
@@ -170,18 +171,18 @@ final class HealthKafkaStreamsRuntimeStateResolver implements KafkaStreamsRuntim
         return null;
     }
 
-    private static String normalizeKey(String key) {
+    private static @Nullable String normalizeKey(@Nullable String key) {
         if (key == null) {
             return null;
         }
         return StringUtils.trimToNull(key.endsWith("()") ? key.substring(0, key.length() - 2) : key);
     }
 
-    private static String statusName(HealthStatus status) {
+    private static @Nullable String statusName(@Nullable HealthStatus status) {
         return status == null ? null : status.getName();
     }
 
-    private static List<String> stringList(Object value) {
+    private static List<String> stringList(@Nullable Object value) {
         if (value instanceof Collection<?> collection) {
             return collection.stream()
                     .map(HealthKafkaStreamsRuntimeStateResolver::stringValue)
@@ -192,7 +193,7 @@ final class HealthKafkaStreamsRuntimeStateResolver implements KafkaStreamsRuntim
         return single == null ? List.of() : List.of(single);
     }
 
-    private static String stringValue(Object value) {
+    private static @Nullable String stringValue(@Nullable Object value) {
         return value == null ? null : String.valueOf(value);
     }
 }
