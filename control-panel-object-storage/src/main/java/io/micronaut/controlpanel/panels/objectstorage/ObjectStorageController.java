@@ -38,6 +38,7 @@ import io.micronaut.objectstorage.request.UploadRequest;
 import io.micronaut.objectstorage.response.UploadResponse;
 import io.micronaut.scheduling.TaskExecutors;
 import io.micronaut.scheduling.annotation.ExecuteOn;
+import org.jspecify.annotations.Nullable;
 
 import java.net.URI;
 import java.util.Map;
@@ -66,7 +67,7 @@ public final class ObjectStorageController {
     }
 
     @Get("/{objectStorage}/{key}")
-    public StreamedFile download(String objectStorage, String key) {
+    public @Nullable StreamedFile download(String objectStorage, String key) {
         var operations = operationsMap.get(objectStorage);
         if (operations != null) {
             return operations.retrieve(key)
