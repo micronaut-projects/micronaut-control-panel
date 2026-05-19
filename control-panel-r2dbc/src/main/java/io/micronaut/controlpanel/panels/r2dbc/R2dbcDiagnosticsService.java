@@ -259,7 +259,9 @@ public final class R2dbcDiagnosticsService {
         return options.map(value -> value.getValue(option))
             .map(R2dbcDiagnosticsService::safeValue)
             .filter(value -> !value.isBlank())
-            .orElseGet(() -> safeValue(environment.getProperty(propertyPrefix() + "." + propertyName, Object.class).orElse(null)));
+            .orElseGet(() -> environment.getProperty(propertyPrefix() + "." + propertyName, Object.class)
+                .map(R2dbcDiagnosticsService::safeValue)
+                .orElse(EMPTY_STRING));
     }
 
     private List<R2dbcOption> optionList(Optional<ConnectionFactoryOptions> options) {
