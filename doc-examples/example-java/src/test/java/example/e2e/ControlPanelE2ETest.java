@@ -5,12 +5,16 @@ import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Page.GetByRoleOptions;
 import com.microsoft.playwright.junit.UsePlaywright;
 import com.microsoft.playwright.options.AriaRole;
+import com.microsoft.playwright.options.WaitUntilState;
 import io.micronaut.context.annotation.Property;
 import io.micronaut.http.HttpStatus;
 import io.micronaut.http.client.HttpClient;
 import io.micronaut.http.client.annotation.Client;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.condition.DisabledInNativeImage;
 
 import java.util.regex.Pattern;
@@ -22,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @UsePlaywright(ControlPanelBrowserOptions.class)
 @MicronautTest(environments = {"hibernate", "kafka", "oracle"})
 @Property(name = "kafka.streams.default.state.dir", value = "build/tmp/kafka-streams-e2e")
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ControlPanelE2ETest extends AbstractE2ETest {
 
     @Test
@@ -117,15 +122,19 @@ class ControlPanelE2ETest extends AbstractE2ETest {
     }
 
     @Test
+    @Order(1)
     void testDisabledBeans(Page page) {
-        page.navigate(baseUrl());
-        categoryLink(page, "Beans").click();
-        controlPanelDetails(page, "Disabled Beans").click();
+        page.setDefaultTimeout(60_000);
+        page.navigate(baseUrl() + "/disabled-beans", new Page.NavigateOptions()
+            .setTimeout(60_000)
+            .setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
 
         var searchBox = page.getByRole(AriaRole.TEXTBOX, new GetByRoleOptions().setName("Search disabled beans"));
+        assertThat(searchBox).isVisible();
         searchBox.click();
         searchBox.fill("jcache");
 
+        assertThat(page.locator("[data-filter-table-summary]")).containsText("filtered from");
         assertThat(page.locator("tbody")).containsText("io.micronaut.cache.jcache.JCacheManager");
     }
 
@@ -140,27 +149,36 @@ class ControlPanelE2ETest extends AbstractE2ETest {
 
         assertThat(page.getByRole(AriaRole.DEFINITION).nth(1)).containsText("INFO");
 
+        var loggerName = "example";
         page.locator("tbody tr")
-            .filter(new Locator.FilterOptions().setHasText("ROOT"))
+            .filter(new Locator.FilterOptions().setHasText(loggerName))
             .getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName("Reconfigure"))
             .click();
         assertThat(page.locator("#actionsModal")).isVisible();
-        assertThat(page.locator("#modalLabel")).containsText("Reconfigure logger ROOT");
+        assertThat(page.locator("#modalLabel")).containsText("Reconfigure logger " + loggerName);
 
         page.locator("#actionsModal").getByLabel("Level:").selectOption("DEBUG");
-        id(page, "submit").click();
+        waitForLoggerUpdate(page, loggerName, () -> id(page, "submit").click());
         assertThat(page.getByRole(AriaRole.ALERT)).containsText("Logger configured");
 
         page.locator("#actionsModal .modal-footer [data-dismiss='modal']").click();
         page.navigate(baseUrl() + "/loggers");
-        assertThat(body(page)).containsText("DEBUG");
+        assertThat(page.locator("tbody tr").filter(new Locator.FilterOptions().setHasText(loggerName))).containsText("DEBUG");
 
         page.locator("tbody tr")
-            .filter(new Locator.FilterOptions().setHasText("ROOT"))
+            .filter(new Locator.FilterOptions().setHasText(loggerName))
             .getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName("Reconfigure"))
             .click();
         page.locator("#actionsModal").getByLabel("Level:").selectOption("INFO");
-        id(page, "submit").click();
+        waitForLoggerUpdate(page, loggerName, () -> id(page, "submit").click());
+    }
+
+    private static void waitForLoggerUpdate(Page page, String loggerName, Runnable action) {
+        page.waitForResponse(
+            response -> response.url().contains("/loggers-control-panel-controller/" + loggerName)
+                && response.status() == HttpStatus.NO_CONTENT.getCode(),
+            action
+        );
     }
 
     @Test
