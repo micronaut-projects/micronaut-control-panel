@@ -106,7 +106,11 @@ final class DefaultKafkaIntegrationClient implements KafkaIntegrationClient {
                 case METHOD_DELETE -> client.delete(clientPath);
                 default -> throw new IllegalArgumentException("Unsupported integration HTTP method: " + method);
             };
-            return response == null || response.isBlank() ? JsonNode.nullNode() : jsonMapper.readValue(response.getBytes(StandardCharsets.UTF_8), JsonNode.class);
+            if (response == null || response.isBlank()) {
+                return JsonNode.nullNode();
+            }
+            JsonNode json = jsonMapper.readValue(response.getBytes(StandardCharsets.UTF_8), JsonNode.class);
+            return json == null ? JsonNode.nullNode() : json;
         } catch (HttpClientResponseException e) {
             if (e.getStatus().getCode() == 204) {
                 return JsonNode.nullNode();
@@ -119,8 +123,8 @@ final class DefaultKafkaIntegrationClient implements KafkaIntegrationClient {
     private String baseUrl(String integration) {
         return switch (integration) {
             case KafkaClusterService.INTEGRATION_SCHEMA_REGISTRY -> schemaRegistryUrl();
-            case KafkaClusterService.INTEGRATION_CONNECT -> configuredUrl(configuration.connect().url(), kafkaConnectUrl);
-            case KafkaClusterService.INTEGRATION_KSQLDB -> configuredUrl(configuration.ksqldb().url(), kafkaKsqlDbUrl);
+            case KafkaClusterService.INTEGRATION_CONNECT -> configuredUrl(configuration.connectEndpoint().url(), kafkaConnectUrl);
+            case KafkaClusterService.INTEGRATION_KSQLDB -> configuredUrl(configuration.ksqldbEndpoint().url(), kafkaKsqlDbUrl);
             default -> null;
         };
     }
@@ -136,7 +140,7 @@ final class DefaultKafkaIntegrationClient implements KafkaIntegrationClient {
 
     @Nullable
     private String schemaRegistryUrl() {
-        return configuredUrl(schemaRegistryUrl, configuration.schemaRegistry().url());
+        return configuredUrl(schemaRegistryUrl, configuration.schemaRegistryEndpoint().url());
     }
 
     @Nullable

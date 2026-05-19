@@ -59,6 +59,21 @@ record KafkaIntegrationConfiguration(
         }
     }
 
+    Endpoint schemaRegistryEndpoint() {
+        Endpoint endpoint = schemaRegistry;
+        return endpoint == null ? new Endpoint(null) : endpoint;
+    }
+
+    Endpoint connectEndpoint() {
+        Endpoint endpoint = connect;
+        return endpoint == null ? new Endpoint(null) : endpoint;
+    }
+
+    Endpoint ksqldbEndpoint() {
+        Endpoint endpoint = ksqldb;
+        return endpoint == null ? new Endpoint(null) : endpoint;
+    }
+
     @Internal
     record Endpoint(@Nullable String url) {
 

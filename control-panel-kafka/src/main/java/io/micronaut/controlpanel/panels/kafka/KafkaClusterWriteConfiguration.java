@@ -98,26 +98,27 @@ record KafkaClusterWriteConfiguration(
     }
 
     boolean actionEnabled(String action) {
+        Actions configuredActions = actions == null ? new Actions() : actions;
         return switch (action) {
-            case "topics.create" -> actions.isCreateTopic();
-            case "topics.update-config" -> actions.isUpdateTopicConfig();
-            case "topics.increase-partitions" -> actions.isIncreasePartitions();
-            case "topics.delete" -> actions.isDeleteTopic();
-            case "messages.produce" -> actions.isProduceMessage();
-            case "consumer-groups.delete" -> actions.isDeleteConsumerGroup();
-            case "consumer-groups.reset-offsets" -> actions.isResetConsumerGroupOffsets();
-            case "app-consumers.pause" -> actions.isPauseAppConsumer();
-            case "app-consumers.resume" -> actions.isResumeAppConsumer();
-            case "schema-registry.register" -> actions.isRegisterSchema();
-            case "schema-registry.update-compatibility" -> actions.isUpdateSchemaCompatibility();
-            case "schema-registry.delete-subject" -> actions.isDeleteSchemaSubject();
-            case "schema-registry.delete-version" -> actions.isDeleteSchemaVersion();
-            case "kafka-connect.pause" -> actions.isPauseConnector();
-            case "kafka-connect.resume" -> actions.isResumeConnector();
-            case "kafka-connect.restart" -> actions.isRestartConnector();
-            case "kafka-connect.restart-task" -> actions.isRestartConnectorTask();
-            case "kafka-connect.update-config" -> actions.isUpdateConnectorConfig();
-            case "kafka-connect.delete" -> actions.isDeleteConnector();
+            case "topics.create" -> configuredActions.isCreateTopic();
+            case "topics.update-config" -> configuredActions.isUpdateTopicConfig();
+            case "topics.increase-partitions" -> configuredActions.isIncreasePartitions();
+            case "topics.delete" -> configuredActions.isDeleteTopic();
+            case "messages.produce" -> configuredActions.isProduceMessage();
+            case "consumer-groups.delete" -> configuredActions.isDeleteConsumerGroup();
+            case "consumer-groups.reset-offsets" -> configuredActions.isResetConsumerGroupOffsets();
+            case "app-consumers.pause" -> configuredActions.isPauseAppConsumer();
+            case "app-consumers.resume" -> configuredActions.isResumeAppConsumer();
+            case "schema-registry.register" -> configuredActions.isRegisterSchema();
+            case "schema-registry.update-compatibility" -> configuredActions.isUpdateSchemaCompatibility();
+            case "schema-registry.delete-subject" -> configuredActions.isDeleteSchemaSubject();
+            case "schema-registry.delete-version" -> configuredActions.isDeleteSchemaVersion();
+            case "kafka-connect.pause" -> configuredActions.isPauseConnector();
+            case "kafka-connect.resume" -> configuredActions.isResumeConnector();
+            case "kafka-connect.restart" -> configuredActions.isRestartConnector();
+            case "kafka-connect.restart-task" -> configuredActions.isRestartConnectorTask();
+            case "kafka-connect.update-config" -> configuredActions.isUpdateConnectorConfig();
+            case "kafka-connect.delete" -> configuredActions.isDeleteConnector();
             default -> false;
         };
     }

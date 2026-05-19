@@ -1004,23 +1004,30 @@ final class KafkaClusterService {
     }
 
     private JsonNode integrationRequest(String integration, String method, String path, @Nullable Object body) throws Exception {
-        requireIntegrationConfigured(integration);
-        return integrationClient.request(integration, method, path, body);
+        String url = integrationUrl(integration);
+        if (url == null) {
+            throw new IllegalStateException(integration + " is not configured");
+        }
+        KafkaIntegrationClient client = integrationClient;
+        if (client == null) {
+            throw new IllegalStateException(integration + " client is unavailable");
+        }
+        return client.request(integration, method, path, body);
     }
 
     @Nullable
     private String integrationUrl(String integration) {
         return switch (integration) {
             case INTEGRATION_SCHEMA_REGISTRY -> schemaRegistryUrl();
-            case INTEGRATION_CONNECT -> configuredUrl(integrationConfiguration.connect().url(), kafkaConnectUrl);
-            case INTEGRATION_KSQLDB -> configuredUrl(integrationConfiguration.ksqldb().url(), kafkaKsqlDbUrl);
+            case INTEGRATION_CONNECT -> configuredUrl(integrationConfiguration.connectEndpoint().url(), kafkaConnectUrl);
+            case INTEGRATION_KSQLDB -> configuredUrl(integrationConfiguration.ksqldbEndpoint().url(), kafkaKsqlDbUrl);
             default -> throw new IllegalArgumentException("Unknown integration: " + integration);
         };
     }
 
     @Nullable
     private String schemaRegistryUrl() {
-        return configuredUrl(schemaRegistryUrl, integrationConfiguration.schemaRegistry().url());
+        return configuredUrl(schemaRegistryUrl, integrationConfiguration.schemaRegistryEndpoint().url());
     }
 
     @Nullable
@@ -1133,22 +1140,25 @@ final class KafkaClusterService {
             case RESET_EARLIEST -> offsetsForReset(partitions, OffsetSpec.earliest());
             case RESET_LATEST -> offsetsForReset(partitions, OffsetSpec.latest());
             case RESET_OFFSET -> {
-                if (request.offset() == null || request.offset() < 0) {
+                Long requestedOffset = request.offset();
+                if (requestedOffset == null || requestedOffset < 0) {
                     throw new IllegalArgumentException("Offset must be greater than or equal to 0");
                 }
+                long resetOffset = requestedOffset;
                 yield partitions.stream()
                     .collect(Collectors.toMap(
                         partition -> partition,
-                        partition -> new OffsetAndMetadata(request.offset()),
+                        partition -> new OffsetAndMetadata(resetOffset),
                         (first, second) -> first,
                         LinkedHashMap::new
                     ));
             }
             case RESET_TIMESTAMP -> {
-                if (request.timestamp() == null || request.timestamp() < 0) {
+                Long requestedTimestamp = request.timestamp();
+                if (requestedTimestamp == null || requestedTimestamp < 0) {
                     throw new IllegalArgumentException("Timestamp must be greater than or equal to 0");
                 }
-                yield offsetsForReset(partitions, OffsetSpec.forTimestamp(request.timestamp()));
+                yield offsetsForReset(partitions, OffsetSpec.forTimestamp(requestedTimestamp));
             }
             default -> throw new IllegalArgumentException("Unsupported reset target: " + request.target());
         };
@@ -1229,7 +1239,8 @@ final class KafkaClusterService {
                 "/config/" + KafkaIntegrationClient.encodePath(subject),
                 null
             );
-            return text(config.get("compatibilityLevel"), text(config.get("compatibility"), null));
+            String compatibilityLevel = nullableText(config.get("compatibilityLevel"));
+            return compatibilityLevel == null ? nullableText(config.get("compatibility")) : compatibilityLevel;
         } catch (Exception e) {
             return null;
         }
@@ -1252,9 +1263,9 @@ final class KafkaClusterService {
             JsonNode connectorStatus = status.get("connector");
             return new ConnectorSummary(
                 connector,
-                text(status.get("type"), null),
-                connectorStatus == null ? null : text(connectorStatus.get("state"), null),
-                connectorStatus == null ? null : text(connectorStatus.get("worker_id"), null),
+                nullableText(status.get("type")),
+                connectorStatus == null ? null : nullableText(connectorStatus.get("state")),
+                connectorStatus == null ? null : nullableText(connectorStatus.get("worker_id")),
                 connectorTasks(status.get("tasks")),
                 filteredObject(config)
             );
@@ -1302,14 +1313,14 @@ final class KafkaClusterService {
             text(detail.get("subject"), subject),
             numericInt(detail.get("version"), version),
             nullableInt(detail.get("id")),
-            text(detail.get("schemaType"), null),
-            text(detail.get("schema"), null),
+            nullableText(detail.get("schemaType")),
+            nullableText(detail.get("schema")),
             compatibility,
             schemaReferences(detail.get("references"))
         );
     }
 
-    private static List<SchemaReference> schemaReferences(JsonNode node) {
+    private static List<SchemaReference> schemaReferences(@Nullable JsonNode node) {
         if (node == null || !node.isArray()) {
             return List.of();
         }
@@ -1324,7 +1335,7 @@ final class KafkaClusterService {
         return references;
     }
 
-    private static List<ConnectorTask> connectorTasks(JsonNode node) {
+    private static List<ConnectorTask> connectorTasks(@Nullable JsonNode node) {
         if (node == null || !node.isArray()) {
             return List.of();
         }
@@ -1332,14 +1343,14 @@ final class KafkaClusterService {
         for (JsonNode task : node.values()) {
             tasks.add(new ConnectorTask(
                 numericInt(task.get("id"), -1),
-                text(task.get("state"), null),
-                text(task.get("worker_id"), null)
+                nullableText(task.get("state")),
+                nullableText(task.get("worker_id"))
             ));
         }
         return tasks;
     }
 
-    private static List<String> jsonArrayStrings(JsonNode node) {
+    private static List<String> jsonArrayStrings(@Nullable JsonNode node) {
         if (node == null || !node.isArray()) {
             return List.of();
         }
@@ -1350,7 +1361,7 @@ final class KafkaClusterService {
         return values;
     }
 
-    private static List<Integer> jsonArrayNumbers(JsonNode node) {
+    private static List<Integer> jsonArrayNumbers(@Nullable JsonNode node) {
         if (node == null || !node.isArray()) {
             return List.of();
         }
@@ -1361,7 +1372,7 @@ final class KafkaClusterService {
         return values;
     }
 
-    private static Map<String, String> filteredObject(JsonNode node) {
+    private static Map<String, String> filteredObject(@Nullable JsonNode node) {
         if (node == null || !node.isObject()) {
             return Map.of();
         }
@@ -1374,12 +1385,11 @@ final class KafkaClusterService {
         return result;
     }
 
-    private static Map<String, String> stringObject(JsonNode node) {
+    private static Map<String, String> stringObject(@Nullable JsonNode node) {
         return filteredObject(node);
     }
 
-    @Nullable
-    private static String text(JsonNode node, @Nullable String defaultValue) {
+    private static String text(@Nullable JsonNode node, String defaultValue) {
         if (node == null || node.isNull()) {
             return defaultValue;
         }
@@ -1387,14 +1397,22 @@ final class KafkaClusterService {
     }
 
     @Nullable
-    private static Integer nullableInt(JsonNode node) {
+    private static String nullableText(@Nullable JsonNode node) {
+        if (node == null || node.isNull()) {
+            return null;
+        }
+        return node.coerceStringValue();
+    }
+
+    @Nullable
+    private static Integer nullableInt(@Nullable JsonNode node) {
         if (node == null || node.isNull()) {
             return null;
         }
         return numericInt(node, 0);
     }
 
-    private static int numericInt(JsonNode node, int defaultValue) {
+    private static int numericInt(@Nullable JsonNode node, int defaultValue) {
         if (node == null || node.isNull()) {
             return defaultValue;
         }
@@ -1415,7 +1433,11 @@ final class KafkaClusterService {
 
     static JsonNode json(String value) {
         try {
-            return JsonMapper.createDefault().readValue(value.getBytes(StandardCharsets.UTF_8), JsonNode.class);
+            JsonNode json = JsonMapper.createDefault().readValue(value.getBytes(StandardCharsets.UTF_8), JsonNode.class);
+            if (json == null) {
+                throw new IllegalArgumentException("JSON value cannot be null");
+            }
+            return json;
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
         }
@@ -1737,7 +1759,7 @@ final class KafkaClusterService {
         TopicPartition partition,
         boolean assigned,
         @Nullable OffsetAndMetadata committedOffset,
-        ListOffsetsResult.ListOffsetsResultInfo endOffset) {
+        ListOffsetsResult.@Nullable ListOffsetsResultInfo endOffset) {
         Long committed = committedOffset == null ? null : committedOffset.offset();
         Long end = offset(endOffset);
         Long lag = committed == null || end == null ? null : Math.max(0, end - committed);
@@ -1949,7 +1971,7 @@ final class KafkaClusterService {
     }
 
     @Nullable
-    private static Long offset(ListOffsetsResult.ListOffsetsResultInfo info) {
+    private static Long offset(ListOffsetsResult.@Nullable ListOffsetsResultInfo info) {
         return info == null ? null : info.offset();
     }
 
