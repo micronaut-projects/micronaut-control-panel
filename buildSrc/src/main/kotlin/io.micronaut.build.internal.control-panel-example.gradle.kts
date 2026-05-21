@@ -51,6 +51,8 @@ configurations.named("nativeImageTestClasspath") {
         exclude(group = "com.oracle.database.jdbc")
         exclude(group = "io.micronaut.sql")
         exclude(group = "org.postgresql")
+        exclude(group = "io.micronaut.flyway")
+        exclude(group = "org.flywaydb")
         // Cloud object storage providers - only local storage is tested in native image
         exclude(group = "io.micronaut.objectstorage", module = "micronaut-object-storage-aws")
         exclude(group = "software.amazon.awssdk")
