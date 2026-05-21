@@ -1,0 +1,197 @@
+{{#with controlPanel.body}}
+    <div class="cp-detail-card-grid">
+        <div class="card card-light">
+            <div class="card-header">
+                <h3 class="card-title">CRaC support</h3>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-4">CRaC API</dt>
+                    <dd class="col-sm-8">
+                        {{#if support.cracApiPresent}}<span class="badge badge-primary">Present</span>{{else}}<span class="badge badge-secondary">Missing</span>{{/if}}
+                    </dd>
+                    <dt class="col-sm-4">CRaC MXBean</dt>
+                    <dd class="col-sm-8">
+                        {{#if support.mxBeanPresent}}<span class="badge badge-primary">Present</span>{{else}}<span class="badge badge-secondary">Missing</span>{{/if}}
+                    </dd>
+                    <dt class="col-sm-4">Micronaut CRaC</dt>
+                    <dd class="col-sm-8">
+                        {{#if support.micronautCracPresent}}<span class="badge badge-primary">Present</span>{{else}}<span class="badge badge-secondary">Missing</span>{{/if}}
+                    </dd>
+                    <dt class="col-sm-4">Status</dt>
+                    <dd class="col-sm-8">{{support.message}}</dd>
+                </dl>
+            </div>
+        </div>
+
+        <div class="card card-light">
+            <div class="card-header">
+                <h3 class="card-title">Restore metrics</h3>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-4">Restored</dt>
+                    <dd class="col-sm-8">
+                        {{#if restore.restored}}<span class="badge badge-primary">Observed</span>{{else}}<span class="badge badge-secondary">Not observed</span>{{/if}}
+                    </dd>
+                    <dt class="col-sm-4">Restore time</dt>
+                    <dd class="col-sm-8"><code>{{restore.restoreTime}}</code></dd>
+                    <dt class="col-sm-4">Uptime since restore</dt>
+                    <dd class="col-sm-8"><code>{{restore.uptimeSinceRestore}}</code></dd>
+                    <dt class="col-sm-4">Source</dt>
+                    <dd class="col-sm-8">{{restore.message}}</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <div class="cp-detail-card-grid">
+        <div class="card card-light">
+            <div class="card-header">
+                <h3 class="card-title">Micronaut CRaC configuration</h3>
+            </div>
+            <div class="card-body">
+                {{#if configuration.available}}
+                    <dl class="row">
+                        <dt class="col-sm-5">crac.enabled</dt>
+                        <dd class="col-sm-7"><code>{{configuration.enabled}}</code></dd>
+                        <dt class="col-sm-5">crac.refresh-beans</dt>
+                        <dd class="col-sm-7"><code>{{configuration.refreshBeans}}</code></dd>
+                        <dt class="col-sm-5">crac.datasource-pause-timeout</dt>
+                        <dd class="col-sm-7"><code>{{configuration.datasourcePauseTimeout}}</code></dd>
+                    </dl>
+                {{else}}
+                    <p>{{configuration.message}}</p>
+                {{/if}}
+            </div>
+        </div>
+
+        <div class="card card-light">
+            <div class="card-header">
+                <h3 class="card-title">Redis CRaC configuration</h3>
+            </div>
+            <div class="card-body">
+                {{#if redis.available}}
+                    <dl class="row">
+                        <dt class="col-sm-5">crac.redis.enabled</dt>
+                        <dd class="col-sm-7"><code>{{redis.enabled}}</code></dd>
+                        <dt class="col-sm-5">client support</dt>
+                        <dd class="col-sm-7"><code>{{redis.clientEnabled}}</code></dd>
+                        <dt class="col-sm-5">cache support</dt>
+                        <dd class="col-sm-7"><code>{{redis.cacheEnabled}}</code></dd>
+                        <dt class="col-sm-5">connection support</dt>
+                        <dd class="col-sm-7"><code>{{redis.connectionEnabled}}</code></dd>
+                    </dl>
+                {{else}}
+                    <p>{{redis.message}}</p>
+                {{/if}}
+            </div>
+        </div>
+    </div>
+
+    <div class="card card-light">
+        <div class="card-header">
+            <h3 class="card-title">Resource chain</h3>
+        </div>
+        <div class="card-body">
+            {{#if hasResources}}
+                <div class="cp-data-table cp-crac-resource-table">
+                    <div class="cp-data-table-container">
+                        <table class="table cp-data-table-table cp-data-table-fixed">
+                            <thead>
+                            <tr>
+                                <th>Order</th>
+                                <th>Category</th>
+                                <th>Bean</th>
+                                <th>Class</th>
+                                <th>Status / readiness</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {{#each resources}}
+                                <tr>
+                                    <td><code>{{order}}</code></td>
+                                    <td><span class="badge badge-primary">{{category}}</span></td>
+                                    <td><code class="cp-table-code" title="{{beanName}}">{{abbreviate beanName 40}}</code></td>
+                                    <td><code class="cp-table-code" title="{{className}}">{{abbreviate simpleName 48}}</code></td>
+                                    <td>{{readinessNote}}</td>
+                                </tr>
+                            {{/each}}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="cp-crac-resource-list">
+                    <ul class="cp-data-table-list">
+                        {{#each resources}}
+                            <li>
+                                <strong><code>{{order}}</code> <span class="badge badge-primary">{{category}}</span></strong>
+                                <div><strong>Bean</strong>: <code class="cp-table-code" title="{{beanName}}">{{abbreviate beanName 64}}</code></div>
+                                <div><strong>Class</strong>: <code class="cp-table-code" title="{{className}}">{{abbreviate simpleName 64}}</code></div>
+                                <div>{{readinessNote}}</div>
+                            </li>
+                        {{/each}}
+                    </ul>
+                </div>
+            {{else}}
+                <div class="cp-data-table-empty">No OrderedResource beans are registered.</div>
+            {{/if}}
+        </div>
+    </div>
+
+    <div class="card card-light">
+        <div class="card-header">
+            <h3 class="card-title">Recent lifecycle events</h3>
+        </div>
+        <div class="card-body">
+            {{#if hasEvents}}
+                <div class="cp-data-table">
+                    <div class="cp-data-table-container">
+                        <table class="table cp-data-table-table cp-data-table-fixed">
+                            <thead>
+                            <tr>
+                                <th>Phase</th>
+                                <th>Order</th>
+                                <th>Category</th>
+                                <th>Resource</th>
+                                <th>Completed at</th>
+                                <th>Duration</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {{#each events}}
+                                <tr>
+                                    <td><code>{{phase}}</code></td>
+                                    <td><code>{{order}}</code></td>
+                                    <td><span class="badge badge-primary">{{category}}</span></td>
+                                    <td>
+                                        <code class="cp-table-code" title="{{className}}">{{abbreviate simpleName 48}}</code>
+                                        <div><code class="cp-table-code" title="{{beanName}}">{{abbreviate beanName 40}}</code></div>
+                                    </td>
+                                    <td><code>{{completedAt}}</code></td>
+                                    <td><code>{{duration}}</code></td>
+                                </tr>
+                            {{/each}}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {{else}}
+                <div class="cp-data-table-empty">No before-checkpoint or after-restore events have been observed since startup.</div>
+            {{/if}}
+        </div>
+    </div>
+
+    <div class="card card-light">
+        <div class="card-header">
+            <h3 class="card-title">Readiness notes</h3>
+        </div>
+        <div class="card-body">
+            <ul>
+                {{#each notes}}
+                    <li>{{this}}</li>
+                {{/each}}
+            </ul>
+        </div>
+    </div>
+{{/with}}

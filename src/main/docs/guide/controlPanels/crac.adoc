@@ -1,0 +1,53 @@
+= CRaC Control Panel
+
+The CRaC Control Panel provides read-only lifecycle diagnostics for applications that use Micronaut CRaC.
+It helps developers verify which CRaC resources are registered, whether restore metrics are available, and which before-checkpoint or after-restore events have been observed since startup.
+
+To get started, add the Control Panel module as a development-time dependency:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-crac[scope=developmentOnly]
+
+It is assumed that you already have Micronaut CRaC configured in your application:
+
+dependency:io.micronaut.crac:micronaut-crac[]
+
+== Configuration
+
+The panel is enabled when the module is present.
+You can disable it with:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      crac:
+        enabled: false
+----
+
+The panel reads Micronaut CRaC configuration from the CRaC configuration beans when they are available.
+It displays `crac.enabled`, `crac.refresh-beans`, `crac.datasource-pause-timeout`, and Redis CRaC toggles without reading raw environment values or connection configuration.
+
+== Diagnostics
+
+The detail page shows:
+
+* CRaC API, CRaC MXBean, and Micronaut CRaC classpath detection.
+* Restore time and uptime-since-restore when `CRaCMXBean` is available.
+* Ordered CRaC resources with order, bean name, class, category, and a readiness note.
+* Recent `BeforeCheckpointEvent` and `AfterRestoreEvent` entries captured while the application is running.
+* Readiness notes for open file descriptors, datasource pools, Redis clients, refresh scope, and checkpoint artifact sensitivity.
+
+If a CRaC-enabled JDK, `CRaCMXBean`, Redis support, datasource resources, or lifecycle events are unavailable, the panel renders that state explicitly.
+The management Info endpoint is not required for the panel to render.
+
+== Security and Limits
+
+The first implementation is read-only.
+It does not trigger a checkpoint, call `jcmd`, run `CheckpointSimulator`, inspect checkpoint files, or read checkpoint directories.
+
+Checkpoint artifacts can contain secrets visible to the JVM.
+Treat checkpoint files as sensitive artifacts.
+The panel intentionally omits connection URLs, usernames, passwords, Redis URIs, tokens, certificates, and raw resource `toString()` values.
+
+To verify event capture in development, trigger your normal CRaC checkpoint and restore flow outside the Control Panel, then reopen the panel and inspect the Recent lifecycle events table.

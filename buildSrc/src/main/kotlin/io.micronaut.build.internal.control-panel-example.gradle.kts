@@ -39,7 +39,7 @@ tasks.register<JavaExec>("playwrightInstall") {
 tasks.withType<Test> {
     dependsOn(tasks.named("playwrightInstall"))
     maxHeapSize = "2g"
-    systemProperty("micronaut.test.resources.server.client.read.timeout", "180")
+    systemProperty("micronaut.test.resources.server.client.read.timeout", "420")
 }
 
 configurations.named("nativeImageTestClasspath") {
@@ -104,7 +104,7 @@ graalvmNative {
 }
 
 tasks.named("internalStartTestResourcesService") {
-    setProperty("clientTimeout", 180)
+    setProperty("clientTimeout", 420)
     setProperty("useClassDataSharing", false)
 //    setProperty("debugServer", true)
 }

@@ -32,6 +32,7 @@ micronaut-testresources = "4.0.0"
 micronaut-gradle-plugin = "5.0.0-M1"
 micronaut-openapi = "7.0.0"
 micronaut-kafka = "6.0.0"
+micronaut-crac = "4.0.0-RC1"
 kotlin-gradle-plugin = "2.3.21"
 micronaut-shared-settings = "8.0.0"
 playwright = "1.59.0"
@@ -58,6 +59,7 @@ micronaut-sql = { module = "io.micronaut.sql:micronaut-sql-bom", version.ref = "
 micronaut-data = { module = "io.micronaut.data:micronaut-data-bom", version.ref = "micronaut-data" }
 micronaut-testresources = { module = 'io.micronaut.testresources:micronaut-test-resources-bom', version.ref = "micronaut-testresources" }
 micronaut-kafka = { module = "io.micronaut.kafka:micronaut-kafka-bom", version.ref = "micronaut-kafka" }
+micronaut-crac = { module = "io.micronaut.crac:micronaut-crac-bom", version.ref = "micronaut-crac" }
 avro = { module = "org.apache.avro:avro", version.ref = "avro" }
 avro-serde = { module = "io.confluent:kafka-streams-avro-serde", version.ref = "avro-serde" }
 
