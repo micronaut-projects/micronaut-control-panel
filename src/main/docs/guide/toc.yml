@@ -9,7 +9,7 @@ controlPanels:
   objectStorage: Object Storage
   datasource: Datasource
   hibernate: Hibernate
-  kafka: Kafka Streams
+  kafka: Kafka
   flyway: Flyway
 
 custom: Creating Custom Control Panels
