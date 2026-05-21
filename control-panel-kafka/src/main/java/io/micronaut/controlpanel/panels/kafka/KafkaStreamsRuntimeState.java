@@ -17,8 +17,10 @@ package io.micronaut.controlpanel.panels.kafka;
 
 import io.micronaut.core.annotation.Internal;
 import io.micronaut.core.annotation.ReflectiveAccess;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Runtime state exposed by Micronaut Health for a Kafka Streams application.
@@ -33,22 +35,54 @@ import java.util.List;
 @ReflectiveAccess
 public record KafkaStreamsRuntimeState(boolean available,
                                        String status,
-                                       String message,
+                                       @Nullable String message,
                                        List<ThreadState> threads,
                                        boolean hasThreads) {
 
     private static final String STATUS_UNKNOWN = "UNKNOWN";
+    private static final String BADGE_SECONDARY = "badge-secondary";
+    private static final String BADGE_DESTRUCTIVE = "badge-destructive";
+    private static final String BADGE_SUCCESS = "cp-kafka-badge-success";
+    private static final String BADGE_WARNING = "cp-kafka-badge-warning";
 
     static KafkaStreamsRuntimeState unavailable(String message) {
         return new KafkaStreamsRuntimeState(false, STATUS_UNKNOWN, message, List.of(), false);
     }
 
-    static KafkaStreamsRuntimeState available(String status, String message, List<ThreadState> threads) {
+    static KafkaStreamsRuntimeState available(@Nullable String status, @Nullable String message, List<ThreadState> threads) {
         List<ThreadState> threadStates = List.copyOf(threads);
         return new KafkaStreamsRuntimeState(true, emptyToUnknown(status), message, threadStates, !threadStates.isEmpty());
     }
 
-    private static String emptyToUnknown(String status) {
+    /**
+     * @return badge class for the overall runtime status
+     */
+    public String statusBadgeClass() {
+        return switch (emptyToUnknown(status).toUpperCase(Locale.ROOT)) {
+            case "UP" -> BADGE_SUCCESS;
+            case "DOWN", "OUT_OF_SERVICE" -> BADGE_DESTRUCTIVE;
+            default -> BADGE_SECONDARY;
+        };
+    }
+
+    /**
+     * @return state class for runtime section rendering
+     */
+    public String sectionStateClass() {
+        if (!available) {
+            return "cp-kafka-runtime--unavailable";
+        }
+        return errorState() ? "cp-kafka-runtime--error" : "cp-kafka-runtime--available";
+    }
+
+    /**
+     * @return whether Health reports a non-healthy status for this Kafka Streams application
+     */
+    public boolean errorState() {
+        return available && ("DOWN".equalsIgnoreCase(status) || "OUT_OF_SERVICE".equalsIgnoreCase(status));
+    }
+
+    private static String emptyToUnknown(@Nullable String status) {
         return status == null || status.isBlank() ? STATUS_UNKNOWN : status;
     }
 
@@ -66,11 +100,11 @@ public record KafkaStreamsRuntimeState(boolean available,
      * @param standbyTasks standby task summary
      */
     @ReflectiveAccess
-    public record ThreadState(String name,
-                              String state,
-                              String adminClientId,
-                              String consumerClientId,
-                              String restoreConsumerClientId,
+    public record ThreadState(@Nullable String name,
+                              @Nullable String state,
+                              @Nullable String adminClientId,
+                              @Nullable String consumerClientId,
+                              @Nullable String restoreConsumerClientId,
                               List<String> producerClientIds,
                               boolean hasProducerClientIds,
                               TaskSummary activeTasks,
@@ -83,15 +117,30 @@ public record KafkaStreamsRuntimeState(boolean available,
             standbyTasks = standbyTasks == null ? TaskSummary.empty() : standbyTasks;
         }
 
-        ThreadState(String name,
-                    String state,
-                    String adminClientId,
-                    String consumerClientId,
-                    String restoreConsumerClientId,
+        ThreadState(@Nullable String name,
+                    @Nullable String state,
+                    @Nullable String adminClientId,
+                    @Nullable String consumerClientId,
+                    @Nullable String restoreConsumerClientId,
                     List<String> producerClientIds,
                     TaskSummary activeTasks,
                     TaskSummary standbyTasks) {
             this(name, state, adminClientId, consumerClientId, restoreConsumerClientId, producerClientIds, false, activeTasks, standbyTasks);
+        }
+
+        /**
+         * @return badge class for the stream thread state
+         */
+        public String stateBadgeClass() {
+            if (state == null) {
+                return BADGE_SECONDARY;
+            }
+            return switch (state.toUpperCase(Locale.ROOT)) {
+                case "RUNNING" -> BADGE_SUCCESS;
+                case "DEAD", "ERROR", "PENDING_SHUTDOWN" -> BADGE_DESTRUCTIVE;
+                case "CREATED", "STARTING", "PARTITIONS_ASSIGNED", "PARTITIONS_REVOKED", "REBALANCING" -> BADGE_WARNING;
+                default -> BADGE_SECONDARY;
+            };
         }
     }
 
@@ -104,7 +153,7 @@ public record KafkaStreamsRuntimeState(boolean available,
      * @param partitionCount number of reported partitions
      */
     @ReflectiveAccess
-    public record TaskSummary(String taskId,
+    public record TaskSummary(@Nullable String taskId,
                               List<String> partitions,
                               boolean available,
                               int partitionCount) {
@@ -115,7 +164,7 @@ public record KafkaStreamsRuntimeState(boolean available,
             partitionCount = partitions.size();
         }
 
-        TaskSummary(String taskId, List<String> partitions) {
+        TaskSummary(@Nullable String taskId, List<String> partitions) {
             this(taskId, partitions, false, 0);
         }
 

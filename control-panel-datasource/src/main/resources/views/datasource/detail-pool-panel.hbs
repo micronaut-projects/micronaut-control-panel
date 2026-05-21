@@ -1,0 +1,42 @@
+<section class="tabs-panel cp-datasource-pool-panel" id="datasourcePoolTab" role="tabpanel" data-tabs-panel="pool" hidden>
+    {{#with poolInfo}}
+        <div class="cp-pool-panel">
+            <div id="poolStatusCardContainer" data-pool-status-container>
+                {{> "views/datasource/detail-pool-status-card" }}
+            </div>
+
+            <div class="card card-light cp-pool-options-card">
+                <div class="card-header">
+                    <div class="cp-card-heading">
+                        <span class="cp-card-icon">
+                            <i class="fas fa-sliders" aria-hidden="true"></i>
+                        </span>
+                        <div class="cp-card-header-text">
+                            <h3 class="card-title">Pool options</h3>
+                            <p class="card-description">{{ implementation }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="cp-pool-option-groups">
+                        {{#each optionGroups}}
+                            <section class="cp-pool-option-group">
+                                <h4>{{ title }}</h4>
+                                <dl>
+                                    {{#each options}}
+                                        <div>
+                                            <dt>{{ label }}</dt>
+                                            <dd>{{ value }}</dd>
+                                        </div>
+                                    {{/each}}
+                                </dl>
+                            </section>
+                        {{/each}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {{/with}}
+</section>
+
+{{> "views/datasource/detail-pool-scripts" }}

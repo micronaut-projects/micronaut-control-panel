@@ -10,7 +10,7 @@ controlPanels:
   datasource: Datasource
   hibernate: Hibernate
   views: Views
-  kafka: Kafka Streams
+  kafka: Kafka
 
 custom: Creating Custom Control Panels
 repository: Repository

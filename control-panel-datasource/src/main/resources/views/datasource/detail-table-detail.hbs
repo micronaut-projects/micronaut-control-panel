@@ -1,0 +1,88 @@
+<div class="cp-table-detail-content"
+     data-table-detail-fragment
+     data-table-schema="{{ schema }}"
+     data-table-name="{{ name }}"
+     data-table-select-sql="{{ selectAllSql }}"
+     data-table-json-sql="{{ jsonQuerySql }}"
+     {{#if relationshipJsonSql}}data-table-relationship-json-sql="{{ relationshipJsonSql }}"{{/if}}>
+    <section class="cp-table-detail-section">
+        <h4>Columns</h4>
+        <div class="cp-data-table-container">
+            <table class="table cp-data-table-table cp-datasource-column-list">
+                <thead>
+                    <tr>
+                        <th scope="col">Column</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Nullable</th>
+                        <th scope="col">Keys</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#if columnsEmpty}}
+                        <tr>
+                            <td class="cp-data-table-empty-cell" colspan="4">No columns found.</td>
+                        </tr>
+                    {{else}}
+                        {{#each columns}}
+                            <tr>
+                                <td><code class="cp-table-code">{{ name }}</code></td>
+                                <td>{{ displayType }}</td>
+                                <td>{{ nullable }}</td>
+                                <td>
+                                    {{#if primaryKey}}<span class="badge badge-secondary">PK</span>{{/if}}
+                                    {{#if foreignKey}}<span class="badge badge-secondary">FK</span>{{/if}}
+                                    {{#if unique}}<span class="badge badge-secondary">UK</span>{{/if}}
+                                    {{#if noKeys}}<span class="cp-data-table-muted">-</span>{{/if}}
+                                </td>
+                            </tr>
+                        {{/each}}
+                    {{/if}}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="cp-table-detail-section">
+        <h4>Relationships</h4>
+        {{#if relationshipsEmpty}}
+            <div class="cp-data-table-empty cp-table-detail-empty">No foreign keys found for this table.</div>
+        {{else}}
+            <div class="cp-data-table-container">
+                <table class="table cp-data-table-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Name</th>
+                            <th scope="col">Column</th>
+                            <th scope="col">References</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each relationships}}
+                            <tr>
+                                <td>{{ name }}</td>
+                                <td><code class="cp-table-code">{{ fkColumn }}</code></td>
+                                <td>
+                                    <button type="button" class="cp-table-name-button cp-table-detail-link" data-table-detail-link data-table-schema="{{ pkSchema }}" data-table-name="{{ pkTable }}" title="Open table detail">
+                                        <i class="fas fa-table" aria-hidden="true"></i>
+                                        <span>{{ pkQualifiedName }}</span>
+                                    </button>
+                                    {{#if pkColumn}}
+                                        <code class="cp-table-code cp-table-column-reference">.{{ pkColumn }}</code>
+                                    {{/if}}
+                                </td>
+                            </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+        {{/if}}
+    </section>
+
+    <section class="cp-table-detail-section cp-table-er-section">
+        <div class="cp-table-detail-section-header">
+            <h4>Entity Relationship Diagram</h4>
+        </div>
+        <pre id="tableErDiagramCode" hidden>{{ mermaid }}</pre>
+        <div id="tableErDiagramContainer" class="mermaid cp-table-er-diagram"></div>
+    </section>
+</div>
