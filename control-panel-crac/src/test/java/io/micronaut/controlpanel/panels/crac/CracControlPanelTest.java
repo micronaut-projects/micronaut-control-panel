@@ -28,6 +28,7 @@ import org.crac.Resource;
 import org.crac.management.CRaCMXBean;
 import org.junit.jupiter.api.Test;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
@@ -209,7 +210,7 @@ class CracControlPanelTest {
     void templatesDoNotRenderResourceToStringValues() throws Exception {
         try (var detail = getClass().getResourceAsStream("/views/crac/detail.hbs")) {
             assertNotNull(detail);
-            String template = new String(detail.readAllBytes());
+            String template = new String(detail.readAllBytes(), StandardCharsets.UTF_8);
             String resourceSection = template.substring(template.indexOf("Resource chain"), template.indexOf("Recent lifecycle events"));
             assertFalse(resourceSection.contains("{{this}}"));
             assertFalse(template.contains("toString"));

@@ -42,14 +42,14 @@ public record CracDiagnostics(
 ) {
 
     /**
-     * @return whether any ordered CRaC resource was discovered
+     * Returns whether any ordered CRaC resource was discovered.
      */
     public boolean hasResources() {
         return !resources.isEmpty();
     }
 
     /**
-     * @return whether any lifecycle event has been observed
+     * Returns whether any lifecycle event has been observed.
      */
     public boolean hasEvents() {
         return !events.isEmpty();
