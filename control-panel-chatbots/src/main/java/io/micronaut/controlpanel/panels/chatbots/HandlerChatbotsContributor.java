@@ -19,7 +19,6 @@ import io.micronaut.chatbots.core.Handler;
 import io.micronaut.context.BeanContext;
 import io.micronaut.context.BeanRegistration;
 import io.micronaut.context.annotation.Requires;
-import io.micronaut.core.order.Ordered;
 import io.micronaut.core.reflect.ClassUtils;
 import io.micronaut.core.type.Argument;
 import io.micronaut.inject.BeanDefinition;
@@ -57,7 +56,7 @@ final class HandlerChatbotsContributor implements ChatbotsContributor {
                 registration.getIdentifier().getName(),
                 handler.getClass().getName(),
                 channel(handler),
-                handler instanceof Ordered ordered ? ordered.getOrder() : Ordered.LOWEST_PRECEDENCE,
+                handler.getOrder(),
                 outputType(definition),
                 sourceInterface(handler)
             ));

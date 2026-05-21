@@ -18,6 +18,7 @@ package io.micronaut.controlpanel.panels.chatbots;
 import io.micronaut.core.type.Argument;
 import io.micronaut.json.JsonMapper;
 import jakarta.inject.Singleton;
+import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 import java.net.URI;
@@ -78,6 +79,9 @@ final class TelegramWebhookStatusClient {
     @SuppressWarnings("unchecked")
     private ChatbotsControlPanel.WebhookRow fromBody(String botName, String expectedUrl, String body) throws IOException {
         Map<String, Object> decoded = jsonMapper.readValue(body, MAP_ARGUMENT);
+        if (decoded == null) {
+            return unavailable(botName, "parse error", expectedUrl);
+        }
         Object ok = decoded.get("ok");
         if (Boolean.FALSE.equals(ok)) {
             return unavailable(botName, "Telegram API error", expectedUrl);
@@ -115,7 +119,7 @@ final class TelegramWebhookStatusClient {
         return url != null && url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
     }
 
-    private static String string(Object value) {
+    private static String string(@Nullable Object value) {
         return value == null ? "-" : String.valueOf(value);
     }
 
@@ -144,7 +148,7 @@ final class TelegramWebhookStatusClient {
         return date + ": " + message;
     }
 
-    private static String allowedUpdates(Object value) {
+    private static String allowedUpdates(@Nullable Object value) {
         if (value instanceof List<?> list) {
             return list.isEmpty() ? "all update types" : String.join(", ", list.stream().map(String::valueOf).toList());
         }
