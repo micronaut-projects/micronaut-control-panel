@@ -17,6 +17,7 @@ package io.micronaut.controlpanel.panels.kafka;
 
 import io.micronaut.core.annotation.Internal;
 import io.micronaut.core.annotation.ReflectiveAccess;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.Locale;
@@ -34,7 +35,7 @@ import java.util.Locale;
 @ReflectiveAccess
 public record KafkaStreamsRuntimeState(boolean available,
                                        String status,
-                                       String message,
+                                       @Nullable String message,
                                        List<ThreadState> threads,
                                        boolean hasThreads) {
 
@@ -48,7 +49,7 @@ public record KafkaStreamsRuntimeState(boolean available,
         return new KafkaStreamsRuntimeState(false, STATUS_UNKNOWN, message, List.of(), false);
     }
 
-    static KafkaStreamsRuntimeState available(String status, String message, List<ThreadState> threads) {
+    static KafkaStreamsRuntimeState available(@Nullable String status, @Nullable String message, List<ThreadState> threads) {
         List<ThreadState> threadStates = List.copyOf(threads);
         return new KafkaStreamsRuntimeState(true, emptyToUnknown(status), message, threadStates, !threadStates.isEmpty());
     }
@@ -81,7 +82,7 @@ public record KafkaStreamsRuntimeState(boolean available,
         return available && ("DOWN".equalsIgnoreCase(status) || "OUT_OF_SERVICE".equalsIgnoreCase(status));
     }
 
-    private static String emptyToUnknown(String status) {
+    private static String emptyToUnknown(@Nullable String status) {
         return status == null || status.isBlank() ? STATUS_UNKNOWN : status;
     }
 
@@ -99,11 +100,11 @@ public record KafkaStreamsRuntimeState(boolean available,
      * @param standbyTasks standby task summary
      */
     @ReflectiveAccess
-    public record ThreadState(String name,
-                              String state,
-                              String adminClientId,
-                              String consumerClientId,
-                              String restoreConsumerClientId,
+    public record ThreadState(@Nullable String name,
+                              @Nullable String state,
+                              @Nullable String adminClientId,
+                              @Nullable String consumerClientId,
+                              @Nullable String restoreConsumerClientId,
                               List<String> producerClientIds,
                               boolean hasProducerClientIds,
                               TaskSummary activeTasks,
@@ -116,11 +117,11 @@ public record KafkaStreamsRuntimeState(boolean available,
             standbyTasks = standbyTasks == null ? TaskSummary.empty() : standbyTasks;
         }
 
-        ThreadState(String name,
-                    String state,
-                    String adminClientId,
-                    String consumerClientId,
-                    String restoreConsumerClientId,
+        ThreadState(@Nullable String name,
+                    @Nullable String state,
+                    @Nullable String adminClientId,
+                    @Nullable String consumerClientId,
+                    @Nullable String restoreConsumerClientId,
                     List<String> producerClientIds,
                     TaskSummary activeTasks,
                     TaskSummary standbyTasks) {
@@ -152,7 +153,7 @@ public record KafkaStreamsRuntimeState(boolean available,
      * @param partitionCount number of reported partitions
      */
     @ReflectiveAccess
-    public record TaskSummary(String taskId,
+    public record TaskSummary(@Nullable String taskId,
                               List<String> partitions,
                               boolean available,
                               int partitionCount) {
@@ -163,7 +164,7 @@ public record KafkaStreamsRuntimeState(boolean available,
             partitionCount = partitions.size();
         }
 
-        TaskSummary(String taskId, List<String> partitions) {
+        TaskSummary(@Nullable String taskId, List<String> partitions) {
             this(taskId, partitions, false, 0);
         }
 

@@ -35,6 +35,7 @@ import io.micronaut.elasticsearch.DefaultElasticsearchConfiguration;
 import jakarta.inject.Singleton;
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
+import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 import java.net.URI;
@@ -149,7 +150,7 @@ class ElasticsearchDiagnosticsService {
         return new ElasticsearchDiagnostics(state, message, connection, cluster, healthSummary, indices, warnings, visibleRecords.size(), indices.size(), visibleRecords.size() > indices.size(), mappingCollector.truncated());
     }
 
-    private GetAliasResponse readAliases(ElasticsearchAsyncClient client, List<String> names, List<String> warnings) throws Exception {
+    private @Nullable GetAliasResponse readAliases(ElasticsearchAsyncClient client, List<String> names, List<String> warnings) throws Exception {
         try {
             return await(client.indices().getAlias(a -> a.index(names).ignoreUnavailable(true).allowNoIndices(true).masterTimeout(t -> t.time(timeoutString()))));
         } catch (InterruptedException exception) {
@@ -161,7 +162,7 @@ class ElasticsearchDiagnosticsService {
         }
     }
 
-    private GetMappingResponse readMappings(ElasticsearchAsyncClient client, List<String> names, List<String> warnings) throws Exception {
+    private @Nullable GetMappingResponse readMappings(ElasticsearchAsyncClient client, List<String> names, List<String> warnings) throws Exception {
         try {
             return await(client.indices().getMapping(m -> m.index(names).ignoreUnavailable(true).allowNoIndices(true).masterTimeout(t -> t.time(timeoutString()))));
         } catch (InterruptedException exception) {
@@ -174,8 +175,8 @@ class ElasticsearchDiagnosticsService {
     }
 
     private IndexSummary indexSummary(IndicesRecord indexRecord,
-                                      GetAliasResponse aliasResponse,
-                                      GetMappingResponse mappingResponse,
+                                      @Nullable GetAliasResponse aliasResponse,
+                                      @Nullable GetMappingResponse mappingResponse,
                                       MappingCollector mappingCollector) {
         String index = indexRecord.index();
         List<String> aliases = aliases(index, aliasResponse);
@@ -197,7 +198,7 @@ class ElasticsearchDiagnosticsService {
             fields);
     }
 
-    private List<String> aliases(String index, GetAliasResponse response) {
+    private List<String> aliases(String index, @Nullable GetAliasResponse response) {
         if (response == null) {
             return List.of();
         }
@@ -395,7 +396,7 @@ class ElasticsearchDiagnosticsService {
             this.limit = limit;
         }
 
-        private List<MappingField> fields(String index, GetMappingResponse response) {
+        private List<MappingField> fields(String index, @Nullable GetMappingResponse response) {
             if (response == null) {
                 return List.of();
             }
@@ -408,7 +409,7 @@ class ElasticsearchDiagnosticsService {
             return fields;
         }
 
-        private int fieldCount(String index, GetMappingResponse response) {
+        private int fieldCount(String index, @Nullable GetMappingResponse response) {
             if (response == null) {
                 return 0;
             }
