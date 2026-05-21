@@ -1,0 +1,286 @@
+{{#with controlPanel.body as |body|}}
+    <div class="tabs" data-tabs>
+        <div class="tabs-list" role="tablist" aria-label="Chatbots diagnostics">
+            <button type="button" class="tabs-trigger active" id="tab-chatbots-overview" role="tab" aria-selected="true" aria-controls="panel-chatbots-overview" data-tabs-trigger="overview">
+                Overview
+            </button>
+            <button type="button" class="tabs-trigger" id="tab-chatbots-bots" role="tab" aria-selected="false" aria-controls="panel-chatbots-bots" data-tabs-trigger="bots">
+                Bots
+            </button>
+            <button type="button" class="tabs-trigger" id="tab-chatbots-handlers" role="tab" aria-selected="false" aria-controls="panel-chatbots-handlers" data-tabs-trigger="handlers">
+                Handlers
+            </button>
+            <button type="button" class="tabs-trigger" id="tab-chatbots-webhooks" role="tab" aria-selected="false" aria-controls="panel-chatbots-webhooks" data-tabs-trigger="webhooks">
+                Webhook
+            </button>
+        </div>
+
+        <div class="tabs-panel" id="panel-chatbots-overview" role="tabpanel" aria-labelledby="tab-chatbots-overview" data-tabs-panel="overview">
+            <div class="cp-detail-card-grid">
+                <div class="card card-light">
+                    <div class="card-header">
+                        <div class="cp-card-heading">
+                            <span class="cp-card-icon"><i class="fas fa-robot"></i></span>
+                            <h3 class="card-title">Summary</h3>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="cp-data-table-container cp-vertical-table">
+                            <table class="table cp-data-table-table">
+                                <tbody>
+                                <tr>
+                                    <th scope="row">Configured bots</th>
+                                    <td>{{body.summary.totalBots}}</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Enabled bots</th>
+                                    <td>{{body.summary.enabledBots}}</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Registered endpoints</th>
+                                    <td>{{body.summary.registeredEndpointCount}} / {{body.summary.endpointCount}}</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Handler beans</th>
+                                    <td>{{body.summary.handlerCount}}</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Telegram webhook lookup</th>
+                                    <td><span class="badge badge-secondary">{{body.summary.webhookLookupState}}</span></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card card-light">
+                    <div class="card-header">
+                        <div class="cp-card-heading">
+                            <span class="cp-card-icon"><i class="fas fa-route"></i></span>
+                            <h3 class="card-title">Endpoints</h3>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {{#if body.endpoints}}
+                            <div class="cp-data-table-container">
+                                <table class="table cp-data-table-table cp-data-table-fixed">
+                                    <thead>
+                                    <tr>
+                                        <th>Channel</th>
+                                        <th>Path</th>
+                                        <th>State</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {{#each body.endpoints as |endpoint|}}
+                                        <tr>
+                                            <td>{{endpoint.channel}}</td>
+                                            <td><code class="cp-table-code">{{endpoint.path}}</code></td>
+                                            <td>
+                                                {{#if endpoint.routeRegistered}}
+                                                    <span class="badge badge-primary">{{endpoint.state}}</span>
+                                                {{else}}
+                                                    <span class="badge badge-secondary">{{endpoint.state}}</span>
+                                                {{/if}}
+                                            </td>
+                                        </tr>
+                                    {{/each}}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {{else}}
+                            <div class="cp-data-table-empty">No Chatbots endpoint modules detected.</div>
+                        {{/if}}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tabs-panel" id="panel-chatbots-bots" role="tabpanel" aria-labelledby="tab-chatbots-bots" data-tabs-panel="bots" hidden>
+            <div class="card card-light">
+                <div class="card-header">
+                    <div class="cp-card-heading">
+                        <span class="cp-card-icon"><i class="fas fa-comments"></i></span>
+                        <h3 class="card-title">Configured bots</h3>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {{#if body.bots}}
+                        <div class="cp-data-table" data-filter-table data-filter-table-label="bot" data-filter-table-label-plural="bots">
+                            <div class="cp-data-table-toolbar">
+                                <div class="cp-data-table-summary" data-filter-table-summary>{{body.bots.size}} bots</div>
+                                <div class="cp-data-table-search">
+                                    <input type="search" class="form-control" data-filter-table-input placeholder="Filter bots" aria-label="Filter bots">
+                                </div>
+                            </div>
+                            <div class="cp-data-table-container">
+                                <table class="table cp-data-table-table cp-data-table-fixed">
+                                    <thead>
+                                    <tr>
+                                        <th>Channel</th>
+                                        <th>Name</th>
+                                        <th>Username</th>
+                                        <th>Enabled</th>
+                                        <th>Token status</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {{#each body.bots as |bot|}}
+                                        <tr>
+                                            <td>{{bot.channel}}</td>
+                                            <td><code class="cp-table-code">{{bot.name}}</code></td>
+                                            <td><code class="cp-table-code">{{bot.username}}</code></td>
+                                            <td>{{#if bot.enabled}}yes{{else}}no{{/if}}</td>
+                                            <td><span class="badge badge-secondary">{{bot.tokenStatus}}</span></td>
+                                        </tr>
+                                    {{/each}}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    {{else}}
+                        <div class="cp-data-table-empty">No Telegram or Basecamp bot configurations detected.</div>
+                    {{/if}}
+                </div>
+            </div>
+        </div>
+
+        <div class="tabs-panel" id="panel-chatbots-handlers" role="tabpanel" aria-labelledby="tab-chatbots-handlers" data-tabs-panel="handlers" hidden>
+            <div class="card card-light">
+                <div class="card-header">
+                    <div class="cp-card-heading">
+                        <span class="cp-card-icon"><i class="fas fa-list-ol"></i></span>
+                        <h3 class="card-title">Handler beans</h3>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {{#if body.handlers}}
+                        <div class="cp-data-table" data-filter-table data-filter-table-label="handler" data-filter-table-label-plural="handlers">
+                            <div class="cp-data-table-toolbar">
+                                <div class="cp-data-table-summary" data-filter-table-summary>{{body.handlers.size}} handlers</div>
+                                <div class="cp-data-table-search">
+                                    <input type="search" class="form-control" data-filter-table-input placeholder="Filter handlers" aria-label="Filter handlers">
+                                </div>
+                            </div>
+                            <div class="cp-data-table-container">
+                                <table class="table cp-data-table-table cp-data-table-fixed">
+                                    <thead>
+                                    <tr>
+                                        <th>Order</th>
+                                        <th>Bean</th>
+                                        <th>Class</th>
+                                        <th>Channel</th>
+                                        <th>Output</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {{#each body.handlers as |handler|}}
+                                        <tr>
+                                            <td>{{handler.order}}</td>
+                                            <td><code class="cp-table-code">{{handler.beanName}}</code></td>
+                                            <td><code class="cp-table-code">{{handler.className}}</code></td>
+                                            <td>{{handler.channel}}</td>
+                                            <td><code class="cp-table-code">{{handler.outputType}}</code></td>
+                                        </tr>
+                                    {{/each}}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    {{else}}
+                        <div class="cp-data-table-empty">No Chatbots handler beans detected.</div>
+                    {{/if}}
+                </div>
+            </div>
+        </div>
+
+        <div class="tabs-panel" id="panel-chatbots-webhooks" role="tabpanel" aria-labelledby="tab-chatbots-webhooks" data-tabs-panel="webhooks" hidden>
+            <div class="cp-detail-card-grid">
+                <div class="card card-light">
+                    <div class="card-header">
+                        <div class="cp-card-heading">
+                            <span class="cp-card-icon"><i class="fas fa-satellite-dish"></i></span>
+                            <h3 class="card-title">Telegram webhook status</h3>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {{#if body.webhooks}}
+                            <div class="cp-data-table-container">
+                                <table class="table cp-data-table-table cp-data-table-fixed">
+                                    <thead>
+                                    <tr>
+                                        <th>Bot</th>
+                                        <th>State</th>
+                                        <th>Expected URL</th>
+                                        <th>Returned URL</th>
+                                        <th>Match</th>
+                                        <th>Pending</th>
+                                        <th>Last error</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {{#each body.webhooks as |webhook|}}
+                                        <tr>
+                                            <td><code class="cp-table-code">{{webhook.botName}}</code></td>
+                                            <td>
+                                                {{#if webhook.available}}
+                                                    <span class="badge badge-primary">{{webhook.state}}</span>
+                                                {{else}}
+                                                    <span class="badge badge-secondary">{{webhook.state}}</span>
+                                                {{/if}}
+                                            </td>
+                                            <td><code class="cp-table-code">{{webhook.expectedUrl}}</code></td>
+                                            <td><code class="cp-table-code">{{webhook.returnedUrl}}</code></td>
+                                            <td>{{webhook.matchStatus}}</td>
+                                            <td>{{webhook.pendingUpdates}}</td>
+                                            <td>{{webhook.lastError}}</td>
+                                        </tr>
+                                    {{/each}}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {{else}}
+                            <div class="cp-data-table-empty">No Telegram bots detected.</div>
+                        {{/if}}
+                    </div>
+                </div>
+
+                <div class="card card-light">
+                    <div class="card-header">
+                        <div class="cp-card-heading">
+                            <span class="cp-card-icon"><i class="fas fa-clipboard-list"></i></span>
+                            <h3 class="card-title">Setup hints</h3>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {{#if body.setupHints}}
+                            <div class="cp-data-table-container">
+                                <table class="table cp-data-table-table cp-data-table-fixed">
+                                    <thead>
+                                    <tr>
+                                        <th>Channel</th>
+                                        <th>Hint</th>
+                                        <th>Command or value</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {{#each body.setupHints as |hint|}}
+                                        <tr>
+                                            <td>{{hint.channel}}</td>
+                                            <td>{{hint.label}}</td>
+                                            <td><code class="cp-table-code">{{hint.command}}</code></td>
+                                        </tr>
+                                    {{/each}}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {{else}}
+                            <div class="cp-data-table-empty">No setup hints available.</div>
+                        {{/if}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{{/with}}
