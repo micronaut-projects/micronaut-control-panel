@@ -25,6 +25,7 @@ import io.micronaut.management.endpoint.info.InfoEndpoint;
 import io.micronaut.management.endpoint.info.InfoSource;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
+import org.jspecify.annotations.Nullable;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
@@ -91,11 +92,11 @@ public class InfoControlPanel extends AbstractControlPanel<InfoControlPanel.Body
         return new InfoNode(name, displayName(name), String.valueOf(value), List.of());
     }
 
-    private static String emptyValue(Map<String, Object> values) {
+    private static @Nullable String emptyValue(Map<String, Object> values) {
         return values.isEmpty() ? "(empty)" : null;
     }
 
-    private static String emptyValue(List<InfoNode> values) {
+    private static @Nullable String emptyValue(List<InfoNode> values) {
         return values.isEmpty() ? "(empty)" : null;
     }
 
@@ -136,7 +137,7 @@ public class InfoControlPanel extends AbstractControlPanel<InfoControlPanel.Body
         return rows;
     }
 
-    private static void addRows(List<InfoRow> rows, InfoNode node, String section, String key, int depth) {
+    private static void addRows(List<InfoRow> rows, InfoNode node, String section, @Nullable String key, int depth) {
         String rowKey = key == null ? node.displayName() : key;
         if (node.value() != null) {
             rows.add(new InfoRow(section, rowKey, node.value(), depth));
@@ -157,13 +158,13 @@ public class InfoControlPanel extends AbstractControlPanel<InfoControlPanel.Body
         return items;
     }
 
-    private static void addSummaryItem(List<SummaryItem> items, String label, boolean code, Object value) {
+    private static void addSummaryItem(List<SummaryItem> items, String label, boolean code, @Nullable Object value) {
         if (value != null) {
             items.add(new SummaryItem(label, String.valueOf(value), code));
         }
     }
 
-    private static Object valueAt(Map<String, Object> info, String... paths) {
+    private static @Nullable Object valueAt(Map<String, Object> info, String... paths) {
         for (String path : paths) {
             Object value = valueAt(info, path);
             if (value != null) {
@@ -173,7 +174,7 @@ public class InfoControlPanel extends AbstractControlPanel<InfoControlPanel.Body
         return null;
     }
 
-    private static Object valueAt(Map<String, Object> info, String path) {
+    private static @Nullable Object valueAt(Map<String, Object> info, String path) {
         Object current = info;
         for (String segment : path.split("\\.")) {
             if (!(current instanceof Map<?, ?> map)) {
@@ -206,7 +207,7 @@ public class InfoControlPanel extends AbstractControlPanel<InfoControlPanel.Body
      * @param children nested child nodes
      */
     @ReflectiveAccess
-    public record InfoNode(String name, String displayName, String value, List<InfoNode> children) { }
+    public record InfoNode(String name, String displayName, @Nullable String value, List<InfoNode> children) { }
 
     /**
      * Represents a flattened info row rendered by the detail template.

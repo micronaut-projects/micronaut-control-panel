@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 package io.micronaut.controlpanel.core.panels;
- 
+
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.http.MediaType;
@@ -26,7 +26,7 @@ import io.micronaut.inject.qualifiers.Qualifiers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
- 
+
 import static org.junit.jupiter.api.Assertions.*;
 
 
@@ -53,7 +53,7 @@ class RoutesControlPanelTest {
         assertEquals("HTTP Routes", panel.getTitle());
         assertEquals("fa-route", panel.getIcon());
         assertEquals(20, panel.getOrder());
-        assertEquals(0, panel.getBody().appRoutes().size());
+        assertFalse(panel.getBody().appRoutes().isEmpty());
 
         assertTrue(panel.getBody().micronautRoutes().size() > 0);
         assertEquals("", panel.getBadge());
@@ -73,20 +73,20 @@ class RoutesControlPanelTest {
     void routesAreNotDuplicated() {
         RoutesControlPanel panel = ctx.getBean(RoutesControlPanel.class);
         var body = panel.getBody();
-        assertTrue(body.appRoutes().size() >= 0);
+        assertFalse(body.appRoutes().isEmpty());
         assertTrue(body.micronautRoutes().size() > 0);
 
         var allRoutes = new java.util.ArrayList<>(body.appRoutes().values().stream().flatMap(java.util.Collection::stream).toList());
         allRoutes.addAll(body.micronautRoutes().values().stream().flatMap(java.util.Collection::stream).toList());
+        assertFalse(allRoutes.isEmpty());
 
         var routeSignatures = allRoutes.stream()
                 .map(route -> route.getHttpMethodName() + "-" + route.getUriMatchTemplate().toPathString() + "-" + route.getTargetMethod().getName())
                 .toList();
 
         assertEquals(routeSignatures.size(), new java.util.HashSet<>(routeSignatures).size());
-        assertTrue(allRoutes.size() > 0);
+        assertFalse(allRoutes.isEmpty());
 
-        // new: verify lists are unmodifiable
         var grouped = body.micronautRoutes();
         var firstKey = grouped.keySet().stream().findFirst().orElse(null);
         if (firstKey != null) {
@@ -182,11 +182,5 @@ class RoutesControlPanelTest {
 
         @Head("/only")
         Object headOnly() { return null; }
-    }
-
-    @Controller
-    static class DummyController {
-        @Get
-        Object index() { return null; }
     }
 }
