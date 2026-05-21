@@ -17,6 +17,7 @@ package io.micronaut.controlpanel.panels.email;
 
 import io.micronaut.context.annotation.ConfigurationProperties;
 import io.micronaut.core.annotation.ReflectiveAccess;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Email control panel configuration.
@@ -44,7 +45,7 @@ public final class EmailControlPanelConfiguration {
     @ReflectiveAccess
     public static final class TestSendConfiguration {
         private boolean enabled;
-        private String recipient;
+        private @Nullable String recipient;
         private String subjectPrefix = "[Micronaut Control Panel]";
         private boolean allowArbitraryRecipient;
         private boolean includeConfigurationSummary;
@@ -57,11 +58,11 @@ public final class EmailControlPanelConfiguration {
             this.enabled = enabled;
         }
 
-        public String getRecipient() {
+        public @Nullable String getRecipient() {
             return recipient;
         }
 
-        public void setRecipient(String recipient) {
+        public void setRecipient(@Nullable String recipient) {
             this.recipient = recipient;
         }
 

@@ -87,7 +87,7 @@ public final class EmailController {
             send(descriptor.get(), recipient, diagnostics);
             return HttpResponse.ok(TestSendResult.success("Test send completed.", elapsed(started)));
         } catch (RuntimeException e) {
-            String message = redactor.redact(e.getMessage());
+            String message = redactor.redact(e.getMessage() == null ? "" : e.getMessage());
             LOG.debug("Email test send failed for sender '{}': {} {}", sender, e.getClass().getName(), message);
             return HttpResponse.serverError(TestSendResult.failure(message, e.getClass().getSimpleName(), elapsed(started)));
         }

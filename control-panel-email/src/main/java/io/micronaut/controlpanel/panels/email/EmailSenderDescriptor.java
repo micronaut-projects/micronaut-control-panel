@@ -20,6 +20,7 @@ import io.micronaut.email.AsyncEmailSender;
 import io.micronaut.email.AsyncTransactionalEmailSender;
 import io.micronaut.email.EmailSender;
 import io.micronaut.email.TransactionalEmailSender;
+import org.jspecify.annotations.Nullable;
 
 import java.util.LinkedHashSet;
 import java.util.Optional;
@@ -28,10 +29,10 @@ import java.util.Set;
 @Internal
 final class EmailSenderDescriptor {
     private final String name;
-    private EmailSender<?, ?> emailSender;
-    private TransactionalEmailSender<?, ?> transactionalEmailSender;
-    private AsyncEmailSender<?, ?> asyncEmailSender;
-    private AsyncTransactionalEmailSender<?, ?> asyncTransactionalEmailSender;
+    private @Nullable EmailSender<?, ?> emailSender;
+    private @Nullable TransactionalEmailSender<?, ?> transactionalEmailSender;
+    private @Nullable AsyncEmailSender<?, ?> asyncEmailSender;
+    private @Nullable AsyncTransactionalEmailSender<?, ?> asyncTransactionalEmailSender;
     private final Set<String> implementationTypes = new LinkedHashSet<>();
 
     EmailSenderDescriptor(String name) {
