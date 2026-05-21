@@ -39,6 +39,7 @@ import java.util.List;
 @Refreshable
 @Requires(classes = Handler.class)
 @Requires(property = ChatbotsControlPanel.ENABLED_PROPERTY, notEquals = StringUtils.FALSE)
+@SuppressWarnings("InjectMoreThanOneScopeAnnotationOnClass")
 public class ChatbotsControlPanel extends AbstractControlPanel<ChatbotsControlPanel.Body> {
 
     public static final String NAME = "chatbots";
