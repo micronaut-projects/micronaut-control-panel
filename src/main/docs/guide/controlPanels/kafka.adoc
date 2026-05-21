@@ -1,36 +1,178 @@
-= Kafka Streams Control Panel
+= Kafka Control Panel
 
-The Kafka Streams Control Panel provides a visual representation of your Kafka Streams topologies:
-
-Features include:
-
-* Visualize the stream processing topology using Mermaid diagrams.
-* View the number of sub-topologies as a badge.
-* View Kafka Streams runtime state when Micronaut Management exposes Kafka Streams health details.
-* Automatically generated from the configured `ConfiguredStreamBuilder` beans.
+The Kafka Control Panel provides Kafka cluster inspection, Kafka Streams topology visualization, optional Kafka ecosystem integration views, and default-off Kafka management actions for development-time diagnostics.
 
 To get started, add the following module as a development-time dependency:
 
 dependency:io.micronaut.controlpanel:micronaut-control-panel-kafka[scope=developmentOnly]
 
-It is assumed that you already have Kafka Streams configured in your application. If not, you can check the following documentation:
+== Kafka Cluster
 
-* https://micronaut-projects.github.io/micronaut-kafka/latest/guide/#kafkaStreams[Micronaut Kafka Streams Documentation]
-* https://guides.micronaut.io/latest/tag-kafka.html[Kafka Guides]
+The Kafka Cluster panel is available when a Kafka `AdminClient` bean is configured by Micronaut Kafka.
+Read views use Kafka AdminClient metadata APIs and temporary non-committing consumers for message browsing.
 
-=== Configuration
+Features include:
 
-The Kafka Streams control panel is automatically enabled when you include the `micronaut-control-panel-kafka` module in your project.
-You can disable it by setting:
+* View cluster id, controller broker, broker count, topic count, partition count, and consumer group count.
+* Navigate the Kafka Cluster detail page by section tabs for overview, cluster configuration, brokers, topics, consumer groups, messages, app consumers, writes/management, Schema Registry, Kafka Connect, and ksqlDB. Optional integration tabs are hidden until their endpoints are configured.
+* Page and search the safe cluster configuration summary.
+* Inspect brokers, host/port/rack metadata, controller status, leader/replica partition counts, under-replicated partition indicators, and broker configuration in a paginated modal.
+* Search and page topics, optionally showing internal topics.
+* View topic cleanup policy, retention settings, segment settings, and open topic partition details in a modal with leaders, replicas, ISR, beginning/end offsets, and paginated topic configuration.
+* Inspect consumer groups, state, protocol, member count, assigned partitions, committed partitions, total lag, member client id/host/assignment, and per-partition committed offset, end offset, and lag.
+* Browse messages by selecting an available topic and partition from the beginning, latest bounded window, a specific offset, or a timestamp.
+  The browser uses temporary consumers with auto-commit disabled and no consumer group id, caps requested record counts, and renders payloads as UTF-8, JSON, or base64 for binary data.
+  JSON payload formatting follows the application's configured `JsonMapper`; set `micronaut.serde.jackson.pretty-print=true` to display formatted JSON.
+* Inspect Micronaut Kafka application consumers from `ConsumerRegistry`, including consumer ids, subscriptions, assignments, and pause state.
+* Display readable section-level errors when Kafka metadata, broker, topic, or offset calls are unavailable or unauthorized.
+
+Sensitive broker and topic configuration values are filtered.
+The panel removes values Kafka marks as sensitive and also filters obvious secret-bearing configuration names such as passwords, tokens, credentials, JAAS, SASL, keystore, and truststore entries.
+
+== Optional Integrations
+
+Schema Registry, Kafka Connect, and ksqlDB tabs are available in the Kafka Cluster page without adding mandatory dependencies to applications that only use Kafka cluster or Kafka Streams views.
+Each integration tab is hidden until its base URL is configured.
+Schema Registry, Kafka Connect, and ksqlDB use control-panel integration URLs:
 
 [configuration]
 ----
 micronaut:
   control-panel:
     panels:
+      kafka:
+        integrations:
+          schema-registry:
+            url: http://localhost:8081
+          connect:
+            url: http://localhost:8083
+          ksqldb:
+            url: http://localhost:8088
+----
+
+When configured, the Schema Registry tab shows subjects, versions, schema text, compatibility, and schema references.
+The Kafka Connect tab shows connectors, tasks, status, and filtered connector configuration.
+The ksqlDB tab shows streams, tables, and queries.
+Sensitive Schema Registry, Kafka Connect, and ksqlDB values are filtered before rendering.
+
+== Write Safety
+
+Kafka management actions are disabled by default.
+The UI hides unavailable management forms, and every mutating endpoint also validates the write gates on the server.
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      kafka:
+        writes:
+          enabled: false
+          destructive-enabled: false
+----
+
+Set `micronaut.control-panel.panels.kafka.writes.enabled=true` only in trusted development environments.
+Destructive operations, such as deleting topics, deleting Schema Registry subjects or versions, and deleting Kafka Connect connectors, additionally require `micronaut.control-panel.panels.kafka.writes.destructive-enabled=true`.
+
+The write model includes:
+
+* Topic management: create topics, update topic configs, increase partitions, and delete topics only when destructive actions are enabled.
+* Message production: produce string or JSON test messages with optional key, headers, and partition by using an isolated management producer.
+  Produced message values, keys, header count, header keys, and header values are bounded server-side before a producer record is created.
+* Consumer group operations: delete empty groups and reset offsets to earliest, latest, a specific offset, or a timestamp.
+* App consumer operations: pause and resume Micronaut consumers through `ConsumerRegistry`.
+* Schema Registry writes: register schemas, update compatibility, and delete subjects or versions behind the destructive gate.
+* Kafka Connect writes: pause, resume, restart, update connector config, restart tasks, and delete connectors behind the destructive gate.
+
+Management actions return structured success or error responses.
+Preview/confirmation flows show the target and impact before applying changes; offset reset operations compute the target offsets before applying them.
+
+== Kafka Streams
+
+The Kafka Streams panel provides a visual representation of your Kafka Streams topologies:
+
+Features include:
+
+* Visualize the stream processing topology using Mermaid diagrams.
+* Open source and sink topic nodes in the Kafka Cluster topic detail modal when the Kafka Cluster panel is available.
+* View the number of sub-topologies as a badge.
+* View Kafka Streams runtime state when Micronaut Management exposes Kafka Streams health details.
+* Automatically generated from the configured `ConfiguredStreamBuilder` beans.
+
+It is assumed that you already have Kafka Streams configured in your application. If not, you can check the following documentation:
+
+* https://micronaut-projects.github.io/micronaut-kafka/latest/guide/#kafkaStreams[Micronaut Kafka Streams Documentation]
+* https://guides.micronaut.io/latest/tag-kafka.html[Kafka Guides]
+
+== Configuration
+
+The Kafka Cluster and Kafka Streams control panels are automatically enabled when you include the `micronaut-control-panel-kafka` module in your project and the required Kafka beans are available.
+You can disable either panel by setting:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      kafka-cluster:
+        enabled: false
       kafka-streams:
         enabled: false
 ----
+
+=== Per-Action Write Toggles
+
+After the top-level write gate is enabled, individual actions can still be disabled.
+Per-action toggles default to enabled so `micronaut.control-panel.panels.kafka.writes.enabled` remains the primary safety switch.
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      kafka:
+        writes:
+          enabled: true
+          destructive-enabled: false
+          max-message-value-bytes: 1048576
+          max-message-key-bytes: 1024
+          max-message-headers: 20
+          max-message-header-key-bytes: 256
+          max-message-header-value-bytes: 4096
+          actions:
+            create-topic: true
+            update-topic-config: true
+            increase-partitions: true
+            delete-topic: false
+            produce-message: true
+            delete-consumer-group: false
+            reset-consumer-group-offsets: true
+            pause-app-consumer: true
+            resume-app-consumer: true
+            register-schema: true
+            update-schema-compatibility: true
+            delete-schema-subject: false
+            delete-schema-version: false
+            pause-connector: true
+            resume-connector: true
+            restart-connector: true
+            restart-connector-task: true
+            update-connector-config: true
+            delete-connector: false
+----
+
+== Limitations
+
+The Kafka Control Panel is a development-time tool, not a production Kafka administration product.
+Users who can access the Control Panel can see Kafka metadata such as cluster id, broker hosts, topic names, partition layout, offsets, consumer groups, and non-sensitive configuration values.
+Use the existing Control Panel security configuration to restrict access.
+
+Message browsing is bounded and uses temporary consumers with `enable.auto.commit=false`.
+It does not commit offsets and does not join an application consumer group.
+Large or binary payloads are truncated or rendered as base64 for display.
+
+Optional integrations use their configured HTTP endpoints from the application process.
+Configure only trusted endpoints and keep write actions disabled unless the development environment is intended for Kafka management.
 
 === Runtime State
 
