@@ -33,6 +33,7 @@ import java.util.Map;
 final class TelegramWebhookStatusClient {
 
     private static final Argument<Map<String, Object>> MAP_ARGUMENT = Argument.mapOf(String.class, Object.class);
+    private static final String PARSE_ERROR = "parse error";
 
     private final JsonMapper jsonMapper;
     private final HttpClient client;
@@ -72,7 +73,7 @@ final class TelegramWebhookStatusClient {
             Thread.currentThread().interrupt();
             return unavailable(botName, "lookup interrupted", expectedUrl);
         } catch (RuntimeException e) {
-            return unavailable(botName, "parse error", expectedUrl);
+            return unavailable(botName, PARSE_ERROR, expectedUrl);
         }
     }
 
@@ -80,7 +81,7 @@ final class TelegramWebhookStatusClient {
     private ChatbotsControlPanel.WebhookRow fromBody(String botName, String expectedUrl, String body) throws IOException {
         Map<String, Object> decoded = jsonMapper.readValue(body, MAP_ARGUMENT);
         if (decoded == null) {
-            return unavailable(botName, "parse error", expectedUrl);
+            return unavailable(botName, PARSE_ERROR, expectedUrl);
         }
         Object ok = decoded.get("ok");
         if (Boolean.FALSE.equals(ok)) {
@@ -88,7 +89,7 @@ final class TelegramWebhookStatusClient {
         }
         Object result = decoded.get("result");
         if (!(result instanceof Map<?, ?> resultMap)) {
-            return unavailable(botName, "parse error", expectedUrl);
+            return unavailable(botName, PARSE_ERROR, expectedUrl);
         }
         Map<String, Object> values = (Map<String, Object>) resultMap;
         String returnedUrl = string(values.get("url"));
