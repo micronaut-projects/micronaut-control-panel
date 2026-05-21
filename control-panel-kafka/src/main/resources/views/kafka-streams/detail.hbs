@@ -137,7 +137,10 @@
     var pre = document.getElementById('kafkaStreamsMermaidCode');
     var container = document.getElementById('kafkaStreamsDiagram');
     if (!pre || !container) return;
-    var code = (pre.textContent || pre.innerText || '').replace(/\r\n/g, '\n').trimStart();
+    var code = (pre.textContent || pre.innerText || '')
+      .replace(/\r\n/g, '\n')
+      .replace(/__CONTROL_PANEL_PATH__/g, '{{ ext.controlPanelPath }}')
+      .trimStart();
     var renderId = 'kafkaStreams_' + Math.random().toString(36).substring(2);
 
     function doRender() {
