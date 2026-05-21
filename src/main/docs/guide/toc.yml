@@ -9,7 +9,7 @@ controlPanels:
   objectStorage: Object Storage
   datasource: Datasource
   hibernate: Hibernate
-  kafka: Kafka Streams
+  kafka: Kafka
   toml: TOML Configuration
 
 custom: Creating Custom Control Panels

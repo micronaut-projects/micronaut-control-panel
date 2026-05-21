@@ -2,10 +2,21 @@ kafka:
   enabled: true
   streams:
     default:
-      schema.registry.url: http://localhost:8081
+      schema.registry.url: ${kafka.schema.registry.url:mock://control-panel-example}
       session.timeout.ms: 10000
       internal.leave.group.on.close: true
       topology.optimization: "reuse.ktable.source.topics"
       default.key.serde: org.apache.kafka.common.serialization.Serdes$StringSerde
       default.value.serde: io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
       auto.offset.reset: earliest
+
+micronaut:
+  serde:
+    jackson:
+      pretty-print: true
+  control-panel:
+    panels:
+      kafka:
+        writes:
+          enabled: true
+          destructive-enabled: true
