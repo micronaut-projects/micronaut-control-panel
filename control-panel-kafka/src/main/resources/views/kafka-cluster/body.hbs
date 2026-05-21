@@ -1,0 +1,47 @@
+{{#with controlPanel.body }}
+<div class="cp-kafka-card-summary" id="kafkaClusterCardOverview" aria-label="Kafka cluster summary">
+    <div class="cp-kafka-card-metric">
+        <div>
+            <div class="cp-kafka-card-value" data-kafka-card-brokers>-</div>
+            <div class="cp-kafka-card-label">Brokers</div>
+        </div>
+        <i class="fas fa-network-wired cp-kafka-card-icon" aria-hidden="true"></i>
+    </div>
+    <div class="cp-kafka-card-metric">
+        <div>
+            <div class="cp-kafka-card-value" data-kafka-card-topics>-</div>
+            <div class="cp-kafka-card-label">Topics</div>
+        </div>
+        <i class="fas fa-layer-group cp-kafka-card-icon cp-kafka-card-icon-accent" aria-hidden="true"></i>
+    </div>
+    <div class="cp-kafka-card-metric">
+        <div>
+            <div class="cp-kafka-card-value" data-kafka-card-partitions>-</div>
+            <div class="cp-kafka-card-label">Partitions</div>
+        </div>
+        <i class="fas fa-diagram-project cp-kafka-card-icon" aria-hidden="true"></i>
+    </div>
+    <div class="cp-kafka-card-metric">
+        <div>
+            <div class="cp-kafka-card-value" data-kafka-card-consumer-groups>-</div>
+            <div class="cp-kafka-card-label">Consumer groups</div>
+        </div>
+        <i class="fas fa-users cp-kafka-card-icon" aria-hidden="true"></i>
+    </div>
+</div>
+<script>
+  (function() {
+    var baseUrl = '{{ ext.controlPanelPath }}{{ controllerPath }}';
+    $.getJSON(baseUrl + '/summary').done(function(section) {
+      if (!section || section.error || !section.data) {
+        return;
+      }
+      var summary = section.data;
+      $('[data-kafka-card-brokers]').text(summary.brokerCount);
+      $('[data-kafka-card-topics]').text(summary.topicCount);
+      $('[data-kafka-card-partitions]').text(summary.partitionCount);
+      $('[data-kafka-card-consumer-groups]').text(summary.consumerGroupCount);
+    });
+  })();
+</script>
+{{/with}}
