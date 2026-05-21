@@ -22,6 +22,22 @@ class EndpointUtilsTest {
     }
 
     @Test
+    void canRefreshDoesNotRequireRawEndpointToBeNonSensitive() {
+        var configuration = new java.util.HashMap<String, Object>();
+        configuration.put("endpoints.all.enabled", true);
+        configuration.put("endpoints.refresh.enabled", true);
+
+        ctx = ApplicationContext.builder()
+            .deduceEnvironment(false)
+            .propertySources(PropertySource.of(configuration))
+            .start();
+        var endpoint = ctx.getBean(RefreshEndpoint.class);
+
+        assertTrue(EndpointUtils.isSensitive(endpoint, ctx));
+        assertTrue(EndpointUtils.canRefresh(endpoint));
+    }
+
+    @Test
     void itCanCheckIfEndpointIsSensitive() {
         var configuration = new java.util.HashMap<String, Object>();
         configuration.put("endpoints.all.enabled", true);

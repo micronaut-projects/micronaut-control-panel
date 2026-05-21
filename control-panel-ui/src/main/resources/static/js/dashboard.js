@@ -525,9 +525,12 @@
             var $card = $(this).closest(".card");
             var $body = $card.children(".card-body");
             var $icon = $(this).find(".fas, .fa");
-            $card.toggleClass("collapsed-card");
+            var collapsed = !$card.hasClass("collapsed-card");
+            $card.toggleClass("collapsed-card", collapsed);
             $body.stop(true, true).slideToggle(120);
-            $icon.toggleClass("fa-minus fa-plus");
+            $icon.toggleClass("fa-plus", collapsed);
+            $icon.toggleClass("fa-minus", !collapsed);
+            this.setAttribute("aria-expanded", collapsed ? "false" : "true");
         });
 
         $(document).on("click", "[data-sidebar-toggle]", function () {
