@@ -1,0 +1,168 @@
+{{#with controlPanel.body }}
+    <div class="cp-dashboard-stack">
+        {{#if empty}}
+            <div class="card card-light">
+                <div class="card-header">
+                    <h3 class="card-title">Email</h3>
+                </div>
+                <div class="card-body">
+                    <div class="cp-data-table-empty">No Micronaut Email sender beans were detected.</div>
+                    <p>Add a Micronaut Email provider module and configure at least one sender to show diagnostics here.</p>
+                </div>
+            </div>
+        {{else}}
+            <div class="card card-light">
+                <div class="card-header">
+                    <h3 class="card-title">Overview</h3>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-3">Sender bean</dt>
+                        <dd class="col-sm-9"><code title="{{senderName}}">{{abbreviate senderName 70}}</code></dd>
+                        <dt class="col-sm-3">Provider</dt>
+                        <dd class="col-sm-9"><span class="badge badge-primary">{{provider}}</span></dd>
+                        <dt class="col-sm-3">Default From</dt>
+                        <dd class="col-sm-9">
+                            <span class="badge badge-secondary">{{defaultFromStatus}}</span>
+                            <code>{{defaultFrom}}</code>
+                        </dd>
+                        <dt class="col-sm-3">Templates</dt>
+                        <dd class="col-sm-9"><span class="badge badge-secondary">{{templateSupportStatus}}</span></dd>
+                        <dt class="col-sm-3">Supported interfaces</dt>
+                        <dd class="col-sm-9">
+                            {{#each supportedInterfaces as |senderInterface|}}
+                                <span class="badge badge-secondary">{{senderInterface}}</span>
+                            {{/each}}
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+
+            <div class="card card-light">
+                <div class="card-header">
+                    <h3 class="card-title">Configuration</h3>
+                </div>
+                <div class="card-body">
+                    {{#if hasConfiguration}}
+                        <div class="cp-data-table">
+                            <div class="cp-data-table-container">
+                                <table class="table cp-data-table-table">
+                                    <thead>
+                                    <tr>
+                                        <th>Setting</th>
+                                        <th>Status</th>
+                                        <th>Value</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {{#each configuration as |entry|}}
+                                        <tr>
+                                            <td>{{entry.label}}</td>
+                                            <td><span class="badge badge-secondary">{{entry.status}}</span></td>
+                                            <td><code title="{{entry.value}}">{{abbreviate entry.value 80}}</code></td>
+                                        </tr>
+                                    {{/each}}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    {{else}}
+                        <div class="cp-data-table-empty">No provider-specific safe settings were detected.</div>
+                    {{/if}}
+                </div>
+            </div>
+        {{/if}}
+
+        <div class="card card-light">
+            <div class="card-header">
+                <h3 class="card-title">Checklist</h3>
+            </div>
+            <div class="card-body">
+                <div class="cp-data-table">
+                    <div class="cp-data-table-container">
+                        <table class="table cp-data-table-table">
+                            <thead>
+                            <tr>
+                                <th>Check</th>
+                                <th>Status</th>
+                                <th>Message</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {{#each checklist as |item|}}
+                                <tr>
+                                    <td>{{item.label}}</td>
+                                    <td><span class="badge badge-secondary">{{item.status}}</span></td>
+                                    <td>{{item.message}}</td>
+                                </tr>
+                            {{/each}}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{#not empty}}
+            <div class="card card-light">
+                <div class="card-header">
+                    <h3 class="card-title">Test send</h3>
+                </div>
+                <div class="card-body">
+                    <p>
+                        <span class="badge badge-secondary">{{testSend.status}}</span>
+                        {{testSend.message}}
+                    </p>
+                    {{#if testSend.configured}}
+                        {{#if testSend.allowArbitraryRecipient}}
+                            <div class="form-group">
+                                <label for="emailTestRecipient">Recipient</label>
+                                <input id="emailTestRecipient" class="form-control" type="email" autocomplete="off">
+                            </div>
+                        {{/if}}
+                        <button type="button" class="btn btn-primary" id="emailTestSendButton">
+                            <i class="fas fa-paper-plane"></i>
+                            Send test email
+                        </button>
+                        <div id="emailTestSendResult" class="cp-data-table-empty" role="status" aria-live="polite">Not run.</div>
+                    {{/if}}
+                </div>
+            </div>
+
+            {{#if testSend.configured}}
+                <script>
+                    (function() {
+                        var button = document.getElementById('emailTestSendButton');
+                        var result = document.getElementById('emailTestSendResult');
+                        var recipient = document.getElementById('emailTestRecipient');
+                        if (!button || !result) return;
+                        button.addEventListener('click', function() {
+                            button.disabled = true;
+                            result.textContent = 'Sending...';
+                            var payload = {};
+                            if (recipient && recipient.value) {
+                                payload.recipient = recipient.value;
+                            }
+                            $.ajax({
+                                url: '{{ ext.controlPanelPath }}/email-control-panel-controller/{{senderName}}/test-send',
+                                type: 'POST',
+                                data: JSON.stringify(payload),
+                                contentType: 'application/json; charset=utf-8',
+                                success: function(response) {
+                                    result.textContent = response.status + ': ' + response.message + ' (' + response.elapsedMillis + ' ms)';
+                                },
+                                error: function(xhr) {
+                                    var response = xhr.responseJSON || {};
+                                    result.textContent = (response.status || 'failed') + ': ' + (response.message || 'Test send failed.');
+                                },
+                                complete: function() {
+                                    button.disabled = false;
+                                }
+                            });
+                        });
+                    })();
+                </script>
+            {{/if}}
+        {{/not}}
+    </div>
+{{/with}}

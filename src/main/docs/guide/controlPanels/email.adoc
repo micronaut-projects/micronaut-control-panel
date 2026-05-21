@@ -1,0 +1,51 @@
+The Email control panel provides development-time diagnostics for applications that use https://micronaut-projects.github.io/micronaut-email/latest/guide/[Micronaut Email].
+
+Assuming your application already has `micronaut-email` and a Micronaut Email provider module, add the following dependency:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-email[scope=developmentOnly]
+
+The module creates one panel for each usable Micronaut Email sender name. When Micronaut Email exposes wrapper and provider sender beans for the same sender name, the panel groups them into a single entry.
+
+Each panel shows:
+
+* The sender bean name and best-effort provider label
+* Supported sender interfaces such as `EmailSender`, `TransactionalEmailSender`, `AsyncEmailSender`, and `AsyncTransactionalEmailSender`
+* Default `from` status
+* Template support status
+* Whitelisted non-secret provider settings and secret presence indicators
+* A configuration checklist
+* An optional guarded test-send action
+
+The provider label is inferred from sender names, implementation package names, and safe configuration prefixes. JavaMail/SMTP, Amazon SES, SendGrid, Mailjet, Mailtrap, and Postmark are recognized. Custom senders are shown as `Custom/Unknown`.
+
+The control panel is automatically enabled when you include the module. You can disable it with:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      email:
+        enabled: false
+----
+
+Test send is disabled by default and is intended only for development or test environments. Enable it only with a safe configured recipient:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    email:
+      test-send:
+        enabled: true
+        recipient: dev-mailbox@example.test
+        subject-prefix: "[Micronaut Control Panel]"
+        allow-arbitrary-recipient: false
+        include-configuration-summary: false
+----
+
+By default the UI does not show an arbitrary recipient field and the endpoint rejects request-provided recipients. Set `allow-arbitrary-recipient=true` only in local environments where sending to arbitrary addresses is acceptable.
+
+Secrets are never shown as raw values in the panel body, detail view, serialized model output, controller responses, or test-send failure messages. Keys containing words such as `password`, `secret`, `token`, `key`, `credential`, or `authorization` are displayed only as `present (hidden)` or `not configured`, and exception messages are redacted before they are returned.
+
+The panel does not call provider APIs while rendering, does not store test-send history, does not retain message bodies or provider response bodies, and does not infer provider dashboard URLs from credentials. For local verification, use a mock sender or a local SMTP capture tool such as Mailpit instead of shared real-provider credentials.

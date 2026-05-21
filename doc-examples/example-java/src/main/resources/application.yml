@@ -11,6 +11,10 @@ micronaut:
 #end::control-panel[]
     env:
       show-values: true
+    email:
+      test-send:
+        enabled: true
+        recipient: dev-mailbox@example.test
   router:
     static-resources:
       swagger:
@@ -23,6 +27,10 @@ micronaut:
     local:
       my-local:
         path: /tmp/foo/
+  email:
+    from:
+      email: control-panel@example.test
+      name: Control Panel Example
   caches:
     my-caffeine:
       initial-capacity: 2
