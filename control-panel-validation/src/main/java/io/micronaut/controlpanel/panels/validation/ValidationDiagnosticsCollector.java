@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 
@@ -117,7 +118,7 @@ final class ValidationDiagnosticsCollector {
     private List<ValidationDiagnostics.SummaryItem> collectSummary(boolean validationEnabled, List<ValidationDiagnostics.StateMessage> messages) {
         List<ValidationDiagnostics.SummaryItem> rows = new ArrayList<>();
         rows.add(new ValidationDiagnostics.SummaryItem("Runtime validation", validationEnabled ? "Enabled" : "Disabled", "Environment", validationEnabled ? STATE_CONFIGURED : "disabled"));
-        rows.add(new ValidationDiagnostics.SummaryItem("Attribute mode", configuration.getShowConstraintAttributes().name().toLowerCase(), ValidationConfiguration.PREFIX + ".show-constraint-attributes", STATE_CONFIGURED));
+        rows.add(new ValidationDiagnostics.SummaryItem("Attribute mode", configuration.getShowConstraintAttributes().name().toLowerCase(Locale.ROOT), ValidationConfiguration.PREFIX + ".show-constraint-attributes", STATE_CONFIGURED));
         rows.add(new ValidationDiagnostics.SummaryItem("Include packages", configuration.getIncludePackages().isEmpty() ? "Application packages" : String.join(", ", configuration.getIncludePackages()), ValidationConfiguration.PREFIX + ".include-packages", STATE_CONFIGURED));
         rows.add(new ValidationDiagnostics.SummaryItem("Exclude packages", configuration.getExcludePackages().isEmpty() ? "Framework defaults" : String.join(", ", configuration.getExcludePackages()), ValidationConfiguration.PREFIX + ".exclude-packages", STATE_CONFIGURED));
         beanContext.findBean(ValidatorConfiguration.class).ifPresentOrElse(
@@ -189,7 +190,7 @@ final class ValidationDiagnosticsCollector {
                 .sorted(Comparator.comparing(ValidationDiagnostics.ValidatedElementRow::name))
                 .toList();
         } catch (RuntimeException e) {
-            messages.add(new ValidationDiagnostics.StateMessage(STATE_ERROR, "Route metadata unavailable", e.getMessage()));
+            messages.add(new ValidationDiagnostics.StateMessage(STATE_ERROR, "Route metadata unavailable", message(e)));
             return List.of();
         }
     }
@@ -210,7 +211,7 @@ final class ValidationDiagnosticsCollector {
                 .sorted(Comparator.comparing(ValidationDiagnostics.ValidatedElementRow::name))
                 .toList();
         } catch (RuntimeException e) {
-            messages.add(new ValidationDiagnostics.StateMessage(STATE_ERROR, "Bean method metadata unavailable", e.getMessage()));
+            messages.add(new ValidationDiagnostics.StateMessage(STATE_ERROR, "Bean method metadata unavailable", message(e)));
             return List.of();
         }
     }
@@ -253,7 +254,7 @@ final class ValidationDiagnosticsCollector {
                 .sorted(Comparator.comparing(ValidationDiagnostics.ValidatedElementRow::name))
                 .toList();
         } catch (RuntimeException e) {
-            messages.add(new ValidationDiagnostics.StateMessage(STATE_ERROR, "Configuration property metadata unavailable", e.getMessage()));
+            messages.add(new ValidationDiagnostics.StateMessage(STATE_ERROR, "Configuration property metadata unavailable", message(e)));
             return List.of();
         }
     }
@@ -288,7 +289,7 @@ final class ValidationDiagnosticsCollector {
                 .sorted(Comparator.comparing(ValidationDiagnostics.ValidatedElementRow::name))
                 .toList();
         } catch (RuntimeException e) {
-            messages.add(new ValidationDiagnostics.StateMessage(STATE_ERROR, "Class metadata unavailable", e.getMessage()));
+            messages.add(new ValidationDiagnostics.StateMessage(STATE_ERROR, "Class metadata unavailable", message(e)));
             return List.of();
         }
     }
@@ -377,5 +378,10 @@ final class ValidationDiagnosticsCollector {
 
     private static int countConstraints(List<ValidationDiagnostics.ValidatedElementRow> rows) {
         return rows.stream().mapToInt(ValidationDiagnostics.ValidatedElementRow::constraintCount).sum();
+    }
+
+    private static String message(RuntimeException e) {
+        String message = e.getMessage();
+        return message == null ? e.getClass().getSimpleName() : message;
     }
 }

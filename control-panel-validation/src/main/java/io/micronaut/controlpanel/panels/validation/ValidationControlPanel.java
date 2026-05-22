@@ -35,6 +35,7 @@ import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
 @Refreshable
 @Requires(classes = ValidatorConfiguration.class)
 @Requires(property = ValidationControlPanel.ENABLED_PROPERTY, notEquals = StringUtils.FALSE)
+@SuppressWarnings("InjectMoreThanOneScopeAnnotationOnClass")
 public class ValidationControlPanel extends AbstractControlPanel<ValidationDiagnostics> {
 
     public static final String NAME = "validation";
