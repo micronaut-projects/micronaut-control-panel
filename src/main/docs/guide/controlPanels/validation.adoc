@@ -1,0 +1,59 @@
+The Validation control panel provides read-only diagnostics for applications that use Micronaut Validation.
+It is intended for development-time troubleshooting when route validation, method validation, request body cascades, custom validators, or configuration-property constraints do not behave as expected.
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-validation[scope=developmentOnly]
+
+The application must also include Micronaut Validation and the validation annotation processor, as it normally would for runtime validation:
+
+dependency:io.micronaut.validation:micronaut-validation[]
+dependency:io.micronaut.validation:micronaut-validation-processor[scope="annotationProcessor"]
+
+When `micronaut-validation` is not on the classpath, the panel is not registered.
+When the validation classes are present but runtime validation is disabled, the panel renders an explicit disabled state and still shows compile-time metadata that can be inspected safely.
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      validation:
+        enabled: true
+    validation:
+      include-packages:
+        - example
+      exclude-packages:
+        - example.internal
+      show-constraint-attributes: safe
+  validator:
+    enabled: true
+----
+
+The panel enable flag is `micronaut.control-panel.panels.validation.enabled`.
+Micronaut Validation runtime behavior is still controlled by `micronaut.validator.enabled`.
+
+The `micronaut.control-panel.validation.include-packages` and `micronaut.control-panel.validation.exclude-packages` settings limit which application classes appear in route, method, class, configuration-property, and custom-validator views.
+When no include packages are configured, framework packages such as `java.*`, `jakarta.*`, and `io.micronaut.*` are hidden by default so the panel focuses on application metadata.
+
+The `micronaut.control-panel.validation.show-constraint-attributes` setting controls annotation member display:
+
+* `none` hides constraint attributes.
+* `safe` is the default. It redacts secret-like member names, truncates large strings and arrays, and summarizes non-scalar values.
+* `all` displays annotation values collected from Micronaut metadata. This should be used only in trusted development environments.
+
+The detail view separates metadata by source:
+
+* Detected capabilities show the active provider beans, validator configuration, package filters, and attribute mode.
+* Routes show validation metadata from `Router` and route `ExecutableMethod` arguments, return values, and method annotations.
+* Methods show application bean methods with validation constraints or cascade markers.
+* Configuration shows validated `@ConfigurationProperties` beans.
+* Classes show reachable request body/data classes and configuration classes with introspection metadata.
+* Validators show application `ConstraintValidator` beans.
+
+The panel does not execute validators, capture request payloads, display rejected values, or call provider-specific APIs such as Hibernate Validator internals.
+If a replacement provider hides Micronaut provider beans, the panel marks that provider metadata as unavailable and continues showing compile-time metadata.
+
+Validation metadata can reveal domain model names, property names, message keys, regular expressions, and business rules.
+Keep Control Panel protected and development-scoped, following the same exposure model as the other Control Panel modules.
+
+The panel consumes Micronaut compile-time metadata and bean introspections already generated for the application.
+It does not introduce reflection scans for native-image builds.
