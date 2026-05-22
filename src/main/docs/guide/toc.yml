@@ -9,7 +9,7 @@ controlPanels:
   objectStorage: Object Storage
   datasource: Datasource
   hibernate: Hibernate
-  kafka: Kafka Streams
+  kafka: Kafka
   oracleCloud: Oracle Cloud
 
 custom: Creating Custom Control Panels

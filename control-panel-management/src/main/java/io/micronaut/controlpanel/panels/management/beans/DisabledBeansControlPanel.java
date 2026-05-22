@@ -43,6 +43,7 @@ import static io.micronaut.controlpanel.panels.management.beans.BeansControlPane
 @Singleton
 @Refreshable
 @Requires(property = DisabledBeansControlPanel.ENABLED_PROPERTY, notEquals = StringUtils.FALSE)
+@SuppressWarnings("InjectMoreThanOneScopeAnnotationOnClass")
 public class DisabledBeansControlPanel extends AbstractControlPanel<DisabledBeansControlPanel.Body> {
 
     public static final String NAME = "disabled-beans";
