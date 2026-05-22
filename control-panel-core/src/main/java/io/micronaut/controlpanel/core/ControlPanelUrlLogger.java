@@ -23,6 +23,7 @@ import io.micronaut.http.server.HttpServerConfiguration;
 import io.micronaut.runtime.ApplicationConfiguration;
 import io.micronaut.runtime.event.annotation.EventListener;
 import jakarta.inject.Singleton;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,7 +73,7 @@ public class ControlPanelUrlLogger {
         LOG.info("{} Control Panel available at {}", prefix, controlPanelUrl);
     }
 
-    private static URI getEventUri(Object event) {
+    private static @Nullable URI getEventUri(Object event) {
         try {
             Object source = event.getClass().getMethod("getSource").invoke(event);
             Object uri = Objects.requireNonNull(source).getClass().getMethod("getURI").invoke(source);
