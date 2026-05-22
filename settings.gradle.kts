@@ -22,6 +22,7 @@ include("control-panel-datasource")
 include("control-panel-hibernate")
 include("control-panel-ui")
 include("control-panel-kafka")
+include("control-panel-graalpy")
 
 include("doc-examples:example-java")
 

@@ -1,0 +1,56 @@
+The GraalPy Control Panel provides a read-only diagnostics view for applications that use
+https://micronaut-projects.github.io/micronaut-graal-languages/latest/guide/[Micronaut Graal Languages] and
+`@GraalPyModule` interfaces.
+
+To add the GraalPy panel, add the following module as a development-time dependency:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-graalpy[scope=developmentOnly]
+
+Your application must still include the GraalPy integration dependency:
+
+dependency:io.micronaut.graal-languages:micronaut-graalpy[scope=implementation]
+
+The panel is available when Control Panel is enabled and `micronaut-graalpy` is on the classpath. It does not require an
+annotated module interface to be present; in that case it shows an empty state.
+
+You can disable the panel with:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      graalpy:
+        enabled: false
+----
+
+=== Module Interfaces
+
+The panel inspects Micronaut bean definitions annotated with `@GraalPyModule`. For each definition it shows the bean
+name, Java interface type, Python module name, Java method signatures, scope and qualifier metadata when available, and
+an instantiation state of `Unknown` when that cannot be observed without creating the bean.
+
+This inspection uses annotation and method metadata. It does not call `BeanContext.getBean(...)`, inject the
+`@GraalPyModule` interface, import the configured Python module, or invoke any Python-backed Java method.
+
+=== Runtime Metadata
+
+The runtime section shows `GraalPyContextBuilderFactory` bean definition candidates and whether the shared internal
+`GraalPyContext` bean definition is present. The panel does not call `GraalPyContextBuilderFactory.createBuilder()`,
+build a polyglot `Context`, initialize Python, or evaluate Python code.
+
+Micronaut GraalPy's default introduction advice uses one shared polyglot context for `@GraalPyModule` interfaces. Python
+execution can serialize on the global interpreter lock. If an application needs multiple isolated contexts, use custom
+GraalVM `Context` APIs outside the Control Panel.
+
+=== Python VFS Metadata
+
+The panel looks for `org.graalvm.python.vfs/fileslist.txt` classpath resources created by the GraalPy Maven or Gradle
+plugin. When the resource is present, the panel shows sanitized classpath resource labels and a capped, searchable list
+of packaged paths. It reads only `fileslist.txt`; it does not read listed Python files, package contents, package indexes,
+or local filesystem paths.
+
+When no metadata is found, verify that the GraalPy build plugin is configured to package your Python sources and
+dependencies and that `org.graalvm.python.vfs/fileslist.txt` is present in the built application resources or jar. If the
+metadata is too large or a resource is unreadable, the panel shows partial data with a warning instead of failing the
+whole page.

@@ -1,0 +1,29 @@
+{{#with body}}
+    <p class="card-text">
+        <strong>{{moduleCount}}</strong> GraalPy module interfaces detected.
+    </p>
+    <p class="card-text">
+        <strong>VFS metadata</strong>:
+        {{#if vfs.hasEntries}}
+            <span class="badge badge-secondary">{{vfs.entryCount}} entries</span>
+        {{else}}
+            <span class="badge badge-secondary">Not found</span>
+        {{/if}}
+    </p>
+    <p class="card-text">
+        <strong>Context</strong>:
+        {{#if runtime.sharedContextPresent}}
+            <span class="badge badge-secondary">shared</span>
+        {{else}}
+            <span class="badge badge-secondary">not detected</span>
+        {{/if}}
+    </p>
+    <p class="card-text">
+        <strong>Factory</strong>:
+        {{#if runtime.hasActiveFactory}}
+            <code title="{{runtime.activeFactoryClass}}">{{abbreviate runtime.activeFactoryClass 56}}</code>
+        {{else}}
+            <span>{{runtime.factoryStatus}}</span>
+        {{/if}}
+    </p>
+{{/with}}
