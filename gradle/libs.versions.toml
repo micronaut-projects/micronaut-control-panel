@@ -28,6 +28,7 @@ micronaut-object-storage = "3.0.0"
 micronaut-cache = "6.0.0"
 micronaut-sql = "7.0.1"
 micronaut-data = "5.0.0"
+micronaut-mongodb = "6.0.1-M1"
 micronaut-testresources = "4.0.0"
 micronaut-gradle-plugin = "5.0.0-M1"
 micronaut-openapi = "7.0.0"
@@ -40,6 +41,7 @@ test-logger-plugin = "4.0.0"
 gradle-node-plugin = "7.1.0"
 avro = "1.12.1"
 avro-serde = "8.2.0"
+testcontainers = "2.0.4"
 
 handlebars-humanize = "4.3.1"
 
@@ -56,10 +58,12 @@ micronaut-object-storage = { module = "io.micronaut.objectstorage:micronaut-obje
 micronaut-cache = { module = "io.micronaut.cache:micronaut-cache-bom", version.ref = "micronaut-cache" }
 micronaut-sql = { module = "io.micronaut.sql:micronaut-sql-bom", version.ref = "micronaut-sql" }
 micronaut-data = { module = "io.micronaut.data:micronaut-data-bom", version.ref = "micronaut-data" }
+micronaut-mongodb = { module = "io.micronaut.mongodb:micronaut-mongo-bom", version.ref = "micronaut-mongodb" }
 micronaut-testresources = { module = 'io.micronaut.testresources:micronaut-test-resources-bom', version.ref = "micronaut-testresources" }
 micronaut-kafka = { module = "io.micronaut.kafka:micronaut-kafka-bom", version.ref = "micronaut-kafka" }
 avro = { module = "org.apache.avro:avro", version.ref = "avro" }
 avro-serde = { module = "io.confluent:kafka-streams-avro-serde", version.ref = "avro-serde" }
+testcontainers-mongodb = { module = "org.testcontainers:testcontainers-mongodb", version.ref = "testcontainers" }
 
 playwright = { module = "com.microsoft.playwright:playwright", version.ref = "playwright"}
 

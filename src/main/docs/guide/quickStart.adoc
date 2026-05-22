@@ -12,6 +12,15 @@ Micrometer is present and metrics are enabled:
 
 dependency:io.micronaut.micrometer:micronaut-micrometer-core[scope=runtimeOnly]
 
+MongoDB diagnostics require the MongoDB Control Panel module plus `micronaut-mongo-sync` or
+`micronaut-mongo-reactive`:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-mongodb[scope=developmentOnly]
+
+dependency:io.micronaut.mongodb:micronaut-mongo-sync[scope=runtimeOnly]
+
+dependency:io.micronaut.mongodb:micronaut-mongo-reactive[scope=runtimeOnly]
+
 By default, the Control Panel is only enabled in the `dev` or `test` environments. You can change this and other settings
 in your configuration file:
 
