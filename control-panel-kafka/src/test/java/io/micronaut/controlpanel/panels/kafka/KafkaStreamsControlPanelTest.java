@@ -124,6 +124,8 @@ final class KafkaStreamsControlPanelTest {
         assertMatchesRegexNormalized(mermaid, edgeRegexTopicToNode("input-topic", "KSTREAM-SOURCE-0"));
         assertMatchesRegexNormalized(mermaid, edgeRegexNodeToNode("KSTREAM-SOURCE-0", "KSTREAM-SINK-0"));
         assertMatchesRegexNormalized(mermaid, edgeRegexNodeToTopic("KSTREAM-SINK-0", "output-topic"));
+        assertContainsNormalized(mermaid, "\"__CONTROL_PANEL_PATH__/kafka-cluster?topic=input-topic\" \"Open topic input-topic\"");
+        assertContainsNormalized(mermaid, "\"__CONTROL_PANEL_PATH__/kafka-cluster?topic=output-topic\" \"Open topic output-topic\"");
         assertContainsNormalized(mermaid, "subgraph sub_0 [\"Sub-topology: 0\"]");
     }
 
@@ -458,6 +460,7 @@ final class KafkaStreamsControlPanelTest {
         Assertions.assertTrue(template.contains("<span class=\"badge badge-secondary\">Unavailable</span>"));
         Assertions.assertTrue(template.contains("Runtime state unavailable."));
         Assertions.assertTrue(template.contains("Rendering topology..."));
+        Assertions.assertTrue(template.contains(".replace(/__CONTROL_PANEL_PATH__/g, '{{ ext.controlPanelPath }}')"));
         Assertions.assertFalse(template.contains("<ul>\n        {{#each body.runtimeState.threads"));
     }
 

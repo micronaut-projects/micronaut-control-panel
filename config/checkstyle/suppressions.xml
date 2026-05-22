@@ -9,4 +9,6 @@
               <!-- files="DefaultBeanContext.java|BeanDefinitionWriter.java|DefaultHttpClient.java"/> -->
 
     <suppress checks="MissingJavadocType" files=".*doc-examples.*" />
+    <suppress checks="MissingJavadocType" files=".*build/generated/sources/mn-descriptor.*" />
+    <suppress checks="FileLength" files=".*KafkaClusterService.java" />
 </suppressions>

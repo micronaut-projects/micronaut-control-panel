@@ -38,6 +38,7 @@ tasks.register<JavaExec>("playwrightInstall") {
 
 tasks.withType<Test> {
     dependsOn(tasks.named("playwrightInstall"))
+    maxHeapSize = "2g"
     systemProperty("micronaut.test.resources.server.client.read.timeout", "180")
 }
 
