@@ -104,10 +104,10 @@
                 </a>
             </nav>
 
-            {{#if activeEnvironments}}
+            {{#if ext.hasActiveEnvironments}}
                 <div class="cp-sidebar-group-label cp-environment-label">Environments</div>
                 <div class="cp-environments cp-sidebar-section cp-environment-list" aria-label="Active environments">
-                    {{#each activeEnvironments }}
+                    {{#each ext.activeEnvironments }}
                         <span class="badge cp-environment-tag" title="{{ this }}">{{ this }}</span>
                     {{/each}}
                 </div>

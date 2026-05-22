@@ -29,6 +29,7 @@ import io.micronaut.http.annotation.Post;
 import io.micronaut.http.annotation.QueryValue;
 import io.micronaut.scheduling.TaskExecutors;
 import io.micronaut.scheduling.annotation.ExecuteOn;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
@@ -197,7 +198,7 @@ public final class HibernateController {
         return HttpResponse.noContent();
     }
 
-    private static Map<String, Object> queryError(Integer draw, String message) {
+    private static Map<String, Object> queryError(@Nullable Integer draw, @Nullable String message) {
         return Map.of(
             "draw", draw == null ? 1 : draw,
             "recordsTotal", 0,

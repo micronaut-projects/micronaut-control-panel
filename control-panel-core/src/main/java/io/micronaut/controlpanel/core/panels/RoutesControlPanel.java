@@ -28,6 +28,7 @@ import io.micronaut.web.router.Router;
 import io.micronaut.web.router.UriRouteInfo;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,6 +53,7 @@ import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
 @Singleton
 @Refreshable
 @Requires(property = RoutesControlPanel.ENABLED_PROPERTY, notEquals = StringUtils.FALSE)
+@SuppressWarnings("InjectMoreThanOneScopeAnnotationOnClass")
 public class RoutesControlPanel extends AbstractControlPanel<RoutesControlPanel.Body> {
 
     public static final String NAME = "routes";
@@ -93,7 +95,7 @@ public class RoutesControlPanel extends AbstractControlPanel<RoutesControlPanel.
             totalAppRoutes + totalMicronautRoutes);
     }
 
-    private static Viewer resolveOpenApiViewer(Environment env) {
+    private static @Nullable Viewer resolveOpenApiViewer(Environment env) {
         final String base = "micronaut.router.static-resources.";
         final String suffix = ".mapping";
         final String[][] viewers = new String[][] {
@@ -285,7 +287,7 @@ public class RoutesControlPanel extends AbstractControlPanel<RoutesControlPanel.
     @ReflectiveAccess
     record Body(Map<String, List<RouteRow>> appRoutes,
                 Map<String, List<RouteRow>> micronautRoutes,
-                String openApiViewerUri,
-                String openApiViewerLabel,
+                @Nullable String openApiViewerUri,
+                @Nullable String openApiViewerLabel,
                 int totalRoutes) { }
 }

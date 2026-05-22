@@ -19,7 +19,6 @@ import io.micronaut.context.ApplicationContextBuilder;
 import io.micronaut.context.ApplicationContextConfigurer;
 import io.micronaut.context.annotation.ContextConfigurer;
 import io.micronaut.context.env.MapPropertySource;
-import io.micronaut.context.env.SystemPropertiesPropertySource;
 import org.jspecify.annotations.NonNull;
 import io.micronaut.core.io.scan.ClassPathResourceLoader;
 
@@ -60,7 +59,7 @@ public class ControlPanelContextConfigurer implements ApplicationContextConfigur
         var propertySource = new MapPropertySource(PROPERTY_SOURCE_NAME, map) {
             @Override
             public int getOrder() {
-                return SystemPropertiesPropertySource.POSITION + 50;
+                return Integer.MIN_VALUE;
             }
         };
 
