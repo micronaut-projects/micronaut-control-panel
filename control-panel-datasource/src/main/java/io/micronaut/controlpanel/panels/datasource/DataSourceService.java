@@ -27,6 +27,7 @@ import io.micronaut.data.connection.jdbc.advice.DelegatingDataSource;
 import io.micronaut.serde.annotation.Serdeable;
 import jakarta.inject.Inject;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -391,7 +392,7 @@ public class DataSourceService {
         }
     }
 
-    private String sanitizeQuery(String sql) {
+    private String sanitizeQuery(@Nullable String sql) {
         if (sql == null) {
             throw new IllegalArgumentException("SQL must not be null");
         }
@@ -406,7 +407,7 @@ public class DataSourceService {
         return trimmed;
     }
 
-    private String stripComments(String sql) {
+    private @Nullable String stripComments(@Nullable String sql) {
         if (sql == null) {
             return null;
         }
