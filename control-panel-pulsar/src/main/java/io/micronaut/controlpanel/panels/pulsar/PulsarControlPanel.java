@@ -30,6 +30,7 @@ import jakarta.inject.Singleton;
 import org.apache.pulsar.client.api.Consumer;
 import org.apache.pulsar.client.api.Producer;
 import org.apache.pulsar.client.api.Reader;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -127,7 +128,7 @@ public final class PulsarControlPanel extends AbstractControlPanel<PulsarControl
             .toList();
     }
 
-    private static ProducerInfo producerInfo(String id, Producer<?> producer) {
+    private static ProducerInfo producerInfo(String id, @Nullable Producer<?> producer) {
         if (producer == null) {
             return new ProducerInfo(id, "", "", UNKNOWN, false, "");
         }
@@ -149,7 +150,7 @@ public final class PulsarControlPanel extends AbstractControlPanel<PulsarControl
             .toList();
     }
 
-    private static ConsumerInfo consumerInfo(String id, Consumer<?> consumer, PulsarConsumerRegistry registry) {
+    private static ConsumerInfo consumerInfo(String id, @Nullable Consumer<?> consumer, PulsarConsumerRegistry registry) {
         boolean paused = safe(() -> registry.isPaused(id)).orElse(false);
         if (consumer == null) {
             return new ConsumerInfo(id, "", "", "", UNKNOWN, paused, false, "");
@@ -188,7 +189,7 @@ public final class PulsarControlPanel extends AbstractControlPanel<PulsarControl
         );
     }
 
-    private static String connectionState(Boolean connected) {
+    private static String connectionState(@Nullable Boolean connected) {
         if (connected == null) {
             return UNKNOWN;
         }

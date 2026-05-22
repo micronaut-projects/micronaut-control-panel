@@ -26,6 +26,7 @@ import jakarta.inject.Named;
 import reactor.core.publisher.Mono;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.StreamSupport;
 
@@ -71,7 +72,9 @@ public abstract class AbstractCacheControlPanel<C extends SyncCache<?>> extends 
 
     @Override
     public Body getBody() {
-        return new Body(getCache(), Mono.from(getCache().getCacheInfo()).block(), getCacheAsMap());
+        C cache = getCache();
+        CacheInfo cacheInfo = Objects.requireNonNull(Mono.from(cache.getCacheInfo()).block(), "Cache info returned no result");
+        return new Body(cache, cacheInfo, getCacheAsMap());
     }
 
     @Override
