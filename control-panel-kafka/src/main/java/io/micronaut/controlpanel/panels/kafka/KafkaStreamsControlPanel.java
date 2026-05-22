@@ -29,6 +29,8 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -48,6 +50,7 @@ public class KafkaStreamsControlPanel extends AbstractEachBeanControlPanel<Kafka
 
     private static final Logger LOG = LoggerFactory.getLogger(KafkaStreamsControlPanel.class);
     private static final String HTML_BREAK = "&lt;br/&gt;";
+    private static final String CONTROL_PANEL_PATH_PLACEHOLDER = "__CONTROL_PANEL_PATH__";
 
     private final String beanName;
     private final ConfiguredStreamBuilder builder;
@@ -174,6 +177,7 @@ public class KafkaStreamsControlPanel extends AbstractEachBeanControlPanel<Kafka
             String topicLabel = topic.replace("-", HTML_BREAK);
             String nameLabel = name.replace("-", HTML_BREAK);
             edges.add(idT + "[" + topicLabel + "] --> " + idN + "(" + nameLabel + ")");
+            edges.add(topicClick(idT, topic));
         }
     }
 
@@ -186,7 +190,17 @@ public class KafkaStreamsControlPanel extends AbstractEachBeanControlPanel<Kafka
             String nameLabel = name.replace("-", HTML_BREAK);
             String topicLabel = topic.replace("-", HTML_BREAK);
             edges.add(idN + "(" + nameLabel + ") --> " + idT + "[" + topicLabel + "]");
+            edges.add(topicClick(idT, topic));
         }
+    }
+
+    private static String topicClick(String id, String topic) {
+        return "click " + id + " \"" + CONTROL_PANEL_PATH_PLACEHOLDER + "/" + KafkaClusterControlPanel.NAME
+            + "?topic=" + URLEncoder.encode(topic, StandardCharsets.UTF_8) + "\" \"Open topic " + mermaidString(topic) + "\"";
+    }
+
+    private static String mermaidString(String value) {
+        return value.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 
     private static void addProcessorEdges(TopologyDescription.Processor processor, Collection<String> edges) {

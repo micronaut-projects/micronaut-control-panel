@@ -37,10 +37,10 @@ import jakarta.inject.Inject;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import static io.micronaut.controlpanel.util.ControlPanelUtils.computeControlPanelPath;
@@ -157,6 +157,8 @@ public class ControlPanelController implements ControlPanelApi {
         baseExtra.put("controlPanelPath", controlPanelPath);
         baseExtra.put("appPath", appPath);
         baseExtra.put("categoryCount", categoryCount);
+        baseExtra.put("activeEnvironments", activeEnvironments);
+        baseExtra.put("hasActiveEnvironments", !activeEnvironments.isEmpty());
         baseExtra.put("writeAccess", writeAccessEvaluator.evaluate(request));
         repository.findByName("health")
             .map(ControlPanel::getBody)
