@@ -1,0 +1,18 @@
+<p class="card-text">
+    <strong>{{body.summary.clientCount}}</strong> OCI SDK client entries detected.
+</p>
+<p class="card-text">
+    <strong>Authentication</strong>:
+    <span class="badge badge-secondary">{{body.summary.authProviderType}}</span>
+</p>
+<p class="card-text">
+    <strong>Safety</strong>:
+    <span class="badge badge-primary">No network calls</span>
+    <span class="badge badge-secondary">Values redacted</span>
+    {{#if body.globalHttp.conflictWarning}}
+        <span class="badge badge-warning">HTTP config conflict</span>
+    {{/if}}
+    {{#if body.summary.partial}}
+        <span class="badge badge-warning">Partial</span>
+    {{/if}}
+</p>

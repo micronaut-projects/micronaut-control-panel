@@ -22,6 +22,7 @@ dependencies {
     implementation(mnObjectStorage.micronaut.`object`.storage.azure)
     implementation(mnObjectStorage.micronaut.`object`.storage.gcp)
     implementation(mnObjectStorage.micronaut.`object`.storage.oracle.cloud)
+    implementation(projects.micronautControlPanelOracleCloud)
 
     // Cache
     implementation(projects.micronautControlPanelCache)
@@ -58,6 +59,9 @@ dependencies {
 
     runtimeOnly(mnLogging.logback.classic)
     runtimeOnly(mn.snakeyaml)
+
+    testResourcesRuntimeOnly(mn.micronaut.discovery.core)
+    testResourcesRuntimeOnly(mn.micronaut.management)
 
     testImplementation(mn.micronaut.http.client)
     testImplementation(mnTest.micronaut.test.junit5)

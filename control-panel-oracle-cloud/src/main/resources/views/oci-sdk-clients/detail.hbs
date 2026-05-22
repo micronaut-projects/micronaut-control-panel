@@ -1,0 +1,237 @@
+{{#with controlPanel.body}}
+    <div class="cp-dashboard-stack">
+        <section class="card card-light">
+            <div class="card-body">
+                <div class="cp-dashboard-grid">
+                    <div>
+                        <h5>Summary</h5>
+                        <p>
+                            <span class="badge badge-primary">{{summary.clientCount}} clients</span>
+                            <span class="badge badge-secondary">{{summary.authProviderType}}</span>
+                            <span class="badge badge-primary">No network calls</span>
+                            <span class="badge badge-secondary">Redacted</span>
+                        </p>
+                    </div>
+                    <div>
+                        <h5>Warnings</h5>
+                        {{#if notices}}
+                            <ul>
+                                {{#each notices as |notice|}}
+                                    <li><span class="badge badge-secondary">{{notice.code}}</span> {{notice.message}}</li>
+                                {{/each}}
+                            </ul>
+                        {{/if}}
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card card-light">
+            <div class="card-body">
+                <h5>OCI SDK Clients</h5>
+                {{#if clients}}
+                    <div class="cp-data-table cp-data-table-unpaged">
+                        <div class="cp-data-table-container">
+                            <table class="table cp-data-table-table cp-data-table-fixed">
+                                <thead>
+                                <tr>
+                                    <th>Bean</th>
+                                    <th>Service</th>
+                                    <th>Client class</th>
+                                    <th>Kind</th>
+                                    <th>Configuration</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {{#each clients as |client|}}
+                                    <tr>
+                                        <td>
+                                            <code class="cp-table-code">{{client.beanName}}</code>
+                                            {{#if client.definitionOnly}}
+                                                <span class="badge badge-warning">not instantiated</span>
+                                            {{/if}}
+                                        </td>
+                                        <td><code class="cp-table-code">{{client.serviceId}}</code></td>
+                                        <td><code class="cp-table-code">{{client.clientClass}}</code></td>
+                                        <td>
+                                            <span class="badge badge-secondary">{{client.clientKind}}</span>
+                                            {{#each client.reactiveVariants as |variant|}}
+                                                <span class="badge badge-primary">{{variant}}</span>
+                                            {{/each}}
+                                        </td>
+                                        <td>
+                                            {{#if client.regionConfigured}}
+                                                <span class="badge badge-primary">region configured</span>
+                                            {{else}}
+                                                <span class="badge badge-secondary">region not configured</span>
+                                            {{/if}}
+                                            {{#if client.endpointConfigured}}
+                                                <span class="badge badge-primary">endpoint configured</span>
+                                            {{else}}
+                                                <span class="badge badge-secondary">endpoint not configured</span>
+                                            {{/if}}
+                                            {{#if client.serviceConfigurationPresent}}
+                                                <span class="badge badge-primary">service config present</span>
+                                            {{else}}
+                                                <span class="badge badge-secondary">service config absent</span>
+                                            {{/if}}
+                                        </td>
+                                    </tr>
+                                {{/each}}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                {{else}}
+                    <div class="cp-data-table-empty">No OCI SDK client beans detected.</div>
+                {{/if}}
+            </div>
+        </section>
+
+        <section class="card card-light">
+            <div class="card-body">
+                <h5>Authentication</h5>
+                <p>
+                    <strong>Provider type</strong>:
+                    <span class="badge badge-secondary">{{authentication.providerType}}</span>
+                </p>
+                {{#if authentication.providerClass}}
+                    <p><strong>Provider class</strong>: <code>{{authentication.providerClass}}</code></p>
+                {{/if}}
+                {{#if authentication.sourceSignals}}
+                    <p><strong>Source signals</strong></p>
+                    <ul>
+                        {{#each authentication.sourceSignals as |signal|}}
+                            <li>{{signal}}</li>
+                        {{/each}}
+                    </ul>
+                {{/if}}
+                <p><strong>Hidden fields</strong></p>
+                <ul>
+                    {{#each authentication.hiddenFields as |field|}}
+                        <li>{{field}}</li>
+                    {{/each}}
+                </ul>
+            </div>
+        </section>
+
+        <section class="card card-light">
+            <div class="card-body">
+                <h5>HTTP And Managed Netty</h5>
+                <p>
+                    {{#if globalHttp.globalOciClientConfigured}}
+                        <span class="badge badge-primary">oci.client configured</span>
+                    {{else}}
+                        <span class="badge badge-secondary">oci.client not configured</span>
+                    {{/if}}
+                    {{#if globalHttp.micronautHttpServicesOciConfigured}}
+                        <span class="badge badge-primary">micronaut.http.services.oci configured</span>
+                    {{else}}
+                        <span class="badge badge-secondary">micronaut.http.services.oci not configured</span>
+                    {{/if}}
+                    {{#if globalHttp.conflictWarning}}
+                        <span class="badge badge-warning">configuration conflict</span>
+                    {{/if}}
+                </p>
+                {{#if globalHttp.configuredCategories}}
+                    <p>
+                        {{#each globalHttp.configuredCategories as |category|}}
+                            <span class="badge badge-secondary">{{category}}</span>
+                        {{/each}}
+                    </p>
+                {{/if}}
+                <p>
+                    {{#if netty.managedProviderGlobalConfigured}}
+                        <span class="badge badge-primary">managed provider configured</span>
+                    {{else}}
+                        <span class="badge badge-secondary">managed provider not configured</span>
+                    {{/if}}
+                    {{#if netty.managedProviderGlobalEnabled}}
+                        <span class="badge badge-primary">managed provider enabled</span>
+                    {{/if}}
+                    {{#if netty.legacyNettyConfigured}}
+                        <span class="badge badge-secondary">legacy Netty configured</span>
+                    {{/if}}
+                    {{#if netty.legacyNettyEnabled}}
+                        <span class="badge badge-warning">legacy Netty enabled</span>
+                    {{/if}}
+                    {{#if netty.nettyProviderClassPresent}}
+                        <span class="badge badge-primary">Netty provider bean present</span>
+                    {{/if}}
+                </p>
+            </div>
+        </section>
+
+        <section class="card card-light">
+            <div class="card-body">
+                <h5>Service HTTP Configuration</h5>
+                {{#if serviceConfigurations}}
+                    <div class="cp-data-table cp-data-table-unpaged">
+                        <div class="cp-data-table-container">
+                            <table class="table cp-data-table-table cp-data-table-fixed">
+                                <thead>
+                                <tr>
+                                    <th>Service</th>
+                                    <th>Safe categories</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {{#each serviceConfigurations as |service|}}
+                                    <tr>
+                                        <td><code class="cp-table-code">{{service.serviceId}}</code></td>
+                                        <td>
+                                            {{#each service.configuredCategories as |category|}}
+                                                <span class="badge badge-secondary">{{category}}</span>
+                                            {{/each}}
+                                        </td>
+                                    </tr>
+                                {{/each}}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                {{else}}
+                    <div class="cp-data-table-empty">No service-specific OCI client configuration detected.</div>
+                {{/if}}
+            </div>
+        </section>
+
+        <section class="card card-light">
+            <div class="card-body">
+                <h5>Oracle Cloud Integrations</h5>
+                <div class="cp-data-table cp-data-table-unpaged">
+                    <div class="cp-data-table-container">
+                        <table class="table cp-data-table-table cp-data-table-fixed">
+                            <thead>
+                            <tr>
+                                <th>Integration</th>
+                                <th>Status</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {{#each integrations as |integration|}}
+                                <tr>
+                                    <td>{{integration.name}}</td>
+                                    <td>
+                                        {{#if integration.present}}
+                                            <span class="badge badge-primary">present</span>
+                                        {{else}}
+                                            <span class="badge badge-secondary">not detected</span>
+                                        {{/if}}
+                                        {{#if integration.configured}}
+                                            <span class="badge badge-primary">configured</span>
+                                        {{/if}}
+                                        {{#if integration.detailsHidden}}
+                                            <span class="badge badge-secondary">values hidden</span>
+                                        {{/if}}
+                                    </td>
+                                </tr>
+                            {{/each}}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+{{/with}}

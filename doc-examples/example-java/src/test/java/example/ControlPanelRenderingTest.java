@@ -5,6 +5,7 @@ import io.micronaut.http.client.HttpClient;
 import io.micronaut.http.client.annotation.Client;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledInNativeImage;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -17,5 +18,14 @@ class ControlPanelRenderingTest {
 
         assertTrue(body.contains("my-local"));
         assertTrue(body.contains("files stored."));
+    }
+
+    @Test
+    @DisabledInNativeImage
+    void rendersOracleCloudCategory(@Client("/") HttpClient client) {
+        var body = client.toBlocking().retrieve(HttpRequest.GET("/control-panel/categories/oracle-cloud"));
+
+        assertTrue(body.contains("OCI SDK Clients"));
+        assertTrue(body.contains("Values redacted"));
     }
 }
