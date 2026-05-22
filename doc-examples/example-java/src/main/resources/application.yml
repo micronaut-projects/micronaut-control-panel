@@ -54,6 +54,8 @@ endpoints:
     sensitive: false
   health:
     details-visible: ANONYMOUS
+    rabbitmq:
+      enabled: false
   info:
     enabled: true
 
@@ -63,3 +65,11 @@ hazelcast:
   enabled: false
 kafka:
   enabled: false
+rabbitmq:
+  enabled: false
+  host: localhost
+  port: 5672
+  username: guest
+  password: guest
+  channel-pool:
+    max-idle-channels: 4

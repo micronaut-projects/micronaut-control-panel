@@ -1026,6 +1026,45 @@ dl.row dt {
     min-width: 64rem;
 }
 
+.cp-rabbitmq-listeners-table {
+    min-width: 58rem;
+}
+
+.cp-rabbitmq-connections-table,
+.cp-rabbitmq-metrics-table {
+    min-width: 52rem;
+}
+
+.cp-rabbitmq-method-column {
+    width: 18rem;
+}
+
+.cp-rabbitmq-queue-column,
+.cp-rabbitmq-connection-column,
+.cp-rabbitmq-address-column,
+.cp-rabbitmq-meter-column {
+    width: 11rem;
+}
+
+.cp-rabbitmq-small-column,
+.cp-rabbitmq-type-column,
+.cp-rabbitmq-vhost-column {
+    width: 6rem;
+}
+
+.cp-rabbitmq-ack-column {
+    width: 8rem;
+}
+
+.cp-rabbitmq-name-column {
+    width: 7rem;
+}
+
+.cp-rabbitmq-details-column,
+.cp-rabbitmq-measurements-column {
+    width: 12rem;
+}
+
 .card {
     min-width: 0;
     overflow: hidden;
