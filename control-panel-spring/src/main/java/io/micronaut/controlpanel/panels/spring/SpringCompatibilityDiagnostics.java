@@ -25,6 +25,7 @@ import io.micronaut.inject.ExecutableMethod;
 import io.micronaut.web.router.Router;
 import io.micronaut.web.router.UriRouteInfo;
 import jakarta.inject.Singleton;
+import org.jspecify.annotations.Nullable;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -255,14 +256,14 @@ public final class SpringCompatibilityDiagnostics {
             .toList();
     }
 
-    private List<String> annotationNames(AnnotationMetadata metadata, String group) {
+    private List<String> annotationNames(AnnotationMetadata metadata, @Nullable String group) {
         return catalog.findAll(allAnnotationNames(metadata)).stream()
             .filter(annotation -> group == null || group.equals(annotation.group()))
             .map(SpringAnnotationCatalog.SpringAnnotationInfo::annotationName)
             .toList();
     }
 
-    private List<String> mappedAnnotations(AnnotationMetadata metadata, String group) {
+    private List<String> mappedAnnotations(AnnotationMetadata metadata, @Nullable String group) {
         Set<String> mapped = new LinkedHashSet<>();
         for (SpringAnnotationCatalog.SpringAnnotationInfo annotation : catalog.findAll(allAnnotationNames(metadata))) {
             if (group == null || group.equals(annotation.group())) {
@@ -272,7 +273,7 @@ public final class SpringCompatibilityDiagnostics {
         return List.copyOf(mapped);
     }
 
-    private List<SpringCompatibilityBody.AnnotationValueRow> annotationValuesForGroup(AnnotationMetadata metadata, String group) {
+    private List<SpringCompatibilityBody.AnnotationValueRow> annotationValuesForGroup(AnnotationMetadata metadata, @Nullable String group) {
         if (!configuration.isShowAnnotationValues()) {
             return List.of();
         }
