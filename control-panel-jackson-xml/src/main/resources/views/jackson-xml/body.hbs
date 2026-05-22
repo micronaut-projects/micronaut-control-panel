@@ -1,0 +1,13 @@
+{{#with controlPanel.body}}
+    <p class="card-text">
+        <strong>{{summary.xmlRoutes}}</strong> XML routes detected from route metadata.
+    </p>
+    <p class="card-text">
+        <strong>Mapper</strong>:
+        {{#if mapper.namedMapperPresent}}
+            <span class="badge badge-primary">Active</span>
+        {{else}}
+            <span class="badge badge-secondary">{{mapper.status}}</span>
+        {{/if}}
+    </p>
+{{/with}}

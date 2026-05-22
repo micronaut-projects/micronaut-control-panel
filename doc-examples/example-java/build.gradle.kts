@@ -50,6 +50,10 @@ dependencies {
     implementation(libs.avro)
     implementation(libs.avro.serde)
 
+    // Jackson XML
+    implementation(projects.micronautControlPanelJacksonXml)
+    implementation(libs.micronaut.jackson.xml)
+
     // OpenAPI + Swagger UI (views generated at compile-time)
     annotationProcessor(mnOpenapi.micronaut.openapi)
     testAnnotationProcessor(mnOpenapi.micronaut.openapi)
