@@ -137,6 +137,7 @@ class ControlPanelSecurityRuleTest {
 
         assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.GET("/control-panel"), null));
         assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.POST("/control-panel" + ControlPanelSecurityPaths.HIBERNATE_PATH + "/default/hql", "{}"), null));
+        assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.GET("/control-panel" + ControlPanelSecurityPaths.KAFKA_PATH + "/topics"), null));
         for (HttpRequest<?> request : writeRequests("/control-panel")) {
             assertEquals(SecurityRuleResult.REJECTED, check(rule, request, null));
         }
@@ -157,7 +158,9 @@ class ControlPanelSecurityRuleTest {
 
         assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.GET("/control-panel"), reader));
         assertEquals(SecurityRuleResult.REJECTED, check(rule, HttpRequest.DELETE("/control-panel" + ControlPanelSecurityPaths.CACHE_PATH + "/demo"), reader));
+        assertEquals(SecurityRuleResult.REJECTED, check(rule, HttpRequest.POST("/control-panel" + ControlPanelSecurityPaths.KAFKA_PATH + "/messages", "{}"), reader));
         assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.DELETE("/control-panel" + ControlPanelSecurityPaths.CACHE_PATH + "/demo"), writer));
+        assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.POST("/control-panel" + ControlPanelSecurityPaths.KAFKA_PATH + "/messages", "{}"), writer));
     }
 
     @Test
@@ -258,6 +261,8 @@ class ControlPanelSecurityRuleTest {
             HttpRequest.DELETE(controlPanelPath + ControlPanelSecurityPaths.HIBERNATE_PATH + "/default/cache"),
             HttpRequest.DELETE(controlPanelPath + ControlPanelSecurityPaths.HIBERNATE_PATH + "/default/cache/region?region=books"),
             HttpRequest.POST(controlPanelPath + ControlPanelSecurityPaths.LOGGERS_PATH + "/ROOT", "{}"),
+            HttpRequest.POST(controlPanelPath + ControlPanelSecurityPaths.KAFKA_PATH + "/messages", "{}"),
+            HttpRequest.POST(controlPanelPath + ControlPanelSecurityPaths.KAFKA_PATH + "/topics", "{}"),
             HttpRequest.POST(controlPanelPath + ControlPanelSecurityPaths.APPLICATION_PATH + "/refresh", "{}"),
             HttpRequest.POST(controlPanelPath + ControlPanelSecurityPaths.APPLICATION_PATH + "/stop", ""),
             HttpRequest.POST(controlPanelPath + ControlPanelSecurityPaths.OBJECT_STORAGE_PATH + "/default", ""),

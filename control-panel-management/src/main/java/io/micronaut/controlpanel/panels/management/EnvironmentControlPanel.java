@@ -39,6 +39,7 @@ import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
 @Refreshable
 @Requires(beans = EnvironmentEndpoint.class)
 @Requires(property = EnvironmentControlPanel.ENABLED_PROPERTY, notEquals = StringUtils.FALSE)
+@SuppressWarnings("InjectMoreThanOneScopeAnnotationOnClass")
 public class EnvironmentControlPanel extends AbstractControlPanel<Map<String, Object>> {
 
     public static final String NAME = EnvironmentEndpoint.NAME;

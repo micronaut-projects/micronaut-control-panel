@@ -16,6 +16,7 @@
 package io.micronaut.controlpanel.panels.datasource.model;
 
 import io.micronaut.core.annotation.ReflectiveAccess;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -30,7 +31,7 @@ import java.util.List;
  * @param poolInfo       The datasource connection pool metadata, if a supported pool is present
  */
 @ReflectiveAccess
-public record Body(DataSourceInfo dataSourceInfo, List<Table> tables, String mermaidEr, PoolInfo poolInfo) {
+public record Body(DataSourceInfo dataSourceInfo, List<Table> tables, String mermaidEr, @Nullable PoolInfo poolInfo) {
 
     public Body(DataSourceInfo dataSourceInfo, List<Table> tables, String mermaidEr) {
         this(dataSourceInfo, tables, mermaidEr, null);

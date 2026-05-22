@@ -500,7 +500,7 @@ public final class DataSourceController {
         return search.trim().toLowerCase(Locale.ROOT);
     }
 
-    private static Table findTable(List<Table> tables, @Nullable String schema, String tableName) {
+    private static @Nullable Table findTable(List<Table> tables, @Nullable String schema, String tableName) {
         for (Table table : tables) {
             if (sameTable(table, schema, tableName)) {
                 return table;
@@ -921,8 +921,8 @@ public final class DataSourceController {
                                        List<List<String>> data,
                                        List<String> cols,
                                        List<DataSourceService.QueryColumn> columns,
-                                       String error) {
-        static QueryResponse of(Integer draw, String message) {
+                                       @Nullable String error) {
+        static QueryResponse of(Integer draw, @Nullable String message) {
             return new QueryResponse(
                 draw == null ? 1 : draw,
                 0,

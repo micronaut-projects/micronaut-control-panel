@@ -52,6 +52,7 @@ import org.hibernate.stat.CollectionStatistics;
 import org.hibernate.stat.EntityStatistics;
 import org.hibernate.stat.QueryStatistics;
 import org.hibernate.stat.Statistics;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -804,7 +805,7 @@ final class HibernateRuntimeService {
         return identifierText.isBlank() ? entityName : entityName + "#" + identifierText;
     }
 
-    private Object entityIdentifier(Object value, EntityPersister entityPersister) {
+    private @Nullable Object entityIdentifier(Object value, EntityPersister entityPersister) {
         try {
             return entityPersister.getIdentifier(value);
         } catch (RuntimeException e) {
@@ -864,7 +865,7 @@ final class HibernateRuntimeService {
             || value instanceof UUID;
     }
 
-    private static String displayValue(Object value) {
+    private static String displayValue(@Nullable Object value) {
         if (value == null) {
             return "";
         }

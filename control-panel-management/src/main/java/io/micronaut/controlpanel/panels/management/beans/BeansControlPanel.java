@@ -48,6 +48,7 @@ import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
 @Refreshable
 @Requires(beans = BeansEndpoint.class)
 @Requires(property = BeansControlPanel.ENABLED_PROPERTY, notEquals = StringUtils.FALSE)
+@SuppressWarnings("InjectMoreThanOneScopeAnnotationOnClass")
 public class BeansControlPanel extends AbstractControlPanel<BeansControlPanel.Body> {
 
     public static final String NAME = "beans";
