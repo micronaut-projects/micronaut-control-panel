@@ -18,6 +18,7 @@ package io.micronaut.controlpanel.panels.jmx;
 import io.micronaut.context.BeanContext;
 import io.micronaut.context.env.Environment;
 import jakarta.inject.Singleton;
+import org.jspecify.annotations.Nullable;
 
 import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanInfo;
@@ -125,7 +126,7 @@ public class JmxDiagnosticsService {
         return new JmxDiagnostics.JmxSettings(classPresent, hasExplicitProperties, agentId, domain, addToFactory, ignoreAgentNotFound, registerEndpoints, false);
     }
 
-    private JmxDiagnostics.Setting configuredString(String property, String defaultValue) {
+    private JmxDiagnostics.Setting configuredString(String property, @Nullable String defaultValue) {
         return environment.getProperty(property, String.class)
             .map(value -> JmxDiagnostics.Setting.configured(property, redactSensitive(value)))
             .orElseGet(() -> defaultValue == null ? JmxDiagnostics.Setting.notConfigured(property) : JmxDiagnostics.Setting.defaulted(property, defaultValue));
@@ -148,7 +149,7 @@ public class JmxDiagnosticsService {
         }
     }
 
-    private static Set<ObjectName> queryNames(MBeanServer server, ObjectName pattern, List<JmxDiagnostics.Warning> warnings, String message) {
+    private static Set<ObjectName> queryNames(MBeanServer server, @Nullable ObjectName pattern, List<JmxDiagnostics.Warning> warnings, String message) {
         try {
             return server.queryNames(pattern, null);
         } catch (SecurityException e) {
@@ -296,11 +297,11 @@ public class JmxDiagnosticsService {
         return redactSensitive(objectName.getDomain()) + ":" + String.join(",", parts);
     }
 
-    private static String safeValue(String value) {
+    private static String safeValue(@Nullable String value) {
         return value == null || value.isBlank() ? "not available" : redactSensitive(value);
     }
 
-    private static String redactSensitive(String value) {
+    private static String redactSensitive(@Nullable String value) {
         if (value == null || value.isBlank()) {
             return "not available";
         }

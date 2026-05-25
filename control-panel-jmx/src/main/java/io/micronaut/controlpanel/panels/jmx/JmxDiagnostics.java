@@ -17,6 +17,7 @@ package io.micronaut.controlpanel.panels.jmx;
 
 import io.micronaut.core.annotation.Internal;
 import io.micronaut.core.annotation.ReflectiveAccess;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
@@ -49,10 +50,10 @@ public record JmxDiagnostics(boolean serverAvailable,
                              int domainCount,
                              int endpointMBeanCount,
                              int metadataFailureCount,
-                             JmxSettings settings,
-                             List<DomainSummary> domainSummaries,
-                             List<EndpointMBean> endpointMBeans,
-                             List<Warning> warnings,
+                             @Nullable JmxSettings settings,
+                             @Nullable List<DomainSummary> domainSummaries,
+                             @Nullable List<EndpointMBean> endpointMBeans,
+                             @Nullable List<Warning> warnings,
                              boolean hasDomainSummaries,
                              boolean hasEndpointMBeans,
                              boolean hasWarnings) {
@@ -86,11 +87,11 @@ public record JmxDiagnostics(boolean serverAvailable,
     @ReflectiveAccess
     public record JmxSettings(boolean configurationClassPresent,
                               boolean hasExplicitProperties,
-                              Setting agentId,
-                              Setting domain,
-                              Setting addToFactory,
-                              Setting ignoreAgentNotFound,
-                              Setting registerEndpoints,
+                              @Nullable Setting agentId,
+                              @Nullable Setting domain,
+                              @Nullable Setting addToFactory,
+                              @Nullable Setting ignoreAgentNotFound,
+                              @Nullable Setting registerEndpoints,
                               boolean registerEndpointsDisabled) {
 
         public JmxSettings {
