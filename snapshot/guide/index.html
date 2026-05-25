@@ -181,7 +181,7 @@ cards, buttons, badges, dialogs, data tables, tabs, breadcrumbs, sidebars, and l
 
 
 <div class="paragraph">
-<p>To get started, add the UI module as a runtime dependency:</p>
+<p>To get started, add the UI module as a development-time dependency:</p>
 </div>
 <div class="paragraph">
 <p>        <div class="listingblock multi-language-sample">
@@ -378,8 +378,8 @@ MICRONAUT_ENVIRONMENTS=dev ./gradlew run</code></pre>
 <code>micronaut.control-panel.panels.routes.enabled</code> to <code>false</code>.</p>
 </div>
 <div class="paragraph">
-<p>Beyond displaying the available panels, the control panel also allows to perform 2 additional actions, provided that the
-corresponding endpoints are enabled. These actions are routed through control-panel-owned helper routes, so
+<p>Beyond displaying the available panels, the control panel also allows you to perform two additional actions, provided
+that the corresponding endpoints are enabled. These actions are routed through control-panel-owned helper routes, so
 <code>micronaut.control-panel.security.write-access</code> applies to them independently of the raw management endpoint routes:</p>
 </div>
 <div class="ulist">
@@ -528,8 +528,9 @@ Micronaut Endpoints require having the <code>io.micronaut:micronaut-management</
 </li>
 </ul>
 </div>
-<div class="sect2">
-<h3 id="_cache_management_operations">Cache Management Operations</h3>
+<div class="sect1">
+<h2 id="_cache_management_operations">Cache Management Operations</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>Each cache panel includes interactive buttons to manage cache contents:</p>
 </div>
@@ -547,8 +548,10 @@ Micronaut Endpoints require having the <code>io.micronaut:micronaut-management</
 <p>These operations are performed via REST endpoints and provide immediate feedback on success or failure.</p>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_configuration">Configuration</h3>
+</div>
+<div class="sect1">
+<h2 id="_configuration">Configuration</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>The cache control panel is automatically enabled when you include the <code>micronaut-control-panel-cache</code> module in your project. You can disable it by setting:</p>
 </div>
@@ -696,8 +699,10 @@ Micronaut Endpoints require having the <code>io.micronaut:micronaut-management</
 </div>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_cache_information_display">Cache Information Display</h3>
+</div>
+<div class="sect1">
+<h2 id="_cache_information_display">Cache Information Display</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>The detailed view of each cache shows:</p>
 </div>
@@ -719,6 +724,7 @@ Micronaut Endpoints require having the <code>io.micronaut:micronaut-management</
 </div>
 <div class="paragraph">
 <p>This provides complete visibility into your application&#8217;s caching layer for debugging and monitoring purposes.</p>
+</div>
 </div>
 </div>
 
@@ -816,12 +822,16 @@ Micronaut Endpoints require having the <code>io.micronaut:micronaut-management</
 <p><code>beans</code>: Bean Definitions</p>
 </li>
 <li>
+<p><code>disabled-beans</code>: Disabled Beans</p>
+</li>
+<li>
 <p><code>loggers</code>: Logging Configuration</p>
 </li>
 </ul>
 </div>
-<div class="sect2">
-<h3 id="_protecting_the_control_panel">Protecting The Control Panel</h3>
+<div class="sect1">
+<h2 id="_protecting_the_control_panel">Protecting The Control Panel</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>When Micronaut Security is active, control panel routes are protected by default. The default access mode is
 <code>micronaut.control-panel.security.access=AUTHORIZED</code>, which requires an authenticated user with
@@ -1291,8 +1301,10 @@ the UI and helper controllers anonymously reachable. Use these modes only for tr
 configured control panel access mode.</p>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_application_health">Application Health</h3>
+</div>
+<div class="sect1">
+<h2 id="_application_health">Application Health</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>This panel displays the health information of your application, and relies on the
 <a href="https://docs.micronaut.io/latest/guide/#healthEndpoint">Health Endpoint</a> to display its information. By default, the
@@ -1371,8 +1383,10 @@ Make sure this is done in an environment-specific configuration file, for exampl
 anonymous health view.</p>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_application_info">Application Info</h3>
+</div>
+<div class="sect1">
+<h2 id="_application_info">Application Info</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>This panel displays application information, and relies on the
 <a href="https://docs.micronaut.io/latest/guide/#infoEndpoint">Info Endpoint</a> to display its information. The panel appears when
@@ -1554,8 +1568,10 @@ info {
 <p>The panel renders nested maps and lists from <code>info.*</code>, git/build property files, and custom <code>InfoSource</code> output.</p>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_environment_properties">Environment Properties</h3>
+</div>
+<div class="sect1">
+<h2 id="_environment_properties">Environment Properties</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>This panel displays all the configuration properties resolved, and relies on the
 <a href="https://docs.micronaut.io/latest/guide/#environmentEndpoint">Environment Endpoint</a> to display all the properties. This
@@ -1701,8 +1717,10 @@ you can enable the built-in filter by setting the following configuration proper
 <code>secret</code> or <code>token</code> anywhere in their name.</p>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_metrics">Metrics</h3>
+</div>
+<div class="sect1">
+<h2 id="_metrics">Metrics</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>This panel displays a searchable, read-only view of Micrometer metrics. It relies on the
 <a href="https://micronaut-projects.github.io/micronaut-micrometer/latest/guide/">Micronaut Micrometer</a> module and the Metrics
@@ -1792,24 +1810,30 @@ exporters, mutate metrics, provide alerts, or replace production observability d
 </div>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_bean_definitions">Bean Definitions</h3>
+</div>
+<div class="sect1">
+<h2 id="_bean_definitions">Bean Definitions</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>This panel displays all the beans, and their relationships, grouped by packages. It relies on the
 <a href="https://docs.micronaut.io/latest/guide/#beansEndpoint">Beans Endpoint</a> to display all the bean definitions. Keep the
 role-protected control-panel access when you do not want to expose that information to anonymous users.</p>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_disabled_beans">Disabled Beans</h3>
+</div>
+<div class="sect1">
+<h2 id="_disabled_beans">Disabled Beans</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>This panel shows all disabled beans, i.e., beans that have not met any of their
 <a href="https://docs.micronaut.io/latest/guide/#conditionalBeans">requirement conditions</a>. For each disabled bean, you can see
 the reasons why the bean was not loaded.</p>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_logging_configuration">Logging Configuration</h3>
+</div>
+<div class="sect1">
+<h2 id="_logging_configuration">Logging Configuration</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>This panel allows you to view and re-configure the logging levels without restarting the application. It relies on the
 <a href="https://docs.micronaut.io/latest/guide/#loggersEndpoint">Loggers Endpoint</a> to display the logging levels. The control
@@ -1890,6 +1914,7 @@ configured control-panel role can re-configure loggers through the control panel
 <code>/loggers/{logger}</code> still follow Micronaut Management endpoint sensitivity rules. Set
 <code>endpoints.loggers.write-sensitive=false</code> only when you intentionally want to expose direct writable management endpoint
 access outside the control panel.</p>
+</div>
 </div>
 </div>
 
@@ -2083,8 +2108,9 @@ access outside the control panel.</p>
 </li>
 </ul>
 </div>
-<div class="sect2">
-<h3 id="_browsing_tables">Browsing Tables</h3>
+<div class="sect1">
+<h2 id="_browsing_tables">Browsing Tables</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>The <code>Tables</code> tab lists tables without rendering the full datasource schema at once. Use the schema filter and table search field to narrow the current page, then click a table row to open its detail panel.</p>
 </div>
@@ -2095,8 +2121,10 @@ access outside the control panel.</p>
 <p>The table list and detail panel are separated by a resizable divider. The detail panel can also be collapsed from the table detail icon when you need more room for the table list.</p>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_sql_and_json_results">SQL and JSON Results</h3>
+</div>
+<div class="sect1">
+<h2 id="_sql_and_json_results">SQL and JSON Results</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>The SQL console can execute ad hoc queries and displays the result set in a paginated table:</p>
 </div>
@@ -2116,8 +2144,10 @@ access outside the control panel.</p>
 <p>If the selected table has relationships, the table actions also include a JSON-with-relationships query. The generated JSON contains all table properties plus relationship properties named after the foreign key or relationship name.</p>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_connection_pools">Connection Pools</h3>
+</div>
+<div class="sect1">
+<h2 id="_connection_pools">Connection Pools</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>When a supported pool implementation is present on the classpath and the datasource uses that pool, the datasource detail includes a <code>Pool</code> tab:</p>
 </div>
@@ -2172,8 +2202,10 @@ check the following documentation:</p>
 </ul>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_configuration">Configuration</h3>
+</div>
+<div class="sect1">
+<h2 id="_configuration">Configuration</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>The datasource control panel is automatically enabled when you include the <code>micronaut-control-panel-datasource</code> module in your project.
 You can disable it by setting:</p>
@@ -2190,8 +2222,8 @@ You can disable it by setting:</p>
 <pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">micronaut:
   control-panel:
     panels:
-        datasource:
-          enabled: false</code></pre>
+      datasource:
+        enabled: false</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
@@ -2244,6 +2276,7 @@ You can disable it by setting:</p>
     }
   }
 }</code></pre>
+</div>
 </div>
 </div>
 </div>
@@ -2317,8 +2350,9 @@ available session factories and summarizes how many entity types and collection 
 </li>
 </ul>
 </div>
-<div class="sect2">
-<h3 id="_detail_view">Detail View</h3>
+<div class="sect1">
+<h2 id="_detail_view">Detail View</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>The detail view keeps static metadata separate from runtime counters and operational actions.</p>
 </div>
@@ -2343,8 +2377,10 @@ autocommit, read-only state, and driver capability flags. This information is st
 require Hibernate statistics to be enabled.</p>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_entity_types">Entity Types</h3>
+</div>
+<div class="sect1">
+<h2 id="_entity_types">Entity Types</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>The Entity types tab shows mapped entity classes and persistent collection roles.</p>
 </div>
@@ -2361,8 +2397,10 @@ from the second-level cache. Entity and collection eviction only removes cached 
 database rows or related entities.</p>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_named_queries">Named Queries</h3>
+</div>
+<div class="sect1">
+<h2 id="_named_queries">Named Queries</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>The Named queries tab lists named HQL and native SQL queries discovered from the selected session factory. The table shows
 the query name, query type, query text, cacheable flag, cache region, and available actions. Native SQL queries are
@@ -2373,8 +2411,10 @@ identified separately from HQL so the original SQL text remains visible in the U
 but the HQL Console remains a Hibernate query console and does not execute arbitrary SQL.</p>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_hql_console">HQL Console</h3>
+</div>
+<div class="sect1">
+<h2 id="_hql_console">HQL Console</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>The HQL Console executes read-only Hibernate queries against the selected session factory. It is useful for checking
 entity mappings and inspecting a small result set without leaving the control panel.</p>
@@ -2389,8 +2429,10 @@ available when more results exist.</p>
 inspect JDBC tables directly.</p>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_statistics">Statistics</h3>
+</div>
+<div class="sect1">
+<h2 id="_statistics">Statistics</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>The Statistics tab contains the statistics switch and the runtime views that depend on Hibernate statistics. When
 statistics are disabled, the panel still shows static session details, datasource metadata, entity mappings, named queries,
@@ -2425,8 +2467,10 @@ when possible, and the slowest recorded query is shown as a compact note above t
 <p>The Clear statistics action resets the accumulated statistics for the selected session factory after confirmation.</p>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_cache">Cache</h3>
+</div>
+<div class="sect1">
+<h2 id="_cache">Cache</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>The Cache tab shows Hibernate second-level and query cache regions. The region list is visible even when statistics are
 disabled, so cache eviction is still available without enabling statistics.</p>
@@ -2466,8 +2510,10 @@ the metric as unsupported instead of showing a misleading value.</p>
 <p>Cache eviction affects Hibernate cache entries only. It does not remove database rows.</p>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_runtime_operations">Runtime Operations</h3>
+</div>
+<div class="sect1">
+<h2 id="_runtime_operations">Runtime Operations</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>The detail view exposes the following runtime operations:</p>
 </div>
@@ -2500,8 +2546,10 @@ the metric as unsupported instead of showing a misleading value.</p>
 </ul>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_configuration">Configuration</h3>
+</div>
+<div class="sect1">
+<h2 id="_configuration">Configuration</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>The Hibernate control panel is automatically enabled when you include the <code>micronaut-control-panel-hibernate</code> module in your project.
 You can disable it by setting:</p>
@@ -2577,6 +2625,7 @@ You can disable it by setting:</p>
 </div>
 </div>
 </div>
+</div>
 
 <h2 id="kafka"><a class="anchor" href="#kafka"></a>4.7 Kafka Streams</h2>
 
@@ -2647,8 +2696,9 @@ You can disable it by setting:</p>
 </div>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_configuration">Configuration</h3>
+<div class="sect1">
+<h2 id="_configuration">Configuration</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>The Kafka Streams control panel is automatically enabled when you include the <code>micronaut-control-panel-kafka</code> module in your project.
 You can disable it by setting:</p>
@@ -2719,7 +2769,6 @@ You can disable it by setting:</p>
     }
   }
 }</code></pre>
-</div>
 </div>
 </div>
 </div>
@@ -2799,6 +2848,8 @@ Only expose anonymous Health details in development or another trusted environme
 The runtime-state section is intended for quick development diagnostics and is not a replacement for Micrometer metrics, consumer lag monitoring, or a full Kafka monitoring product.</p>
 </div>
 </div>
+</div>
+</div>
 
 <h1 id="custom"><a class="anchor" href="#custom"></a>5 Creating Custom Control Panels</h1>
 
@@ -2863,8 +2914,9 @@ dialogs and menus, and readable contrast in both color themes.</p>
 <p>The categories are used to group the control panels in the UI. Categories are rendered as left side menu items. There is
 a default category called <code>Dashboard</code> that is used for all control panels that don&#8217;t specify a category.</p>
 </div>
-<div class="sect2">
-<h3 id="_control_panel_implementation">Control Panel Implementation</h3>
+<div class="sect1">
+<h2 id="_control_panel_implementation">Control Panel Implementation</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>The easiest way to implement a custom panel is to extend from
 <a href="../api/io/micronaut/controlpanel/core/AbstractControlPanel.html">AbstractControlPanel</a>. For example:</p>
@@ -2926,8 +2978,10 @@ custom data to the view.</td>
 to display a badge in the control panel header.</p>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_configuration">Configuration</h3>
+</div>
+<div class="sect1">
+<h2 id="_configuration">Configuration</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>There are some values for the UI that can be configured:</p>
 </div>
@@ -3044,15 +3098,17 @@ micronaut.control-panel.panels.my-application.order=10</code></pre>
 </table>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_views">Views</h3>
+</div>
+<div class="sect1">
+<h2 id="_views">Views</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>For rendering the views, the Control Panel uses
 <a href="https://micronaut-projects.github.io/micronaut-views/latest/guide/">Micronaut Views</a> with
 <a href="https://micronaut-projects.github.io/micronaut-views/latest/guide/#handlebars">Handlebars.java</a> templates.</p>
 </div>
 <div class="paragraph">
-<p>Each control panel needs to provide 2 views: one for the control panel list, that can contain a summary of the
+<p>Each control panel needs to provide two views: one for the control panel list, that can contain a summary of the
 information to be displayed, and another one for the detailed view. They must be placed in a <code>views/&lt;panel-name&gt;</code> directory
 on the classpath, and named <code>body.hbs</code> and <code>detail.hbs</code>, respectively. For example, in the above example:</p>
 </div>
@@ -3093,6 +3149,7 @@ to access the body of our control panel example:</p>
         {{ controlPanel.body.text }}
     &lt;/div&gt;
 &lt;/div&gt;</code></pre>
+</div>
 </div>
 </div>
 </div>
