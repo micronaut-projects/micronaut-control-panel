@@ -3,6 +3,8 @@
 The NATS Control Panel provides development-time diagnostics for Micronaut NATS connections and JetStream resources.
 It is read-only and does not create, update, delete, purge, publish, or consume messages.
 
+image::nats-control-panel.png[NATS Control Panel, width=1200]
+
 To get started, add the following modules as development-time dependencies:
 
 dependency:io.micronaut.controlpanel:micronaut-control-panel-nats[scope=developmentOnly]
