@@ -1,0 +1,83 @@
+= NATS Control Panel
+
+The NATS Control Panel provides development-time diagnostics for Micronaut NATS connections and JetStream resources.
+It is read-only and does not create, update, delete, purge, publish, or consume messages.
+
+image::nats-control-panel.png[NATS Control Panel, width=1200]
+
+To get started, add the following modules as development-time dependencies:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-nats[scope=developmentOnly]
+dependency:io.micronaut.nats:micronaut-nats[scope=developmentOnly]
+
+== Connection Diagnostics
+
+The panel is available when Micronaut NATS creates one or more `io.nats.client.Connection` beans.
+Control Panel creates one NATS panel per named connection and shows:
+
+* Connection status and connected URL.
+* Configured NATS server addresses and the server list reported by the Java client.
+* Basic connection statistics such as inbound and outbound messages and bytes, reconnects, dropped messages, protocol errors, exceptions, and outstanding requests.
+* Micronaut NATS listener ids with their registered subjects and queue groups when the `ConsumerRegistry` is available.
+
+Credential-bearing server URLs are redacted before rendering.
+The panel removes URL user-info and redacts obvious password, token, credential, secret, JWT, and NKey values from error text and other diagnostic strings.
+
+== JetStream Diagnostics
+
+When JetStream is configured for a connection, the panel uses the NATS Java client's read-only `JetStreamManagement` inspection APIs to show stream and consumer summaries.
+
+Stream summaries include:
+
+* Stream name, subjects, storage type, and retention policy.
+* Message count, byte count, and consumer count.
+* Consumer summaries for each stream, including durable name, deliver group, filter subjects, acknowledgement policy, pending counts, waiting count, and redelivery count.
+
+If JetStream is not configured, the detail page shows an unavailable state for the JetStream section.
+If a NATS or JetStream client call throws an exception, the error is rendered inside the panel section and the rest of Control Panel continues to render.
+
+== Management Health Relationship
+
+Micronaut Management health remains the coarse health surface for applications that expose or consume Health endpoint data.
+The NATS Control Panel adds local development diagnostics for configured connection beans and optional JetStream resources.
+It does not require exposing the public Management health endpoint, and it does not change Micronaut NATS health indicator behavior.
+
+== Configuration
+
+The NATS control panel is automatically enabled when the `micronaut-control-panel-nats` module is on the classpath and NATS connection beans are available.
+You can disable it with:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      nats:
+        enabled: false
+----
+
+Configure Micronaut NATS connections and JetStream using Micronaut NATS configuration.
+For example:
+
+[configuration]
+----
+nats:
+  default:
+    addresses:
+      - nats://localhost:4222
+    jetstream:
+      streams:
+        orders:
+          name: ORDERS
+          subjects:
+            - orders.*
+----
+
+== Security Boundaries
+
+The panel is intended for local development and test diagnostics.
+Users who can access Control Panel may see connection names, server hosts, subjects, queue groups, stream names, consumer names, durable names, counts, and sanitized client errors.
+
+The panel does not display message payloads, sampled messages, account credentials, token values, password values, credential file paths, or NKey/JWT values.
+It also does not expose NATS or JetStream write operations.
+Use the existing Control Panel security configuration to restrict access in any environment where this metadata is sensitive.
