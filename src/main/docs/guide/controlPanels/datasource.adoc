@@ -11,7 +11,7 @@ Features include:
 * JSON display actions for supported databases.
 * Optional connection pool status and options for supported pool implementations.
 
-=== Browsing Tables
+== Browsing Tables
 
 The `Tables` tab lists tables without rendering the full datasource schema at once. Use the schema filter and table search field to narrow the current page, then click a table row to open its detail panel.
 
@@ -19,7 +19,7 @@ The table detail panel shows the selected table name and schema, columns, primar
 
 The table list and detail panel are separated by a resizable divider. The detail panel can also be collapsed from the table detail icon when you need more room for the table list.
 
-=== SQL and JSON Results
+== SQL and JSON Results
 
 The SQL console can execute ad hoc queries and displays the result set in a paginated table:
 
@@ -32,7 +32,7 @@ When a query result column is JSON, the cell is highlighted as JSON. Click the c
 
 If the selected table has relationships, the table actions also include a JSON-with-relationships query. The generated JSON contains all table properties plus relationship properties named after the foreign key or relationship name.
 
-=== Connection Pools
+== Connection Pools
 
 When a supported pool implementation is present on the classpath and the datasource uses that pool, the datasource detail includes a `Pool` tab:
 
@@ -54,7 +54,7 @@ check the following documentation:
 * https://guides.micronaut.io/latest/micronaut-data-jdbc-repository.html[Access a database with Micronaut Data JDBC repositories].
 * https://guides.micronaut.io/latest/micronaut-jpa-hibernate.html[Access a database with JPA and Hibernate using Micronaut Data]
 
-=== Configuration
+== Configuration
 
 The datasource control panel is automatically enabled when you include the `micronaut-control-panel-datasource` module in your project.
 You can disable it by setting:
@@ -64,6 +64,6 @@ You can disable it by setting:
 micronaut:
   control-panel:
     panels:
-        datasource:
-          enabled: false
+      datasource:
+        enabled: false
 ----

@@ -18,7 +18,7 @@ It is assumed that you already have Kafka Streams configured in your application
 * https://micronaut-projects.github.io/micronaut-kafka/latest/guide/#kafkaStreams[Micronaut Kafka Streams Documentation]
 * https://guides.micronaut.io/latest/tag-kafka.html[Kafka Guides]
 
-=== Configuration
+== Configuration
 
 The Kafka Streams control panel is automatically enabled when you include the `micronaut-control-panel-kafka` module in your project.
 You can disable it by setting:
