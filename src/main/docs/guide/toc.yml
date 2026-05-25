@@ -8,6 +8,7 @@ controlPanels:
   management: Management
   objectStorage: Object Storage
   datasource: Datasource
+  r2dbc: R2DBC
   hibernate: Hibernate
   kafka: Kafka
 
