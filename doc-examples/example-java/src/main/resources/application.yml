@@ -5,9 +5,9 @@ micronaut:
   control-panel:
     panels:
       my-application:
-        title: My Application Control Panel
-        icon: fa-plug
-        order: 10
+        title: My Application Control Panel # <1>
+        icon: fa-plug # <2>
+        order: 10 # <3>
 #end::control-panel[]
     env:
       show-values: true
