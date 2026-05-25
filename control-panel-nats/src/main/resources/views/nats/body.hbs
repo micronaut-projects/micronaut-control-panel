@@ -1,0 +1,26 @@
+{{#with controlPanel.body }}
+<div class="row g-3">
+    <div class="col-6">
+        <div class="small text-muted">Status</div>
+        <div class="fw-semibold">{{ connection.status }}</div>
+    </div>
+    <div class="col-6">
+        <div class="small text-muted">Known servers</div>
+        <div class="fw-semibold">{{ connection.knownServers.size }}</div>
+    </div>
+    <div class="col-6">
+        <div class="small text-muted">In / out messages</div>
+        <div class="fw-semibold">{{ connection.statistics.inMsgs }} / {{ connection.statistics.outMsgs }}</div>
+    </div>
+    <div class="col-6">
+        <div class="small text-muted">JetStream streams</div>
+        <div class="fw-semibold">{{ jetStream.streams.size }}</div>
+    </div>
+</div>
+{{#if connection.connectedUrl }}
+<div class="mt-3 small text-muted text-break">{{ connection.connectedUrl }}</div>
+{{/if}}
+{{#if connection.lastError }}
+<div class="mt-3 alert alert-warning py-2 mb-0">{{ connection.lastError }}</div>
+{{/if}}
+{{/with}}
