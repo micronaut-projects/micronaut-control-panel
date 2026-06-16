@@ -110,10 +110,6 @@ public class ThreadDumpControlPanel extends AbstractControlPanel<ThreadDumpContr
         };
     }
 
-    private static String duration(long value) {
-        return value < 0 ? "—" : Long.toString(value);
-    }
-
     @ReflectiveAccess
     public record Body(int totalThreads, List<StateCount> stateCounts, List<ThreadRow> threads) {
     }
@@ -133,8 +129,10 @@ public class ThreadDumpControlPanel extends AbstractControlPanel<ThreadDumpContr
         long lockOwnerId,
         String blockedCount,
         String blockedTime,
+        boolean hasBlockedTime,
         String waitedCount,
         String waitedTime,
+        boolean hasWaitedTime,
         List<String> stackTrace,
         String badgeClass,
         boolean blocked,
@@ -150,9 +148,11 @@ public class ThreadDumpControlPanel extends AbstractControlPanel<ThreadDumpContr
                 snapshot.lockOwnerName(),
                 snapshot.lockOwnerId(),
                 Long.toString(snapshot.blockedCount()),
-                duration(snapshot.blockedTime()),
+                Long.toString(snapshot.blockedTime()),
+                snapshot.blockedTime() >= 0,
                 Long.toString(snapshot.waitedCount()),
-                duration(snapshot.waitedTime()),
+                Long.toString(snapshot.waitedTime()),
+                snapshot.waitedTime() >= 0,
                 snapshot.stackTrace(),
                 stateBadgeClass(snapshot.state()),
                 snapshot.state() == Thread.State.BLOCKED,

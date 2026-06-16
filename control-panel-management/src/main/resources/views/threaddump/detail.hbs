@@ -86,8 +86,22 @@
                                                 <span class="text-muted">(#{{thread.lockOwnerId}})</span>
                                             {{/if}}
                                         </td>
-                                        <td>{{thread.blockedCount}} / {{thread.blockedTime}} ms</td>
-                                        <td>{{thread.waitedCount}} / {{thread.waitedTime}} ms</td>
+                                        <td>
+                                            {{thread.blockedCount}} /
+                                            {{#if thread.hasBlockedTime}}
+                                                {{thread.blockedTime}} ms
+                                            {{else}}
+                                                —
+                                            {{/if}}
+                                        </td>
+                                        <td>
+                                            {{thread.waitedCount}} /
+                                            {{#if thread.hasWaitedTime}}
+                                                {{thread.waitedTime}} ms
+                                            {{else}}
+                                                —
+                                            {{/if}}
+                                        </td>
                                         <td>
                                             {{#if thread.stackTrace}}
                                                 <details>

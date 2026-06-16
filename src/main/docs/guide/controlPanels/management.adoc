@@ -235,10 +235,10 @@ endpoints:
     enabled: true
 ----
 
-Management endpoint security and sensitivity remain governed by normal Micronaut Management configuration and by the
-control panel route protection described above. The Thread Dump panel does not expose heap dumps, store thread dumps, or
-provide thread interruption or remediation actions. Use it as a trusted development/test diagnostics view, not as a
-production observability replacement.
+Access to the Thread Dump panel is governed by the Control Panel route protection described above. Micronaut Management
+endpoint security and sensitivity settings apply separately if you expose the raw `/threaddump` management endpoint over
+HTTP. The Thread Dump panel does not expose heap dumps, store thread dumps, or provide thread interruption or remediation
+actions. Use it as a trusted development/test diagnostics view, not as a production observability replacement.
 
 You can disable only this panel with:
 
