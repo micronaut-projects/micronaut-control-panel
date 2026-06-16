@@ -1,0 +1,131 @@
+{{#with controlPanel.body }}
+    <div class="cp-dashboard-stack">
+        <div class="card card-light">
+            <div class="card-header">
+                <h3 class="card-title">Thread Dump</h3>
+                <div class="card-tools">
+                    <a class="btn btn-primary btn-sm" href="{{../ext.controlPanelPath}}/threaddump">
+                        <i class="fa fa-rotate-right" aria-hidden="true"></i>
+                        Refresh dump
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <p class="card-text">Current JVM thread snapshot from Micronaut Management.</p>
+                <p class="card-text text-muted">Thread names and stack traces can reveal implementation details. Use this panel in trusted development or test environments.</p>
+                {{#if stateCounts}}
+                    <dl class="row">
+                        <dt class="col-sm-2">Threads</dt>
+                        <dd class="col-sm-10"><strong>{{totalThreads}}</strong></dd>
+                        <dt class="col-sm-2">States</dt>
+                        <dd class="col-sm-10">
+                            {{#each stateCounts}}
+                                <span class="badge {{badgeClass}}">{{state}}: {{count}}</span>
+                            {{/each}}
+                        </dd>
+                    </dl>
+                {{else}}
+                    <p class="card-text">No threads were returned by the Thread Dump endpoint.</p>
+                {{/if}}
+            </div>
+        </div>
+
+        <div class="card card-light">
+            <div class="card-header">
+                <h3 class="card-title">Threads</h3>
+            </div>
+            <div class="card-body">
+                {{#if threads}}
+                    <div class="cp-data-table cp-data-table-unpaged" data-filter-table data-filter-table-unpaged data-filter-table-label="thread" data-filter-table-label-plural="threads">
+                        <div class="cp-data-table-toolbar">
+                            <div class="cp-data-table-summary" data-filter-table-summary>{{totalThreads}} threads</div>
+                            <div class="cp-data-table-search">
+                                <input type="search" class="form-control" data-filter-table-search placeholder="Search threads, states, locks, or stack frames" aria-label="Search thread dump">
+                            </div>
+                        </div>
+                        <div class="cp-data-table-container">
+                            <table class="table cp-data-table-table cp-data-table-fixed">
+                                <thead>
+                                <tr>
+                                    <th>State</th>
+                                    <th>Thread</th>
+                                    <th>ID</th>
+                                    <th>Daemon</th>
+                                    <th>Lock / owner</th>
+                                    <th>Blocked</th>
+                                    <th>Waited</th>
+                                    <th>Stack</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {{#each threads as |thread|}}
+                                    <tr data-filter-table-row>
+                                        <td>
+                                            <span class="badge {{thread.badgeClass}}">{{thread.state}}</span>
+                                            {{#if thread.blocked}}
+                                                <span class="badge badge-danger">Blocked</span>
+                                            {{/if}}
+                                        </td>
+                                        <td><code class="cp-table-code">{{thread.threadName}}</code></td>
+                                        <td>{{thread.threadId}}</td>
+                                        <td>{{thread.daemon}}</td>
+                                        <td>
+                                            {{#if thread.lockName}}
+                                                <code class="cp-table-code">{{thread.lockName}}</code>
+                                            {{else}}
+                                                <span class="text-muted">—</span>
+                                            {{/if}}
+                                            {{#if thread.hasLockOwner}}
+                                                <br>
+                                                <span class="text-muted">owner:</span>
+                                                {{#if thread.lockOwnerName}}
+                                                    <code class="cp-table-code">{{thread.lockOwnerName}}</code>
+                                                {{else}}
+                                                    <span class="text-muted">unknown</span>
+                                                {{/if}}
+                                                <span class="text-muted">(#{{thread.lockOwnerId}})</span>
+                                            {{/if}}
+                                        </td>
+                                        <td>
+                                            {{thread.blockedCount}} /
+                                            {{#if thread.hasBlockedTime}}
+                                                {{thread.blockedTime}} ms
+                                            {{else}}
+                                                —
+                                            {{/if}}
+                                        </td>
+                                        <td>
+                                            {{thread.waitedCount}} /
+                                            {{#if thread.hasWaitedTime}}
+                                                {{thread.waitedTime}} ms
+                                            {{else}}
+                                                —
+                                            {{/if}}
+                                        </td>
+                                        <td>
+                                            {{#if thread.stackTrace}}
+                                                <details>
+                                                    <summary>Show stack trace</summary>
+                                                    <pre><code>{{#each thread.stackTrace}}{{this}}
+{{/each}}</code></pre>
+                                                </details>
+                                            {{else}}
+                                                <span class="text-muted">No stack frames</span>
+                                            {{/if}}
+                                        </td>
+                                    </tr>
+                                {{/each}}
+                                <tr data-filter-table-empty hidden>
+                                    <td class="cp-data-table-empty-cell" colspan="8">No threads match your search.</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                {{else}}
+                    <div class="cp-data-table-empty">Thread dump data is not available. Confirm the Micronaut Management Thread Dump endpoint is enabled for this environment.</div>
+                {{/if}}
+            </div>
+        </div>
+    </div>
+{{/with}}

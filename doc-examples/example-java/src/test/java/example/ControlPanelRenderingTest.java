@@ -18,4 +18,14 @@ class ControlPanelRenderingTest {
         assertTrue(body.contains("my-local"));
         assertTrue(body.contains("files stored."));
     }
+
+    @Test
+    void rendersThreadDumpPanel(@Client("/") HttpClient client) {
+        var body = client.toBlocking().retrieve(HttpRequest.GET("/control-panel/threaddump"));
+
+        assertTrue(body.contains("Thread Dump"));
+        assertTrue(body.contains("Refresh dump"));
+        assertTrue(body.contains("Search threads, states, locks, or stack frames")
+            || body.contains("Thread dump data is not available."));
+    }
 }

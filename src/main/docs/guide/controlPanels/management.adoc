@@ -19,6 +19,7 @@ The following panels are available:
 * `metrics`: Metrics
 * `beans`: Bean Definitions
 * `loggers`: Logging Configuration
+* `threaddump`: Thread Dump
 
 === Protecting The Control Panel
 
@@ -212,6 +213,47 @@ micronaut:
       metrics:
         enabled: false
 ----
+
+=== Thread Dump
+
+This panel displays a read-only JVM thread dump, and relies on the
+https://docs.micronaut.io/latest/guide/#threadDumpEndpoint[Thread Dump Endpoint] from Micronaut Management. It shows
+summary counts by thread state and a searchable per-thread table with thread name, id, daemon status, lock owner data,
+blocked/waited counts, and expandable stack traces.
+
+The panel appears when the Thread Dump endpoint bean is available. Enable the endpoint only in the environments where
+the control panel should expose thread diagnostics:
+
+IMPORTANT: Thread names, lock names, and stack traces can reveal implementation details. Make sure this is done in an
+environment-specific configuration file, for example, `application-dev.yml` or `application-test.yml`.
+
+.Configuring the Thread Dump Endpoint
+[configuration]
+----
+endpoints:
+  threaddump:
+    enabled: true
+----
+
+Access to the Thread Dump panel is governed by the Control Panel route protection described above. Micronaut Management
+endpoint security and sensitivity settings apply separately if you expose the raw `/threaddump` management endpoint over
+HTTP. The Thread Dump panel does not expose heap dumps, store thread dumps, or provide thread interruption or remediation
+actions. Use it as a trusted development/test diagnostics view, not as a production observability replacement.
+
+You can disable only this panel with:
+
+.Disabling the Thread Dump panel
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      threaddump:
+        enabled: false
+----
+
+To verify it safely, open the Control Panel in a trusted environment, select **Thread Dump**, expand one stack trace, and
+use **Refresh dump** to re-read the current JVM snapshot.
 
 === Bean Definitions
 
