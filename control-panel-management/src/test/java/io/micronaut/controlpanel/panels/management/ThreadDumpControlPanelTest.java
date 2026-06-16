@@ -78,7 +78,14 @@ class ThreadDumpControlPanelTest {
         assertTrue(blocked.hasLockOwner());
         assertEquals("3", blocked.blockedCount());
         assertEquals("40", blocked.blockedTime());
+        assertTrue(blocked.hasBlockedTime());
         assertEquals(List.of("example.Blocked.run(Blocked.java:1)"), blocked.stackTrace());
+
+        ThreadDumpControlPanel.ThreadRow waiting = body.threads().get(2);
+        assertEquals("-1", waiting.blockedTime());
+        assertFalse(waiting.hasBlockedTime());
+        assertEquals("-1", waiting.waitedTime());
+        assertFalse(waiting.hasWaitedTime());
     }
 
     @Test
