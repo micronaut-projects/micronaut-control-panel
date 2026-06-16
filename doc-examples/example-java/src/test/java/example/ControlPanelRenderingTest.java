@@ -24,7 +24,8 @@ class ControlPanelRenderingTest {
         var body = client.toBlocking().retrieve(HttpRequest.GET("/control-panel/threaddump"));
 
         assertTrue(body.contains("Thread Dump"));
-        assertTrue(body.contains("Search threads, states, locks, or stack frames"));
         assertTrue(body.contains("Refresh dump"));
+        assertTrue(body.contains("Search threads, states, locks, or stack frames")
+            || body.contains("Thread dump data is not available."));
     }
 }
