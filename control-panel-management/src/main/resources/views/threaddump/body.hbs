@@ -1,0 +1,14 @@
+{{#with controlPanel.body }}
+    <p class="card-text">
+        <strong>{{totalThreads}}</strong> threads in the current JVM snapshot.
+    </p>
+    {{#if stateCounts}}
+        <p class="card-text">
+            {{#each stateCounts}}
+                <span class="badge {{badgeClass}}">{{state}}: {{count}}</span>
+            {{/each}}
+        </p>
+    {{else}}
+        <p class="card-text">No threads were returned by the Thread Dump endpoint.</p>
+    {{/if}}
+{{/with}}
