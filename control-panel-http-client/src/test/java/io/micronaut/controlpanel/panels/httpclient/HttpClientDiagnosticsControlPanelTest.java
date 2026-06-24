@@ -55,7 +55,12 @@ final class HttpClientDiagnosticsControlPanelTest {
             entry("micronaut.http.services.orders.proxy-username", "proxy-user"),
             entry("micronaut.http.services.orders.proxy-password", "proxy-secret"),
             entry("micronaut.http.services.orders.ssl.enabled", true),
-            entry("micronaut.http.services.orders.ssl.key-store.password", "changeit")
+            entry("micronaut.http.services.orders.ssl.key-store.password", "changeit"),
+            entry("micronaut.http.services.shipping.path", "/shipments"),
+            entry("micronaut.http.services.shipping.follow-redirects", false),
+            entry("micronaut.http.services.shipping.http-version", "HTTP_2_0"),
+            entry("micronaut.http.services.shipping.alpn-modes", List.of("h2", "http/1.1")),
+            entry("micronaut.http.services.shipping.pool.enabled", false)
         ))) {
             HttpClientDiagnostics diagnostics = context.getBean(HttpClientDiagnosticsService.class).collect();
 
@@ -80,6 +85,14 @@ final class HttpClientDiagnosticsControlPanelTest {
             assertEquals("https://inventory.example.test/api?Masked#Masked", inventory.discovery().instances().getFirst().uri());
             assertFalse(inventory.discovery().instances().getFirst().uri().contains("instance-secret"));
             assertFalse(inventory.discovery().instances().getFirst().uri().contains("fragment-secret"));
+
+            HttpClientDiagnostics.HttpClientInfo shipping = find(diagnostics, "shipping");
+            assertEquals("Service ID", shipping.target().kind());
+            assertEquals("/shipments", shipping.configuration().path());
+            assertEquals("false", shipping.configuration().followRedirects());
+            assertEquals("HTTP_2_0", shipping.configuration().httpVersion());
+            assertEquals("h2, http/1.1", shipping.configuration().alpnModes());
+            assertTrue(shipping.configuration().connectionPool().contains("enabled=false"));
         }
     }
 
@@ -91,6 +104,36 @@ final class HttpClientDiagnosticsControlPanelTest {
             assertEquals("Service ID", payments.target().kind());
             assertFalse(payments.discovery().available());
             assertTrue(payments.discovery().message().contains("No application-visible service instances"));
+        }
+    }
+
+    @Test
+    void rendersUnavailableDiscoveryStateWhenDiscoveryBeansAreAbsent() {
+        try (ApplicationContext context = ApplicationContext.run(Map.of("disable.inventory.instances", true))) {
+            HttpClientDiagnostics.HttpClientInfo payments = find(context.getBean(HttpClientDiagnosticsService.class).collect(), "payments");
+
+            assertEquals("Service ID", payments.target().kind());
+            assertFalse(payments.discovery().available());
+            assertTrue(payments.discovery().message().contains("No application-visible service instances"));
+        }
+    }
+
+    @Test
+    void rendersLocalAndInvalidFixedTargetsSafely() {
+        try (ApplicationContext context = ApplicationContext.run()) {
+            HttpClientDiagnostics diagnostics = context.getBean(HttpClientDiagnosticsService.class).collect();
+
+            HttpClientDiagnostics.HttpClientInfo local = find(diagnostics, "/");
+            assertEquals("Local", local.target().kind());
+            assertEquals("/", local.target().value());
+            assertFalse(local.discovery().available());
+
+            HttpClientDiagnostics.HttpClientInfo invalid = find(diagnostics, "https://user:secret@@example.com/path?api-key=secret#token");
+            assertEquals("Fixed URL", invalid.target().kind());
+            assertTrue(invalid.target().value().contains("Masked"));
+            assertFalse(invalid.target().value().contains("user:secret"));
+            assertFalse(invalid.target().value().contains("api-key=secret"));
+            assertFalse(invalid.target().value().contains("token"));
         }
     }
 
@@ -128,6 +171,14 @@ final class HttpClientDiagnosticsControlPanelTest {
 
     @Client("payments")
     interface PaymentsClient {
+    }
+
+    @Client("/")
+    interface LocalClient {
+    }
+
+    @Client("https://user:secret@@example.com/path?api-key=secret#token")
+    interface InvalidFixedUrlClient {
     }
 
     @Factory

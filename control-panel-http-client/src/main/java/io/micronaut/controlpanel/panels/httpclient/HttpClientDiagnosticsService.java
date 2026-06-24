@@ -68,6 +68,8 @@ public class HttpClientDiagnosticsService {
 
     private static final String NOT_CONFIGURED = "Not configured";
     private static final String MASKED = "Masked";
+    private static final String FIXED_URL = "Fixed URL";
+    private static final String SERVICE_ID = "Service ID";
     private static final Set<String> LOCAL_TARGETS = Set.of("/", "");
 
     private final BeanContext beanContext;
@@ -122,7 +124,7 @@ public class HttpClientDiagnosticsService {
         for (BeanDefinition<ServiceHttpClientConfiguration> definition : beanContext.getBeanDefinitions(ServiceHttpClientConfiguration.class)) {
             ServiceHttpClientConfiguration configuration = beanContext.getBean(definition);
             String id = configuration.getServiceId();
-            if (id == null || id.isBlank()) {
+            if (id.isBlank()) {
                 id = definition.getName();
             }
             ClientBuilder builder = builders.computeIfAbsent(id, ClientBuilder::new);
@@ -293,16 +295,16 @@ public class HttpClientDiagnosticsService {
             List<URI> urls = configuration == null ? List.of() : configuration.getUrls();
             if (!urls.isEmpty()) {
                 String joined = urls.stream().map(URI::toString).map(HttpClientDiagnosticsService::sanitizeTarget).reduce((left, right) -> left + ", " + right).orElse(NOT_CONFIGURED);
-                return new TargetInfo("Fixed URL", joined, "badge-success");
+                return new TargetInfo(FIXED_URL, joined, "badge-success");
             }
             if (annotationTarget != null && !annotationTarget.isBlank() && !LOCAL_TARGETS.contains(annotationTarget)) {
                 if (annotationTarget.startsWith("http://") || annotationTarget.startsWith("https://")) {
-                    return new TargetInfo("Fixed URL", sanitizeTarget(annotationTarget), "badge-success");
+                    return new TargetInfo(FIXED_URL, sanitizeTarget(annotationTarget), "badge-success");
                 }
-                return new TargetInfo("Service ID", annotationTarget, "badge-warning");
+                return new TargetInfo(SERVICE_ID, annotationTarget, "badge-warning");
             }
             if (configuration != null) {
-                return new TargetInfo("Service ID", configuration.getServiceId(), "badge-warning");
+                return new TargetInfo(SERVICE_ID, configuration.getServiceId(), "badge-warning");
             }
             if (annotationTarget != null && LOCAL_TARGETS.contains(annotationTarget)) {
                 return new TargetInfo("Local", annotationTarget.isBlank() ? "/" : annotationTarget, "badge-secondary");
@@ -341,7 +343,7 @@ public class HttpClientDiagnosticsService {
         }
 
         private DiscoveryInfo discoveryInfo(TargetInfo target, boolean discoveryAvailable, List<ServiceInstanceList> serviceInstanceLists) {
-            if (!Objects.equals(target.kind(), "Service ID")) {
+            if (!Objects.equals(target.kind(), SERVICE_ID)) {
                 return new DiscoveryInfo(false, "Fixed or local targets do not use service discovery.", List.of());
             }
             if (!discoveryAvailable && serviceInstanceLists.isEmpty()) {
