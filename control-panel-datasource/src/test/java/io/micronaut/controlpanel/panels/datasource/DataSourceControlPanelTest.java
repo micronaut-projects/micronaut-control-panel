@@ -23,6 +23,7 @@ import io.micronaut.controlpanel.panels.datasource.model.DataSourceInfo;
 import io.micronaut.controlpanel.panels.datasource.model.DatabaseType;
 import io.micronaut.controlpanel.panels.datasource.model.PoolInfo;
 import io.micronaut.controlpanel.panels.datasource.model.Table;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -32,9 +33,17 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.lenient;
 
 @ExtendWith(MockitoExtension.class)
 class DataSourceControlPanelTest {
@@ -51,6 +60,15 @@ class DataSourceControlPanelTest {
     private static final String BEAN_NAME = "testDataSource";
     private static final List<Table> EMPTY_TABLE_LIST = List.of();
     private static final String MERMAID_ER = "erDiagram\n  TABLE1 ||--o{ TABLE2 : \"has\"";
+
+    @BeforeEach
+    void defaultDataSourcePanelEnabled() {
+        lenient().when(environment.getProperty(
+            DataSourceControlPanel.DATASOURCES_CONFIGURATION_PREFIX + "." + BEAN_NAME + ".enabled",
+            Boolean.class,
+            ControlPanelConfiguration.DEFAULT_ENABLED
+        )).thenReturn(true);
+    }
 
     @Test
     void constructorInitializesFieldsCorrectly() {
@@ -78,11 +96,14 @@ class DataSourceControlPanelTest {
     @Test
     void createDataSourceInfoExtractsPropertiesCorrectly() {
         // Given
-        String expectedUrl = "jdbc:postgresql://localhost:5432/test";
-        String expectedUsername = "user";
-        String expectedPassword = "pass";
+        String expectedUrl = "jdbc:postgresql://localhost:5432/testdb";
+        String expectedUsername = "testuser";
+        String expectedPassword = "testpass";
         String expectedDialect = "POSTGRES";
-        String expectedDbType = "postgres";
+        String expectedDbType = "";
+
+        when(dataSourceService.getTables()).thenReturn(EMPTY_TABLE_LIST);
+        when(dataSourceService.generateMermaidER(EMPTY_TABLE_LIST)).thenReturn(MERMAID_ER);
         when(environment.getProperty("datasources." + BEAN_NAME + ".url", String.class, "")).thenReturn(expectedUrl);
         when(environment.getProperty("datasources." + BEAN_NAME + ".username", String.class, "")).thenReturn(expectedUsername);
         when(environment.getProperty("datasources." + BEAN_NAME + ".password", String.class, "")).thenReturn(expectedPassword);
@@ -99,6 +120,32 @@ class DataSourceControlPanelTest {
         assertEquals(expectedUsername, info.username());
         assertEquals(expectedPassword, info.password());
         assertEquals(DatabaseType.POSTGRES, info.type());
+    }
+
+    @Test
+    void disabledDataSourceDoesNotInspectMetadata() {
+        // Given
+        when(environment.getProperty(
+            DataSourceControlPanel.DATASOURCES_CONFIGURATION_PREFIX + "." + BEAN_NAME + ".enabled",
+            Boolean.class,
+            ControlPanelConfiguration.DEFAULT_ENABLED
+        )).thenReturn(false);
+        when(environment.getProperty("datasources." + BEAN_NAME + ".url", String.class, "")).thenReturn("jdbc:h2:mem:disabled");
+        when(environment.getProperty("datasources." + BEAN_NAME + ".username", String.class, "")).thenReturn("sa");
+        when(environment.getProperty("datasources." + BEAN_NAME + ".dialect", String.class, "")).thenReturn("H2");
+        when(environment.getProperty("datasources." + BEAN_NAME + ".db-type", String.class, "")).thenReturn("");
+
+        // When
+        DataSourceControlPanel panel = new DataSourceControlPanel(BEAN_NAME, dataSourceService, environment, configuration);
+
+        // Then
+        assertFalse(panel.isEnabled());
+        assertEquals(EMPTY_TABLE_LIST, panel.getBody().tables());
+        assertEquals("", panel.getBody().mermaidEr());
+        verify(dataSourceService, never()).getTables();
+        verify(dataSourceService, never()).getJdbcInfo();
+        verify(dataSourceService, never()).getPoolInfo();
+        verify(dataSourceService, never()).generateMermaidER(EMPTY_TABLE_LIST);
     }
 
     @Test

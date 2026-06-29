@@ -80,6 +80,12 @@ class DefaultControlPanelRepositoryTest {
     }
 
     @Test
+    void itDoesNotFindDisabledControlPanels() {
+        ControlPanelRepository repository = ctx.getBean(ControlPanelRepository.class);
+        assertFalse(repository.findByName("disabled-test").isPresent());
+    }
+
+    @Test
     void itCanFindAllCategories() {
         ControlPanelRepository repository = ctx.getBean(ControlPanelRepository.class);
         var categories = repository.findAllCategories();
@@ -158,6 +164,39 @@ class DefaultControlPanelRepositoryTest {
         @Override
         public String getName() {
             return "test";
+        }
+    }
+
+    @Singleton
+    static class DisabledDummyControlPanel implements ControlPanel<String> {
+        @Override
+        public String getIcon() {
+            return ControlPanelConfiguration.DEFAULT_ICON;
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return false;
+        }
+
+        @Override
+        public String getTitle() {
+            return "Disabled Test Control Panel";
+        }
+
+        @Override
+        public String getBody() {
+            return "Disabled Test Control Panel Body";
+        }
+
+        @Override
+        public Category getCategory() {
+            return new Category("application", "My Application", "fas fa-copy");
+        }
+
+        @Override
+        public String getName() {
+            return "disabled-test";
         }
     }
 }
