@@ -93,7 +93,8 @@ loadScripts(document, 'script');</script>
 </dl>
 <hr>
 <div class="horizontal-scroll">
-<div class="type-signature"><span class="annotations">@EachBean(io.micronaut.cache.ehcache.EhcacheSyncCache.class)
+<div class="type-signature"><span class="annotations">@Requires(classes=io.micronaut.cache.ehcache.EhcacheSyncCache.class)
+@EachBean(io.micronaut.cache.ehcache.EhcacheSyncCache.class)
 </span><span class="modifiers">public class </span><span class="element-name type-name-label">EhcacheControlPanel</span>
 <span class="extends-implements">extends <a href="AbstractCacheControlPanel.html" title="class in io.micronaut.controlpanel.panels.cache">AbstractCacheControlPanel</a>&lt;io.micronaut.cache.ehcache.EhcacheSyncCache&gt;</span></div>
 <div class="block">Control panel for managing Ehcache caches.
