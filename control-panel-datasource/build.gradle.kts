@@ -48,3 +48,25 @@ dependencies {
 tasks.named("internalStartTestResourcesService") {
     setProperty("useClassDataSharing", false)
 }
+
+// Verifies the datasource panel works when micronaut-data-connection-jdbc is absent from the
+// classpath, as it is for applications that do not use Micronaut Data. The standard test task has
+// the module present; this task strips it to reproduce the NoClassDefFoundError that occurred while
+// DataSourceService referenced DelegatingDataSource directly and the module was an `implementation`
+// dependency.
+val testWithoutDataConnection by tasks.registering(Test::class) {
+    description = "Verifies the datasource panel instantiates when micronaut-data-connection-jdbc is absent"
+    group = "verification"
+    classpath = configurations.named("testRuntimeClasspath").get()
+        .filter { !it.name.contains("micronaut-data-connection") }
+        .plus(sourceSets.main.get().output)
+        .plus(sourceSets.test.get().output)
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    filter {
+        includeTestsMatching("io.micronaut.controlpanel.panels.datasource.DataConnectionJdbcAbsentFromClasspathTest")
+    }
+}
+
+tasks.named("check") {
+    dependsOn(testWithoutDataConnection)
+}
