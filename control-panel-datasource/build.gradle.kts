@@ -22,9 +22,12 @@ dependencies {
     annotationProcessor(mnSerde.micronaut.serde.processor)
 
     implementation(mnSql.micronaut.jdbc)
-    implementation(mnData.micronaut.data.connection.jdbc)
     implementation(mnSerde.micronaut.serde.api)
 
+    // Used only by DataSourceUnwrapper, guarded by @Requires(classes = DelegatingDataSource.class).
+    // compileOnly (not implementation) so the panel does not force Micronaut Data's connection
+    // advice onto applications that do not use Micronaut Data.
+    compileOnly(mnData.micronaut.data.connection.jdbc)
     compileOnly(mnSql.micronaut.jdbc.hikari)
     compileOnly(mnSql.micronaut.jdbc.ucp)
 
