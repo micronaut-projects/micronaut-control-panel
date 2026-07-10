@@ -61,6 +61,9 @@ public class DataSourceService {
     private final DataSource dataSource;
     private final List<ConnectionPoolInspector> connectionPoolInspectors;
 
+    /**
+     * @since 2.0.1
+     */
     @Inject
     public DataSourceService(@Parameter DataSource dataSource,
                              @Nullable DataSourceUnwrapper unwrapper,
