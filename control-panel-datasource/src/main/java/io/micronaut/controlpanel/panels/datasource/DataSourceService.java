@@ -62,6 +62,12 @@ public class DataSourceService {
     private final List<ConnectionPoolInspector> connectionPoolInspectors;
 
     /**
+     * Unwraps the datasource when a {@link DataSourceUnwrapper} is available, so that
+     * micronaut-data is not forced onto consumers.
+     *
+     * @param dataSource the datasource this service inspects
+     * @param unwrapper optional unwrapper, absent when no unwrapping strategy is on the classpath
+     * @param connectionPoolInspectors inspectors contributing connection pool metadata
      * @since 2.0.1
      */
     @Inject
