@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2025 original authors
+ * Copyright 2017-2026 original authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,9 @@ package io.micronaut.controlpanel.panels.datasource;
 
 import io.micronaut.controlpanel.panels.datasource.model.PoolInfo;
 import io.micronaut.core.annotation.Internal;
+import org.jspecify.annotations.Nullable;
 
+import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.List;
@@ -33,6 +35,32 @@ final class PoolInfoSupport {
     static final String UNKNOWN = "Unknown";
 
     private PoolInfoSupport() {
+    }
+
+    /**
+     * Locates a pool of {@code type} within {@code dataSource}, seeing through any wrapping
+     * {@link DataSource} (Micronaut Data's connection advice, OpenTelemetry tracing, ...) via the
+     * JDBC {@link java.sql.Wrapper} API. Returns {@code null} when the datasource neither is, nor
+     * wraps, that type — including when it cannot be inspected.
+     *
+     * @param dataSource the datasource, possibly wrapped
+     * @param type       the provider-specific pool type to locate
+     * @param <T>        the pool type
+     * @return the pool, or {@code null} if not present
+     */
+    @SuppressWarnings("unchecked")
+    static <T> @Nullable T unwrap(DataSource dataSource, Class<T> type) {
+        if (type.isInstance(dataSource)) {
+            return (T) dataSource;
+        }
+        try {
+            if (dataSource.isWrapperFor(type)) {
+                return dataSource.unwrap(type);
+            }
+        } catch (SQLException ignored) {
+            // An un-inspectable datasource is treated as "not this pool type".
+        }
+        return null;
     }
 
     static PoolInfo.PoolOptionGroup group(String title, PoolInfo.PoolOption... options) {
