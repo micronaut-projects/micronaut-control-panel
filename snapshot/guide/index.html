@@ -573,11 +573,7 @@ Micronaut Endpoints require having the <code>io.micronaut:micronaut-management</
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[micronaut]
-  [micronaut.control-panel]
-    [micronaut.control-panel.panels]
-      [micronaut.control-panel.panels.cache]
-        enabled=false</code></pre>
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">micronaut = {control-panel = {panels = {cache = {enabled = false}}}}</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
@@ -646,11 +642,7 @@ Micronaut Endpoints require having the <code>io.micronaut:micronaut-management</
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[micronaut]
-  [micronaut.caches]
-    [micronaut.caches.my-cache]
-      [micronaut.caches.my-cache.control-panel]
-        enabled=false</code></pre>
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">micronaut = {caches = {my-cache = {control-panel = {enabled = false}}}}</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
@@ -883,23 +875,8 @@ endpoints:
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[micronaut]
-  [micronaut.security]
-    enabled=true
-    [micronaut.security.basic-auth]
-      enabled=true
-  [micronaut.control-panel]
-    enabled=true
-    [micronaut.control-panel.security]
-      access="authorized"
-      role="ROLE_CONTROL_PANEL"
-[endpoints]
-  [endpoints.env]
-    enabled=true
-  [endpoints.health]
-    details-visible="AUTHENTICATED"
-  [endpoints.loggers]
-    enabled=true</code></pre>
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">micronaut = {security = {enabled = true, basic-auth = {enabled = true}}, control-panel = {enabled = true, security = {access = "authorized", role = "ROLE_CONTROL_PANEL"}}}
+endpoints = {env = {enabled = true}, health = {details-visible = "AUTHENTICATED"}, loggers = {enabled = true}}</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
@@ -1021,10 +998,7 @@ different administrative role:</p>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[micronaut]
-  [micronaut.control-panel]
-    [micronaut.control-panel.security]
-      role="ROLE_ADMIN"</code></pre>
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">micronaut = {control-panel = {security = {role = "ROLE_ADMIN"}}}</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
@@ -1094,10 +1068,7 @@ delete, datasource SQL execution, logger reconfiguration, and Hibernate statisti
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[micronaut]
-  [micronaut.control-panel]
-    [micronaut.control-panel.security]
-      write-access="DENIED"</code></pre>
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">micronaut = {control-panel = {security = {write-access = "DENIED"}}}</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
@@ -1169,13 +1140,7 @@ micronaut.control-panel.security.write-role=ROLE_CONTROL_PANEL_WRITE</code></pre
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[micronaut]
-  [micronaut.control-panel]
-    [micronaut.control-panel.security]
-      access="AUTHORIZED"
-      role="ROLE_CONTROL_PANEL_READ"
-      write-access="AUTHORIZED"
-      write-role="ROLE_CONTROL_PANEL_WRITE"</code></pre>
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">micronaut = {control-panel = {security = {access = "AUTHORIZED", role = "ROLE_CONTROL_PANEL_READ", write-access = "AUTHORIZED", write-role = "ROLE_CONTROL_PANEL_WRITE"}}}</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
@@ -1251,10 +1216,7 @@ the UI and helper controllers anonymously reachable. Use these modes only for tr
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[micronaut]
-  [micronaut.control-panel]
-    [micronaut.control-panel.security]
-      access="AUTHENTICATED"</code></pre>
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">micronaut = {control-panel = {security = {access = "AUTHENTICATED"}}}</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
@@ -1340,9 +1302,7 @@ Make sure this is done in an environment-specific configuration file, for exampl
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[endpoints]
-  [endpoints.health]
-    details-visible="AUTHENTICATED"</code></pre>
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">endpoints = {health = {details-visible = "AUTHENTICATED"}}</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
@@ -1411,11 +1371,7 @@ the Info endpoint is available and can be disabled independently:</p>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[micronaut]
-  [micronaut.control-panel]
-    [micronaut.control-panel.panels]
-      [micronaut.control-panel.panels.info]
-        enabled=false</code></pre>
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">micronaut = {control-panel = {panels = {info = {enabled = false}}}}</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
@@ -1504,13 +1460,8 @@ info:
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[endpoints]
-  [endpoints.info]
-    enabled=true
-[info]
-  [info.app]
-    name="my-service"
-    version="1.0.0"</code></pre>
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">endpoints = {info = {enabled = true}}
+info = {app = {name = "my-service", version = "1.0.0"}}</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
@@ -1607,9 +1558,7 @@ Make sure this is done in an environment-specific configuration file, for exampl
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[endpoints]
-  [endpoints.env]
-    enabled=true</code></pre>
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">endpoints = {env = {enabled = true}}</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
@@ -1667,10 +1616,7 @@ you can enable the built-in filter by setting the following configuration proper
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[micronaut]
-  [micronaut.control-panel]
-    [micronaut.control-panel.env]
-      show-values=true</code></pre>
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">micronaut = {control-panel = {env = {show-values = true}}}</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
@@ -1757,11 +1703,7 @@ exporters, mutate metrics, provide alerts, or replace production observability d
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[micronaut]
-  [micronaut.control-panel]
-    [micronaut.control-panel.panels]
-      [micronaut.control-panel.panels.metrics]
-        enabled=false</code></pre>
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">micronaut = {control-panel = {panels = {metrics = {enabled = false}}}}</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
@@ -1870,9 +1812,7 @@ Make sure this is done in an environment-specific configuration file, for exampl
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[endpoints]
-  [endpoints.loggers]
-    enabled=true</code></pre>
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">endpoints = {loggers = {enabled = true}}</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
@@ -2013,11 +1953,7 @@ access outside the control panel.</p>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[micronaut]
-  [micronaut.control-panel]
-    [micronaut.control-panel.panels]
-      [micronaut.control-panel.panels.object-storage]
-        enabled=false</code></pre>
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">micronaut = {control-panel = {panels = {object-storage = {enabled = false}}}}</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
@@ -2228,11 +2164,7 @@ You can disable it by setting:</p>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[micronaut]
-  [micronaut.control-panel]
-    [micronaut.control-panel.panels]
-      [micronaut.control-panel.panels.datasource]
-        enabled=false</code></pre>
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">micronaut = {control-panel = {panels = {datasource = {enabled = false}}}}</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
@@ -2572,11 +2504,7 @@ You can disable it by setting:</p>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[micronaut]
-  [micronaut.control-panel]
-    [micronaut.control-panel.panels]
-      [micronaut.control-panel.panels.hibernate]
-        enabled=false</code></pre>
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">micronaut = {control-panel = {panels = {hibernate = {enabled = false}}}}</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
@@ -2750,17 +2678,7 @@ micronaut.control-panel.panels.kafka.integrations.ksqldb.url=http://localhost:80
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[micronaut]
-  [micronaut.control-panel]
-    [micronaut.control-panel.panels]
-      [micronaut.control-panel.panels.kafka]
-        [micronaut.control-panel.panels.kafka.integrations]
-          [micronaut.control-panel.panels.kafka.integrations.schema-registry]
-            url="http://localhost:8081"
-          [micronaut.control-panel.panels.kafka.integrations.connect]
-            url="http://localhost:8083"
-          [micronaut.control-panel.panels.kafka.integrations.ksqldb]
-            url="http://localhost:8088"</code></pre>
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">micronaut = {control-panel = {panels = {kafka = {integrations = {schema-registry = {url = "http://localhost:8081"}, connect = {url = "http://localhost:8083"}, ksqldb = {url = "http://localhost:8088"}}}}}}</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
@@ -2874,13 +2792,7 @@ micronaut.control-panel.panels.kafka.writes.destructive-enabled=false</code></pr
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[micronaut]
-  [micronaut.control-panel]
-    [micronaut.control-panel.panels]
-      [micronaut.control-panel.panels.kafka]
-        [micronaut.control-panel.panels.kafka.writes]
-          enabled=false
-          destructive-enabled=false</code></pre>
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">micronaut = {control-panel = {panels = {kafka = {writes = {enabled = false, destructive-enabled = false}}}}}</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
@@ -3044,13 +2956,7 @@ micronaut.control-panel.panels.kafka-streams.enabled=false</code></pre>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[micronaut]
-  [micronaut.control-panel]
-    [micronaut.control-panel.panels]
-      [micronaut.control-panel.panels.kafka-cluster]
-        enabled=false
-      [micronaut.control-panel.panels.kafka-streams]
-        enabled=false</code></pre>
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">micronaut = {control-panel = {panels = {kafka-cluster = {enabled = false}, kafka-streams = {enabled = false}}}}</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
@@ -3183,38 +3089,7 @@ micronaut.control-panel.panels.kafka.writes.actions.delete-connector=false</code
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[micronaut]
-  [micronaut.control-panel]
-    [micronaut.control-panel.panels]
-      [micronaut.control-panel.panels.kafka]
-        [micronaut.control-panel.panels.kafka.writes]
-          enabled=true
-          destructive-enabled=false
-          max-message-value-bytes=1048576
-          max-message-key-bytes=1024
-          max-message-headers=20
-          max-message-header-key-bytes=256
-          max-message-header-value-bytes=4096
-          [micronaut.control-panel.panels.kafka.writes.actions]
-            create-topic=true
-            update-topic-config=true
-            increase-partitions=true
-            delete-topic=false
-            produce-message=true
-            delete-consumer-group=false
-            reset-consumer-group-offsets=true
-            pause-app-consumer=true
-            resume-app-consumer=true
-            register-schema=true
-            update-schema-compatibility=true
-            delete-schema-subject=false
-            delete-schema-version=false
-            pause-connector=true
-            resume-connector=true
-            restart-connector=true
-            restart-connector-task=true
-            update-connector-config=true
-            delete-connector=false</code></pre>
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">micronaut = {control-panel = {panels = {kafka = {writes = {enabled = true, destructive-enabled = false, max-message-value-bytes = 1048576, max-message-key-bytes = 1024, max-message-headers = 20, max-message-header-key-bytes = 256, max-message-header-value-bytes = 4096, actions = {create-topic = true, update-topic-config = true, increase-partitions = true, delete-topic = false, produce-message = true, delete-consumer-group = false, reset-consumer-group-offsets = true, pause-app-consumer = true, resume-app-consumer = true, register-schema = true, update-schema-compatibility = true, delete-schema-subject = false, delete-schema-version = false, pause-connector = true, resume-connector = true, restart-connector = true, restart-connector-task = true, update-connector-config = true, delete-connector = false}}}}}}</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
@@ -3400,9 +3275,7 @@ The Kafka Streams panel only reads the visible <code>HealthEndpoint</code> resul
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[endpoints]
-  [endpoints.health]
-    details-visible="AUTHENTICATED"</code></pre>
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">endpoints = {health = {details-visible = "AUTHENTICATED"}}</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
@@ -3606,15 +3479,7 @@ micronaut.control-panel.panels.my-application.order=10</code></pre>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[micronaut]
-  [micronaut.metrics]
-    enabled=true
-  [micronaut.control-panel]
-    [micronaut.control-panel.panels]
-      [micronaut.control-panel.panels.my-application]
-        title="My Application Control Panel"
-        icon="fa-plug"
-        order=10</code></pre>
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">micronaut = {metrics = {enabled = true}, control-panel = {panels = {my-application = {title = "My Application Control Panel", icon = "fa-plug", order = 10}}}}</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
