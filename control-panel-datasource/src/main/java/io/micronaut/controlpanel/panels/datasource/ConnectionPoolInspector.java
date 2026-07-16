@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2025 original authors
+ * Copyright 2017-2026 original authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,8 @@ import java.util.Optional;
 interface ConnectionPoolInspector {
 
     /**
-     * @param dataSource The unwrapped datasource
+     * @param dataSource The datasource, possibly wrapped; implementations locate their pool via the
+     *                   JDBC {@link java.sql.Wrapper} API
      * @return The pool metadata when this inspector supports the datasource
      */
     Optional<PoolInfo> inspect(DataSource dataSource);
