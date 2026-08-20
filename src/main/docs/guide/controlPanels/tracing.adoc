@@ -1,0 +1,62 @@
+You can add a read-only tracing diagnostics panel to a Micronaut application that uses Micronaut Tracing or OpenTelemetry:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-tracing[scope=developmentOnly]
+
+The tracing panel is intended for development-time diagnostics. It inspects local Micronaut configuration, the bean context, and the application classpath. It does not create spans, mutate tracing configuration, send test telemetry, or call OTLP, Zipkin, Jaeger, or any other telemetry backend.
+
+The panel reports:
+
+* Detected tracing provider families, including OpenTelemetry, Brave/Zipkin, and OpenTracing/Jaeger classes when present.
+* Effective service name from `otel.service.name`, falling back to the Micronaut application name when available.
+* OpenTelemetry trace, metric, and log exporter settings, including OTLP endpoint overrides.
+* OpenTelemetry propagator and sampler configuration.
+* OpenTelemetry resource attributes.
+* Local classpath evidence for common instrumentation surfaces: HTTP, gRPC, JDBC, R2DBC, Kafka, AWS SDK, Logback, and MDC.
+* Deterministic local diagnostics such as exporters set to `none`, configured exporters without a known exporter implementation, multiple provider families, disabled SDK configuration, and conflicting Kafka tracing topic include/exclude filters.
+
+The panel deliberately does not verify collector reachability, inspect remote backend state, infer dependency trees from build files, display raw captured headers, or bypass Control Panel security. A value can be `not configured` even when a remote backend would apply its own default. Instrumentation rows are marked `present` only when a Micronaut Tracing or OpenTelemetry integration class is visible. If only the base library is visible, such as JDBC, Kafka, Logback, or SLF4J MDC without the tracing integration, the row is reported as `unknown` instead of `present`.
+
+Sensitive values are redacted before rendering. This includes keys that look like passwords, credentials, certificates, tokens, API keys, authorization headers, bearer values, URL userinfo, and sensitive URL query parameters. Resource attributes are redacted with the same rules because they can contain tenant, account, or deployment identifiers.
+
+For a deterministic local OpenTelemetry configuration, you can start with:
+
+[configuration]
+----
+micronaut:
+  application:
+    name: orders
+otel:
+  service:
+    name: orders-api
+  resource:
+    attributes: deployment.environment=dev,service.namespace=checkout
+  traces:
+    exporter: none
+    sampler: parentbased_always_on
+  metrics:
+    exporter: none
+  logs:
+    exporter: none
+  propagators: tracecontext,baggage
+----
+
+To exercise a local diagnostic, configure both Kafka tracing include and exclude filters:
+
+[configuration]
+----
+kafka:
+  tracing:
+    included-topics: orders
+    excluded-topics: internal.audit
+----
+
+To disable the panel while keeping the dependency on the classpath:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      tracing:
+        enabled: false
+----
