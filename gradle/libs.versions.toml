@@ -38,7 +38,7 @@ playwright = "1.61.0"
 shadow-plugin = "9.3.2"
 test-logger-plugin = "4.0.0"
 gradle-node-plugin = "7.1.0"
-avro = "1.12.1"
+avro = "1.12.2"
 avro-serde = "8.2.1"
 
 handlebars-humanize = "4.3.1"
