@@ -31,6 +31,7 @@ micronaut-data = "5.1.0"
 micronaut-testresources = "4.0.0"
 micronaut-gradle-plugin = "5.0.2"
 micronaut-openapi = "7.0.0"
+micronaut-opensearch = "2.0.0-RC1"
 micronaut-kafka = "6.0.0"
 kotlin-gradle-plugin = "2.4.10"
 micronaut-shared-settings = "8.0.1"
@@ -45,6 +46,7 @@ handlebars-humanize = "4.3.1"
 
 [libraries]
 micronaut-openapi = { module = "io.micronaut.openapi:micronaut-openapi-bom", version.ref = "micronaut-openapi" }
+micronaut-opensearch = { module = "io.micronaut.opensearch:micronaut-opensearch-bom", version.ref = "micronaut-opensearch" }
 micronaut-core = { module = 'io.micronaut:micronaut-core-bom', version.ref = 'micronaut' }
 micronaut-security = { module = 'io.micronaut.security:micronaut-security', version.ref = 'micronaut-security' }
 micronaut-platform = { module = "io.micronaut.platform:micronaut-platform", version.ref = "micronaut-platform"}
