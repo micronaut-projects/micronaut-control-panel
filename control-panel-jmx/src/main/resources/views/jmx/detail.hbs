@@ -1,0 +1,328 @@
+{{#with controlPanel.body}}
+    <div class="cp-dashboard-stack">
+        <div class="card card-light">
+            <div class="card-header">
+                <div class="cp-card-heading">
+                    <div class="cp-card-header-text">
+                        <h3 class="card-title">JMX diagnostics</h3>
+                        <div class="card-description">Read-only MBean server metadata and Micronaut endpoint registrations.</div>
+                    </div>
+                </div>
+                <div class="card-tools">
+                    {{#if serverAvailable}}
+                        <span class="badge badge-primary">Server available</span>
+                    {{else}}
+                        <span class="badge badge-secondary">Server unavailable</span>
+                    {{/if}}
+                </div>
+            </div>
+            <div class="card-body">
+                {{#if hasWarnings}}
+                    <div class="cp-data-table-empty">
+                        {{#each warnings as |warning|}}
+                            <p>{{warning.message}}</p>
+                        {{/each}}
+                    </div>
+                {{/if}}
+
+                <div class="tabs" data-tabs>
+                    <div class="tabs-list cp-jmx-tabs-list" role="tablist" aria-label="JMX diagnostics">
+                        <button type="button" class="tabs-trigger active" id="tab-jmx-server" role="tab" aria-selected="true" aria-controls="panel-jmx-server" data-tabs-trigger="jmx-server">
+                            Server
+                        </button>
+                        <button type="button" class="tabs-trigger" id="tab-jmx-endpoints" role="tab" aria-selected="false" aria-controls="panel-jmx-endpoints" data-tabs-trigger="jmx-endpoints">
+                            Micronaut Endpoints
+                            <span class="badge badge-secondary">{{endpointMBeanCount}}</span>
+                        </button>
+                        <button type="button" class="tabs-trigger" id="tab-jmx-domains" role="tab" aria-selected="false" aria-controls="panel-jmx-domains" data-tabs-trigger="jmx-domains">
+                            All Domains
+                            <span class="badge badge-secondary">{{domainCount}}</span>
+                        </button>
+                        <button type="button" class="tabs-trigger" id="tab-jmx-details" role="tab" aria-selected="false" aria-controls="panel-jmx-details" data-tabs-trigger="jmx-details">
+                            Details
+                        </button>
+                    </div>
+
+                    <div class="tabs-panel" id="panel-jmx-server" role="tabpanel" aria-labelledby="tab-jmx-server" data-tabs-panel="jmx-server">
+                        <div class="cp-data-table-container cp-vertical-table cp-jmx-server-table">
+                            <table class="table cp-data-table-table">
+                                <tbody>
+                                <tr>
+                                    <th>Server bean</th>
+                                    <td>
+                                        {{#if serverAvailable}}
+                                            <span class="badge badge-primary">available</span>
+                                        {{else}}
+                                            <span class="badge badge-secondary">unavailable</span>
+                                        {{/if}}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Implementation class</th>
+                                    <td><code class="cp-table-code">{{serverClassName}}</code></td>
+                                </tr>
+                                <tr>
+                                    <th>Default domain</th>
+                                    <td><code class="cp-table-code">{{defaultDomain}}</code></td>
+                                </tr>
+                                <tr>
+                                    <th>Total MBeans</th>
+                                    <td>{{totalMBeanCount}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Domains</th>
+                                    <td>{{domainCount}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Micronaut endpoint MBeans</th>
+                                    <td>{{endpointMBeanCount}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Micronaut JMX configuration class</th>
+                                    <td>
+                                        {{#if settings.configurationClassPresent}}
+                                            <span class="badge badge-primary">present</span>
+                                        {{else}}
+                                            <span class="badge badge-secondary">unavailable</span>
+                                        {{/if}}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th><code>jmx.agent-id</code></th>
+                                    <td><span class="cp-jmx-setting-value"><code class="cp-table-code">{{settings.agentId.value}}</code> <span class="badge badge-secondary">{{settings.agentId.source}}</span></span></td>
+                                </tr>
+                                <tr>
+                                    <th><code>jmx.domain</code></th>
+                                    <td><span class="cp-jmx-setting-value"><code class="cp-table-code">{{settings.domain.value}}</code> <span class="badge badge-secondary">{{settings.domain.source}}</span></span></td>
+                                </tr>
+                                <tr>
+                                    <th><code>jmx.add-to-factory</code></th>
+                                    <td><span class="cp-jmx-setting-value"><code class="cp-table-code">{{settings.addToFactory.value}}</code> <span class="badge badge-secondary">{{settings.addToFactory.source}}</span></span></td>
+                                </tr>
+                                <tr>
+                                    <th><code>jmx.ignore-agent-not-found</code></th>
+                                    <td><span class="cp-jmx-setting-value"><code class="cp-table-code">{{settings.ignoreAgentNotFound.value}}</code> <span class="badge badge-secondary">{{settings.ignoreAgentNotFound.source}}</span></span></td>
+                                </tr>
+                                <tr>
+                                    <th><code>jmx.register-endpoints</code></th>
+                                    <td><span class="cp-jmx-setting-value"><code class="cp-table-code">{{settings.registerEndpoints.value}}</code> <span class="badge badge-secondary">{{settings.registerEndpoints.source}}</span></span></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="tabs-panel" id="panel-jmx-endpoints" role="tabpanel" aria-labelledby="tab-jmx-endpoints" data-tabs-panel="jmx-endpoints" hidden>
+                        {{#if hasEndpointMBeans}}
+                            <div class="cp-data-table cp-data-table-paged" data-filter-table data-filter-table-page-size="10" data-filter-table-label="endpoint MBean" data-filter-table-label-plural="endpoint MBeans">
+                                <div class="cp-data-table-toolbar">
+                                    <div class="cp-data-table-summary" data-filter-table-summary>{{endpointMBeanCount}} endpoint MBeans</div>
+                                    <div class="cp-data-table-search">
+                                        <input type="text" class="form-control" data-filter-table-search placeholder="Search endpoint MBeans" aria-label="Search endpoint MBeans">
+                                    </div>
+                                </div>
+                                <div class="cp-data-table-container">
+                                    <table class="table cp-data-table-table cp-data-table-fixed">
+                                        <thead>
+                                        <tr>
+                                            <th>ObjectName</th>
+                                            <th>Endpoint type</th>
+                                            <th>Operations</th>
+                                            <th>Impacts</th>
+                                            <th>Status</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {{#each endpointMBeans as |mbean|}}
+                                            <tr data-filter-table-row>
+                                                <td><code class="cp-table-code">{{mbean.objectName}}</code></td>
+                                                <td><code class="cp-table-code">{{mbean.endpointType}}</code></td>
+                                                <td>{{mbean.operationCount}}</td>
+                                                <td>
+                                                    <span class="badge badge-secondary">INFO {{mbean.infoImpactCount}}</span>
+                                                    <span class="badge badge-secondary">ACTION {{mbean.actionImpactCount}}</span>
+                                                    <span class="badge badge-secondary">ACTION_INFO {{mbean.actionInfoImpactCount}}</span>
+                                                    <span class="badge badge-secondary">UNKNOWN {{mbean.unknownImpactCount}}</span>
+                                                </td>
+                                                <td>
+                                                    {{#if mbean.hasWarning}}
+                                                        <span class="badge badge-secondary">{{mbean.status}}</span>
+                                                        <span>{{mbean.warning}}</span>
+                                                    {{else}}
+                                                        <span class="badge badge-primary">{{mbean.status}}</span>
+                                                    {{/if}}
+                                                </td>
+                                            </tr>
+                                        {{/each}}
+                                        <tr data-filter-table-empty hidden>
+                                            <td class="cp-data-table-empty-cell" colspan="5">No endpoint MBeans found.</td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="cp-data-table-footer">
+                                    <label class="cp-data-table-page-size">
+                                        Rows per page
+                                        <select class="form-control" data-filter-table-page-size-select aria-label="Endpoint MBeans per page">
+                                            <option value="5">5</option>
+                                            <option value="10" selected>10</option>
+                                            <option value="20">20</option>
+                                        </select>
+                                    </label>
+                                    <div class="cp-data-table-pagination">
+                                        <span class="cp-data-table-page" data-filter-table-page>Page 1 of 1</span>
+                                        <button type="button" class="btn btn-secondary btn-sm" data-filter-table-prev>Previous</button>
+                                        <button type="button" class="btn btn-secondary btn-sm" data-filter-table-next>Next</button>
+                                    </div>
+                                </div>
+                            </div>
+                        {{else}}
+                            <div class="cp-data-table-empty">No Micronaut endpoint MBeans are registered under <code>{{endpointDomain}}</code>.</div>
+                        {{/if}}
+                    </div>
+
+                    <div class="tabs-panel" id="panel-jmx-domains" role="tabpanel" aria-labelledby="tab-jmx-domains" data-tabs-panel="jmx-domains" hidden>
+                        {{#if hasDomainSummaries}}
+                            <div class="cp-data-table cp-data-table-paged" data-filter-table data-filter-table-page-size="12" data-filter-table-label="domain" data-filter-table-label-plural="domains">
+                                <div class="cp-data-table-toolbar">
+                                    <div class="cp-data-table-summary" data-filter-table-summary>{{domainCount}} domains</div>
+                                    <div class="cp-data-table-search">
+                                        <input type="text" class="form-control" data-filter-table-search placeholder="Search domains" aria-label="Search JMX domains">
+                                    </div>
+                                </div>
+                                <div class="cp-data-table-container">
+                                    <table class="table cp-data-table-table cp-data-table-fixed">
+                                        <thead>
+                                        <tr>
+                                            <th>Domain</th>
+                                            <th>MBeans</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {{#each domainSummaries as |domain|}}
+                                            <tr data-filter-table-row>
+                                                <td><code class="cp-table-code">{{domain.domain}}</code></td>
+                                                <td>{{domain.mBeanCount}}</td>
+                                            </tr>
+                                        {{/each}}
+                                        <tr data-filter-table-empty hidden>
+                                            <td class="cp-data-table-empty-cell" colspan="2">No domains found.</td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="cp-data-table-footer">
+                                    <label class="cp-data-table-page-size">
+                                        Rows per page
+                                        <select class="form-control" data-filter-table-page-size-select aria-label="JMX domains per page">
+                                            <option value="8">8</option>
+                                            <option value="12" selected>12</option>
+                                            <option value="20">20</option>
+                                        </select>
+                                    </label>
+                                    <div class="cp-data-table-pagination">
+                                        <span class="cp-data-table-page" data-filter-table-page>Page 1 of 1</span>
+                                        <button type="button" class="btn btn-secondary btn-sm" data-filter-table-prev>Previous</button>
+                                        <button type="button" class="btn btn-secondary btn-sm" data-filter-table-next>Next</button>
+                                    </div>
+                                </div>
+                            </div>
+                        {{else}}
+                            <div class="cp-data-table-empty">No JMX domains could be read.</div>
+                        {{/if}}
+                    </div>
+
+                    <div class="tabs-panel" id="panel-jmx-details" role="tabpanel" aria-labelledby="tab-jmx-details" data-tabs-panel="jmx-details" hidden>
+                        {{#if hasEndpointMBeans}}
+                            <div class="cp-dashboard-stack">
+                                {{#each endpointMBeans as |mbean|}}
+                                    <div class="card card-light">
+                                        <div class="card-header">
+                                            <div class="cp-card-heading">
+                                                <div class="cp-card-header-text">
+                                                    <h3 class="card-title"><code class="cp-table-code">{{mbean.endpointType}}</code></h3>
+                                                    <div class="card-description"><code class="cp-table-code">{{mbean.objectName}}</code></div>
+                                                </div>
+                                            </div>
+                                            <div class="card-tools">
+                                                <span class="badge badge-secondary">{{mbean.operationCount}} operations</span>
+                                                <span class="badge badge-secondary">{{mbean.attributeCount}} attributes</span>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            {{#if mbean.hasWarning}}
+                                                <p>{{mbean.warning}}</p>
+                                            {{/if}}
+                                            {{#if mbean.hasOperations}}
+                                                <div class="cp-data-table-container">
+                                                    <table class="table cp-data-table-table cp-data-table-fixed">
+                                                        <thead>
+                                                        <tr>
+                                                            <th>Operation</th>
+                                                            <th>Return type</th>
+                                                            <th>Impact</th>
+                                                            <th>Signature</th>
+                                                        </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                        {{#each mbean.operations as |operation|}}
+                                                            <tr>
+                                                                <td><code class="cp-table-code">{{operation.name}}</code></td>
+                                                                <td><code class="cp-table-code">{{operation.returnType}}</code></td>
+                                                                <td><span class="badge badge-secondary">{{operation.impact}}</span></td>
+                                                                <td>
+                                                                    {{#if operation.hasParameters}}
+                                                                        {{#each operation.parameters as |parameter|}}
+                                                                            <code class="cp-table-code">{{parameter.type}} {{parameter.name}}</code>
+                                                                        {{/each}}
+                                                                    {{else}}
+                                                                        <span class="badge badge-secondary">no parameters</span>
+                                                                    {{/if}}
+                                                                </td>
+                                                            </tr>
+                                                        {{/each}}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            {{else}}
+                                                <p>No operation metadata is available for this MBean.</p>
+                                            {{/if}}
+
+                                            {{#if mbean.hasAttributes}}
+                                                <h4 class="cp-detail-section-title">Attributes</h4>
+                                                <div class="cp-data-table-container">
+                                                    <table class="table cp-data-table-table cp-data-table-fixed">
+                                                        <thead>
+                                                        <tr>
+                                                            <th>Attribute</th>
+                                                            <th>Type</th>
+                                                            <th>Readable</th>
+                                                            <th>Writable</th>
+                                                        </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                        {{#each mbean.attributes as |attribute|}}
+                                                            <tr>
+                                                                <td><code class="cp-table-code">{{attribute.name}}</code></td>
+                                                                <td><code class="cp-table-code">{{attribute.type}}</code></td>
+                                                                <td>{{attribute.readable}}</td>
+                                                                <td>{{attribute.writable}}</td>
+                                                            </tr>
+                                                        {{/each}}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            {{/if}}
+                                        </div>
+                                    </div>
+                                {{/each}}
+                            </div>
+                        {{else}}
+                            <div class="cp-data-table-empty">No Micronaut endpoint MBean metadata is available.</div>
+                        {{/if}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{{/with}}
