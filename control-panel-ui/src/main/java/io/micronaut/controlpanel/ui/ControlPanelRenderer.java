@@ -28,18 +28,29 @@ import java.io.IOException;
  */
 @Internal
 @Singleton
-final class ControlPanelRenderer {
+public final class ControlPanelRenderer {
     private static final String LAYOUT_TEMPLATE = "controlpanelviews/layout";
 
     private final Handlebars handlebars;
 
-    ControlPanelRenderer(@Named("controlPanel") Handlebars handlebars) {
+    public ControlPanelRenderer(@Named("controlPanel") Handlebars handlebars) {
         this.handlebars = handlebars;
     }
 
     String render(Model model) {
+        return render(LAYOUT_TEMPLATE, model);
+    }
+
+    /**
+     * Renders a bundled Control Panel Handlebars template.
+     *
+     * @param template The classpath-relative template name without the {@code .hbs} suffix
+     * @param model The data model supplied to the template
+     * @return The rendered HTML
+     */
+    public String render(String template, Object model) {
         try {
-            return handlebars.compile(LAYOUT_TEMPLATE).apply(model);
+            return handlebars.compile(template).apply(model);
         } catch (IOException e) {
             throw new IllegalStateException("Unable to render the control panel", e);
         }

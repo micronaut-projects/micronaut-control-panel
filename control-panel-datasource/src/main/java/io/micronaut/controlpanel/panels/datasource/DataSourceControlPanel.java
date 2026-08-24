@@ -19,6 +19,7 @@ import io.micronaut.context.annotation.EachBean;
 import io.micronaut.context.annotation.Parameter;
 import io.micronaut.context.env.Environment;
 import io.micronaut.controlpanel.core.AbstractEachBeanControlPanel;
+import io.micronaut.controlpanel.core.ControlPanel.View;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.controlpanel.panels.datasource.model.Body;
 import io.micronaut.controlpanel.panels.datasource.model.DataSourceInfo;
@@ -105,6 +106,16 @@ public class DataSourceControlPanel extends AbstractEachBeanControlPanel<Body> {
     @Override
     public String getDetailLinkName() {
         return "Detail";
+    }
+
+    @Override
+    public View getBodyView() {
+        return new View("/controlpanelviews/datasource/body");
+    }
+
+    @Override
+    public View getDetailedView() {
+        return new View("/controlpanelviews/datasource/detail");
     }
 
     private static String safeUrl(String url) {
