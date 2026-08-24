@@ -32,7 +32,9 @@ dependencies {
     compileOnly(mnSql.micronaut.jdbc.ucp)
 
     testImplementation(mnTest.micronaut.test.junit5)
-    testImplementation(mnViews.handlebars)
+    testImplementation(mnViews.handlebars) {
+        exclude(group = "org.openjdk.nashorn", module = "nashorn-core")
+    }
     testRuntimeOnly(mn.micronaut.management)
     testRuntimeOnly(mnTest.junit.jupiter.engine)
 
