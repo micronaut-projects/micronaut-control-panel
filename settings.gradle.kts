@@ -24,6 +24,7 @@ include("control-panel-ui")
 include("control-panel-kafka")
 
 include("doc-examples:example-java")
+include("test-suite-thymeleaf")
 
 // May be a no-op or deprecated depending on Gradle version; kept to preserve behavior from Groovy DSL
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
