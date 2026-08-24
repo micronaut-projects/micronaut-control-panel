@@ -1,0 +1,16 @@
+{{#with controlPanel.body }}
+
+    {{> "controlpanelviews/datasource/detail-scripts" }}
+
+    <div class="cp-datasource-page">
+        <div class="tabs cp-datasource-tabs" data-tabs data-datasource-tabs>
+            {{> "controlpanelviews/datasource/detail-tabs" }}
+            {{> "controlpanelviews/datasource/detail-tables-panel" }}
+            {{> "controlpanelviews/datasource/detail-query-panel" }}
+            {{#if poolInfo}}
+                {{> "controlpanelviews/datasource/detail-pool-panel" }}
+            {{/if}}
+        </div>
+    </div>
+
+{{/with}}
