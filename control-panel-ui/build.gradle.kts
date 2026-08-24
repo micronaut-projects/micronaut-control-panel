@@ -7,7 +7,7 @@ dependencies {
     api(projects.micronautControlPanelCore)
     // The Control Panel uses Java helpers and ordinary Handlebars compilation; Nashorn is only
     // required by Handlebars' optional JavaScript helper/precompilation APIs.
-    implementation(mnViews.handlebars)
+    implementation(mnViews.handlebars) {
         exclude(group = "org.openjdk.nashorn", module = "nashorn-core")
     }
     implementation(mn.micronaut.http.server)
