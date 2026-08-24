@@ -5,7 +5,7 @@ plugins {
 
 dependencies {
     api(projects.micronautControlPanelCore)
-    api(mnViews.micronaut.views.handlebars)
+    implementation(mnViews.handlebars)
     implementation(mn.micronaut.http.server)
     compileOnly(mn.micronaut.management)
 
