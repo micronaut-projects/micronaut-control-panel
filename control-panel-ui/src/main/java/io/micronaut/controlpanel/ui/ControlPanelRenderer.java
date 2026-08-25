@@ -52,7 +52,7 @@ public final class ControlPanelRenderer {
         try {
             return handlebars.compile(template).apply(model);
         } catch (IOException e) {
-            throw new IllegalStateException("Unable to render the control panel", e);
+            throw new IllegalStateException("Unable to render the control panel template: " + template, e);
         }
     }
 }
