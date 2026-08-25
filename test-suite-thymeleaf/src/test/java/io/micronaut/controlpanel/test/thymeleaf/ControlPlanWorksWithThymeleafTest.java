@@ -1,4 +1,4 @@
-package io.micronaut.controlpanel.test.thymleaf;
+package io.micronaut.controlpanel.test.thymeleaf;
 
 import io.micronaut.context.env.Environment;
 import io.micronaut.http.HttpRequest;
