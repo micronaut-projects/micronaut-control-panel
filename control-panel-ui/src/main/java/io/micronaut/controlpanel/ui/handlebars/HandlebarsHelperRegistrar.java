@@ -21,13 +21,9 @@ import com.github.jknack.handlebars.cache.HighConcurrencyTemplateCache;
 import com.github.jknack.handlebars.io.TemplateLoader;
 import com.github.jknack.handlebars.helper.ConditionalHelpers;
 import com.github.jknack.handlebars.helper.StringHelpers;
-import io.micronaut.context.event.BeanCreatedEvent;
-import io.micronaut.context.event.BeanCreatedEventListener;
 import io.micronaut.core.annotation.Internal;
 import org.jspecify.annotations.NonNull;
 import io.micronaut.core.util.NativeImageUtils;
-import io.micronaut.views.ViewsConfigurationProperties;
-import jakarta.inject.Singleton;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -55,8 +51,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Internal
-@Singleton
-class HandlebarsHelperRegistrar implements BeanCreatedEventListener<Handlebars> {
+final class HandlebarsHelperRegistrar {
     private static final Logger LOG = LoggerFactory.getLogger(HandlebarsHelperRegistrar.class);
     private static final int BINARY_PREFIX_BASE = 1024;
     private static final Locale BINARY_PREFIX_LOCALE = Locale.ROOT;
@@ -69,15 +64,9 @@ class HandlebarsHelperRegistrar implements BeanCreatedEventListener<Handlebars> 
         "up", "or", "at", "into", "onto", "by", "from", "then", "for", "via", "versus"
     );
 
-    private final ViewsConfigurationProperties viewsConfiguration;
+    private static final String TEMPLATE_PREFIX = "controlpanelviews/";
 
-    HandlebarsHelperRegistrar(final ViewsConfigurationProperties viewsConfiguration) {
-        this.viewsConfiguration = viewsConfiguration;
-    }
-
-    @Override
-    public Handlebars onCreated(@NonNull BeanCreatedEvent<Handlebars> event) {
-        Handlebars handlebars = event.getBean();
+    Handlebars configure(@NonNull Handlebars handlebars) {
         handlebars.registerHelper("binaryPrefix", binaryPrefixHelper());
         handlebars.registerHelper("decamelize", decamelizeHelper());
         handlebars.registerHelper("titleize", titleizeHelper());
@@ -284,7 +273,7 @@ class HandlebarsHelperRegistrar implements BeanCreatedEventListener<Handlebars> 
             return;
         }
         TemplateLoader loader = handlebars.getLoader();
-        String prefix = viewsConfiguration.getFolder();
+        String prefix = TEMPLATE_PREFIX;
         String suffix = loader.getSuffix() != null ? loader.getSuffix() : ".hbs";
 
         Set<String> names = discoverTemplateNames(prefix, suffix);

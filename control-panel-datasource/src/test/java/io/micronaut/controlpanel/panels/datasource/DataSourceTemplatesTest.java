@@ -49,7 +49,7 @@ class DataSourceTemplatesTest {
             ""
         );
 
-        String html = render("views/datasource/detail-tables-panel", model);
+        String html = render("controlpanelviews/datasource/detail-tables-panel", model);
 
         assertTrue(html.contains("id=\"tablesPageContainer\""));
         assertTrue(html.contains("id=\"tableSearch\""));
@@ -72,7 +72,7 @@ class DataSourceTemplatesTest {
             ""
         );
 
-        String html = render("views/datasource/detail-tabs", model);
+        String html = render("controlpanelviews/datasource/detail-tabs", model);
 
         assertTrue(html.contains("aria-controls=\"datasourceTablesTab\""));
         assertTrue(html.contains("aria-controls=\"datasourceQueryTab\""));
@@ -92,7 +92,7 @@ class DataSourceTemplatesTest {
             )
         );
 
-        String html = render("views/datasource/detail-query-panel", model);
+        String html = render("controlpanelviews/datasource/detail-query-panel", model);
 
         assertTrue(html.contains("id=\"executeQuery\" title=\"" + reason + "\" disabled aria-disabled=\"true\""));
         assertTrue(html.contains("<strong>Query execution disabled</strong>"));
@@ -109,8 +109,8 @@ class DataSourceTemplatesTest {
             poolInfo()
         );
 
-        String tabs = render("views/datasource/detail-tabs", model);
-        String panel = render("views/datasource/detail-pool-panel", model);
+        String tabs = render("controlpanelviews/datasource/detail-tabs", model);
+        String panel = render("controlpanelviews/datasource/detail-pool-panel", model);
 
         assertTrue(tabs.contains("aria-controls=\"datasourcePoolTab\""));
         assertTrue(panel.contains("id=\"poolStatusCardContainer\""));
@@ -128,7 +128,7 @@ class DataSourceTemplatesTest {
 
     @Test
     void poolStatusCardRendersRefreshableMetrics() throws IOException {
-        String html = render("views/datasource/detail-pool-status-card", poolInfo());
+        String html = render("controlpanelviews/datasource/detail-pool-status-card", poolInfo());
 
         assertTrue(html.contains("data-pool-status-refresh"));
         assertTrue(html.contains("aria-label=\"Refresh connection pool status\""));
@@ -173,7 +173,7 @@ class DataSourceTemplatesTest {
             true
         );
 
-        String html = render("views/datasource/detail-tables-page", page);
+        String html = render("controlpanelviews/datasource/detail-tables-page", page);
 
         assertTrue(html.contains("data-table-row data-table-schema=\"public\" data-table-name=\"department\""));
         assertTrue(html.contains("data-table-row data-table-schema=\"public\" data-table-name=\"audit_log\""));
@@ -205,7 +205,7 @@ class DataSourceTemplatesTest {
             "erDiagram\n  public_employee }o--|| public_department : \"fk_employee_department\""
         );
 
-        String html = render("views/datasource/detail-table-detail", model);
+        String html = render("controlpanelviews/datasource/detail-table-detail", model);
 
         assertTrue(html.contains("data-table-select-sql=\"SELECT * FROM public.employee\""));
         assertTrue(html.contains("data-table-json-sql=\"SELECT to_json(x) AS json FROM public.employee x\""));
@@ -234,7 +234,7 @@ class DataSourceTemplatesTest {
             "erDiagram\n  public_audit_log"
         );
 
-        String html = render("views/datasource/detail-table-detail", model);
+        String html = render("controlpanelviews/datasource/detail-table-detail", model);
 
         assertTrue(html.contains("data-table-json-sql=\"SELECT to_json(x) AS json FROM public.audit_log x\""));
         assertFalse(html.contains("data-table-relationship-json-sql"));

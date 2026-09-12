@@ -20,11 +20,11 @@ import io.micronaut.context.BeanLocator;
 import io.micronaut.context.annotation.Property;
 import io.micronaut.context.env.Environment;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
+import io.micronaut.controlpanel.ui.ControlPanelRenderer;
 import io.micronaut.core.type.Argument;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.json.JsonMapper;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
-import io.micronaut.views.ModelAndView;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static io.micronaut.controlpanel.panels.datasource.DataSourceController.PANEL_ARGUMENT;
 import static io.micronaut.controlpanel.panels.datasource.DataSourceController.SERVICE_ARGUMENT;
@@ -44,7 +45,9 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.ArgumentMatchers.any;
 
 @MicronautTest(transactional = false)
 @Property(name = "datasources.relationship-json-oracle.db-type", value = "oracle")
@@ -215,18 +218,21 @@ class DataSourceOracleRelationshipJsonQueryIntegrationTest {
         var beanLocator = mock(BeanLocator.class);
         doReturn(Map.of(DATA_SOURCE, dataSourceService)).when(beanLocator).mapOfType(SERVICE_ARGUMENT);
         doReturn(Map.of(DATA_SOURCE, panel)).when(beanLocator).mapOfType(PANEL_ARGUMENT);
-        var controller = new DataSourceController(beanLocator, jsonMapper);
+        var renderedModel = new AtomicReference<Object>();
+        var renderer = mock(ControlPanelRenderer.class);
+        doAnswer(invocation -> {
+            renderedModel.set(invocation.getArgument(1));
+            return "";
+        }).when(renderer).render(any(), any());
+        var controller = new DataSourceController(beanLocator, jsonMapper, renderer);
         var response = controller.tableDetail(DATA_SOURCE, table.schema(), table.name());
         assertEquals(HttpResponse.ok().getStatus(), response.getStatus());
-        return tableDetail(response);
+        return tableDetail(response, renderedModel.get());
     }
 
-    private DataSourceController.TableDetail tableDetail(HttpResponse<?> response) {
-        var body = response.body();
-        assertTrue(body instanceof ModelAndView<?>);
-        var modelAndView = (ModelAndView<?>) body;
-        assertEquals("datasource/detail-table-detail", modelAndView.getView().orElseThrow());
-        return (DataSourceController.TableDetail) modelAndView.getModel().orElseThrow();
+    private DataSourceController.TableDetail tableDetail(HttpResponse<?> response, Object renderedModel) {
+        assertEquals("", response.body());
+        return assertInstanceOf(DataSourceController.TableDetail.class, renderedModel);
     }
 
     private Map<String, Object> findJsonRow(DataSourceService.QueryResult result, String key, String value) throws IOException {

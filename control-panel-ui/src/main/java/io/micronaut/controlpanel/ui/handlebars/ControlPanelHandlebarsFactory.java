@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2025 original authors
+ * Copyright 2017-2026 original authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,21 @@
 package io.micronaut.controlpanel.ui.handlebars;
 
 import com.github.jknack.handlebars.Handlebars;
-import com.github.jknack.handlebars.cache.HighConcurrencyTemplateCache;
-import org.junit.jupiter.api.Test;
+import io.micronaut.context.annotation.Factory;
+import io.micronaut.core.annotation.Internal;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 
-import static org.junit.jupiter.api.Assertions.*;
+/**
+ * Creates the Handlebars instance used exclusively by the control panel.
+ */
+@Internal
+@Factory
+final class ControlPanelHandlebarsFactory {
 
-class HandlebarsCacheConfigTest {
-
-    @Test
-    void configuresHighConcurrencyTemplateCacheOnHandlebarsInstance() {
-        HandlebarsHelperRegistrar registrar = new HandlebarsHelperRegistrar();
-
-        Handlebars handlebars = new Handlebars();
-        registrar.configure(handlebars);
-
-        assertTrue(handlebars.getCache() instanceof HighConcurrencyTemplateCache);
+    @Singleton
+    @Named("controlPanel")
+    Handlebars handlebars() {
+        return new HandlebarsHelperRegistrar().configure(new Handlebars());
     }
 }
