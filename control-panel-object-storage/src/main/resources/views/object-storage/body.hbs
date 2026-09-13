@@ -1,5 +1,12 @@
 {{#with controlPanel.body }}
-    <p class="card-text">
-        {{entries.size}} files stored.
-    </p>
+    {{#if error }}
+        <p class="card-text">
+            <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
+            Unable to list files: {{ error }}
+        </p>
+    {{else}}
+        <p class="card-text">
+            {{entries.size}} files stored.
+        </p>
+    {{/if}}
 {{/with}}
