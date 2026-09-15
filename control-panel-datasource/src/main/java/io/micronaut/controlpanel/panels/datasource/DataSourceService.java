@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2025 original authors
+ * Copyright 2017-2026 original authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import io.micronaut.controlpanel.panels.datasource.model.ForeignKey;
 import io.micronaut.controlpanel.panels.datasource.model.JdbcInfo;
 import io.micronaut.controlpanel.panels.datasource.model.PoolInfo;
 import io.micronaut.controlpanel.panels.datasource.model.Table;
-import io.micronaut.data.connection.jdbc.advice.DelegatingDataSource;
 import io.micronaut.serde.annotation.Serdeable;
 import jakarta.inject.Inject;
 import org.jspecify.annotations.NonNull;
@@ -62,9 +61,24 @@ public class DataSourceService {
     private final DataSource dataSource;
     private final List<ConnectionPoolInspector> connectionPoolInspectors;
 
+    /**
+     * Unwraps the datasource when a {@link DataSourceUnwrapper} is available, so that
+     * micronaut-data is not forced onto consumers.
+     *
+     * @param dataSource the datasource this service inspects
+     * @param unwrapper optional unwrapper, absent when no unwrapping strategy is on the classpath
+     * @param connectionPoolInspectors inspectors contributing connection pool metadata
+     * @since 2.0.1
+     */
     @Inject
+    public DataSourceService(@Parameter DataSource dataSource,
+                             @Nullable DataSourceUnwrapper unwrapper,
+                             List<ConnectionPoolInspector> connectionPoolInspectors) {
+        this(unwrapper == null ? dataSource : unwrapper.unwrap(dataSource), connectionPoolInspectors);
+    }
+
     public DataSourceService(@Parameter DataSource dataSource, List<ConnectionPoolInspector> connectionPoolInspectors) {
-        this.dataSource = DelegatingDataSource.unwrapDataSource(dataSource);
+        this.dataSource = dataSource;
         this.connectionPoolInspectors = connectionPoolInspectors;
     }
 
