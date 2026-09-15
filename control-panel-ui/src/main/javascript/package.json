@@ -7,7 +7,7 @@
     "@codemirror/view": "^6.26.0",
     "@codemirror/state": "^6.4.1",
     "@codemirror/lang-sql": "^6.8.0",
-    "@marimo-team/codemirror-sql": "^0.2.4"
+    "@marimo-team/codemirror-sql": "^0.3.0"
   },
   "devDependencies": {
     "rollup": "^4.12.0",
