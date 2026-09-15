@@ -18,6 +18,7 @@ package io.micronaut.controlpanel.panels.cache;
 import io.micronaut.cache.caffeine.DefaultSyncCache;
 import io.micronaut.context.annotation.EachBean;
 import io.micronaut.context.annotation.Parameter;
+import io.micronaut.context.annotation.Requires;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import jakarta.inject.Named;
 
@@ -31,6 +32,7 @@ import java.util.Optional;
  * @author Álvaro Sánchez-Mariscal
  * @since 2.0.0
  */
+@Requires(classes = DefaultSyncCache.class)
 @EachBean(DefaultSyncCache.class)
 public class CaffeineCacheControlPanel extends AbstractCacheControlPanel<DefaultSyncCache> {
 
