@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2025 original authors
+ * Copyright 2017-2026 original authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,8 @@ final class HikariConnectionPoolInspector implements ConnectionPoolInspector {
 
     @Override
     public Optional<PoolInfo> inspect(DataSource dataSource) {
-        if (!(dataSource instanceof HikariDataSource hikariDataSource)) {
+        HikariDataSource hikariDataSource = PoolInfoSupport.unwrap(dataSource, HikariDataSource.class);
+        if (hikariDataSource == null) {
             return Optional.empty();
         }
         var poolMxBean = hikariDataSource.getHikariPoolMXBean();
