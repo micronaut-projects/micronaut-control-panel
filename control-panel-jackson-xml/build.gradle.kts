@@ -18,5 +18,5 @@ dependencies {
 }
 
 micronautBuild {
-    binaryCompatibility.enabledAfter("2.0.1")
+    binaryCompatibility.enabledAfter("2.1.1")
 }
