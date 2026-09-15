@@ -18,6 +18,7 @@ package io.micronaut.controlpanel.panels.cache;
 import io.micronaut.cache.ehcache.EhcacheSyncCache;
 import io.micronaut.context.annotation.EachBean;
 import io.micronaut.context.annotation.Parameter;
+import io.micronaut.context.annotation.Requires;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import jakarta.inject.Named;
 import org.ehcache.Cache;
@@ -33,6 +34,7 @@ import java.util.stream.StreamSupport;
  * @author Álvaro Sánchez-Mariscal
  * @since 2.0.0
  */
+@Requires(classes = EhcacheSyncCache.class)
 @EachBean(EhcacheSyncCache.class)
 public class EhcacheControlPanel extends AbstractCacheControlPanel<EhcacheSyncCache> {
 
