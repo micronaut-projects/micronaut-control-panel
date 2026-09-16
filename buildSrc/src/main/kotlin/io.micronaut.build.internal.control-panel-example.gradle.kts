@@ -7,6 +7,7 @@ plugins {
     id("io.micronaut.test-resources")
     id("com.gradleup.shadow")
     id("com.adarshr.test-logger")
+    id("io.micronaut.build.internal.control-panel-dependency-rules")
 }
 
 application {
