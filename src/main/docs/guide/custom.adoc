@@ -61,6 +61,10 @@ For rendering the views, the Control Panel uses
 https://micronaut-projects.github.io/micronaut-views/latest/guide/[Micronaut Views] with
 https://micronaut-projects.github.io/micronaut-views/latest/guide/#handlebars[Handlebars.java] templates.
 
+The Control Panel uses Java helpers and ordinary Handlebars template rendering, so it excludes the optional Nashorn
+JavaScript engine from its dependency graph. If your application registers Handlebars JavaScript helpers or uses
+Handlebars' JavaScript precompilation APIs, declare `org.openjdk.nashorn:nashorn-core` explicitly.
+
 Each control panel needs to provide two views: one for the control panel list, that can contain a summary of the
 information to be displayed, and another one for the detailed view. They must be placed in a `views/<panel-name>` directory
 on the classpath, and named `body.hbs` and `detail.hbs`, respectively. For example, in the above example:
