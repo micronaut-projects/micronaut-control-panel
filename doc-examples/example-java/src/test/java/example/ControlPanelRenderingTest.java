@@ -36,4 +36,13 @@ class ControlPanelRenderingTest {
             assertTrue(body.contains("Show stack trace"));
         }
     }
+
+    @Test
+    void rendersThreadDumpDashboardCard(@Client("/") HttpClient client) {
+        var body = client.toBlocking().retrieve(HttpRequest.GET("/control-panel"));
+
+        // This application keeps the default ThreadInfoMapper, so the card carries the cheap summary. An application
+        // that replaces the mapper gets a count-free card instead; see ThreadDumpControlPanelTest.
+        assertTrue(body.contains("threads in the current JVM snapshot."));
+    }
 }

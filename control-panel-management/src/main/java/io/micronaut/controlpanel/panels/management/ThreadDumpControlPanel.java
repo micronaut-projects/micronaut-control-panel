@@ -22,6 +22,7 @@ import io.micronaut.core.annotation.ReflectiveAccess;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.management.endpoint.threads.ThreadDumpEndpoint;
 import io.micronaut.management.endpoint.threads.ThreadInfoMapper;
+import io.micronaut.management.endpoint.threads.impl.DefaultThreadInfoMapper;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
@@ -49,6 +50,13 @@ import java.util.Objects;
  * emit something other than {@link ThreadInfo} cannot be rendered as thread rows; in that case the panel reports the
  * number of entries the mapper emitted and displays no thread details.</p>
  *
+ * <p>The detail view feeds the mapper exactly what {@link ThreadDumpEndpoint} feeds it: a full dump including stack
+ * traces, locked monitors and locked synchronizers. The dashboard card deliberately does not collect those details on
+ * every landing page visit, and a mapper is never invoked on that cheaper, truncated data: a mapper is free to filter on
+ * stack frames or lock ownership, and truncated input would silently change or break it. So the dashboard summary is
+ * only computed when the framework's own pass-through {@link DefaultThreadInfoMapper} is configured. Any other mapper
+ * gets a count-free card and no badge, and runs only on the detail view's full dump.</p>
+ *
  * @author Álvaro Sánchez-Mariscal
  * @since 2.2.0
  */
@@ -75,6 +83,7 @@ public class ThreadDumpControlPanel extends AbstractControlPanel<ThreadDumpContr
 
     private final ThreadInfoMapper<?> threadInfoMapper;
     private final ThreadInfoSource threadInfoSource;
+    private final boolean summaryCapableMapper;
 
     @Inject
     public ThreadDumpControlPanel(@Named(NAME) ControlPanelConfiguration configuration, ThreadInfoMapper<?> threadInfoMapper) {
@@ -85,17 +94,27 @@ public class ThreadDumpControlPanel extends AbstractControlPanel<ThreadDumpContr
         super(NAME, configuration);
         this.threadInfoMapper = threadInfoMapper;
         this.threadInfoSource = threadInfoSource;
+        // Exact type on purpose: a subclass may override mapThreadInfo, and only the framework's own pass-through
+        // mapper is known to behave identically on a dump collected without stack traces, monitors and synchronizers.
+        this.summaryCapableMapper = threadInfoMapper.getClass() == DefaultThreadInfoMapper.class;
     }
 
     /**
-     * Summary shown on the dashboard card. It never collects stack traces, monitors or synchronizers.
+     * Summary shown on the dashboard card. It never collects stack traces, monitors or synchronizers, so it is only
+     * computed when the configured {@link ThreadInfoMapper} is the framework default. With any other mapper the card
+     * carries no counts and the mapper is left for the detail view, which supplies it a full dump.
      *
      * @return the thread state summary.
      */
     @Override
     public Body getBody() {
+        if (!summaryCapableMapper) {
+            return Body.summaryUnavailable();
+        }
         ThreadDump summary = collect(false);
-        return new Body(summary.totalThreads(), summary.stateCounts(), summary.unsupportedMapper());
+        return summary.unsupportedMapper()
+            ? Body.summaryUnavailable()
+            : new Body(true, summary.totalThreads(), summary.stateCounts());
     }
 
     /**
@@ -111,7 +130,8 @@ public class ThreadDumpControlPanel extends AbstractControlPanel<ThreadDumpContr
 
     @Override
     public String getBadge() {
-        return String.valueOf(collect(false).totalThreads());
+        Body body = getBody();
+        return body.summaryAvailable() ? String.valueOf(body.totalThreads()) : StringUtils.EMPTY_STRING;
     }
 
     private ThreadDump collect(boolean withDetails) {
@@ -195,13 +215,19 @@ public class ThreadDumpControlPanel extends AbstractControlPanel<ThreadDumpContr
     /**
      * Rendering model of the dashboard card. Internal to the Thread Dump panel views.
      *
-     * @param totalThreads number of entries the configured {@link ThreadInfoMapper} emitted.
-     * @param stateCounts counts per thread state, in diagnostic order; empty when the mapper output is unsupported.
-     * @param unsupportedMapper whether the configured mapper emitted a shape this panel cannot render.
+     * @param summaryAvailable whether a thread summary could be computed without collecting a full dump.
+     * @param totalThreads number of entries the configured {@link ThreadInfoMapper} emitted; {@code 0} when
+     *     {@code summaryAvailable} is {@code false}.
+     * @param stateCounts counts per thread state, in diagnostic order; empty when {@code summaryAvailable} is
+     *     {@code false}.
      * @since 2.2.0
      */
     @ReflectiveAccess
-    public record Body(int totalThreads, List<StateCount> stateCounts, boolean unsupportedMapper) {
+    public record Body(boolean summaryAvailable, int totalThreads, List<StateCount> stateCounts) {
+
+        static Body summaryUnavailable() {
+            return new Body(false, 0, List.of());
+        }
     }
 
     /**

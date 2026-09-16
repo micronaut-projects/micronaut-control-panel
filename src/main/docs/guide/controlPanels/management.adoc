@@ -250,8 +250,14 @@ actions. Use it as a trusted development/test diagnostics view, not as a product
 The panel reads thread data through the application's
 https://docs.micronaut.io/latest/api/io/micronaut/management/endpoint/threads/ThreadInfoMapper.html[`ThreadInfoMapper`]
 bean, which is the same extension point the `/threaddump` endpoint uses. If you replace the default mapper to filter or
-redact threads, the panel shows exactly what your mapper emits: the summary counts, the state badges, the card badge and
-the thread table all reflect the mapped result, and threads your mapper drops never reach the UI.
+redact threads, the panel shows exactly what your mapper emits, and threads your mapper drops never reach the UI.
+
+Your mapper is always given the same input the `/threaddump` endpoint gives it: a full dump including stack traces,
+locked monitors and locked synchronizers. That matters because a mapper may filter on any of those. The dashboard card,
+however, does not collect a full dump on every Control Panel landing page visit, so with a replaced mapper it cannot
+produce counts your mapper would agree with. In that case the card shows no counts and the panel shows no card badge;
+open the panel to see the mapped dump. Only the framework's default pass-through mapper keeps the summary counts, the
+state badges and the card badge on the dashboard.
 
 A mapper that emits something other than `java.lang.management.ThreadInfo` describes a shape the panel cannot render. In
 that case the panel reports how many entries the mapper emitted, displays no thread details, and never falls back to the

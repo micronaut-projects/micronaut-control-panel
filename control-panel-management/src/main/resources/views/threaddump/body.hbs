@@ -1,18 +1,21 @@
 {{#with controlPanel.body }}
-    <p class="card-text">
-        <strong>{{totalThreads}}</strong> threads in the current JVM snapshot.
-    </p>
-    {{#if stateCounts}}
+    {{#if summaryAvailable}}
         <p class="card-text">
-            {{#each stateCounts}}
-                <span class="badge {{badgeClass}}">{{state}}: {{count}}</span>
-            {{/each}}
+            <strong>{{totalThreads}}</strong> threads in the current JVM snapshot.
         </p>
-    {{else}}
-        {{#if unsupportedMapper}}
-            <p class="card-text">A custom ThreadInfoMapper is configured, so thread details are not shown.</p>
+        {{#if stateCounts}}
+            <p class="card-text">
+                {{#each stateCounts}}
+                    <span class="badge {{badgeClass}}">{{state}}: {{count}}</span>
+                {{/each}}
+            </p>
         {{else}}
             <p class="card-text">No threads were returned by the Thread Dump endpoint.</p>
         {{/if}}
+    {{else}}
+        <p class="card-text">
+            A custom ThreadInfoMapper is configured, so no summary is computed here. Open the panel to run it against a
+            full thread dump.
+        </p>
     {{/if}}
 {{/with}}

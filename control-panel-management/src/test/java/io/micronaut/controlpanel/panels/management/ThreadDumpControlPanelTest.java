@@ -20,6 +20,7 @@ import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.inject.qualifiers.Qualifiers;
 import io.micronaut.management.endpoint.threads.ThreadDumpEndpoint;
 import io.micronaut.management.endpoint.threads.ThreadInfoMapper;
+import io.micronaut.management.endpoint.threads.impl.DefaultThreadInfoMapper;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 
@@ -29,6 +30,7 @@ import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -48,6 +50,7 @@ class ThreadDumpControlPanelTest {
             assertEquals("Thread Dump", panel.getTitle());
             assertEquals("fa-list-check", panel.getIcon());
             assertEquals(50, panel.getOrder());
+            assertTrue(panel.getBody().summaryAvailable(), "The framework default mapper must keep the dashboard summary");
             assertFalse(panel.getBody().stateCounts().isEmpty());
             assertFalse(panel.getThreadDump().threads().isEmpty());
             assertTrue(Integer.parseInt(panel.getBadge()) > 0);
@@ -118,12 +121,55 @@ class ThreadDumpControlPanelTest {
             assertEquals(List.of(PARKED_THREAD_NAME), dump.threads().stream().map(ThreadDumpControlPanel.ThreadRow::threadName).toList());
             assertEquals(1, dump.totalThreads());
 
-            // The dashboard summary and the badge go through the very same mapper.
+            // The dashboard never reports counts a custom mapper did not produce, so it reports none at all.
             ThreadDumpControlPanel.Body body = filtered.getBody();
-            assertEquals(1, body.totalThreads());
-            assertEquals(1, body.stateCounts().size());
-            assertEquals(1, body.stateCounts().get(0).count());
-            assertEquals("1", filtered.getBadge());
+            assertFalse(body.summaryAvailable());
+            assertEquals(0, body.totalThreads());
+            assertTrue(body.stateCounts().isEmpty());
+            assertEquals("", filtered.getBadge());
+        });
+    }
+
+    @Test
+    void aStackFrameFilteringMapperIsNeverGivenATruncatedDump() throws InterruptedException {
+        withParkedThread(() -> {
+            // Selects the parked thread, then keeps it only if this test class appears in its stack. That decision is
+            // meaningless unless the mapper is handed the stack frames, which the cheap dashboard dump does not carry.
+            ThreadInfoMapper<ThreadInfo> stackFrameFilter = publisher -> Flux.from(publisher)
+                .filter(info -> PARKED_THREAD_NAME.equals(info.getThreadName()))
+                .filter(info -> Arrays.stream(info.getStackTrace())
+                    .anyMatch(frame -> ThreadDumpControlPanelTest.class.getName().equals(frame.getClassName())));
+            ThreadDumpControlPanel panel = panel(stackFrameFilter, ThreadDumpControlPanelTest::dump);
+
+            assertEquals(List.of(PARKED_THREAD_NAME), threadNames(panel), "The detail view must see the mapper's selection");
+            assertEquals(List.of(PARKED_THREAD_NAME), threadNames(panel), "A refresh must see the same selection");
+
+            // Before the fix these reported every thread in the JVM, because the truncated dump carried no frames for
+            // the mapper to reject on.
+            ThreadDumpControlPanel.Body body = panel.getBody();
+            assertFalse(body.summaryAvailable());
+            assertEquals(0, body.totalThreads());
+            assertTrue(body.stateCounts().isEmpty());
+            assertEquals("", panel.getBadge());
+        });
+    }
+
+    @Test
+    void aMapperThatDereferencesStackFramesDoesNotBreakTheDashboard() throws InterruptedException {
+        withParkedThread(() -> {
+            // Indexing into the stack trace throws on a dump collected without frames.
+            ThreadInfoMapper<ThreadInfo> topFrameFilter = publisher -> Flux.from(publisher)
+                .filter(info -> PARKED_THREAD_NAME.equals(info.getThreadName()))
+                .filter(info -> !info.getStackTrace()[0].getClassName().isEmpty());
+            ThreadDumpControlPanel panel = panel(topFrameFilter, ThreadDumpControlPanelTest::dump);
+
+            assertDoesNotThrow(panel::getBody, "The dashboard card must not propagate a mapper failure");
+            assertDoesNotThrow(panel::getBadge, "The dashboard badge must not propagate a mapper failure");
+            assertFalse(panel.getBody().summaryAvailable());
+            assertEquals("", panel.getBadge());
+
+            // The very same mapper still works on the detail view, which always supplies a full dump.
+            assertEquals(List.of(PARKED_THREAD_NAME), threadNames(panel));
         });
     }
 
@@ -140,8 +186,9 @@ class ThreadDumpControlPanelTest {
         assertTrue(dump.totalThreads() > 0);
 
         ThreadDumpControlPanel.Body body = panel.getBody();
-        assertTrue(body.unsupportedMapper());
+        assertFalse(body.summaryAvailable());
         assertTrue(body.stateCounts().isEmpty());
+        assertEquals("", panel.getBadge());
     }
 
     @Test
@@ -172,6 +219,7 @@ class ThreadDumpControlPanelTest {
         var template = readTemplate("/views/threaddump/body.hbs");
 
         assertTrue(template.contains("controlPanel.body"));
+        assertTrue(template.contains("summaryAvailable"));
         assertFalse(template.contains("controlPanel.threadDump"));
         assertFalse(template.contains("{{#each threads"));
         assertFalse(template.contains("stackTrace"));
@@ -201,7 +249,8 @@ class ThreadDumpControlPanelTest {
     }
 
     private static ThreadInfoMapper<ThreadInfo> passThroughMapper() {
-        return publisher -> publisher;
+        // The framework default, not an equivalent lambda: the panel only trusts that exact type with a summary dump.
+        return new DefaultThreadInfoMapper();
     }
 
     private static List<String> threadNames(ThreadDumpControlPanel panel) {
