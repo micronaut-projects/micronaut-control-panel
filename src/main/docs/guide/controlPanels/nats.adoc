@@ -21,7 +21,8 @@ Control Panel creates one NATS panel per named connection and shows:
 * Micronaut NATS listener ids with their registered subjects and queue groups when the `ConsumerRegistry` is available.
 
 Credential-bearing server URLs are redacted before rendering.
-The panel removes URL user-info and redacts obvious password, token, credential, secret, JWT, and NKey values from error text and other diagnostic strings.
+Every rendered string, including free-form NATS and JetStream error text such as the client's last error, goes through the same sanitizer.
+It removes URL user-info wherever it appears, including inside a longer error message, and redacts obvious password, token, credential, secret, seed, JWT, and NKey values, credential file paths, and secret-like query parameters.
 
 == JetStream Diagnostics
 

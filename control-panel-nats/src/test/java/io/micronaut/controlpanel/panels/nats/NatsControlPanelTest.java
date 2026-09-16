@@ -50,6 +50,9 @@ import static org.mockito.Mockito.when;
 
 final class NatsControlPanelTest {
 
+    private static final String NKEY_SEED = "SU" + "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567".repeat(2);
+    private static final String USER_JWT = "eyJhbGciOiJlZDI1NTE5LW5rZXkifQ.eyJzdWIiOiJ0ZXN0In0.c2lnbmF0dXJlLXZhbHVl";
+
     @Test
     void rendersConnectionListenersAndJetStreamSummaries() throws Exception {
         BeanContext beanContext = mock(BeanContext.class);
@@ -117,8 +120,47 @@ final class NatsControlPanelTest {
     @Test
     void redactsCredentialBearingUrlsAndText() {
         assertEquals("nats://***@localhost:4222", NatsControlPanel.redactUrl("nats://user:password@localhost:4222?token=secret"));
-        assertEquals("credential=[redacted] failed", NatsControlPanel.redactText("credential=/home/me/.nats/creds failed"));
-        assertNull(NatsControlPanel.redactText(null));
+        assertEquals("credential=[redacted] failed", NatsControlPanel.redactSensitiveText("credential=/home/me/.nats/creds failed"));
+        assertNull(NatsControlPanel.redactSensitiveText(null));
+    }
+
+    @Test
+    void redactsCredentialsEmbeddedInFreeFormDiagnosticText() {
+        assertEquals("failed nats://***@localhost:4222?token=[redacted]",
+            NatsControlPanel.redactSensitiveText("failed nats://user:password@localhost:4222?token=secret"));
+        assertEquals("could not load [redacted]",
+            NatsControlPanel.redactSensitiveText("could not load /home/alvaro/.nats/app.creds"));
+        assertEquals("nkey seed [redacted] rejected",
+            NatsControlPanel.redactSensitiveText("nkey seed " + NKEY_SEED + " rejected"));
+        assertEquals("jwt [redacted] expired",
+            NatsControlPanel.redactSensitiveText("jwt " + USER_JWT + " expired"));
+
+        String sanitized = NatsControlPanel.redactSensitiveText(
+            "authorization violation for nats://alice:s3cr3t@nats.internal:4222?token=abc using /etc/nats/alice.creds");
+        assertFalse(sanitized.contains("alice:s3cr3t"));
+        assertFalse(sanitized.contains("s3cr3t"));
+        assertFalse(sanitized.contains("abc"));
+        assertFalse(sanitized.contains("alice.creds"));
+    }
+
+    @Test
+    void redactsCredentialsInRenderedLastErrorAndConsumerLookupError() throws Exception {
+        BeanContext beanContext = mock(BeanContext.class);
+        Connection connection = connection(Connection.Status.DISCONNECTED);
+        when(connection.getLastError()).thenReturn("failed to connect to nats://alice:s3cr3t@nats.internal:4222");
+        JetStreamManagement management = jetStreamManagement();
+        when(management.getConsumers("ORDERS"))
+            .thenThrow(new IOException("consumer lookup failed for nats://alice:s3cr3t@nats.internal:4222?token=abc"));
+        when(beanContext.findBean(eq(NatsConnectionFactoryConfig.class), any(Qualifier.class))).thenReturn(Optional.empty());
+        when(beanContext.findBean(ConsumerRegistry.class)).thenReturn(Optional.empty());
+        when(beanContext.findBean(eq(JetStreamManagement.class), any(Qualifier.class))).thenReturn(Optional.of(management));
+
+        NatsControlPanel.Body body = panel(beanContext, connection).getBody();
+
+        assertEquals("failed to connect to nats://***@nats.internal:4222", body.connection().lastError());
+        NatsControlPanel.StreamSummary stream = body.jetStream().streams().getFirst();
+        assertEquals("consumer lookup failed for nats://***@nats.internal:4222?token=[redacted]", stream.consumersError());
+        assertTrue(stream.consumers().isEmpty());
     }
 
     private static NatsControlPanel panel(BeanContext beanContext, Connection connection) {

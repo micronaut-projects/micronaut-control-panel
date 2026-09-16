@@ -62,7 +62,12 @@ public final class NatsControlPanel extends AbstractEachBeanControlPanel<NatsCon
     public static final String ENABLED_PROPERTY = ControlPanelConfiguration.PREFIX + "." + NAME + ".enabled";
     public static final ControlPanel.Category CATEGORY = new ControlPanel.Category("nats", "NATS", "si si-natsdotio");
 
-    private static final Pattern SECRET_TEXT = Pattern.compile("(?i)(password|passwd|pwd|token|credential|creds|secret|jwt|nkey)(\\s*[:=]\\s*)\\S+");
+    private static final String REDACTED = "[redacted]";
+    private static final Pattern URL_USER_INFO = Pattern.compile("(?i)\\b([a-z][a-z0-9+.\\-]*://)[^\\s/@]+@");
+    private static final Pattern SECRET_ASSIGNMENT = Pattern.compile("(?i)(password|passwd|pwd|passphrase|token|credential|credentials|creds|secret|seed|jwt|nkey|api[-_]?key)(\\s*[:=]\\s*)[^\\s&#;,]+");
+    private static final Pattern CREDENTIAL_FILE = Pattern.compile("(?i)[^\\s\"',;()<>\\[\\]]*\\.(creds|nkey|nk|jwt|pem)\\b");
+    private static final Pattern JWT_VALUE = Pattern.compile("\\beyJ[A-Za-z0-9_\\-]{8,}\\.[A-Za-z0-9_\\-]{8,}(?:\\.[A-Za-z0-9_\\-]+)?");
+    private static final Pattern NKEY_SEED = Pattern.compile("\\bS[A-Z2-7]{50,}\\b");
 
     private final String beanName;
     private final Connection connection;
@@ -122,7 +127,7 @@ public final class NatsControlPanel extends AbstractEachBeanControlPanel<NatsCon
             redactUrl(connection.getConnectedUrl()),
             knownServers,
             configuredServers,
-            redactText(connection.getLastError()),
+            redactSensitiveText(connection.getLastError()),
             connection.getMaxPayload(),
             new ConnectionStatistics(
                 statistics.getInMsgs(),
@@ -167,8 +172,8 @@ public final class NatsControlPanel extends AbstractEachBeanControlPanel<NatsCon
             .sorted(Comparator.comparing(Subscription::getSubject, Comparator.nullsLast(String::compareTo))
                 .thenComparing(Subscription::getQueueName, Comparator.nullsLast(String::compareTo)))
             .map(subscription -> new SubscriptionInfo(
-                redactText(subscription.getSubject()),
-                redactText(subscription.getQueueName())))
+                redactSensitiveText(subscription.getSubject()),
+                redactSensitiveText(subscription.getQueueName())))
             .toList();
         return new ListenerInfo(redactRequired(id), subscriptions);
     }
@@ -200,7 +205,7 @@ public final class NatsControlPanel extends AbstractEachBeanControlPanel<NatsCon
                 .map(NatsControlPanel::consumerSummary)
                 .toList();
         } catch (Exception e) {
-            consumersError = redactText(e.getMessage());
+            consumersError = redactMessage(e);
         }
         return new StreamSummary(
             redactRequired(configuration.getName()),
@@ -223,8 +228,8 @@ public final class NatsControlPanel extends AbstractEachBeanControlPanel<NatsCon
         return new ConsumerSummary(
             redactRequired(consumer.getName()),
             redactRequired(consumer.getStreamName()),
-            redactText(configuration.getDurable()),
-            redactText(configuration.getDeliverGroup()),
+            redactSensitiveText(configuration.getDurable()),
+            redactSensitiveText(configuration.getDeliverGroup()),
             filterSubjects,
             configuration.getAckPolicy().name(),
             consumer.getNumPending(),
@@ -249,25 +254,38 @@ public final class NatsControlPanel extends AbstractEachBeanControlPanel<NatsCon
             URI uri = new URI(value);
             String userInfo = uri.getUserInfo() == null ? null : "***";
             URI sanitized = new URI(uri.getScheme(), userInfo, uri.getHost(), uri.getPort(), uri.getPath(), null, uri.getFragment());
-            return redactText(sanitized.toString());
+            return redactSensitiveText(sanitized.toString());
         } catch (URISyntaxException | IllegalArgumentException e) {
-            return redactText(value.replaceAll("://[^/@]+@", "://***@"));
+            return redactSensitiveText(value);
         }
     }
 
-    static @Nullable String redactText(@Nullable String value) {
+    /**
+     * Single sanitizer for every string this panel renders, including free-form NATS and JetStream
+     * diagnostic text such as {@code Connection#getLastError()} and client exception messages.
+     * It scrubs URL user-info anywhere in the value, secret-like assignments and query parameters,
+     * credential file paths, and JWT/NKey seed values.
+     *
+     * @param value the raw value, possibly {@code null}
+     * @return the sanitized value
+     */
+    static @Nullable String redactSensitiveText(@Nullable String value) {
         if (value == null || value.isBlank()) {
             return value;
         }
-        return SECRET_TEXT.matcher(value).replaceAll("$1$2[redacted]");
+        String sanitized = URL_USER_INFO.matcher(value).replaceAll("$1***@");
+        sanitized = SECRET_ASSIGNMENT.matcher(sanitized).replaceAll("$1$2" + REDACTED);
+        sanitized = CREDENTIAL_FILE.matcher(sanitized).replaceAll(REDACTED);
+        sanitized = JWT_VALUE.matcher(sanitized).replaceAll(REDACTED);
+        return NKEY_SEED.matcher(sanitized).replaceAll(REDACTED);
     }
 
     private static String redactRequired(String value) {
-        return Optional.ofNullable(redactText(value)).orElse("");
+        return Optional.ofNullable(redactSensitiveText(value)).orElse("");
     }
 
     private static String redactMessage(Exception exception) {
-        return Optional.ofNullable(redactText(exception.getMessage())).orElse(exception.getClass().getSimpleName());
+        return Optional.ofNullable(redactSensitiveText(exception.getMessage())).orElse(exception.getClass().getSimpleName());
     }
 
     @ReflectiveAccess
