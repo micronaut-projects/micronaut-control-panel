@@ -177,7 +177,20 @@ class GraalPyControlPanelTest {
     void panelIsAbsentWhenExplicitlyDisabled() {
         try (ApplicationContext context = start("GraalPyControlPanelEmptyTest",
             Map.of(GraalPyControlPanel.ENABLED_PROPERTY, false))) {
+            assertTrue(context.getBeanDefinitions(GraalPyControlPanel.class).isEmpty());
             assertTrue(context.findBean(GraalPyControlPanel.class).isEmpty());
+            // The off-switch is the package-level @Requires in package-info.java, so it removes the whole panel
+            // package rather than only the panel bean: no scanner and no VFS reader are left to inspect anything.
+            assertTrue(context.getBeanDefinitions(PythonBeanScanner.class).isEmpty());
+            assertTrue(context.getBeanDefinitions(GraalPyVfsMetadataReader.class).isEmpty());
+        }
+    }
+
+    @Test
+    void panelIsPresentWhenTheEnabledPropertyIsNotOverridden() {
+        try (ApplicationContext context = start("GraalPyControlPanelEmptyTest", Map.of())) {
+            assertEquals(Boolean.TRUE, context.getProperty(GraalPyControlPanel.ENABLED_PROPERTY, Boolean.class).orElse(null));
+            assertTrue(context.findBean(GraalPyControlPanel.class).isPresent());
         }
     }
 
