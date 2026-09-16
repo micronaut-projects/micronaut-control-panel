@@ -259,7 +259,9 @@ use **Refresh dump** to re-read the current JVM snapshot.
 === GraalVM Native Image Limitation
 
 In a GraalVM native image, this panel always renders its empty state: it reports no threads and no stack traces. The
-panel itself is still registered and its route is still reachable; only the dump contents are unavailable.
+panel itself is still registered and its route is still reachable; only the dump contents are unavailable. The panel's
+badge still shows a non-zero live thread count, because that number comes from a different `ThreadMXBean` call that the
+native image does not stub.
 
 This is a native image limitation, not a Control Panel one. The panel and Micronaut Management's own `/threaddump`
 endpoint both read the snapshot from `java.lang.management.ThreadMXBean.dumpAllThreads(...)`, and the native image

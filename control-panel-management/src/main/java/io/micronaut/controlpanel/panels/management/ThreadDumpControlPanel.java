@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
  * Control panel that displays the current JVM thread dump.
  *
  * @author Álvaro Sánchez-Mariscal
- * @since 2.1.0
+ * @since 2.2.0
  */
 @Singleton
 @Requires(beans = ThreadDumpEndpoint.class)
