@@ -19,16 +19,26 @@ import io.micronaut.context.ApplicationContext;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.inject.qualifiers.Qualifiers;
 import io.micronaut.management.endpoint.threads.ThreadDumpEndpoint;
+import io.micronaut.management.endpoint.threads.ThreadInfoMapper;
 import org.junit.jupiter.api.Test;
+import reactor.core.publisher.Flux;
 
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class ThreadDumpControlPanelTest {
+
+    private static final String PARKED_THREAD_NAME = "cp-threaddump-parked-thread";
 
     @Test
     void itIsConfiguredCorrectlyWhenThreadDumpEndpointIsAvailable() {
@@ -38,7 +48,8 @@ class ThreadDumpControlPanelTest {
             assertEquals("Thread Dump", panel.getTitle());
             assertEquals("fa-list-check", panel.getIcon());
             assertEquals(50, panel.getOrder());
-            assertFalse(panel.getBody().threads().isEmpty());
+            assertFalse(panel.getBody().stateCounts().isEmpty());
+            assertFalse(panel.getThreadDump().threads().isEmpty());
             assertTrue(Integer.parseInt(panel.getBadge()) > 0);
         }
     }
@@ -63,17 +74,18 @@ class ThreadDumpControlPanelTest {
 
     @Test
     void itBuildsThreadSummaryInDiagnosticStateOrder() {
-        ThreadDumpControlPanel.Body body = ThreadDumpControlPanel.buildBody(List.of(
+        ThreadDumpControlPanel.ThreadDump dump = ThreadDumpControlPanel.buildThreadDump(List.of(
             snapshot(4, "waiting-worker", Thread.State.WAITING, false, null, null, -1, 1, -1, 2, -1, "example.Waiting.run(Waiting.java:1)"),
             snapshot(2, "blocked-worker", Thread.State.BLOCKED, true, "java.lang.Object@1", "lock-owner", 9, 3, 40, 5, 60, "example.Blocked.run(Blocked.java:1)"),
             snapshot(3, "timed-worker", Thread.State.TIMED_WAITING, false, null, null, -1, 0, -1, 7, 80, "example.Timed.run(Timed.java:1)"),
             snapshot(1, "runnable-worker", Thread.State.RUNNABLE, true, null, null, -1, 0, 0, 0, 0, "example.Runnable.run(Runnable.java:1)")
         ));
 
-        assertEquals(4, body.totalThreads());
-        assertEquals(List.of("BLOCKED", "RUNNABLE", "WAITING", "TIMED_WAITING"), body.stateCounts().stream().map(ThreadDumpControlPanel.StateCount::state).toList());
-        assertEquals(List.of("blocked-worker", "runnable-worker", "waiting-worker", "timed-worker"), body.threads().stream().map(ThreadDumpControlPanel.ThreadRow::threadName).toList());
-        ThreadDumpControlPanel.ThreadRow blocked = body.threads().get(0);
+        assertFalse(dump.unsupportedMapper());
+        assertEquals(4, dump.totalThreads());
+        assertEquals(List.of("BLOCKED", "RUNNABLE", "WAITING", "TIMED_WAITING"), dump.stateCounts().stream().map(ThreadDumpControlPanel.StateCount::state).toList());
+        assertEquals(List.of("blocked-worker", "runnable-worker", "waiting-worker", "timed-worker"), dump.threads().stream().map(ThreadDumpControlPanel.ThreadRow::threadName).toList());
+        ThreadDumpControlPanel.ThreadRow blocked = dump.threads().get(0);
         assertTrue(blocked.blocked());
         assertTrue(blocked.hasLockOwner());
         assertEquals("3", blocked.blockedCount());
@@ -81,7 +93,7 @@ class ThreadDumpControlPanelTest {
         assertTrue(blocked.hasBlockedTime());
         assertEquals(List.of("example.Blocked.run(Blocked.java:1)"), blocked.stackTrace());
 
-        ThreadDumpControlPanel.ThreadRow waiting = body.threads().get(2);
+        ThreadDumpControlPanel.ThreadRow waiting = dump.threads().get(2);
         assertEquals("-1", waiting.blockedTime());
         assertFalse(waiting.hasBlockedTime());
         assertEquals("-1", waiting.waitedTime());
@@ -89,15 +101,139 @@ class ThreadDumpControlPanelTest {
     }
 
     @Test
-    void threadValuesAreNotInterpolatedIntoInlineJavaScript() throws IOException {
-        try (var in = getClass().getResourceAsStream("/views/threaddump/detail.hbs")) {
-            assertNotNull(in);
-            var template = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+    void itOnlyDisplaysTheThreadsTheConfiguredThreadInfoMapperEmits() throws InterruptedException {
+        withParkedThread(() -> {
+            ThreadDumpControlPanel unfiltered = panel(passThroughMapper(), ThreadDumpControlPanelTest::dump);
+            List<String> allNames = threadNames(unfiltered);
+            assertTrue(allNames.contains(PARKED_THREAD_NAME), "The unfiltered panel must see the thread the mapper will later exclude");
+            assertTrue(allNames.size() > 1, "The unfiltered panel must see more than the parked thread");
 
-            assertFalse(template.contains("<script>"));
-            assertTrue(template.contains("<details>"));
-            assertTrue(template.contains("data-filter-table-search"));
-            assertTrue(template.contains("No threads match your search."));
+            // A mapper that drops every thread but one stands in for any filtering/redacting ThreadInfoMapper.
+            ThreadInfoMapper<ThreadInfo> onlyParkedThread = publisher -> Flux.from(publisher)
+                .filter(info -> PARKED_THREAD_NAME.equals(info.getThreadName()));
+            ThreadDumpControlPanel filtered = panel(onlyParkedThread, ThreadDumpControlPanelTest::dump);
+
+            ThreadDumpControlPanel.ThreadDump dump = filtered.getThreadDump();
+            assertFalse(dump.unsupportedMapper());
+            assertEquals(List.of(PARKED_THREAD_NAME), dump.threads().stream().map(ThreadDumpControlPanel.ThreadRow::threadName).toList());
+            assertEquals(1, dump.totalThreads());
+
+            // The dashboard summary and the badge go through the very same mapper.
+            ThreadDumpControlPanel.Body body = filtered.getBody();
+            assertEquals(1, body.totalThreads());
+            assertEquals(1, body.stateCounts().size());
+            assertEquals(1, body.stateCounts().get(0).count());
+            assertEquals("1", filtered.getBadge());
+        });
+    }
+
+    @Test
+    void itDoesNotFallBackToRawThreadsWhenTheMapperEmitsAnUnsupportedShape() {
+        ThreadInfoMapper<Map<String, Object>> customShape = publisher -> Flux.from(publisher)
+            .map(info -> Map.<String, Object>of("name", info.getThreadName()));
+        ThreadDumpControlPanel panel = panel(customShape, ThreadDumpControlPanelTest::dump);
+
+        ThreadDumpControlPanel.ThreadDump dump = panel.getThreadDump();
+        assertTrue(dump.unsupportedMapper());
+        assertTrue(dump.threads().isEmpty());
+        assertTrue(dump.stateCounts().isEmpty());
+        assertTrue(dump.totalThreads() > 0);
+
+        ThreadDumpControlPanel.Body body = panel.getBody();
+        assertTrue(body.unsupportedMapper());
+        assertTrue(body.stateCounts().isEmpty());
+    }
+
+    @Test
+    void theDashboardSummaryNeverCollectsStackTracesOrLockDetails() {
+        var collections = new ArrayList<Boolean>();
+        ThreadDumpControlPanel.ThreadInfoSource recording = withDetails -> {
+            collections.add(withDetails);
+            return dump(withDetails);
+        };
+        ThreadDumpControlPanel panel = panel(passThroughMapper(), recording);
+
+        ThreadDumpControlPanel.Body body = panel.getBody();
+        assertEquals(List.of(false), collections, "Rendering the dashboard card must not request a full dump");
+        assertFalse(body.stateCounts().isEmpty());
+
+        panel.getBadge();
+        assertEquals(List.of(false, false), collections, "The dashboard badge must not request a full dump either");
+
+        // The detail view, and every refresh of it, still takes a fresh and complete dump.
+        assertTrue(panel.getThreadDump().threads().stream().anyMatch(row -> !row.stackTrace().isEmpty()));
+        assertEquals(List.of(false, false, true), collections);
+        panel.getThreadDump();
+        assertEquals(List.of(false, false, true, true), collections);
+    }
+
+    @Test
+    void theDashboardCardTemplateOnlyRendersSummaryData() throws IOException {
+        var template = readTemplate("/views/threaddump/body.hbs");
+
+        assertTrue(template.contains("controlPanel.body"));
+        assertFalse(template.contains("controlPanel.threadDump"));
+        assertFalse(template.contains("{{#each threads"));
+        assertFalse(template.contains("stackTrace"));
+        assertFalse(template.contains("threadName"));
+    }
+
+    @Test
+    void threadValuesAreNotInterpolatedIntoInlineJavaScript() throws IOException {
+        var template = readTemplate("/views/threaddump/detail.hbs");
+
+        assertTrue(template.contains("controlPanel.threadDump"));
+        assertFalse(template.contains("<script>"));
+        assertTrue(template.contains("<details>"));
+        assertTrue(template.contains("data-filter-table-search"));
+        assertTrue(template.contains("No threads match your search."));
+    }
+
+    private String readTemplate(String path) throws IOException {
+        try (var in = getClass().getResourceAsStream(path)) {
+            assertNotNull(in);
+            return new String(in.readAllBytes(), StandardCharsets.UTF_8);
+        }
+    }
+
+    private static ThreadDumpControlPanel panel(ThreadInfoMapper<?> mapper, ThreadDumpControlPanel.ThreadInfoSource source) {
+        return new ThreadDumpControlPanel(new ControlPanelConfiguration(ThreadDumpControlPanel.NAME), mapper, source);
+    }
+
+    private static ThreadInfoMapper<ThreadInfo> passThroughMapper() {
+        return publisher -> publisher;
+    }
+
+    private static List<String> threadNames(ThreadDumpControlPanel panel) {
+        return panel.getThreadDump().threads().stream().map(ThreadDumpControlPanel.ThreadRow::threadName).toList();
+    }
+
+    private static ThreadInfo[] dump(boolean withDetails) {
+        ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+        return withDetails
+            ? threadMXBean.dumpAllThreads(true, true)
+            : threadMXBean.getThreadInfo(threadMXBean.getAllThreadIds(), 0);
+    }
+
+    private static void withParkedThread(Runnable assertions) throws InterruptedException {
+        var started = new CountDownLatch(1);
+        var release = new CountDownLatch(1);
+        var thread = new Thread(() -> {
+            started.countDown();
+            try {
+                release.await();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }, PARKED_THREAD_NAME);
+        thread.setDaemon(true);
+        thread.start();
+        try {
+            assertTrue(started.await(10, TimeUnit.SECONDS));
+            assertions.run();
+        } finally {
+            release.countDown();
+            thread.join(TimeUnit.SECONDS.toMillis(10));
         }
     }
 

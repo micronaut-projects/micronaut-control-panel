@@ -1,4 +1,4 @@
-{{#with controlPanel.body }}
+{{#with controlPanel.threadDump }}
     <div class="cp-dashboard-stack">
         <div class="card card-light">
             <div class="card-header">
@@ -25,7 +25,11 @@
                         </dd>
                     </dl>
                 {{else}}
-                    <p class="card-text">No threads were returned by the Thread Dump endpoint.</p>
+                    {{#if unsupportedMapper}}
+                        <p class="card-text"><strong>{{totalThreads}}</strong> entries were returned by the configured ThreadInfoMapper.</p>
+                    {{else}}
+                        <p class="card-text">No threads were returned by the Thread Dump endpoint.</p>
+                    {{/if}}
                 {{/if}}
             </div>
         </div>
@@ -124,9 +128,16 @@
                     </div>
                 {{else}}
                     <div class="cp-data-table-empty">
-                        Thread dump data is not available. On the JVM, confirm the Micronaut Management Thread Dump
-                        endpoint is enabled for this environment. In a GraalVM native image this panel is always empty:
-                        native images do not report thread dump data through the JVM management API.
+                        {{#if unsupportedMapper}}
+                            This application configures a custom ThreadInfoMapper that does not produce
+                            java.lang.management.ThreadInfo objects. The Thread Dump panel only renders what that mapper
+                            returns, so it cannot display thread details here. Read the mapped output from the Micronaut
+                            Management /threaddump endpoint instead.
+                        {{else}}
+                            Thread dump data is not available. On the JVM, confirm the Micronaut Management Thread Dump
+                            endpoint is enabled for this environment. In a GraalVM native image this panel is always empty:
+                            native images do not report thread dump data through the JVM management API.
+                        {{/if}}
                     </div>
                 {{/if}}
             </div>
