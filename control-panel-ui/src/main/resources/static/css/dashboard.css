@@ -1697,6 +1697,23 @@ dl.row dt {
     table-layout: fixed;
 }
 
+.cp-graalpy-tabs > .tabs-list {
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+.cp-graalpy-module-table {
+    min-width: 64rem;
+}
+
+.cp-graalpy-vfs-table {
+    min-width: 48rem;
+}
+
+.cp-graalpy-method-list {
+    min-width: 18rem;
+}
+
 .cp-data-table-table th {
     height: 2.5rem;
     background: var(--card);

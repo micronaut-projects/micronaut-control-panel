@@ -18,7 +18,7 @@
 
 [versions]
 micronaut-platform = "5.1.2"
-micronaut = "5.1.12"
+micronaut = "5.2.2"
 micronaut-security = "5.3.2"
 micronaut-views = "6.2.0"
 micronaut-reactor = "4.1.0"
