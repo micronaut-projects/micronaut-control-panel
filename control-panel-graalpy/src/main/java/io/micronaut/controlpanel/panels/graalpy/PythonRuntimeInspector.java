@@ -78,6 +78,10 @@ public final class PythonRuntimeInspector {
     /**
      * @return the current context pool view
      */
+    // S2583: PythonContextExecutor is a @FunctionalInterface whose statistics() default method never
+    // returns null, so static analysis reads the check below as dead. Any implementation may override
+    // it, including ones outside Core, and the panel must degrade instead of throwing on a null result.
+    @SuppressWarnings("java:S2583")
     ContextPool contextPool() {
         PoolSettings settings = poolSettings();
         EngineInfo engine = engineInfo();
