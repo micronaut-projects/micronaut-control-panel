@@ -450,7 +450,63 @@ class ControlPanelE2ETest extends AbstractE2ETest {
     void testKafka(Page page) {
         page.navigate(baseUrl());
         categoryLink(page, "Kafka").click();
-        controlPanelDetails(page, "Kafka").click();
+        assertThat(page.locator("#kafkaClusterCardOverview .cp-kafka-card-metric")).hasCount(4);
+        assertThat(page.locator("#kafkaClusterCardOverview")).containsText("Brokers");
+        assertThat(page.locator("#kafkaClusterCardOverview")).containsText("Topics");
+        assertThat(page.locator("#kafkaClusterCardOverview")).containsText("Partitions");
+        assertThat(page.locator("#kafkaClusterCardOverview")).containsText("Consumer groups");
+
+        page.locator("a[href$='/control-panel/kafka-cluster']").click();
+        assertThat(body(page)).containsText("Cluster id");
+        assertThat(page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("Overview"))).isVisible();
+        assertThat(page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("Cluster Config"))).isVisible();
+        assertThat(page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("Consumer Groups"))).isVisible();
+        assertThat(page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("Messages"))).isVisible();
+
+        page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("Cluster Config")).click();
+        assertThat(page.getByLabel("Search cluster config")).isVisible();
+        assertThat(page.locator("#kafkaClusterConfigTable [data-filter-table-page]")).containsText("Page");
+
+        page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("Topics")).click();
+        assertThat(page.getByLabel("Search topics")).isVisible();
+        assertThat(page.locator("#kafkaTopics")).containsText("product_description_v1");
+        page.getByLabel("Search topics").fill("product_description");
+        assertThat(page.locator("#kafkaTopicsTable [data-filter-table-summary]")).containsText("filtered from");
+        var productDescriptionRow = page.getByRole(AriaRole.ROW, new Page.GetByRoleOptions().setName(Pattern.compile("product_description_v1")));
+        assertThat(productDescriptionRow).isVisible();
+        productDescriptionRow.getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName("Details")).click();
+        assertThat(page.locator("#kafkaTopicDetailModal")).isVisible();
+        assertThat(page.locator("#kafkaTopicDetailModal")).containsText("Beginning offset");
+        assertThat(page.locator("#kafkaTopicDetailModal")).containsText("Topic config");
+        assertThat(page.locator("#kafkaTopicConfigTable [data-filter-table-page]")).containsText("Page");
+        page.locator("#kafkaTopicDetailModal .modal-footer [data-dismiss='modal']").click();
+        assertThat(page.locator("#kafkaTopicDetailModal")).isHidden();
+
+        page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("Consumer Groups")).click();
+        assertThat(page.getByLabel("Search consumer groups")).isVisible();
+        assertThat(page.locator("#kafkaConsumerGroups")).containsText("Total lag");
+
+        page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("Messages")).click();
+        assertThat(page.locator("#kafkaMessageTopic")).isVisible();
+        assertThat(page.locator("#kafkaMessageTopic")).containsText("product_description_v1");
+        assertThat(page.locator("#kafkaMessagesTable [data-filter-table-page]")).containsText("Page");
+
+        page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("Writes/Management")).click();
+        assertThat(page.locator("#kafkaWritesEnabled")).containsText("enabled");
+        assertThat(page.locator("#kafkaDestructiveEnabled")).containsText("enabled");
+        assertThat(page.locator("#kafkaCreateTopicForm button[type='submit']")).isEnabled();
+        assertThat(page.locator("#kafkaProduceTopic")).containsText("product_description_v1");
+
+        page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("Schema Registry")).click();
+        assertThat(page.locator("#kafkaSchemaRegistryConfigured")).containsText("configured");
+        page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("Kafka Connect")).click();
+        assertThat(page.locator("#kafkaConnectConfigured")).containsText("configured");
+        page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("ksqlDB")).click();
+        assertThat(page.locator("#kafkaKsqlDbConfigured")).containsText("configured");
+
+        page.navigate(baseUrl());
+        categoryLink(page, "Kafka").click();
+        page.locator("a[href$='/control-panel/kafka-streams-default']").click();
 
         assertThat(page.locator("html").getByRole(AriaRole.DOCUMENT)).matchesAriaSnapshot("- document: \"Sub-topology: 2 Sub-topology: 1 Sub-topology: 0 KTABLE SELECT 0000000028 variant detail source variant detail source source variant stock source variant stock source source KSTREAM SINK 0000000030 KSTREAM KEY SELECT 0000000013 attribute source KTABLE JOINOTHER 0000000024 KSTREAM MAPVALUES 0000000038 product json sink KSTREAM FILTER 0000000017 KTABLE MERGE 0000000025 KTABLE JOINTHIS 0000000023 product sink description source description source source KSTREAM AGGREGATE STATE STORE 0000000014 KSTREAM AGGREGATE STATE STORE 0000000014 repartition KTABLE AGGREGATE STATE STORE 0000000029 repartition KTABLE AGGREGATE STATE STORE 0000000029 product_description_v1 STATE STORE 0000000000 product_description_v1 product_json_v1 product_v1 product_attribute_v3 product_variant_stock_v2 STATE STORE 0000000010 product_variant_detail_v1 STATE STORE 0000000004 product_variant_detail_v1 product_variant_stock_v2\"");
     }
