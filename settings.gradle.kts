@@ -8,7 +8,7 @@ pluginManagement {
 }
 
 plugins {
-    id("io.micronaut.build.shared.settings") version "8.0.0"
+    id("io.micronaut.build.shared.settings") version "8.0.1"
 }
 
 rootProject.name = "control-panel-parent"
