@@ -28,6 +28,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
@@ -41,12 +42,24 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class GraalPyVfsMetadataReaderTest {
 
+    private static final String APPLICATION_FILES_LIST =
+        GraalPyVfsMetadataReader.APPLICATION_ROOT + "/" + GraalPyVfsMetadataReader.FILES_LIST;
+    private static final String LEGACY_FILES_LIST =
+        GraalPyVfsMetadataReader.LEGACY_ROOT + "/" + GraalPyVfsMetadataReader.FILES_LIST;
+
     @TempDir
     Path tempDir;
 
     @Test
-    void readsPackagedFilesListMetadata() throws IOException {
-        writeFilesList("""
+    void probesTheCoreApplicationRootBeforeTheLegacyRoot() {
+        assertEquals(
+            List.of(GraalPyVfsMetadataReader.APPLICATION_ROOT, GraalPyVfsMetadataReader.LEGACY_ROOT),
+            new GraalPyVfsMetadataReader(null).roots());
+    }
+
+    @Test
+    void readsPackagedFilesListMetadataFromTheCoreApplicationRoot() throws IOException {
+        writeFilesList(APPLICATION_FILES_LIST, """
             /src/dealer.py
             venv/lib/python3.13/site-packages/termcolor/__init__.py
             venv/bin/python
@@ -57,11 +70,61 @@ class GraalPyVfsMetadataReaderTest {
 
         assertTrue(metadata.hasResources());
         assertEquals(1, metadata.resourceCount());
+        assertEquals(GraalPyVfsMetadataReader.APPLICATION_ROOT, metadata.resources().get(0).root());
         assertEquals(4, metadata.entryCount());
         assertTrue(metadata.entries().stream().anyMatch(entry -> entry.path().equals("src/dealer.py")));
         assertTrue(metadata.entries().stream().anyMatch(entry -> entry.group().equals("site-packages")));
         assertTrue(metadata.entries().stream().anyMatch(entry -> entry.group().equals("venv")));
         assertFalse(metadata.truncated());
+    }
+
+    @Test
+    void readsPackagedFilesListMetadataFromTheLegacyGraalPyPluginRoot() throws IOException {
+        writeFilesList(LEGACY_FILES_LIST, "src/dealer.py\n");
+
+        var metadata = read();
+
+        assertEquals(1, metadata.resourceCount());
+        assertEquals(GraalPyVfsMetadataReader.LEGACY_ROOT, metadata.resources().get(0).root());
+        assertEquals(1, metadata.entryCount());
+    }
+
+    @Test
+    void readsBothRootsWhenBothArePackaged() throws IOException {
+        writeFilesList(APPLICATION_FILES_LIST, "src/dealer.py\n");
+        writeFilesList(LEGACY_FILES_LIST, "venv/bin/python\n");
+
+        var metadata = read();
+
+        assertEquals(2, metadata.resourceCount());
+        assertEquals(2, metadata.entryCount());
+        assertEquals(
+            List.of(GraalPyVfsMetadataReader.APPLICATION_ROOT, GraalPyVfsMetadataReader.LEGACY_ROOT),
+            metadata.resources().stream().map(GraalPyVfsMetadataReader.GraalPyVfsResource::root).toList());
+    }
+
+    @Test
+    void readsAdditionalConfiguredRoots() throws IOException {
+        writeFilesList("custom/vfs/" + GraalPyVfsMetadataReader.FILES_LIST, "src/custom.py\n");
+
+        var reader = new GraalPyVfsMetadataReader(List.of("/custom/vfs/"));
+        assertEquals(
+            List.of(GraalPyVfsMetadataReader.APPLICATION_ROOT, GraalPyVfsMetadataReader.LEGACY_ROOT, "custom/vfs"),
+            reader.roots());
+
+        var metadata = readWith(reader);
+
+        assertEquals(1, metadata.entryCount());
+        assertEquals("custom/vfs", metadata.resources().get(0).root());
+    }
+
+    @Test
+    void ignoresBlankAndTraversingConfiguredRoots() {
+        var reader = new GraalPyVfsMetadataReader(List.of("  ", "../escape", "ok/root/fileslist.txt"));
+
+        assertEquals(
+            List.of(GraalPyVfsMetadataReader.APPLICATION_ROOT, GraalPyVfsMetadataReader.LEGACY_ROOT, "ok/root"),
+            reader.roots());
     }
 
     @Test
@@ -77,13 +140,13 @@ class GraalPyVfsMetadataReaderTest {
     void readsLocalJarFilesListMetadata() throws IOException {
         Path jar = tempDir.resolve("graalpy.jar");
         try (JarOutputStream jarOutputStream = new JarOutputStream(Files.newOutputStream(jar))) {
-            jarOutputStream.putNextEntry(new JarEntry(GraalPyVfsMetadataReader.RESOURCE_PATH));
+            jarOutputStream.putNextEntry(new JarEntry(APPLICATION_FILES_LIST));
             jarOutputStream.write("src/dealer.py\n".getBytes(StandardCharsets.UTF_8));
             jarOutputStream.closeEntry();
         }
 
-        try (URLClassLoader classLoader = new URLClassLoader(new java.net.URL[] { jar.toUri().toURL() }, null)) {
-            var metadata = new GraalPyVfsMetadataReader().read(classLoader);
+        try (URLClassLoader classLoader = new URLClassLoader(new URL[] { jar.toUri().toURL() }, null)) {
+            var metadata = new GraalPyVfsMetadataReader(null).read(classLoader);
 
             assertTrue(metadata.hasResources());
             assertEquals(1, metadata.entryCount());
@@ -96,11 +159,11 @@ class GraalPyVfsMetadataReaderTest {
     void readsMultipleFilesListResources() throws IOException {
         Path first = tempDir.resolve("first");
         Path second = tempDir.resolve("second");
-        writeFilesList(first, "src/dealer.py\n");
-        writeFilesList(second, "venv/bin/python\n");
+        writeFilesList(first, APPLICATION_FILES_LIST, "src/dealer.py\n");
+        writeFilesList(second, APPLICATION_FILES_LIST, "venv/bin/python\n");
 
-        try (URLClassLoader classLoader = new URLClassLoader(new java.net.URL[] { first.toUri().toURL(), second.toUri().toURL() }, null)) {
-            var metadata = new GraalPyVfsMetadataReader().read(classLoader);
+        try (URLClassLoader classLoader = new URLClassLoader(new URL[] { first.toUri().toURL(), second.toUri().toURL() }, null)) {
+            var metadata = new GraalPyVfsMetadataReader(null).read(classLoader);
 
             assertEquals(2, metadata.resourceCount());
             assertEquals(2, metadata.entryCount());
@@ -110,7 +173,7 @@ class GraalPyVfsMetadataReaderTest {
 
     @Test
     void capsLargeFilesListMetadata() throws IOException {
-        writeFilesList(IntStream.range(0, GraalPyVfsMetadataReader.MAX_ENTRIES + 2)
+        writeFilesList(APPLICATION_FILES_LIST, IntStream.range(0, GraalPyVfsMetadataReader.MAX_ENTRIES + 2)
             .mapToObj(index -> "src/file" + index + ".py")
             .collect(Collectors.joining("\n")));
 
@@ -123,7 +186,7 @@ class GraalPyVfsMetadataReaderTest {
 
     @Test
     void exactEntryCapIsNotReportedAsTruncatedWhenNoEntriesAreOmitted() throws IOException {
-        writeFilesList(IntStream.range(0, GraalPyVfsMetadataReader.MAX_ENTRIES)
+        writeFilesList(APPLICATION_FILES_LIST, IntStream.range(0, GraalPyVfsMetadataReader.MAX_ENTRIES)
             .mapToObj(index -> "src/file" + index + ".py")
             .collect(Collectors.joining("\n")));
 
@@ -136,7 +199,7 @@ class GraalPyVfsMetadataReaderTest {
 
     @Test
     void capsOversizedMetadataFiles() throws IOException {
-        writeFilesList("src/dealer.py\n".repeat(90_000));
+        writeFilesList(APPLICATION_FILES_LIST, "src/dealer.py\n".repeat(90_000));
 
         var metadata = read();
 
@@ -150,7 +213,7 @@ class GraalPyVfsMetadataReaderTest {
         try {
             Thread.currentThread().setContextClassLoader(null);
 
-            assertNotNull(new GraalPyVfsMetadataReader().read());
+            assertNotNull(new GraalPyVfsMetadataReader(null).read());
         } finally {
             Thread.currentThread().setContextClassLoader(originalClassLoader);
         }
@@ -160,7 +223,7 @@ class GraalPyVfsMetadataReaderTest {
     @SuppressWarnings("deprecation")
     void skipsNonLocalMetadataResourcesWithoutOpeningThem() throws IOException {
         AtomicBoolean opened = new AtomicBoolean();
-        URL nonLocalResource = new URL(null, "https://example.invalid/" + GraalPyVfsMetadataReader.RESOURCE_PATH, new URLStreamHandler() {
+        URL nonLocalResource = new URL(null, "https://example.invalid/" + APPLICATION_FILES_LIST, new URLStreamHandler() {
             @Override
             protected URLConnection openConnection(URL url) {
                 opened.set(true);
@@ -170,12 +233,13 @@ class GraalPyVfsMetadataReaderTest {
         ClassLoader classLoader = new ClassLoader(null) {
             @Override
             public Enumeration<URL> getResources(String name) {
-                assertEquals(GraalPyVfsMetadataReader.RESOURCE_PATH, name);
-                return Collections.enumeration(Collections.singleton(nonLocalResource));
+                return APPLICATION_FILES_LIST.equals(name)
+                    ? Collections.enumeration(Collections.singleton(nonLocalResource))
+                    : Collections.emptyEnumeration();
             }
         };
 
-        var metadata = new GraalPyVfsMetadataReader().read(classLoader);
+        var metadata = new GraalPyVfsMetadataReader(null).read(classLoader);
 
         assertTrue(metadata.hasResources());
         assertEquals(1, metadata.resourceCount());
@@ -187,7 +251,7 @@ class GraalPyVfsMetadataReaderTest {
 
     @Test
     void skipsOversizedSingleLineMetadataWithoutDisplayingIt() throws IOException {
-        writeFilesList("src/" + "a".repeat(5000) + ".py");
+        writeFilesList(APPLICATION_FILES_LIST, "src/" + "a".repeat(5000) + ".py");
 
         var metadata = read();
 
@@ -197,19 +261,23 @@ class GraalPyVfsMetadataReaderTest {
     }
 
     private GraalPyVfsMetadataReader.GraalPyVfsMetadata read() {
-        try (URLClassLoader classLoader = new URLClassLoader(new java.net.URL[] { tempDir.toUri().toURL() }, null)) {
-            return new GraalPyVfsMetadataReader().read(classLoader);
+        return readWith(new GraalPyVfsMetadataReader(null));
+    }
+
+    private GraalPyVfsMetadataReader.GraalPyVfsMetadata readWith(GraalPyVfsMetadataReader reader) {
+        try (URLClassLoader classLoader = new URLClassLoader(new URL[] { tempDir.toUri().toURL() }, null)) {
+            return reader.read(classLoader);
         } catch (IOException e) {
             throw new AssertionError(e);
         }
     }
 
-    private void writeFilesList(String content) throws IOException {
-        writeFilesList(tempDir, content);
+    private void writeFilesList(String resourcePath, String content) throws IOException {
+        writeFilesList(tempDir, resourcePath, content);
     }
 
-    private void writeFilesList(Path root, String content) throws IOException {
-        Path filesList = root.resolve(GraalPyVfsMetadataReader.RESOURCE_PATH);
+    private void writeFilesList(Path root, String resourcePath, String content) throws IOException {
+        Path filesList = root.resolve(resourcePath);
         Files.createDirectories(filesList.getParent());
         Files.writeString(filesList, content);
     }

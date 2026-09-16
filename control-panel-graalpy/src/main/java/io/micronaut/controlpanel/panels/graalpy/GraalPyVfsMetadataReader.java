@@ -15,8 +15,10 @@
  */
 package io.micronaut.controlpanel.panels.graalpy;
 
+import io.micronaut.context.annotation.Property;
 import io.micronaut.core.annotation.ReflectiveAccess;
 import jakarta.inject.Singleton;
+import org.jspecify.annotations.Nullable;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -25,14 +27,16 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URI;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Enumeration;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.jar.JarFile;
 
 /**
@@ -41,10 +45,43 @@ import java.util.jar.JarFile;
 @Singleton
 public final class GraalPyVfsMetadataReader {
 
-    static final String RESOURCE_PATH = "org.graalvm.python.vfs/fileslist.txt";
+    /**
+     * Resource root used by Micronaut Core to package application Python sources.
+     */
+    static final String APPLICATION_ROOT = "META-INF/GRAALPY-VFS/micronaut-application";
+    /**
+     * Resource root used by the standalone GraalPy Maven/Gradle build plugins.
+     */
+    static final String LEGACY_ROOT = "org.graalvm.python.vfs";
+    /**
+     * Property holding additional resource roots to probe.
+     */
+    static final String VFS_ROOTS_PROPERTY = GraalPyControlPanel.PANEL_PREFIX + ".vfs-roots";
+
+    static final String FILES_LIST = "fileslist.txt";
     static final int MAX_ENTRIES = 500;
+
     private static final int MAX_LINE_CHARS = 4096;
     private static final int MAX_METADATA_CHARS = 1_000_000;
+    private static final int MAX_EXTRA_ROOTS = 8;
+
+    private final List<String> roots;
+
+    /**
+     * Constructor.
+     *
+     * @param extraRoots additional resource roots configured by the application
+     */
+    GraalPyVfsMetadataReader(@Property(name = VFS_ROOTS_PROPERTY) @Nullable List<String> extraRoots) {
+        this.roots = resolveRoots(extraRoots);
+    }
+
+    /**
+     * @return the resource roots probed for VFS metadata, in probe order
+     */
+    List<String> roots() {
+        return roots;
+    }
 
     GraalPyVfsMetadata read() {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -60,55 +97,90 @@ public final class GraalPyVfsMetadataReader {
         List<String> warnings = new ArrayList<>();
         boolean truncated = false;
         int omittedEntries = 0;
+        int resourceIndex = 0;
 
-        try {
-            Enumeration<URL> resourceUrls = classLoader.getResources(RESOURCE_PATH);
-            int resourceIndex = 0;
-            while (resourceUrls.hasMoreElements()) {
-                URL url = resourceUrls.nextElement();
-                resourceIndex++;
-                ResourceRead read = readResource(resourceIndex, url, MAX_ENTRIES - entries.size());
-                resources.add(read.resource());
-                entries.addAll(read.entries());
-                warnings.addAll(read.warnings());
-                truncated = truncated || read.truncated();
-                omittedEntries += read.omittedEntries();
+        for (String root : roots) {
+            try {
+                Enumeration<URL> resourceUrls = classLoader.getResources(root + "/" + FILES_LIST);
                 if (entries.size() >= MAX_ENTRIES) {
-                    if (resourceUrls.hasMoreElements()) {
-                        truncated = true;
-                    }
-                    break;
+                    truncated = truncated || resourceUrls.hasMoreElements();
+                    continue;
                 }
+                while (resourceUrls.hasMoreElements()) {
+                    URL url = resourceUrls.nextElement();
+                    resourceIndex++;
+                    ResourceRead read = readResource(resourceIndex, root, url, MAX_ENTRIES - entries.size());
+                    resources.add(read.resource());
+                    entries.addAll(read.entries());
+                    warnings.addAll(read.warnings());
+                    truncated = truncated || read.truncated();
+                    omittedEntries += read.omittedEntries();
+                    if (entries.size() >= MAX_ENTRIES) {
+                        if (resourceUrls.hasMoreElements()) {
+                            truncated = true;
+                        }
+                        break;
+                    }
+                }
+            } catch (IOException _) {
+                warnings.add("Unable to enumerate GraalPy VFS metadata under " + root + ".");
             }
-        } catch (IOException _) {
-            warnings.add("Unable to enumerate GraalPy VFS metadata resources.");
         }
 
         entries.sort(Comparator.comparing(GraalPyVfsEntry::path));
-        return new GraalPyVfsMetadata(resources, entries, warnings, truncated, omittedEntries);
+        return new GraalPyVfsMetadata(roots, resources, entries, warnings, truncated, omittedEntries);
     }
 
-    private static ResourceRead readResource(int resourceIndex, URL url, int remainingCapacity) {
+    private static List<String> resolveRoots(@Nullable List<String> extraRoots) {
+        Set<String> resolved = new LinkedHashSet<>();
+        resolved.add(APPLICATION_ROOT);
+        resolved.add(LEGACY_ROOT);
+        if (extraRoots != null) {
+            extraRoots.stream()
+                .filter(root -> root != null && !root.isBlank())
+                .map(GraalPyVfsMetadataReader::normalizeRoot)
+                .filter(root -> !root.isEmpty() && !root.contains(".."))
+                .limit(MAX_EXTRA_ROOTS)
+                .forEach(resolved::add);
+        }
+        return List.copyOf(resolved);
+    }
+
+    private static String normalizeRoot(String root) {
+        String normalized = root.strip().replace('\\', '/');
+        while (normalized.startsWith("/")) {
+            normalized = normalized.substring(1);
+        }
+        while (normalized.endsWith("/")) {
+            normalized = normalized.substring(0, normalized.length() - 1);
+        }
+        if (normalized.endsWith("/" + FILES_LIST)) {
+            normalized = normalized.substring(0, normalized.length() - FILES_LIST.length() - 1);
+        }
+        return normalized;
+    }
+
+    private static ResourceRead readResource(int resourceIndex, String root, URL url, int remainingCapacity) {
         List<GraalPyVfsEntry> entries = new ArrayList<>();
         List<String> warnings = new ArrayList<>();
         boolean truncated = remainingCapacity <= 0;
         int omittedEntries = 0;
-        GraalPyVfsResource resource = new GraalPyVfsResource(resourceLabel(resourceIndex, url), protocolLabel(url), 0, false);
+        GraalPyVfsResource resource = new GraalPyVfsResource(resourceLabel(resourceIndex, url), protocolLabel(url), root, 0, false);
 
         if (!isLocalClasspathResource(url)) {
             warnings.add("Skipped non-local GraalPy VFS metadata in " + resource.label() + ".");
-            resource = new GraalPyVfsResource(resource.label(), resource.kind(), 0, true);
+            resource = new GraalPyVfsResource(resource.label(), resource.kind(), root, 0, true);
             return new ResourceRead(resource, entries, warnings, truncated, omittedEntries);
         }
 
         try {
             ParseResult result = parseLocalResource(url, resource, entries, warnings, truncated, remainingCapacity);
-            resource = new GraalPyVfsResource(resource.label(), resource.kind(), result.lineCount(), false);
+            resource = new GraalPyVfsResource(resource.label(), resource.kind(), root, result.lineCount(), false);
             truncated = result.truncated();
             omittedEntries = result.omittedEntries();
         } catch (IOException _) {
             warnings.add("Unable to read " + resource.label() + "; partial GraalPy VFS metadata is shown when available.");
-            resource = new GraalPyVfsResource(resource.label(), resource.kind(), 0, true);
+            resource = new GraalPyVfsResource(resource.label(), resource.kind(), root, 0, true);
         }
         return new ResourceRead(resource, entries, warnings, truncated, omittedEntries);
     }
@@ -233,6 +305,7 @@ public final class GraalPyVfsMetadataReader {
     /**
      * GraalPy VFS metadata discovered from classpath resources.
      *
+     * @param roots resource roots probed for metadata
      * @param resources metadata resources
      * @param entries VFS file entries
      * @param warnings safe warnings for partial metadata
@@ -241,6 +314,7 @@ public final class GraalPyVfsMetadataReader {
      */
     @ReflectiveAccess
     public record GraalPyVfsMetadata(
+        List<String> roots,
         List<GraalPyVfsResource> resources,
         List<GraalPyVfsEntry> entries,
         List<String> warnings,
@@ -288,11 +362,12 @@ public final class GraalPyVfsMetadataReader {
      *
      * @param label display label
      * @param kind resource protocol kind
+     * @param root resource root the metadata was found under
      * @param lineCount line count read
      * @param unreadable whether the resource could not be read
      */
     @ReflectiveAccess
-    public record GraalPyVfsResource(String label, String kind, int lineCount, boolean unreadable) {
+    public record GraalPyVfsResource(String label, String kind, String root, int lineCount, boolean unreadable) {
     }
 
     /**

@@ -15,166 +15,205 @@
  */
 package io.micronaut.controlpanel.panels.graalpy;
 
-import io.micronaut.context.BeanContext;
-import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
-import io.micronaut.graal.graalpy.GraalPyContextBuilderFactory;
-import io.micronaut.graal.graalpy.annotations.GraalPyModule;
-import io.micronaut.inject.BeanDefinition;
-import org.graalvm.polyglot.Context;
+import io.micronaut.context.ApplicationContext;
+import io.micronaut.context.python.PythonPoolStatistics;
 import org.junit.jupiter.api.Test;
 
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.when;
 
 class GraalPyControlPanelTest {
 
-    @Test
-    void discoversGraalPyModuleDefinitionsWithoutInstantiatingPythonModules() {
-        BeanContext beanContext = mock(BeanContext.class);
-        ControlPanelConfiguration configuration = configuration();
-        BeanDefinition<?> moduleDefinition = moduleDefinition("dealerService", DealerService.class, "dealer");
-        BeanDefinition<?> factoryDefinition = beanDefinition(ExplodingFactory.class);
-
-        doReturn(List.of(moduleDefinition)).when(beanContext).getAllBeanDefinitions();
-        doReturn(List.of(factoryDefinition)).when(beanContext).getBeanDefinitions(GraalPyContextBuilderFactory.class);
-
-        GraalPyControlPanel panel = new GraalPyControlPanel(beanContext, new GraalPyVfsMetadataReader(), configuration);
-        GraalPyControlPanel.Body body = getBodyWithEmptyVfs(panel);
-
-        assertEquals(1, body.moduleCount());
-        GraalPyControlPanel.ModuleInterface module = body.modules().get(0);
-        assertEquals("dealerService", module.beanName());
-        assertEquals(DealerService.class.getName(), module.javaType());
-        assertEquals("dealer", module.pythonModule());
-        assertEquals("Unknown", module.instantiated());
-        assertTrue(module.methods().stream().anyMatch(method -> method.signature().startsWith("String deal(String, int)")));
-        assertTrue(module.methods().stream()
-            .anyMatch(method -> method.signature().startsWith("java.util.concurrent.CompletableFuture<String> dealAsync()")));
-        assertEquals("Available", body.runtime().factoryStatus());
-        assertEquals(ExplodingFactory.class.getName(), body.runtime().activeFactoryClass());
-        assertEquals(0, ExplodingFactory.createBuilderCalls.get());
-    }
+    private static final String SPEC_NAME = "GraalPyControlPanelTest";
 
     @Test
-    void reportsEmptyModulesWhenNoAnnotatedDefinitionsExist() {
-        BeanContext beanContext = mock(BeanContext.class);
-        doReturn(List.of(beanDefinition(String.class))).when(beanContext).getAllBeanDefinitions();
-        doReturn(List.of()).when(beanContext).getBeanDefinitions(GraalPyContextBuilderFactory.class);
+    void listsGeneratedPythonBeansWithoutCreatingThem() {
+        try (ApplicationContext context = start()) {
+            GraalPyControlPanel.Body body = context.getBean(GraalPyControlPanel.class).getBody();
 
-        GraalPyControlPanel.Body body = getBodyWithEmptyVfs(
-            new GraalPyControlPanel(beanContext, new GraalPyVfsMetadataReader(), configuration()));
+            assertTrue(body.beanMetadataAvailable());
+            assertEquals(2, body.pythonBeanCount());
 
-        assertFalse(body.hasModules());
-        assertEquals(0, body.moduleCount());
-        assertEquals("Unavailable", body.runtime().factoryStatus());
-    }
+            PythonBeanScanner.PythonBean module = bean(body, TestPythonBeans.DealerModule.class);
+            assertEquals("module", module.kind());
+            assertEquals("dealer", module.pythonIdentity());
+            assertEquals("cards", module.packageName());
+            assertEquals("Singleton", module.scope());
+            assertEquals("Not created", module.state());
+            assertTrue(module.methods().stream().anyMatch(method -> method.signature().equals("String deal(String name, int count)")));
 
-    @Test
-    void badgeCountsModulesWithoutBuildingMethodSignatures() {
-        BeanContext beanContext = mock(BeanContext.class);
-        BeanDefinition<?> firstModule = moduleDefinition("dealerService", DealerService.class, "dealer");
-        BeanDefinition<?> secondModule = moduleDefinition("auditService", AuditService.class, "audit");
-        when(firstModule.getExecutableMethods()).thenThrow(new AssertionError("Badge should not build method signatures."));
-        when(secondModule.getExecutableMethods()).thenThrow(new AssertionError("Badge should not build method signatures."));
-        doReturn(List.of(firstModule, secondModule, beanDefinition(String.class))).when(beanContext).getAllBeanDefinitions();
-
-        String badge = new GraalPyControlPanel(beanContext, new GraalPyVfsMetadataReader(), configuration()).getBadge();
-
-        assertEquals("2", badge);
-    }
-
-    @Test
-    void reportsAmbiguousContextBuilderFactories() {
-        BeanContext beanContext = mock(BeanContext.class);
-        doReturn(List.of()).when(beanContext).getAllBeanDefinitions();
-        doReturn(List.of(beanDefinition(ExplodingFactory.class), beanDefinition(SecondFactory.class)))
-            .when(beanContext).getBeanDefinitions(GraalPyContextBuilderFactory.class);
-
-        GraalPyControlPanel.Body body = getBodyWithEmptyVfs(
-            new GraalPyControlPanel(beanContext, new GraalPyVfsMetadataReader(), configuration()));
-
-        assertEquals("Ambiguous", body.runtime().factoryStatus());
-        assertFalse(body.runtime().hasActiveFactory());
-        assertTrue(body.runtime().hasFactoryCandidates());
-    }
-
-    private static GraalPyControlPanel.Body getBodyWithEmptyVfs(GraalPyControlPanel panel) {
-        ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
-        try {
-            Thread.currentThread().setContextClassLoader(new ClassLoader(null) {
-            });
-            return panel.getBody();
-        } finally {
-            Thread.currentThread().setContextClassLoader(originalClassLoader);
+            PythonBeanScanner.PythonBean pythonClass = bean(body, TestPythonBeans.PricingRules.class);
+            assertEquals("class", pythonClass.kind());
+            assertEquals("Pricing rules", pythonClass.pythonIdentity());
+            assertEquals("pricing", pythonClass.packageName());
+            assertEquals(List.of("quote"), pythonClass.nestedMembers());
+            assertEquals("Prototype (@ContextPooled)", pythonClass.scope());
+            assertEquals("Per pooled context", pythonClass.state());
+            assertTrue(pythonClass.methods().stream().anyMatch(method -> method.name().equals("quote")));
         }
     }
 
-    private static ControlPanelConfiguration configuration() {
-        ControlPanelConfiguration configuration = new ControlPanelConfiguration(GraalPyControlPanel.NAME);
-        configuration.setTitle("GraalPy");
-        configuration.setIcon("fa-brands fa-python");
-        return configuration;
-    }
-
-    private static BeanDefinition<?> moduleDefinition(String beanName, Class<?> beanType, String moduleName) {
-        BeanDefinition<?> definition = beanDefinition(beanType);
-        when(definition.getName()).thenReturn(beanName);
-        when(definition.hasStereotype(GraalPyModule.class)).thenReturn(true);
-        when(definition.hasDeclaredStereotype(GraalPyModule.class)).thenReturn(true);
-        when(definition.stringValue(GraalPyModule.class)).thenReturn(Optional.of(moduleName));
-        when(definition.getScopeName()).thenReturn(Optional.of("Singleton"));
-        when(definition.getExecutableMethods()).thenReturn(List.of());
-        return definition;
-    }
-
-    private static BeanDefinition<?> beanDefinition(Class<?> beanType) {
-        BeanDefinition<?> definition = mock(BeanDefinition.class);
-        when(definition.getBeanType()).then(invocation -> beanType);
-        when(definition.getName()).thenReturn(beanType.getSimpleName());
-        when(definition.hasStereotype(GraalPyModule.class)).thenReturn(false);
-        when(definition.hasDeclaredStereotype(GraalPyModule.class)).thenReturn(false);
-        when(definition.getScopeName()).thenReturn(Optional.empty());
-        when(definition.getDeclaredQualifier()).thenReturn(null);
-        when(definition.getExecutableMethods()).thenReturn(List.of());
-        return definition;
-    }
-
-    @GraalPyModule("dealer")
-    interface DealerService {
-        String deal(String name, int count);
-
-        CompletableFuture<String> dealAsync();
-    }
-
-    @GraalPyModule("audit")
-    interface AuditService {
-        void record(String name);
-    }
-
-    static final class ExplodingFactory implements GraalPyContextBuilderFactory {
-        static final AtomicInteger createBuilderCalls = new AtomicInteger();
-
-        @Override
-        public Context.Builder createBuilder() {
-            createBuilderCalls.incrementAndGet();
-            throw new AssertionError("Panel rendering must not create GraalPy Context builders.");
+    @Test
+    void badgeCountsPythonBeans() {
+        try (ApplicationContext context = start()) {
+            assertEquals("2", context.getBean(GraalPyControlPanel.class).getBadge());
         }
     }
 
-    static final class SecondFactory implements GraalPyContextBuilderFactory {
+    @Test
+    void rendersThePoolSnapshotWithoutBorrowingAContext() {
+        try (ApplicationContext context = start()) {
+            TestPythonContextExecutor executor = context.getBean(TestPythonContextExecutor.class);
+            GraalPyControlPanel.Body body = context.getBean(GraalPyControlPanel.class).getBody();
 
-        @Override
-        public Context.Builder createBuilder() {
-            throw new AssertionError("Panel rendering must not create GraalPy Context builders.");
+            assertTrue(body.pool().available());
+            assertEquals("Pooled 3/4", body.pool().state());
+            assertEquals(2, body.pool().statistics().idleContexts());
+            assertEquals(10, body.pool().statistics().borrows());
+            assertTrue(body.pool().hasHints());
+            assertEquals(0, executor.withContextCalls());
         }
+    }
+
+    @Test
+    void reportsDisabledPooling() {
+        try (ApplicationContext context = start()) {
+            context.getBean(TestPythonContextExecutor.class)
+                .statistics(new PythonPoolStatistics(false, 0, 0, 0, 0, 0, 0, 0, 0, false));
+
+            GraalPyControlPanel.Body body = context.getBean(GraalPyControlPanel.class).getBody();
+
+            assertEquals("Disabled", body.pool().state());
+            assertTrue(body.pool().hasMessage());
+            assertFalse(body.pool().hasHints());
+        }
+    }
+
+    @Test
+    void reportsAClosedPool() {
+        try (ApplicationContext context = start()) {
+            context.getBean(TestPythonContextExecutor.class)
+                .statistics(new PythonPoolStatistics(true, 4, 0, 0, 0, 12, 0, 0, 0, true));
+
+            GraalPyControlPanel.Body body = context.getBean(GraalPyControlPanel.class).getBody();
+
+            assertEquals("Closed", body.pool().state());
+            assertTrue(body.pool().hasMessage());
+        }
+    }
+
+    @Test
+    void reportsUnavailableStatisticsWithoutFailingThePage() {
+        try (ApplicationContext context = start()) {
+            context.getBean(TestPythonContextExecutor.class).failWith(new IllegalStateException("pool gone"));
+
+            GraalPyControlPanel.Body body = context.getBean(GraalPyControlPanel.class).getBody();
+
+            assertEquals("Unavailable", body.pool().state());
+            assertFalse(body.pool().available());
+            assertNotNull(body.pool().settings());
+            assertTrue(body.pool().hasMessage());
+        }
+    }
+
+    @Test
+    void separatesNotConfiguredFromUnavailableWhenCorePythonBeansAreDisabled() {
+        try (ApplicationContext context = start()) {
+            GraalPyControlPanel.Body body = context.getBean(GraalPyControlPanel.class).getBody();
+
+            assertFalse(body.configuration().available());
+            assertFalse(body.configuration().hasOptions());
+            assertFalse(body.configuration().hasHostClassLookup());
+            assertEquals("Not configured", body.pool().settings().poolEnabled());
+            assertEquals("Not configured", body.pool().settings().pythonEnabled());
+            assertFalse(body.pool().engine().available());
+            assertEquals("Unknown", body.pool().engine().version());
+        }
+    }
+
+    @Test
+    void listsContextCustomizersWithoutInstantiatingThem() {
+        try (ApplicationContext context = start()) {
+            int instantiationsBefore = RecordingContextCustomizer.instantiations();
+            int customizationsBefore = RecordingContextCustomizer.customizations();
+
+            GraalPyControlPanel.Body body = context.getBean(GraalPyControlPanel.class).getBody();
+
+            assertTrue(body.configuration().customizers().contains(RecordingContextCustomizer.class.getName()));
+            assertEquals(instantiationsBefore, RecordingContextCustomizer.instantiations());
+            assertEquals(customizationsBefore, RecordingContextCustomizer.customizations());
+        }
+    }
+
+    @Test
+    void showsAnEmptyStateWhenNoPythonBeansArePresent() {
+        try (ApplicationContext context = start("GraalPyControlPanelEmptyTest", Map.of())) {
+            GraalPyControlPanel.Body body = context.getBean(GraalPyControlPanel.class).getBody();
+
+            assertFalse(body.hasPythonBeans());
+            assertEquals(0, body.pythonBeanCount());
+            assertTrue(body.beanMetadataAvailable());
+            // micronaut-context-python packages its own runtime sources under the core application VFS root,
+            // so the VFS section is populated even before an application adds Python sources.
+            assertTrue(body.vfs().hasResources());
+            assertEquals(GraalPyVfsMetadataReader.APPLICATION_ROOT, body.vfs().resources().get(0).root());
+        }
+    }
+
+    @Test
+    void panelIsAbsentWithoutAPythonContextExecutorBean() {
+        try (ApplicationContext context = start("GraalPyControlPanelDisabledTest", Map.of())) {
+            assertTrue(context.findBean(GraalPyControlPanel.class).isEmpty());
+        }
+    }
+
+    @Test
+    void panelIsAbsentWhenExplicitlyDisabled() {
+        try (ApplicationContext context = start("GraalPyControlPanelEmptyTest",
+            Map.of(GraalPyControlPanel.ENABLED_PROPERTY, false))) {
+            assertTrue(context.findBean(GraalPyControlPanel.class).isEmpty());
+        }
+    }
+
+    @Test
+    void detectsOptionalRuntimeModules() {
+        try (ApplicationContext context = start()) {
+            PythonRuntimeInspector.RuntimeModules modules = context.getBean(GraalPyControlPanel.class).getBody().modules();
+
+            assertFalse(modules.nettyPresent());
+            assertFalse(modules.poolEndpointPresent());
+        }
+    }
+
+    private static PythonBeanScanner.PythonBean bean(GraalPyControlPanel.Body body, Class<?> beanType) {
+        return body.pythonBeans()
+            .stream()
+            .filter(bean -> bean.javaType().equals(beanType.getName()))
+            .findFirst()
+            .orElseThrow(() -> new AssertionError("No Python bean found for " + beanType.getName()));
+    }
+
+    private static ApplicationContext start() {
+        return start(SPEC_NAME, Map.of());
+    }
+
+    /**
+     * Starts a context with Core's Python support switched off so no GraalPy engine or context is ever built.
+     *
+     * @param specName the spec name scoping the test fixtures
+     * @param properties extra properties
+     * @return the started context
+     */
+    private static ApplicationContext start(String specName, Map<String, Object> properties) {
+        Map<String, Object> allProperties = new LinkedHashMap<>(properties);
+        allProperties.put("spec.name", specName);
+        allProperties.put("micronaut.python.enabled", false);
+        return ApplicationContext.run(allProperties);
     }
 }
