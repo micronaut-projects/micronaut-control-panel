@@ -92,43 +92,42 @@ public final class GraalPyVfsMetadataReader {
     }
 
     GraalPyVfsMetadata read(ClassLoader classLoader) {
-        List<GraalPyVfsResource> resources = new ArrayList<>();
-        List<GraalPyVfsEntry> entries = new ArrayList<>();
-        List<String> warnings = new ArrayList<>();
-        boolean truncated = false;
-        int omittedEntries = 0;
-        int resourceIndex = 0;
-
+        Scan scan = new Scan();
         for (String root : roots) {
-            try {
-                Enumeration<URL> resourceUrls = classLoader.getResources(root + "/" + FILES_LIST);
-                if (entries.size() >= MAX_ENTRIES) {
-                    truncated = truncated || resourceUrls.hasMoreElements();
-                    continue;
-                }
-                while (resourceUrls.hasMoreElements()) {
-                    URL url = resourceUrls.nextElement();
-                    resourceIndex++;
-                    ResourceRead read = readResource(resourceIndex, root, url, MAX_ENTRIES - entries.size());
-                    resources.add(read.resource());
-                    entries.addAll(read.entries());
-                    warnings.addAll(read.warnings());
-                    truncated = truncated || read.truncated();
-                    omittedEntries += read.omittedEntries();
-                    if (entries.size() >= MAX_ENTRIES) {
-                        if (resourceUrls.hasMoreElements()) {
-                            truncated = true;
-                        }
-                        break;
-                    }
-                }
-            } catch (IOException _) {
-                warnings.add("Unable to enumerate GraalPy VFS metadata under " + root + ".");
-            }
+            readRoot(classLoader, root, scan);
         }
+        scan.entries.sort(Comparator.comparing(GraalPyVfsEntry::path));
+        return new GraalPyVfsMetadata(roots, scan.resources, scan.entries, scan.warnings, scan.truncated, scan.omittedEntries);
+    }
 
-        entries.sort(Comparator.comparing(GraalPyVfsEntry::path));
-        return new GraalPyVfsMetadata(roots, resources, entries, warnings, truncated, omittedEntries);
+    /**
+     * Reads every {@value #FILES_LIST} resource published under a single root, stopping as soon as the
+     * scan reaches {@link #MAX_ENTRIES} so that a large classpath is not walked for entries that cannot
+     * be recorded.
+     *
+     * @param classLoader the class loader to probe
+     * @param root        the resource root to probe
+     * @param scan        the accumulated scan state, mutated in place
+     */
+    private void readRoot(ClassLoader classLoader, String root, Scan scan) {
+        try {
+            Enumeration<URL> resourceUrls = classLoader.getResources(root + "/" + FILES_LIST);
+            if (scan.entries.size() >= MAX_ENTRIES) {
+                scan.truncated |= resourceUrls.hasMoreElements();
+                return;
+            }
+            while (resourceUrls.hasMoreElements()) {
+                URL url = resourceUrls.nextElement();
+                scan.resourceIndex++;
+                scan.add(readResource(scan.resourceIndex, root, url, MAX_ENTRIES - scan.entries.size()));
+                if (scan.entries.size() >= MAX_ENTRIES) {
+                    scan.truncated |= resourceUrls.hasMoreElements();
+                    return;
+                }
+            }
+        } catch (IOException _) {
+            scan.warnings.add("Unable to enumerate GraalPy VFS metadata under " + root + ".");
+        }
     }
 
     private static List<String> resolveRoots(@Nullable List<String> extraRoots) {
@@ -289,6 +288,26 @@ public final class GraalPyVfsMetadataReader {
 
     private static String resourceLabel(int resourceIndex, URL url) {
         return "classpath resource #" + resourceIndex + " (" + protocolLabel(url) + ")";
+    }
+
+    /**
+     * Mutable state accumulated while probing the configured roots.
+     */
+    private static final class Scan {
+        private final List<GraalPyVfsResource> resources = new ArrayList<>();
+        private final List<GraalPyVfsEntry> entries = new ArrayList<>();
+        private final List<String> warnings = new ArrayList<>();
+        private boolean truncated;
+        private int omittedEntries;
+        private int resourceIndex;
+
+        private void add(ResourceRead read) {
+            resources.add(read.resource());
+            entries.addAll(read.entries());
+            warnings.addAll(read.warnings());
+            truncated |= read.truncated();
+            omittedEntries += read.omittedEntries();
+        }
     }
 
     private record ResourceRead(
