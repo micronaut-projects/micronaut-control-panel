@@ -4205,10 +4205,15 @@ body.cp-table-browser-resizing .cp-table-browser-splitter::before {
         overflow: visible;
     }
 
+    /*
+     * tr:not([hidden]) matters here: the shared filter table hides excluded rows and the empty-state row with the
+     * hidden attribute, and an author display declaration otherwise beats the user agent [hidden] rule, leaving every
+     * filtered-out thread on screen. Covered by ControlPanelE2ETest#testThreadDumpSearch.
+     */
     .cp-thread-table,
     .cp-thread-table thead,
     .cp-thread-table tbody,
-    .cp-thread-table tr,
+    .cp-thread-table tr:not([hidden]),
     .cp-thread-table th,
     .cp-thread-table td {
         display: block;
