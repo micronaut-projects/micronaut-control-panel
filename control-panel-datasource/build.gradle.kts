@@ -37,7 +37,9 @@ dependencies {
     testAnnotationProcessor(mn.micronaut.inject.java)
     testImplementation(mn.micronaut.http.server.netty)
     testImplementation(mn.micronaut.http.client)
-    testImplementation(mnViews.micronaut.views.handlebars)
+    testImplementation(mnViews.micronaut.views.handlebars) {
+        exclude(group = "org.openjdk.nashorn", module = "nashorn-core")
+    }
     testImplementation(mnSql.micronaut.jdbc.hikari)
     testImplementation(mnSql.micronaut.jdbc.ucp)
     testImplementation(mnSerde.micronaut.serde.jackson)
