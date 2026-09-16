@@ -19,7 +19,7 @@ Each detail page is organized into tabs:
 * Statistics
 * Cache
 
-=== Detail View
+== Detail View
 
 The detail view keeps static metadata separate from runtime counters and operational actions.
 
@@ -38,7 +38,7 @@ such as the bean name, JDBC URL, username, driver, database product, schema or c
 autocommit, read-only state, and driver capability flags. This information is static datasource metadata and does not
 require Hibernate statistics to be enabled.
 
-=== Entity Types
+== Entity Types
 
 The Entity types tab shows mapped entity classes and persistent collection roles.
 
@@ -52,7 +52,7 @@ selected entity type or collection role. The Evict action opens a confirmation d
 from the second-level cache. Entity and collection eviction only removes cached Hibernate data; it does not delete
 database rows or related entities.
 
-=== Named Queries
+== Named Queries
 
 The Named queries tab lists named HQL and native SQL queries discovered from the selected session factory. The table shows
 the query name, query type, query text, cacheable flag, cache region, and available actions. Native SQL queries are
@@ -61,7 +61,7 @@ identified separately from HQL so the original SQL text remains visible in the U
 Named query actions can open the HQL Console for supported HQL queries. Native SQL entries are displayed for inspection,
 but the HQL Console remains a Hibernate query console and does not execute arbitrary SQL.
 
-=== HQL Console
+== HQL Console
 
 The HQL Console executes read-only Hibernate queries against the selected session factory. It is useful for checking
 entity mappings and inspecting a small result set without leaving the control panel.
@@ -73,7 +73,7 @@ available when more results exist.
 Mutation statements are rejected by the control panel. Use the Datasource Control Panel SQL console when you need to
 inspect JDBC tables directly.
 
-=== Statistics
+== Statistics
 
 The Statistics tab contains the statistics switch and the runtime views that depend on Hibernate statistics. When
 statistics are disabled, the panel still shows static session details, datasource metadata, entity mappings, named queries,
@@ -93,7 +93,7 @@ Statistics are split into nested tabs:
 
 The Clear statistics action resets the accumulated statistics for the selected session factory after confirmation.
 
-=== Cache
+== Cache
 
 The Cache tab shows Hibernate second-level and query cache regions. The region list is visible even when statistics are
 disabled, so cache eviction is still available without enabling statistics.
@@ -114,7 +114,7 @@ Cache actions always use a confirmation dialog. The available actions include:
 
 Cache eviction affects Hibernate cache entries only. It does not remove database rows.
 
-=== Runtime Operations
+== Runtime Operations
 
 The detail view exposes the following runtime operations:
 
@@ -127,7 +127,7 @@ The detail view exposes the following runtime operations:
 * Open generated HQL queries for mapped entities and collection roles.
 * Inspect all property definitions for a mapped entity.
 
-=== Configuration
+== Configuration
 
 The Hibernate control panel is automatically enabled when you include the `micronaut-control-panel-hibernate` module in your project.
 You can disable it by setting:
