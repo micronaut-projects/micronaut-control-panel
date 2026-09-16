@@ -2430,6 +2430,42 @@ dl.row dt {
     width: 12rem;
 }
 
+.cp-thread-state-column {
+    width: 7.5rem;
+}
+
+.cp-thread-id-column {
+    width: 3.75rem;
+}
+
+.cp-thread-daemon-column {
+    width: 4.5rem;
+}
+
+.cp-thread-lock-column {
+    width: 8.5rem;
+}
+
+.cp-thread-count-column {
+    width: 5.75rem;
+}
+
+.cp-thread-stack-column {
+    width: min(28%, 22rem);
+}
+
+.cp-thread-stack {
+    margin: 0.35rem 0 0;
+    padding: 0.55rem;
+    max-height: 22rem;
+    overflow: auto;
+}
+
+.cp-thread-stack code {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
 .cp-object-storage-content-type {
     width: 14rem;
 }
@@ -4160,6 +4196,53 @@ body.cp-table-browser-resizing .cp-table-browser-splitter::before {
     }
 
     .cp-info-table td::before {
+        content: attr(data-label);
+        color: var(--muted-foreground);
+        font-weight: 650;
+    }
+
+    .cp-thread-table-container {
+        overflow: visible;
+    }
+
+    /*
+     * tr:not([hidden]) matters here: the shared filter table hides excluded rows and the empty-state row with the
+     * hidden attribute, and an author display declaration otherwise beats the user agent [hidden] rule, leaving every
+     * filtered-out thread on screen. Covered by ControlPanelE2ETest#testThreadDumpSearch.
+     */
+    .cp-thread-table,
+    .cp-thread-table thead,
+    .cp-thread-table tbody,
+    .cp-thread-table tr:not([hidden]),
+    .cp-thread-table th,
+    .cp-thread-table td {
+        display: block;
+        width: 100% !important;
+    }
+
+    .cp-thread-table thead {
+        position: absolute;
+        left: -9999px;
+    }
+
+    .cp-thread-table tr[data-filter-table-row] {
+        border-bottom: 1px solid var(--border);
+        padding: 0.7rem 0;
+    }
+
+    .cp-thread-table tr[data-filter-table-row]:last-of-type {
+        border-bottom: 0;
+    }
+
+    .cp-thread-table td {
+        display: grid;
+        grid-template-columns: minmax(5.5rem, 0.38fr) minmax(0, 1fr);
+        gap: 0.75rem;
+        border-bottom: 0;
+        padding: 0.25rem 0.75rem;
+    }
+
+    .cp-thread-table td::before {
         content: attr(data-label);
         color: var(--muted-foreground);
         font-weight: 650;
