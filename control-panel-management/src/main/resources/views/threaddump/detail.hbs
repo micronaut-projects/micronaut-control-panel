@@ -123,7 +123,11 @@
                         </div>
                     </div>
                 {{else}}
-                    <div class="cp-data-table-empty">Thread dump data is not available. Confirm the Micronaut Management Thread Dump endpoint is enabled for this environment.</div>
+                    <div class="cp-data-table-empty">
+                        Thread dump data is not available. On the JVM, confirm the Micronaut Management Thread Dump
+                        endpoint is enabled for this environment. In a GraalVM native image this panel is always empty:
+                        native images do not report thread dump data through the JVM management API.
+                    </div>
                 {{/if}}
             </div>
         </div>

@@ -25,6 +25,9 @@ class ControlPanelRenderingTest {
 
         assertTrue(body.contains("Thread Dump"));
         assertTrue(body.contains("Refresh dump"));
+        // The second branch is only taken in a native image, where ThreadMXBean.dumpAllThreads() always
+        // returns an empty array, so the panel renders its documented empty state instead of the table.
+        // See the "GraalVM Native Image Limitation" section of the management control panels guide.
         assertTrue(body.contains("Search threads, states, locks, or stack frames")
             || body.contains("Thread dump data is not available."));
     }

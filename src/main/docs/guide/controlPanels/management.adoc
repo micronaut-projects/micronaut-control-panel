@@ -256,6 +256,21 @@ micronaut:
 To verify it safely, open the Control Panel in a trusted environment, select **Thread Dump**, expand one stack trace, and
 use **Refresh dump** to re-read the current JVM snapshot.
 
+=== GraalVM Native Image Limitation
+
+In a GraalVM native image, this panel always renders its empty state: it reports no threads and no stack traces. The
+panel itself is still registered and its route is still reachable; only the dump contents are unavailable.
+
+This is a native image limitation, not a Control Panel one. The panel and Micronaut Management's own `/threaddump`
+endpoint both read the snapshot from `java.lang.management.ThreadMXBean.dumpAllThreads(...)`, and the native image
+substitution of that bean always returns an empty result. Building with `--enable-monitoring=threaddump`, or even
+`--enable-monitoring=all`, does not change this, because that option enables the VM's own signal-triggered thread dumps
+rather than the `ThreadMXBean` API.
+
+To inspect threads in a native executable, use the mechanism GraalVM provides for it: build with
+`--enable-monitoring=threaddump` and send `SIGQUIT` to the running process, which prints a full thread dump to standard
+output.
+
 == Bean Definitions
 
 This panel displays all the beans, and their relationships, grouped by packages. It relies on the
