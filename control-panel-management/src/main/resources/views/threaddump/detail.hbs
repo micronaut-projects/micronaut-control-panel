@@ -47,8 +47,18 @@
                                 <input type="search" class="form-control" data-filter-table-search placeholder="Search threads, states, locks, or stack frames" aria-label="Search thread dump">
                             </div>
                         </div>
-                        <div class="cp-data-table-container">
-                            <table class="table cp-data-table-table cp-data-table-fixed">
+                        <div class="cp-data-table-container cp-thread-table-container">
+                            <table class="table cp-data-table-table cp-data-table-fixed cp-thread-table">
+                                <colgroup>
+                                    <col class="cp-thread-state-column">
+                                    <col class="cp-thread-name-column">
+                                    <col class="cp-thread-id-column">
+                                    <col class="cp-thread-daemon-column">
+                                    <col class="cp-thread-lock-column">
+                                    <col class="cp-thread-count-column">
+                                    <col class="cp-thread-count-column">
+                                    <col class="cp-thread-stack-column">
+                                </colgroup>
                                 <thead>
                                 <tr>
                                     <th>State</th>
@@ -64,16 +74,16 @@
                                 <tbody>
                                 {{#each threads as |thread|}}
                                     <tr data-filter-table-row>
-                                        <td>
+                                        <td data-label="State">
                                             <span class="badge {{thread.badgeClass}}">{{thread.state}}</span>
                                             {{#if thread.blocked}}
                                                 <span class="badge badge-danger">Blocked</span>
                                             {{/if}}
                                         </td>
-                                        <td><code class="cp-table-code">{{thread.threadName}}</code></td>
-                                        <td>{{thread.threadId}}</td>
-                                        <td>{{thread.daemon}}</td>
-                                        <td>
+                                        <td data-label="Thread"><code class="cp-table-code">{{thread.threadName}}</code></td>
+                                        <td data-label="ID">{{thread.threadId}}</td>
+                                        <td data-label="Daemon">{{thread.daemon}}</td>
+                                        <td data-label="Lock / owner">
                                             {{#if thread.lockName}}
                                                 <code class="cp-table-code">{{thread.lockName}}</code>
                                             {{else}}
@@ -90,7 +100,7 @@
                                                 <span class="text-muted">(#{{thread.lockOwnerId}})</span>
                                             {{/if}}
                                         </td>
-                                        <td>
+                                        <td data-label="Blocked">
                                             {{thread.blockedCount}} /
                                             {{#if thread.hasBlockedTime}}
                                                 {{thread.blockedTime}} ms
@@ -98,7 +108,7 @@
                                                 —
                                             {{/if}}
                                         </td>
-                                        <td>
+                                        <td data-label="Waited">
                                             {{thread.waitedCount}} /
                                             {{#if thread.hasWaitedTime}}
                                                 {{thread.waitedTime}} ms
@@ -106,11 +116,11 @@
                                                 —
                                             {{/if}}
                                         </td>
-                                        <td>
+                                        <td data-label="Stack">
                                             {{#if thread.stackTrace}}
                                                 <details>
                                                     <summary>Show stack trace</summary>
-                                                    <pre><code>{{#each thread.stackTrace}}{{this}}
+                                                    <pre class="cp-thread-stack"><code class="nohighlight">{{#each thread.stackTrace as |frame|}}{{frame}}
 {{/each}}</code></pre>
                                                 </details>
                                             {{else}}
