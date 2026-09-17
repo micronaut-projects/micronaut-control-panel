@@ -36,6 +36,7 @@ kotlin-gradle-plugin = "2.4.10"
 micronaut-shared-settings = "8.0.1"
 playwright = "1.62.0"
 shadow-plugin = "9.6.1"
+micronaut-r2dbc = "7.0.0"
 test-logger-plugin = "4.0.0"
 gradle-node-plugin = "7.1.0"
 avro = "1.12.2"
@@ -55,6 +56,7 @@ micronaut-micrometer = { module = "io.micronaut.micrometer:micronaut-micrometer-
 micronaut-object-storage = { module = "io.micronaut.objectstorage:micronaut-object-storage-bom", version.ref = "micronaut-object-storage" }
 micronaut-cache = { module = "io.micronaut.cache:micronaut-cache-bom", version.ref = "micronaut-cache" }
 micronaut-sql = { module = "io.micronaut.sql:micronaut-sql-bom", version.ref = "micronaut-sql" }
+micronaut-r2dbc = { module = "io.micronaut.r2dbc:micronaut-r2dbc-bom", version.ref = "micronaut-r2dbc" }
 micronaut-data = { module = "io.micronaut.data:micronaut-data-bom", version.ref = "micronaut-data" }
 micronaut-testresources = { module = 'io.micronaut.testresources:micronaut-test-resources-bom', version.ref = "micronaut-testresources" }
 micronaut-kafka = { module = "io.micronaut.kafka:micronaut-kafka-bom", version.ref = "micronaut-kafka" }

@@ -1,0 +1,140 @@
+{{#with controlPanel.body }}
+    <div class="cp-dashboard-stack">
+        <section class="card card-light">
+            <div class="card-header">
+                <div class="cp-card-heading">
+                    <span class="cp-card-icon"><i class="fas fa-plug-circle-check"></i></span>
+                    <h3 class="card-title">Connection summary</h3>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="cp-data-table-container cp-vertical-table">
+                    <table class="table cp-data-table-table">
+                        <tbody>
+                        <tr><th scope="row">Name</th><td><code class="cp-table-code" title="{{ summary.name }}">{{ summary.name }}</code></td></tr>
+                        <tr><th scope="row">Driver</th><td>{{#if summary.driver}}<code class="cp-table-code">{{ summary.driver }}</code>{{else}}not configured{{/if}}</td></tr>
+                        <tr><th scope="row">Protocol</th><td>{{#if summary.protocol}}<code class="cp-table-code">{{ summary.protocol }}</code>{{else}}not configured{{/if}}</td></tr>
+                        <tr><th scope="row">Host</th><td>{{#if summary.host}}<code class="cp-table-code" title="{{ summary.host }}">{{ summary.host }}</code>{{else}}not configured{{/if}}</td></tr>
+                        <tr><th scope="row">Port</th><td>{{#if summary.port}}<code class="cp-table-code">{{ summary.port }}</code>{{else}}not configured{{/if}}</td></tr>
+                        <tr><th scope="row">Database</th><td>{{#if summary.database}}<code class="cp-table-code" title="{{ summary.database }}">{{ summary.database }}</code>{{else}}not configured{{/if}}</td></tr>
+                        <tr><th scope="row">User</th><td>{{#if summary.user}}<code class="cp-table-code" title="{{ summary.user }}">{{ summary.user }}</code>{{else}}not configured{{/if}}</td></tr>
+                        <tr><th scope="row">SSL</th><td>{{#if summary.ssl}}<code class="cp-table-code">{{ summary.ssl }}</code>{{else}}not configured{{/if}}</td></tr>
+                        <tr><th scope="row">Connect timeout</th><td>{{#if summary.connectTimeout}}<code class="cp-table-code">{{ summary.connectTimeout }}</code>{{else}}not configured{{/if}}</td></tr>
+                        <tr><th scope="row">Driver metadata</th><td>{{#if summary.driverMetadataName}}<code class="cp-table-code">{{ summary.driverMetadataName }}</code>{{else}}unavailable{{/if}}</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="card card-light">
+            <div class="card-header">
+                <div class="cp-card-heading">
+                    <span class="cp-card-icon"><i class="fas fa-heart-pulse"></i></span>
+                    <h3 class="card-title">Health validation</h3>
+                </div>
+                <span class="badge badge-secondary">{{ health.label }}</span>
+            </div>
+            <div class="card-body">
+                <p class="card-text">{{ health.message }}</p>
+                {{#if health.query}}
+                    <div class="cp-data-table-container cp-vertical-table">
+                        <table class="table cp-data-table-table">
+                            <tbody>
+                            <tr><th scope="row">Validation query</th><td><code class="cp-table-code">{{ health.query }}</code></td></tr>
+                            {{#if health.errorType}}<tr><th scope="row">Error category</th><td><code class="cp-table-code">{{ health.errorType }}</code></td></tr>{{/if}}
+                            </tbody>
+                        </table>
+                    </div>
+                {{/if}}
+            </div>
+        </section>
+
+        <section class="card card-light">
+            <div class="card-header">
+                <div class="cp-card-heading">
+                    <span class="cp-card-icon"><i class="fas fa-gauge-high"></i></span>
+                    <h3 class="card-title">Pool diagnostics</h3>
+                </div>
+                <span class="badge badge-secondary">{{ pool.label }}</span>
+            </div>
+            <div class="card-body">
+                <p class="card-text">{{ pool.message }}</p>
+                {{#if pool.metrics}}
+                    <div class="cp-data-table-container">
+                        <table class="table cp-data-table-table">
+                            <thead><tr><th scope="col">Metric</th><th scope="col">Value</th></tr></thead>
+                            <tbody>
+                            {{#each pool.metrics as |metric|}}
+                                <tr><td>{{ metric.name }}</td><td><code class="cp-table-code">{{ metric.value }}</code></td></tr>
+                            {{/each}}
+                            </tbody>
+                        </table>
+                    </div>
+                {{/if}}
+                {{#if pool.configuration}}
+                    <h4 class="cp-section-title">Configured pool options</h4>
+                    <div class="cp-data-table-container">
+                        <table class="table cp-data-table-table">
+                            <thead><tr><th scope="col">Option</th><th scope="col">Value</th></tr></thead>
+                            <tbody>
+                            {{#each pool.configuration as |option|}}
+                                <tr>
+                                    <td><code class="cp-table-code" title="{{ option.name }}">{{ option.name }}</code></td>
+                                    <td>{{#if option.redacted}}hidden{{else}}<code class="cp-table-code">{{ option.value }}</code>{{/if}}</td>
+                                </tr>
+                            {{/each}}
+                            </tbody>
+                        </table>
+                    </div>
+                {{/if}}
+            </div>
+        </section>
+
+        <section class="card card-light">
+            <div class="card-header">
+                <div class="cp-card-heading">
+                    <span class="cp-card-icon"><i class="fas fa-shield-halved"></i></span>
+                    <h3 class="card-title">Safe options</h3>
+                </div>
+            </div>
+            <div class="card-body">
+                {{#if summary.options}}
+                    <div class="cp-data-table-container">
+                        <table class="table cp-data-table-table">
+                            <thead><tr><th scope="col">Option</th><th scope="col">Value</th></tr></thead>
+                            <tbody>
+                            {{#each summary.options as |option|}}
+                                <tr>
+                                    <td><code class="cp-table-code" title="{{ option.name }}">{{ option.name }}</code></td>
+                                    <td>{{#if option.redacted}}hidden{{else}}<code class="cp-table-code">{{ option.value }}</code>{{/if}}</td>
+                                </tr>
+                            {{/each}}
+                            </tbody>
+                        </table>
+                    </div>
+                {{else}}
+                    <div class="cp-data-table-empty">No safe option metadata is available.</div>
+                {{/if}}
+            </div>
+        </section>
+
+        {{#if warnings}}
+            <section class="card card-light">
+                <div class="card-header">
+                    <div class="cp-card-heading">
+                        <span class="cp-card-icon"><i class="fas fa-triangle-exclamation"></i></span>
+                        <h3 class="card-title">Configuration warnings</h3>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <ul>
+                        {{#each warnings as |warning|}}
+                            <li>{{ warning }}</li>
+                        {{/each}}
+                    </ul>
+                </div>
+            </section>
+        {{/if}}
+    </div>
+{{/with}}
