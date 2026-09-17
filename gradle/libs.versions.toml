@@ -41,8 +41,6 @@ gradle-node-plugin = "7.1.0"
 avro = "1.12.2"
 avro-serde = "8.2.1"
 
-handlebars-humanize = "4.3.1"
-
 [libraries]
 micronaut-openapi = { module = "io.micronaut.openapi:micronaut-openapi-bom", version.ref = "micronaut-openapi" }
 micronaut-core = { module = 'io.micronaut:micronaut-core-bom', version.ref = 'micronaut' }

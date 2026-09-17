@@ -19,10 +19,7 @@ import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.Template;
 import com.github.jknack.handlebars.io.ClassPathTemplateLoader;
 import com.github.jknack.handlebars.io.TemplateLoader;
-import io.micronaut.context.event.BeanCreatedEvent;
-import io.micronaut.views.ViewsConfigurationProperties;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -39,22 +36,16 @@ class RecordingHandlebars extends Handlebars {
 class HandlebarsPrecompileTest {
 
     @Test
-    void precompilesTemplatesUnderViewsPrefix() {
-        ViewsConfigurationProperties config = new ViewsConfigurationProperties();
-        config.setFolder("/views");
-        HandlebarsHelperRegistrar registrar = new HandlebarsHelperRegistrar(config);
+    void precompilesTemplatesUnderControlPanelViewsPrefix() {
+        HandlebarsHelperRegistrar registrar = new HandlebarsHelperRegistrar();
 
-        ClassPathTemplateLoader loader = new ClassPathTemplateLoader("views", ".hbs");
+        ClassPathTemplateLoader loader = new ClassPathTemplateLoader("controlpanelviews", ".hbs");
         RecordingHandlebars handlebars = new RecordingHandlebars(loader);
 
-        @SuppressWarnings("unchecked")
-        BeanCreatedEvent<Handlebars> event = (BeanCreatedEvent<Handlebars>) Mockito.mock(BeanCreatedEvent.class);
-        Mockito.when(event.getBean()).thenReturn(handlebars);
+        registrar.configure(handlebars);
 
-        registrar.onCreated(event);
-
-        assertTrue(handlebars.compiled.contains("views/index"));
-        assertTrue(handlebars.compiled.contains("views/layout"));
+        assertTrue(handlebars.compiled.contains("controlpanelviews/index"));
+        assertTrue(handlebars.compiled.contains("controlpanelviews/layout"));
         assertTrue(handlebars.compiled.size() >= 2);
     }
 }

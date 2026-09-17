@@ -23,7 +23,6 @@ import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Post;
-import io.micronaut.views.ModelAndView;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -43,7 +42,7 @@ public interface ControlPanelApi {
      * @return the model
      */
     @Get
-    HttpResponse<ModelAndView<?>> index(HttpRequest<?> request);
+    HttpResponse<String> index(HttpRequest<?> request);
 
     /**
      * Renders the category view.
@@ -53,7 +52,7 @@ public interface ControlPanelApi {
      * @return the model
      */
     @Get("/categories/{categoryId}")
-    HttpResponse<ModelAndView<?>> byCategory(String categoryId, HttpRequest<?> request);
+    HttpResponse<String> byCategory(String categoryId, HttpRequest<?> request);
 
     /**
      * Renders the control panel detailed view.
@@ -64,7 +63,7 @@ public interface ControlPanelApi {
      * @return the model
      */
     @Get("/{controlPanelName}")
-    HttpResponse<ModelAndView<?>> detail(String controlPanelName, HttpRequest<?> request);
+    HttpResponse<String> detail(String controlPanelName, HttpRequest<?> request);
 
     /**
      * Refreshes the host application through a control-panel-owned write route.

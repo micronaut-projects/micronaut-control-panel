@@ -16,11 +16,8 @@
 package io.micronaut.controlpanel.ui.handlebars;
 
 import com.github.jknack.handlebars.Handlebars;
-import io.micronaut.context.event.BeanCreatedEvent;
-import io.micronaut.views.ViewsConfigurationProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import java.util.Locale;
 
@@ -33,23 +30,15 @@ class HandlebarsHelperRegistrarTest {
 
     @BeforeEach
     void setup() {
-        ViewsConfigurationProperties config = new ViewsConfigurationProperties();
-        config.setFolder("/views");
-        registrar = new HandlebarsHelperRegistrar(config);
+        registrar = new HandlebarsHelperRegistrar();
         handlebars = new Handlebars();
-        @SuppressWarnings("unchecked")
-        BeanCreatedEvent<Handlebars> event = (BeanCreatedEvent<Handlebars>) Mockito.mock(BeanCreatedEvent.class);
-        Mockito.when(event.getBean()).thenReturn(handlebars);
-        registrar.onCreated(event);
+        registrar.configure(handlebars);
     }
 
     @Test
-    void testOnCreatedReturnsSameHandlebarsInstance() {
+    void configureReturnsSameHandlebarsInstance() {
         Handlebars fresh = new Handlebars();
-        @SuppressWarnings("unchecked")
-        BeanCreatedEvent<Handlebars> event = (BeanCreatedEvent<Handlebars>) Mockito.mock(BeanCreatedEvent.class);
-        Mockito.when(event.getBean()).thenReturn(fresh);
-        assertSame(fresh, registrar.onCreated(event));
+        assertSame(fresh, registrar.configure(fresh));
     }
 
     @Test
