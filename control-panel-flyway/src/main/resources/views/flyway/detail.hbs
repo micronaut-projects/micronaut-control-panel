@@ -1,0 +1,126 @@
+{{#with controlPanel.body }}
+    <div class="cp-dashboard-stack">
+        <section class="card card-light">
+            <div class="card-header">
+                <div class="cp-card-heading">
+                    <span class="cp-card-icon">
+                        <i class="fas fa-code-branch"></i>
+                    </span>
+                    <h3 class="card-title">Migration status</h3>
+                </div>
+                <div class="card-tools">
+                    <span class="badge badge-secondary">{{ totalConfigurations }} configuration{{#neq totalConfigurations 1}}s{{/neq}}</span>
+                    <span class="badge badge-secondary">{{ totalMigrations }} migration{{#neq totalMigrations 1}}s{{/neq}}</span>
+                </div>
+            </div>
+            <div class="card-body">
+                {{#if hasConfigurations}}
+                    <div class="cp-data-table-container">
+                        <table class="table cp-data-table-table">
+                            <thead>
+                            <tr>
+                                <th scope="col">Datasource</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Current version</th>
+                                <th scope="col">Latest applied</th>
+                                <th scope="col">Migrations</th>
+                                <th scope="col">State counts</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {{#each configurations as |configuration|}}
+                                <tr>
+                                    <td><code class="cp-table-code">{{ configuration.name }}</code></td>
+                                    <td><span class="badge {{ configuration.statusBadgeClass }}">{{ configuration.statusLabel }}</span></td>
+                                    <td>{{#if configuration.currentVersion}}<code class="cp-table-code">{{ configuration.currentVersion }}</code>{{else}}<span class="text-muted">none</span>{{/if}}</td>
+                                    <td>{{#if configuration.latestApplied}}<code class="cp-table-code">{{ configuration.latestApplied }}</code>{{else}}<span class="text-muted">none</span>{{/if}}</td>
+                                    <td>{{ configuration.totalMigrations }}</td>
+                                    <td>
+                                        {{#each configuration.stateSummaries as |summary|}}
+                                            {{#if summary.count}}
+                                                <span class="badge {{ summary.badgeClass }}">{{ summary.label }} {{ summary.count }}</span>
+                                            {{/if}}
+                                        {{/each}}
+                                    </td>
+                                </tr>
+                            {{/each}}
+                            </tbody>
+                        </table>
+                    </div>
+                {{else}}
+                    <div class="cp-data-table-empty">
+                        No Flyway configurations detected. Add Micronaut Flyway and enable at least one Flyway datasource to populate this panel.
+                    </div>
+                {{/if}}
+            </div>
+        </section>
+
+        {{#each configurations as |configuration|}}
+            <section class="card card-light">
+                <div class="card-header">
+                    <div class="cp-card-heading">
+                        <span class="cp-card-icon">
+                            <i class="fas fa-database"></i>
+                        </span>
+                        <h3 class="card-title">{{ configuration.name }}</h3>
+                    </div>
+                    <div class="card-tools">
+                        <span class="badge {{ configuration.statusBadgeClass }}">{{ configuration.statusLabel }}</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {{#if configuration.available}}
+                        {{#if configuration.migrations}}
+                            <div class="cp-data-table-container">
+                                <table class="table cp-data-table-table">
+                                    <thead>
+                                    <tr>
+                                        <th scope="col">Version</th>
+                                        <th scope="col">Description</th>
+                                        <th scope="col">Type</th>
+                                        <th scope="col">Script</th>
+                                        <th scope="col">State</th>
+                                        <th scope="col">Rank</th>
+                                        <th scope="col">Installed on</th>
+                                        <th scope="col">Time</th>
+                                        {{#if ../showChecksums}}
+                                            <th scope="col">Checksum</th>
+                                        {{/if}}
+                                        {{#if ../showInstalledBy}}
+                                            <th scope="col">Installed by</th>
+                                        {{/if}}
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {{#each configuration.migrations as |migration|}}
+                                        <tr>
+                                            <td><code class="cp-table-code">{{ migration.version }}</code></td>
+                                            <td>{{ migration.description }}</td>
+                                            <td><code class="cp-table-code">{{ migration.type }}</code></td>
+                                            <td><code class="cp-table-code">{{ migration.script }}</code></td>
+                                            <td><span class="badge {{ migration.badgeClass }}">{{ migration.stateLabel }}</span></td>
+                                            <td>{{ migration.installedRank }}</td>
+                                            <td>{{ migration.installedOn }}</td>
+                                            <td>{{#if migration.executionTime}}{{ migration.executionTime }} ms{{/if}}</td>
+                                            {{#if ../../showChecksums}}
+                                                <td>{{#if migration.checksum}}<code class="cp-table-code">{{ migration.checksum }}</code>{{/if}}</td>
+                                            {{/if}}
+                                            {{#if ../../showInstalledBy}}
+                                                <td>{{#if migration.installedBy}}<code class="cp-table-code">{{ migration.installedBy }}</code>{{/if}}</td>
+                                            {{/if}}
+                                        </tr>
+                                    {{/each}}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {{else}}
+                            <div class="cp-data-table-empty">{{ configuration.message }}</div>
+                        {{/if}}
+                    {{else}}
+                        <div class="cp-data-table-empty">{{ configuration.message }}</div>
+                    {{/if}}
+                </div>
+            </section>
+        {{/each}}
+    </div>
+{{/with}}

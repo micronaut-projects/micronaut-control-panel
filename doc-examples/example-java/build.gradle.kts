@@ -35,6 +35,9 @@ dependencies {
     implementation(projects.micronautControlPanelDatasource)
     implementation(mnSql.micronaut.jdbc.hikari)
     implementation(mnData.micronaut.data.jdbc)
+    runtimeOnly(projects.micronautControlPanelFlyway)
+    implementation(mnFlyway.micronaut.flyway)
+    runtimeOnly(mnSql.h2)
     runtimeOnly(mnSql.ojdbc11)
     runtimeOnly(mnSql.postgresql)
 

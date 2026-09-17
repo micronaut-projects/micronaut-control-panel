@@ -7,9 +7,11 @@ import com.microsoft.playwright.junit.UsePlaywright;
 import com.microsoft.playwright.options.AriaRole;
 import com.microsoft.playwright.options.WaitUntilState;
 import io.micronaut.context.annotation.Property;
+import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpStatus;
 import io.micronaut.http.client.HttpClient;
 import io.micronaut.http.client.annotation.Client;
+import io.micronaut.http.client.exceptions.HttpClientResponseException;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -21,6 +23,7 @@ import java.util.regex.Pattern;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @UsePlaywright(ControlPanelBrowserOptions.class)
@@ -327,6 +330,7 @@ class ControlPanelE2ETest extends AbstractE2ETest {
     private static void assertDatasourceList(Page page) {
         assertThat(body(page)).containsText("my-oracle");
         assertThat(body(page)).containsText("my-postgres");
+        assertThat(body(page)).containsText("Flyway");
     }
 
     private static void assertDatasourceTablesInitialState(Page page) {
@@ -443,6 +447,25 @@ class ControlPanelE2ETest extends AbstractE2ETest {
 
     private static String expectedTableSubtitle(String schema, String tableName) {
         return schema == null || schema.isBlank() ? tableName : schema + "." + tableName;
+    }
+
+    @Test
+    @DisabledInNativeImage
+    void testFlyway(Page page, @Client("/") HttpClient httpClient) {
+        var exception = assertThrows(
+            HttpClientResponseException.class,
+            () -> httpClient.toBlocking().exchange(HttpRequest.GET("/flyway"))
+        );
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
+
+        page.navigate(baseUrl());
+        categoryLink(page, "Data Sources").click();
+        controlPanelDetailsByTitle(page, "Flyway").click();
+
+        assertThat(body(page)).containsText("Migration status");
+        assertThat(body(page)).containsText("flyway-demo");
+        assertThat(body(page)).containsText("create control panel demo");
+        assertThat(body(page)).containsText("Success");
     }
 
     @Test

@@ -1,0 +1,58 @@
+= Flyway Control Panel
+
+The Flyway Control Panel provides a read-only view of Flyway migration status for applications that use Micronaut Flyway.
+
+Features include:
+
+* List every discovered Flyway datasource or configuration.
+* Show current version, latest applied migration, total migrations, and state counts.
+* Inspect migration metadata such as version, description, type, script, state, installed rank, installed time, execution time, checksum, and installed-by user when Flyway reports those values.
+* Distinguish successful, pending, failed, future, missing, out-of-order, ignored, and unknown migration states.
+* Keep the panel read-only. It does not expose `migrate`, `clean`, `repair`, `validate`, or other Flyway write operations.
+
+To get started, add the following module as a development-time dependency:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-flyway[scope=developmentOnly]
+
+It is assumed that the application already has Micronaut Flyway configured. If not, see the https://micronaut-projects.github.io/micronaut-flyway/latest/guide/[Micronaut Flyway documentation].
+
+The Flyway Control Panel reads the application's `org.flywaydb.core.Flyway` beans directly. You do not need to enable or expose the Micronaut `/flyway` endpoint for this panel to work.
+
+== Configuration
+
+The Flyway control panel is automatically enabled when you include the `micronaut-control-panel-flyway` module in an application that has Flyway on the classpath.
+You can disable it by setting:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      flyway:
+        enabled: false
+----
+
+The panel can also hide optional migration metadata:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      flyway:
+        show-checksums: false
+        show-installed-by: false
+----
+
+== Verification
+
+In a development environment, start the application and open the Control Panel. The Flyway panel appears in the Data Sources category when Flyway is on the classpath.
+
+The summary table shows each Flyway configuration with its current status and state counts. The detail sections list the migration rows returned by `Flyway.info().all()`.
+If no Flyway beans are configured, the panel shows a "No Flyway configurations detected" empty state. If one Flyway configuration cannot report metadata, that configuration is marked unavailable without hiding the other configurations.
+
+== Security
+
+The panel is read-only and remains behind the same Control Panel path and security rules as the rest of the Control Panel.
+It does not display datasource passwords, JDBC credentials, or raw migration SQL contents.
+Migration metadata can include script names, checksums, and installed-by users; use `show-checksums` and `show-installed-by` to hide those fields when needed.
