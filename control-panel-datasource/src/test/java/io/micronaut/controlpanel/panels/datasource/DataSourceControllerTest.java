@@ -485,6 +485,25 @@ class DataSourceControllerTest {
     }
 
     @Test
+    void query_returnsNotFound_whenPanelDisabled() {
+        // Given
+        var service = mock(DataSourceService.class);
+        var panel = mock(DataSourceControlPanel.class);
+        doReturn(Map.of(DATA_SOURCE, service)).when(beanLocator).mapOfType(SERVICE_ARGUMENT);
+        doReturn(Map.of(DATA_SOURCE, panel)).when(beanLocator).mapOfType(PANEL_ARGUMENT);
+        when(panel.isEnabled()).thenReturn(false);
+
+        // When
+        DataSourceController controller = new DataSourceController(beanLocator, jsonMapper);
+        var request = new DataSourceController.QueryRequest("SELECT 1", 0, 10, 1);
+        HttpResponse<?> response = controller.query(DATA_SOURCE, request);
+
+        // Then
+        assertEquals(404, response.getStatus().getCode());
+        verifyNoInteractions(service);
+    }
+
+    @Test
     void query_returnsBadRequest_whenSqlEmpty() {
         // Given
         var service = mock(DataSourceService.class);
@@ -612,6 +631,7 @@ class DataSourceControllerTest {
         var dataSourceInfo = new DataSourceInfo("test", "", "", "", databaseType);
         var body = new Body(dataSourceInfo, tables, "");
         var panel = mock(DataSourceControlPanel.class);
+        when(panel.isEnabled()).thenReturn(true);
         when(panel.getBody()).thenReturn(body);
         when(panel.getBeanName()).thenReturn(DATA_SOURCE);
         doReturn(Map.of(DATA_SOURCE, panel)).when(beanLocator).mapOfType(PANEL_ARGUMENT);

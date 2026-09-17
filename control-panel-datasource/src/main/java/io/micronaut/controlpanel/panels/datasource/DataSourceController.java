@@ -52,6 +52,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * REST controller to execute SQL queries against a specific DataSource for the Control Panel.
@@ -84,7 +85,11 @@ public final class DataSourceController {
     public DataSourceController(BeanLocator locator, JsonMapper jsonMapper) {
         // Map keyed by bean name (datasource name)
         this.services = locator.mapOfType(SERVICE_ARGUMENT);
-        this.panels = locator.mapOfType(PANEL_ARGUMENT);
+        this.panels = locator.mapOfType(PANEL_ARGUMENT)
+            .entrySet()
+            .stream()
+            .filter(entry -> entry.getValue().isEnabled())
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (existing, replacement) -> existing, LinkedHashMap::new));
         this.schemas = computeSchemas();
         this.jsonMapper = jsonMapper;
         if (LOG.isDebugEnabled()) {
@@ -219,6 +224,12 @@ public final class DataSourceController {
      */
     @Get(value = "/{dataSource}/pool/status", produces = MediaType.TEXT_HTML)
     public HttpResponse<Object> poolStatus(String dataSource) {
+        if (!panels.containsKey(dataSource)) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(NO_CONTROL_PANEL_LOG_MESSAGE, dataSource);
+            }
+            return HttpResponse.notFound();
+        }
         var service = services.get(dataSource);
         if (service == null) {
             if (LOG.isDebugEnabled()) {
@@ -247,7 +258,7 @@ public final class DataSourceController {
             LOG.debug("query requested for dataSource='{}' (start={}, length={}, draw={}) sql='{}'", dataSource, body.start(), body.length(), body.draw(), body.sql());
         }
         var service = services.get(dataSource);
-        if (service == null) {
+        if (service == null || !panels.containsKey(dataSource)) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("No service found for dataSource='{}'", dataSource);
             }

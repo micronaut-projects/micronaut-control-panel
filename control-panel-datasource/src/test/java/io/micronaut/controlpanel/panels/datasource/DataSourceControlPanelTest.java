@@ -23,6 +23,7 @@ import io.micronaut.controlpanel.panels.datasource.model.DataSourceInfo;
 import io.micronaut.controlpanel.panels.datasource.model.DatabaseType;
 import io.micronaut.controlpanel.panels.datasource.model.PoolInfo;
 import io.micronaut.controlpanel.panels.datasource.model.Table;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -51,6 +52,11 @@ class DataSourceControlPanelTest {
     private static final String BEAN_NAME = "testDataSource";
     private static final List<Table> EMPTY_TABLE_LIST = List.of();
     private static final String MERMAID_ER = "erDiagram\n  TABLE1 ||--o{ TABLE2 : \"has\"";
+
+    @BeforeEach
+    void setUp() {
+        lenient().when(environment.getProperty(DataSourceControlPanel.DATASOURCE_ENABLED_PROPERTY.formatted(BEAN_NAME), Boolean.class, Boolean.TRUE)).thenReturn(true);
+    }
 
     @Test
     void constructorInitializesFieldsCorrectly() {
@@ -99,6 +105,25 @@ class DataSourceControlPanelTest {
         assertEquals(expectedUsername, info.username());
         assertEquals(expectedPassword, info.password());
         assertEquals(DatabaseType.POSTGRES, info.type());
+    }
+
+    @Test
+    void constructorDoesNotInspectDisabledDatasource() {
+        // Given
+        when(environment.getProperty(DataSourceControlPanel.DATASOURCE_ENABLED_PROPERTY.formatted(BEAN_NAME), Boolean.class, Boolean.TRUE)).thenReturn(false);
+        when(environment.getProperty(anyString(), eq(String.class), eq(""))).thenReturn("");
+
+        // When
+        DataSourceControlPanel panel = new DataSourceControlPanel(BEAN_NAME, dataSourceService, environment, configuration);
+
+        // Then
+        assertFalse(panel.isEnabled());
+        assertEquals(EMPTY_TABLE_LIST, panel.getBody().tables());
+        assertEquals("", panel.getBody().mermaidEr());
+        verify(dataSourceService, never()).getTables();
+        verify(dataSourceService, never()).getJdbcInfo();
+        verify(dataSourceService, never()).getPoolInfo();
+        verify(dataSourceService, never()).generateMermaidER(any());
     }
 
     @Test
