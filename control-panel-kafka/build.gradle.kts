@@ -30,6 +30,7 @@ dependencies {
     testImplementation(mnKafka.micronaut.kafka.streams)
     testImplementation(mn.micronaut.management)
     testImplementation(mnSerde.micronaut.serde.jackson)
+    testResourcesImplementation(mn.micronaut.jackson.databind)
     testImplementation(mn.micronaut.http.server.netty)
     testImplementation(mn.micronaut.http.client)
 }
