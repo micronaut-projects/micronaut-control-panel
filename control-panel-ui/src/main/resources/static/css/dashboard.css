@@ -2463,6 +2463,14 @@ dl.row dt {
     overflow-wrap: anywhere;
 }
 
+.cp-jmx-setting-value {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    min-width: 0;
+    gap: 0.35rem;
+}
+
 .cp-data-table-list {
     margin: 0;
     padding-left: 1.1rem;
@@ -4163,5 +4171,51 @@ body.cp-table-browser-resizing .cp-table-browser-splitter::before {
         content: attr(data-label);
         color: var(--muted-foreground);
         font-weight: 650;
+    }
+
+    .cp-jmx-tabs-list {
+        width: 100%;
+        flex-wrap: wrap;
+        overflow-x: visible;
+    }
+
+    .cp-jmx-tabs-list .tabs-trigger {
+        flex: 1 1 9rem;
+        white-space: normal;
+    }
+
+    .cp-jmx-server-table {
+        overflow: visible;
+    }
+
+    .cp-jmx-server-table .table,
+    .cp-jmx-server-table tbody,
+    .cp-jmx-server-table tr,
+    .cp-jmx-server-table th,
+    .cp-jmx-server-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .cp-jmx-server-table tr + tr {
+        border-top: 1px solid var(--border);
+    }
+
+    .cp-jmx-server-table th,
+    .cp-jmx-server-table td {
+        border-bottom: 0;
+    }
+
+    .cp-jmx-server-table th {
+        padding-bottom: 0.25rem;
+        white-space: normal;
+    }
+
+    .cp-jmx-server-table td {
+        padding-top: 0;
+    }
+
+    .cp-jmx-setting-value {
+        display: flex;
     }
 }

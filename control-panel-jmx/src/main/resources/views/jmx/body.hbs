@@ -1,0 +1,39 @@
+{{#with body}}
+    {{#if serverAvailable}}
+        <p class="card-text">
+            <strong>{{endpointMBeanCount}}</strong> Micronaut endpoint MBeans under
+            <code>{{endpointDomain}}</code>
+            across <strong>{{domainCount}}</strong> JMX domains.
+        </p>
+        <p class="card-text">
+            <strong>Server</strong>:
+            <code>{{serverClassName}}</code>
+        </p>
+        <p class="card-text">
+            <strong>Default domain</strong>:
+            <code>{{defaultDomain}}</code>
+        </p>
+        <p class="card-text">
+            <strong>Endpoint registration</strong>:
+            {{#if settings.registerEndpointsDisabled}}
+                <span class="badge badge-destructive">disabled</span>
+            {{else}}
+                <span class="badge badge-primary">enabled</span>
+            {{/if}}
+            <code>{{settings.registerEndpoints.name}}={{settings.registerEndpoints.value}}</code>
+        </p>
+    {{else}}
+        <p class="card-text">
+            <span class="badge badge-secondary">Unavailable</span>
+            No JMX server bean is available for inspection.
+        </p>
+    {{/if}}
+
+    {{#if hasWarnings}}
+        <p class="card-text">
+            {{#each warnings as |warning|}}
+                <span class="badge badge-secondary">{{warning.message}}</span>
+            {{/each}}
+        </p>
+    {{/if}}
+{{/with}}
