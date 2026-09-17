@@ -1,0 +1,74 @@
+The Chatbots control panel provides development-time diagnostics for applications that use Micronaut Chatbots Telegram and Basecamp webhook integrations.
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-chatbots[scope=developmentOnly]
+
+Add the Micronaut Chatbots HTTP modules used by your application, for example `micronaut-chatbots-telegram-http` and/or `micronaut-chatbots-basecamp-http`.
+
+The panel shows:
+
+* configured Telegram and Basecamp bot names
+* Telegram usernames
+* enabled or disabled bot state
+* token presence only, never token values
+* Telegram and Basecamp endpoint path and route registration state
+* registered `Handler`, `TelegramHandler`, and `BasecampHandler` beans with bean name, implementation class, channel, output type, and order
+* optional read-only Telegram `getWebhookInfo` diagnostics
+* setup hints that use placeholders instead of secrets
+
+The panel does not call handler `canHandle` or `handle` methods and does not change Chatbots dispatch behavior, endpoint routing, token validation, or webhook registration.
+
+== Disabling the panel
+
+To disable only this panel:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      chatbots:
+        enabled: false
+----
+
+== Secret handling
+
+The panel redacts sensitive values. It does not render Telegram webhook secret tokens, Telegram Bot API tokens, Basecamp OAuth or access tokens, authorization headers, or generated command secrets.
+
+Generated Telegram setup hints use placeholders such as `<BOT_API_TOKEN>` and `<SECRET_TOKEN>`.
+
+== Public URL and webhook status lookup
+
+By default, the panel does not make external network calls. Telegram webhook status lookup is read-only and opt-in.
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    chatbots:
+      public-url: https://dev.example.test
+      telegram:
+        webhook-status:
+          enabled: true
+          api-tokens:
+            support: <BOT_API_TOKEN>
+----
+
+The `public-url` value is combined with the configured Telegram endpoint path to show the expected webhook URL. If no public URL is configured, the panel reports that the expected URL is not configured and uses placeholder setup hints.
+
+The Bot API token configured under `api-tokens` is used only for Telegram `getWebhookInfo`. It is separate from the Telegram webhook secret token configured for Micronaut Chatbots and must not be the value used for `X-Telegram-Bot-Api-Secret-Token` validation.
+
+== Interpreting states
+
+`not configured` means the relevant value is absent, for example no public URL or no Telegram returned webhook URL.
+
+`configured disabled` means configuration explicitly disables the endpoint.
+
+`configured enabled but route not registered` means the endpoint setting is enabled, but the HTTP route is not available in the running application. Check that the corresponding Chatbots HTTP module is on the classpath.
+
+`HTTP module absent` means the Telegram or Basecamp HTTP integration is not present.
+
+`lookup disabled` means Telegram webhook status lookup is not enabled. `API token not configured` means lookup is enabled but there is no per-bot Bot API token. Lookup failures are shown per bot and do not prevent the rest of the panel from rendering.
+
+== Local verification
+
+Run an application with `micronaut-control-panel-ui`, this module, and sample Telegram or Basecamp bot configuration. Open the Control Panel and select the Chatbots category. Verify that configured bots, endpoint state, handler order, and setup hints are visible and that token values do not appear in the UI.

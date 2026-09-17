@@ -50,6 +50,11 @@ dependencies {
     implementation(libs.avro)
     implementation(libs.avro.serde)
 
+    // Chatbots
+    implementation(projects.micronautControlPanelChatbots)
+    implementation(mnChatbots.micronaut.chatbots.telegram.http)
+    implementation(mnChatbots.micronaut.chatbots.basecamp.http)
+
     // OpenAPI + Swagger UI (views generated at compile-time)
     annotationProcessor(mnOpenapi.micronaut.openapi)
     testAnnotationProcessor(mnOpenapi.micronaut.openapi)
