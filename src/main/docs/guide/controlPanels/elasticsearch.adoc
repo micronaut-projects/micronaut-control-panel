@@ -1,0 +1,78 @@
+= Elasticsearch Control Panel
+
+The Elasticsearch Control Panel provides read-only diagnostics for the Elasticsearch cluster used by the current Micronaut application.
+
+Features include:
+
+* Sanitized configured hosts and client context.
+* Cluster name, UUID, responding node, version, health, and shard summary.
+* Visible index inventory with health/status, primary and replica shard counts, document count, store size, aliases, and bounded mapping field previews.
+* Clear states for unavailable clusters, authentication failure, authorization failure, no visible indices, unsupported responses, and delayed probes.
+
+To get started, add the following module as a development-time dependency:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-elasticsearch[scope=developmentOnly]
+
+It is assumed that you already have Micronaut Elasticsearch configured in your application. If not, see the Micronaut Elasticsearch documentation:
+
+* https://micronaut-projects.github.io/micronaut-elasticsearch/latest/guide/[Micronaut Elasticsearch Documentation]
+
+== Configuration
+
+The Elasticsearch control panel is automatically enabled when you include the `micronaut-control-panel-elasticsearch` module and Micronaut Elasticsearch client classes are present.
+You can disable it by setting:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      elasticsearch:
+        enabled: false
+----
+
+The panel bounds index and mapping metadata so the Control Panel remains responsive:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      elasticsearch:
+        max-indices: 50
+        max-aliases-per-index: 10
+        max-mapping-fields: 50
+        probe-timeout: 5s
+----
+
+include::{includedir}configurationProperties/io.micronaut.controlpanel.panels.elasticsearch.ElasticsearchControlPanelConfiguration.adoc[]
+
+== Security
+
+The panel only performs read-only metadata probes.
+It does not expose a search console, document reads, document writes, index creation or deletion, refresh, force merge, settings mutation, security mutation, or arbitrary Elasticsearch request execution.
+
+Configured hosts are sanitized before rendering.
+User info, query secrets, authorization values, API keys, passwords, tokens, and raw exception details are not displayed.
+Index names, aliases, and mapping field names can still be sensitive in some applications, so keep Control Panel development/test scoped or protect it with the existing Control Panel security configuration when used outside a trusted local environment.
+
+The application credentials need Elasticsearch privileges that allow cluster health/info metadata and index metadata reads for the indices you want to inspect.
+When those privileges are missing, the panel shows authentication, authorization, no visible indices, or partial data states instead of raw Elasticsearch responses.
+
+== Verification
+
+Start an application with `micronaut-elasticsearch`, Control Panel, and the Elasticsearch panel module on the classpath.
+Open the Control Panel and select the Elasticsearch card.
+The detail page should show the sanitized hosts, cluster and shard summary, and the indices visible to the current application credentials.
+
+For local development, a minimal configuration can look like:
+
+[configuration]
+----
+elasticsearch:
+  http-hosts:
+    - http://localhost:9200
+----
+
+If the cluster is stopped, the panel should show the configured host and an unavailable state.
+If the credentials can read cluster health but not index metadata, the panel should show the cluster summary and a partial-data warning for hidden aliases or mappings.
