@@ -1,0 +1,19 @@
+{{#with controlPanel.body }}
+    {{#if empty}}
+        <p class="card-text">No Micronaut Email sender beans were detected.</p>
+        <p class="card-text"><span class="badge badge-secondary">No senders</span></p>
+    {{else}}
+        <p class="card-text">
+            <strong>Provider</strong>: <span class="badge badge-primary">{{provider}}</span>
+        </p>
+        <p class="card-text">
+            <strong>Sender</strong>: <code title="{{senderName}}">{{abbreviate senderName 40}}</code>
+        </p>
+        <p class="card-text">
+            <strong>Default From</strong>: <span class="badge badge-secondary">{{defaultFromStatus}}</span>
+        </p>
+        <p class="card-text">
+            <strong>Test send</strong>: <span class="badge badge-secondary">{{testSend.status}}</span>
+        </p>
+    {{/if}}
+{{/with}}

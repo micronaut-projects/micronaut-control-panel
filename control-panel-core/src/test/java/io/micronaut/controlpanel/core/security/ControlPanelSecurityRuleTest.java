@@ -263,6 +263,7 @@ class ControlPanelSecurityRuleTest {
             HttpRequest.POST(controlPanelPath + ControlPanelSecurityPaths.LOGGERS_PATH + "/ROOT", "{}"),
             HttpRequest.POST(controlPanelPath + ControlPanelSecurityPaths.KAFKA_PATH + "/messages", "{}"),
             HttpRequest.POST(controlPanelPath + ControlPanelSecurityPaths.KAFKA_PATH + "/topics", "{}"),
+            HttpRequest.POST(controlPanelPath + ControlPanelSecurityPaths.EMAIL_PATH + "/default/test-send", "{}"),
             HttpRequest.POST(controlPanelPath + ControlPanelSecurityPaths.APPLICATION_PATH + "/refresh", "{}"),
             HttpRequest.POST(controlPanelPath + ControlPanelSecurityPaths.APPLICATION_PATH + "/stop", ""),
             HttpRequest.POST(controlPanelPath + ControlPanelSecurityPaths.OBJECT_STORAGE_PATH + "/default", ""),
