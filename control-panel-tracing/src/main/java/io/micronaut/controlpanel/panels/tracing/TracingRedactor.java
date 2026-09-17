@@ -1,0 +1,130 @@
+/*
+ * Copyright 2017-2026 original authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package io.micronaut.controlpanel.panels.tracing;
+
+import jakarta.inject.Singleton;
+import org.jspecify.annotations.Nullable;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Locale;
+import java.util.StringJoiner;
+
+/**
+ * Redacts tracing configuration before it is exposed to templates.
+ */
+@Singleton
+final class TracingRedactor {
+
+    static final String REDACTED = "[redacted]";
+
+    String redact(String key, String value) {
+        if (value.isBlank()) {
+            return "";
+        }
+        if (isSensitiveKey(key)) {
+            return REDACTED;
+        }
+        if (looksLikeUrl(value)) {
+            return redactUrl(value);
+        }
+        return value;
+    }
+
+    boolean isSensitiveKey(String key) {
+        String normalized = key.toLowerCase(Locale.ROOT).replace('_', '-');
+        return normalized.contains("password")
+                || normalized.contains("credential")
+                || normalized.contains("certificate")
+                || normalized.contains("secret")
+                || normalized.contains("token")
+                || normalized.contains("api-key")
+                || normalized.contains("apikey")
+                || normalized.contains("authorization")
+                || normalized.contains("headers")
+                || normalized.contains("auth")
+                || normalized.contains("bearer")
+                || normalized.contains("tenant")
+                || normalized.contains("account")
+                || normalized.contains("user")
+                || normalized.endsWith(".key")
+                || normalized.endsWith("-key")
+                || normalized.equals("key");
+    }
+
+    private String redactUrl(String value) {
+        try {
+            URI uri = new URI(value);
+            String userInfo = uri.getRawUserInfo() == null ? null : REDACTED;
+            String query = redactQuery(uri.getRawQuery());
+            return new URI(uri.getScheme(), userInfo, uri.getHost(), uri.getPort(), uri.getRawPath(), query, uri.getRawFragment()).toString();
+        } catch (URISyntaxException _) {
+            return redactMalformedUrl(value);
+        }
+    }
+
+    private String redactMalformedUrl(String value) {
+        String redacted = value.replaceFirst("(?i)(://)[^/?#@]+@", "$1" + REDACTED + "@");
+        int queryStart = redacted.indexOf('?');
+        if (queryStart < 0) {
+            return redacted;
+        }
+        int fragmentStart = redacted.indexOf('#', queryStart);
+        String query = fragmentStart >= 0
+                ? redacted.substring(queryStart + 1, fragmentStart)
+                : redacted.substring(queryStart + 1);
+        String fragment = fragmentStart >= 0 ? redacted.substring(fragmentStart) : "";
+        return redacted.substring(0, queryStart + 1) + redactQuery(query) + fragment;
+    }
+
+    private @Nullable String redactQuery(@Nullable String query) {
+        if (query == null) {
+            return null;
+        }
+        if (query.isBlank()) {
+            return query;
+        }
+        StringJoiner joiner = new StringJoiner("&");
+        for (String part : query.split("&")) {
+            int equals = part.indexOf('=');
+            String key = equals >= 0 ? part.substring(0, equals) : part;
+            if (isSensitiveQueryKey(key)) {
+                joiner.add(key + "=" + REDACTED);
+            } else {
+                joiner.add(part);
+            }
+        }
+        return joiner.toString();
+    }
+
+    private boolean isSensitiveQueryKey(String key) {
+        if (isSensitiveKey(key)) {
+            return true;
+        }
+        try {
+            return isSensitiveKey(URLDecoder.decode(key, StandardCharsets.UTF_8));
+        } catch (IllegalArgumentException _) {
+            return false;
+        }
+    }
+
+    private static boolean looksLikeUrl(String value) {
+        return value.regionMatches(true, 0, "http://", 0, 7)
+                || value.regionMatches(true, 0, "https://", 0, 8);
+    }
+}

@@ -1,0 +1,232 @@
+{{#with controlPanel.body }}
+    <div class="cp-dashboard-stack">
+        <div class="card card-light">
+            <div class="card-header">
+                <div class="cp-card-heading">
+                    <div class="cp-card-header-text">
+                        <h3 class="card-title">Tracing overview</h3>
+                        <div class="card-description">Read-only diagnostics from local Micronaut configuration, beans, and classpath state.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="cp-data-table-container cp-vertical-table">
+                    <table class="table cp-data-table-table">
+                        <tbody>
+                        <tr>
+                            <th scope="row">Providers</th>
+                            <td><span class="badge badge-secondary">{{ providerState }}</span></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Service name</th>
+                            <td><code>{{ serviceName }}</code></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Sampler</th>
+                            <td><code>{{ sampler }}</code></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Propagators</th>
+                            <td><code>{{ propagators }}</code></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Instrumentation</th>
+                            <td>{{ presentInstrumentationCount }} present of {{ instrumentations.size }} checked</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card card-light">
+            <div class="card-header">
+                <h3 class="card-title">Providers</h3>
+            </div>
+            <div class="card-body">
+                {{#if hasProviders}}
+                    <div class="cp-data-table-container">
+                        <table class="table cp-data-table-table cp-data-table-fixed">
+                            <thead>
+                            <tr>
+                                <th scope="col">Provider</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Details</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {{#each providers}}
+                                <tr>
+                                    <td><code>{{ name }}</code></td>
+                                    <td><span class="badge badge-secondary">{{ status }}</span></td>
+                                    <td>{{ detail }}</td>
+                                </tr>
+                            {{/each}}
+                            </tbody>
+                        </table>
+                    </div>
+                {{else}}
+                    <div class="cp-data-table-empty">No tracing provider was detected. Add Micronaut Tracing/OpenTelemetry dependencies to enable provider diagnostics.</div>
+                {{/if}}
+            </div>
+        </div>
+
+        <div class="card card-light">
+            <div class="card-header">
+                <h3 class="card-title">Exporters</h3>
+            </div>
+            <div class="card-body">
+                <div class="cp-data-table-container">
+                    <table class="table cp-data-table-table cp-data-table-fixed">
+                        <thead>
+                        <tr>
+                            <th scope="col">Signal</th>
+                            <th scope="col">Exporter</th>
+                            <th scope="col">Endpoint</th>
+                            <th scope="col">Status</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {{#each exporters}}
+                            <tr>
+                                <td>{{ signal }}</td>
+                                <td><code>{{ exporter }}</code></td>
+                                <td><code>{{ endpoint }}</code></td>
+                                <td><span class="badge badge-secondary">{{ status }}</span></td>
+                            </tr>
+                        {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card card-light">
+            <div class="card-header">
+                <h3 class="card-title">Resource attributes</h3>
+            </div>
+            <div class="card-body">
+                {{#if hasResourceAttributes}}
+                    <div class="cp-data-table-container">
+                        <table class="table cp-data-table-table cp-data-table-fixed">
+                            <thead>
+                            <tr>
+                                <th scope="col">Attribute</th>
+                                <th scope="col">Value</th>
+                                <th scope="col">Source</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {{#each resourceAttributes}}
+                                <tr>
+                                    <td><code>{{ key }}</code></td>
+                                    <td>
+                                        <code>{{ value }}</code>
+                                        {{#if redacted}}<span class="badge badge-secondary">redacted</span>{{/if}}
+                                    </td>
+                                    <td>{{ source }}</td>
+                                </tr>
+                            {{/each}}
+                            </tbody>
+                        </table>
+                    </div>
+                {{else}}
+                    <div class="cp-data-table-empty">No OpenTelemetry resource attributes were configured.</div>
+                {{/if}}
+            </div>
+        </div>
+
+        <div class="card card-light">
+            <div class="card-header">
+                <h3 class="card-title">Instrumentation</h3>
+            </div>
+            <div class="card-body">
+                <div class="cp-data-table-container">
+                    <table class="table cp-data-table-table cp-data-table-fixed">
+                        <thead>
+                        <tr>
+                            <th scope="col">Surface</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Details</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {{#each instrumentations}}
+                            <tr>
+                                <td>{{ surface }}</td>
+                                <td><span class="badge badge-secondary">{{ status }}</span></td>
+                                <td>{{ detail }}</td>
+                            </tr>
+                        {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card card-light">
+            <div class="card-header">
+                <h3 class="card-title">Configuration</h3>
+            </div>
+            <div class="card-body">
+                {{#if configuration}}
+                    <div class="cp-data-table-container">
+                        <table class="table cp-data-table-table cp-data-table-fixed">
+                            <thead>
+                            <tr>
+                                <th scope="col">Key</th>
+                                <th scope="col">Value</th>
+                                <th scope="col">Source</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {{#each configuration}}
+                                <tr>
+                                    <td><code>{{ key }}</code></td>
+                                    <td>
+                                        <code>{{ value }}</code>
+                                        {{#if redacted}}<span class="badge badge-secondary">redacted</span>{{/if}}
+                                    </td>
+                                    <td>{{ source }}</td>
+                                </tr>
+                            {{/each}}
+                            </tbody>
+                        </table>
+                    </div>
+                {{else}}
+                    <div class="cp-data-table-empty">No recognized tracing configuration keys were found.</div>
+                {{/if}}
+            </div>
+        </div>
+
+        <div class="card card-light">
+            <div class="card-header">
+                <h3 class="card-title">Diagnostics</h3>
+            </div>
+            <div class="card-body">
+                {{#if hasDiagnostics}}
+                    <div class="cp-data-table-container">
+                        <table class="table cp-data-table-table cp-data-table-fixed">
+                            <thead>
+                            <tr>
+                                <th scope="col">Severity</th>
+                                <th scope="col">Message</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {{#each diagnostics}}
+                                <tr>
+                                    <td><span class="badge badge-secondary">{{ severity }}</span></td>
+                                    <td>{{ message }}</td>
+                                </tr>
+                            {{/each}}
+                            </tbody>
+                        </table>
+                    </div>
+                {{else}}
+                    <div class="cp-data-table-empty">No local tracing diagnostics were reported.</div>
+                {{/if}}
+            </div>
+        </div>
+    </div>
+{{/with}}

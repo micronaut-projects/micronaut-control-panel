@@ -36,6 +36,20 @@ info:
       purpose: Local development
       owner: Micronaut
 
+otel:
+  service:
+    name: control-panel-example
+  resource:
+    attributes: deployment.environment=dev,service.namespace=control-panel,api.key=example-secret
+  traces:
+    exporter: none
+    sampler: parentbased_always_on
+  metrics:
+    exporter: none
+  logs:
+    exporter: none
+  propagators: tracecontext,baggage
+
 ehcache:
   caches:
     my-ehcache:
