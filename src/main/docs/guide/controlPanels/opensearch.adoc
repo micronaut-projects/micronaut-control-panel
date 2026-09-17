@@ -1,0 +1,61 @@
+= OpenSearch Control Panel
+
+The OpenSearch Control Panel provides read-only diagnostics for applications that use the https://micronaut-projects.github.io/micronaut-opensearch/latest/guide/[Micronaut OpenSearch] module.
+
+To add the panel, include the OpenSearch control panel module as a development-time dependency:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-opensearch[scope=developmentOnly]
+
+The panel is created automatically when an `org.opensearch.client.opensearch.OpenSearchClient` bean is present.
+It does not replace the Micronaut OpenSearch health indicator; it adds a dedicated OpenSearch page with sanitized connection metadata, cluster health, visible indices, aliases, and a bounded mapping-field summary.
+
+== Configuration
+
+The panel is enabled when the module is present.
+You can disable it with:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      opensearch:
+        enabled: false
+----
+
+The index table and mapping preview are capped to avoid expensive rendering in development environments with many indices:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      opensearch:
+        max-indices: 25
+        max-mapping-fields: 20
+----
+
+== Displayed Information
+
+The panel reads the configured OpenSearch client and displays:
+
+* Sanitized transport context from `micronaut.opensearch.rest-client.http-hosts`, `micronaut.opensearch.httpclient5.http-hosts`, or Amazon OpenSearch Service configuration.
+* Amazon OpenSearch Service endpoint and signing region when `micronaut.opensearch.aws.endpoint` and `micronaut.opensearch.aws.signing-region` are configured.
+* Cluster health details including status, timeout state, node counts, pending tasks, in-flight fetches, active shard percentage, active primary shards, relocating shards, initializing shards, unassigned shards, and delayed unassigned shards.
+* A bounded table of visible indices with health, status, primary and replica shard counts, document counts, store size, aliases, and mapping-field summaries.
+
+The panel never displays default headers, authorization values, access keys, secret keys, signed request details, request bodies, indexed document bodies, query results, or arbitrary OpenSearch API responses.
+
+== Required OpenSearch Privileges
+
+The OpenSearch credentials used by the application must be allowed to read cluster health and index metadata for full diagnostics.
+In OpenSearch security terms, the application role typically needs read-only monitor privileges for cluster health and visible index metadata, such as cluster monitor permissions and index monitor/view-index-metadata permissions for the indices you expect to inspect.
+
+When credentials lack the required privileges, the panel shows an authorization state instead of exposing raw response bodies or headers.
+Authentication failures, unavailable clusters, unsupported responses, no visible indices, and red/yellow/green cluster health are represented as distinct non-secret states.
+
+== Read-only Boundary
+
+The OpenSearch panel is intentionally read-only.
+It does not provide a query console, document search, document mutation, index create/delete operations, refresh or force-merge actions, settings changes, security role changes, or an arbitrary API proxy.
+Keep Control Panel enabled only in development, test, or otherwise protected environments.
