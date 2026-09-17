@@ -1,0 +1,169 @@
+{{#with controlPanel.body }}
+    <div class="cp-dashboard-stack cp-neo4j-detail">
+        <div class="tabs" data-tabs data-tabs-storage-key="neo4j-tabs-{{ connection.beanName }}">
+            <div class="tabs-list" role="tablist" aria-label="Neo4j diagnostics sections">
+                <button type="button" class="tabs-trigger active" id="tab-neo4j-connection" data-tabs-trigger="neo4j-connection" role="tab" aria-selected="true" aria-controls="panel-neo4j-connection">Connection</button>
+                <button type="button" class="tabs-trigger" id="tab-neo4j-schema" data-tabs-trigger="neo4j-schema" role="tab" aria-selected="false" aria-controls="panel-neo4j-schema">Schema Inventory</button>
+                <button type="button" class="tabs-trigger" id="tab-neo4j-diagnostics" data-tabs-trigger="neo4j-diagnostics" role="tab" aria-selected="false" aria-controls="panel-neo4j-diagnostics">Diagnostics</button>
+            </div>
+
+            <section id="panel-neo4j-connection" class="tabs-panel active" role="tabpanel" aria-labelledby="tab-neo4j-connection" data-tabs-panel="neo4j-connection">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Connection</h2>
+                        <span class="badge {{ status.badgeClass }}">{{ status.label }}</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="cp-data-table-container cp-vertical-table">
+                            <table class="table cp-data-table-table">
+                                <tbody>
+                                <tr>
+                                    <th scope="row">Driver bean</th>
+                                    <td><code>{{ connection.beanName }}</code></td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">URI</th>
+                                    <td><code class="cp-table-code">{{ connection.uri }}</code></td>
+                                </tr>
+                                {{#if connection.hasUsername}}
+                                    <tr>
+                                        <th scope="row">Username</th>
+                                        <td><code>{{ connection.username }}</code></td>
+                                    </tr>
+                                {{/if}}
+                                {{#if connection.hasEncryption}}
+                                    <tr>
+                                        <th scope="row">Encryption</th>
+                                        <td>{{ connection.encryption }}</td>
+                                    </tr>
+                                {{/if}}
+                                {{#if connection.hasTrustStrategy}}
+                                    <tr>
+                                        <th scope="row">Trust strategy</th>
+                                        <td><code class="cp-table-code">{{ connection.trustStrategy }}</code></td>
+                                    </tr>
+                                {{/if}}
+                                {{#if hasServerInfo}}
+                                    {{#if server.hasAgent}}
+                                        <tr>
+                                            <th scope="row">Server agent</th>
+                                            <td><code class="cp-table-code">{{ server.agent }}</code></td>
+                                        </tr>
+                                    {{/if}}
+                                    {{#if server.hasAddress}}
+                                        <tr>
+                                            <th scope="row">Server address</th>
+                                            <td><code class="cp-table-code">{{ server.address }}</code></td>
+                                        </tr>
+                                    {{/if}}
+                                    {{#if server.hasProtocolVersion}}
+                                        <tr>
+                                            <th scope="row">Bolt protocol</th>
+                                            <td><code>{{ server.protocolVersion }}</code></td>
+                                        </tr>
+                                    {{/if}}
+                                {{/if}}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="panel-neo4j-schema" class="tabs-panel" role="tabpanel" aria-labelledby="tab-neo4j-schema" data-tabs-panel="neo4j-schema" hidden>
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Schema Inventory</h2>
+                        <span class="badge badge-secondary">{{ labelCount }} / {{ relationshipTypeCount }} / {{ propertyKeyCount }}</span>
+                    </div>
+                    <div class="card-body">
+                        {{#if noDriverBeans}}
+                            <p class="card-text">No Neo4j Driver beans are available in this application context.</p>
+                        {{else}}
+                            <div class="cp-data-table-container">
+                                <table class="table cp-data-table-table cp-data-table">
+                                    <thead>
+                                    <tr>
+                                        <th scope="col">Labels</th>
+                                        <th scope="col">Relationship Types</th>
+                                        <th scope="col">Property Keys</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr>
+                                        <td>
+                                            {{#if labels}}
+                                                {{#each labels}}<code class="cp-table-code">{{ this }}</code>{{#unless @last}}<br>{{/unless}}{{/each}}
+                                            {{else}}
+                                                <span class="text-muted">None visible</span>
+                                            {{/if}}
+                                        </td>
+                                        <td>
+                                            {{#if relationshipTypes}}
+                                                {{#each relationshipTypes}}<code class="cp-table-code">{{ this }}</code>{{#unless @last}}<br>{{/unless}}{{/each}}
+                                            {{else}}
+                                                <span class="text-muted">None visible</span>
+                                            {{/if}}
+                                        </td>
+                                        <td>
+                                            {{#if propertyKeys}}
+                                                {{#each propertyKeys}}<code class="cp-table-code">{{ this }}</code>{{#unless @last}}<br>{{/unless}}{{/each}}
+                                            {{else}}
+                                                <span class="text-muted">None visible</span>
+                                            {{/if}}
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        {{/if}}
+                    </div>
+                </div>
+            </section>
+
+            <section id="panel-neo4j-diagnostics" class="tabs-panel" role="tabpanel" aria-labelledby="tab-neo4j-diagnostics" data-tabs-panel="neo4j-diagnostics" hidden>
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Diagnostics</h2>
+                        {{#if hasDiagnostics}}
+                            <span class="badge badge-warning">{{ diagnostics.size }}</span>
+                        {{else}}
+                            <span class="badge badge-success">Clear</span>
+                        {{/if}}
+                    </div>
+                    <div class="card-body">
+                        {{#if hasDiagnostics}}
+                            <div class="cp-data-table-container">
+                                <table class="table cp-data-table-table cp-data-table">
+                                    <thead>
+                                    <tr>
+                                        <th scope="col">Area</th>
+                                        <th scope="col">Result</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {{#each diagnostics}}
+                                        <tr>
+                                            <td>{{ area }}</td>
+                                            <td>
+                                                {{#if permission}}
+                                                    <span class="badge badge-secondary">permission required</span>
+                                                {{else}}
+                                                    <span class="badge badge-warning">diagnostic</span>
+                                                {{/if}}
+                                                {{ message }}
+                                            </td>
+                                        </tr>
+                                    {{/each}}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {{else}}
+                            <p class="card-text">No Neo4j diagnostics are currently reported.</p>
+                        {{/if}}
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+{{/with}}

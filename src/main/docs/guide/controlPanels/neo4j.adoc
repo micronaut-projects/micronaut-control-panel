@@ -1,0 +1,82 @@
+= Neo4j Control Panel
+
+The Neo4j Control Panel provides read-only diagnostics for Micronaut applications that use the Neo4j Bolt driver.
+It is intended for local development, test-resource runs, and staging validation where you need to confirm which Neo4j
+server the application can reach and which graph metadata is visible to the configured user.
+
+To add the Neo4j control panels, add the following dependency:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-neo4j[scope=developmentOnly]
+
+It is assumed that the application already uses the Micronaut Neo4j Bolt integration:
+
+dependency:io.micronaut.neo4j:micronaut-neo4j-bolt[scope=implementation]
+
+The module creates one panel for each available `org.neo4j.driver.Driver` bean. If the Neo4j driver classes are present
+but no `Driver` bean is available, the panel renders a clear empty state so the missing-bean case is not confused with
+an unreachable configured database.
+
+=== Configuration
+
+The panel reads the standard Micronaut Neo4j connection properties where they are available and masks sensitive values
+before rendering them.
+
+[configuration]
+----
+neo4j:
+  uri: bolt://localhost:7687
+  username: neo4j
+  password: secret
+----
+
+The Neo4j control panel is enabled automatically when the module is present. You can disable it or tune the bounded
+metadata lists:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      neo4j:
+        enabled: true
+        max-labels: 100
+        max-relationship-types: 100
+        max-property-keys: 100
+----
+
+Set any metadata limit to `0` to skip that inventory query.
+Values above `500` are capped to keep the development-time panel responsive.
+
+=== Diagnostics
+
+The panel performs fixed read-only probes only:
+
+* Neo4j driver connectivity verification.
+* A lightweight `RETURN 1` query to read server summary information when available.
+* Bounded metadata reads for labels, relationship types, and property keys.
+
+The panel does not provide an arbitrary Cypher console and does not execute write, schema mutation, or administrative
+operations.
+
+The connection tab shows the driver bean name, masked URI or custom-driver state, username when configured, encryption
+or trust hints when available, server agent, server address, and Bolt protocol when the server returns them.
+
+The schema inventory tab shows bounded lists of labels, relationship types, and property keys visible to the current
+Neo4j user. If a metadata query fails because of permissions, the panel reports that metadata as hidden by permissions
+and continues rendering the rest of the Control Panel. Connectivity, authentication, TLS, and metadata failures are
+reported as non-fatal diagnostics instead of failing application startup or the Control Panel shell.
+
+=== Secret Handling
+
+The panel never renders `neo4j.password`. URI user-info is replaced with `***`, and query parameters whose names include
+`password`, `token`, `secret`, `credential`, or `key` are redacted. Diagnostic messages are classified before rendering
+so raw exception messages that may contain credentials are not exposed in HTML or model payloads.
+
+=== Local Verification
+
+For local development, start the application with a reachable Neo4j instance or Micronaut Test Resources configuration,
+then open the Control Panel and select the Neo4j category. A correctly wired application should show a `Connected`
+status, server metadata when Neo4j returns it, and the bounded schema inventory visible to the configured user.
+
+If the URI, authentication, TLS, or permissions are wrong, the Neo4j panel should show a diagnostic message while the
+other Control Panel modules continue to render normally.
