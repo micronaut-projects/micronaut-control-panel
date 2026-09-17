@@ -1,0 +1,86 @@
+= TOML Configuration Control Panel
+
+The TOML Configuration Control Panel provides read-only diagnostics for applications that load configuration through `io.micronaut.toml:micronaut-toml`.
+It complements the Environment Properties panel by focusing on TOML-backed property sources, the flattened keys they contribute, and whether each TOML value is effective or shadowed by a higher-precedence source.
+
+Features include:
+
+* List TOML property sources in Micronaut runtime precedence order.
+* Show source name, origin location, source order, key count, effective count, overridden count, and unknown count.
+* Search TOML keys across the loaded TOML sources.
+* Display key, value type, redacted value, source, and status.
+* Distinguish effective values, values overridden by another TOML source, values overridden by a non-TOML source, and values whose status cannot be proven from the generic Environment API.
+
+To get started, add the Control Panel TOML module and Micronaut TOML support as development-time dependencies:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-toml[scope=developmentOnly]
+dependency:io.micronaut.toml:micronaut-toml[scope=implementation]
+
+The panel is intended for development and test diagnostics, like the rest of Control Panel.
+It does not edit TOML files and does not change Micronaut configuration loading or property-source precedence.
+
+== Configuration
+
+The TOML panel is automatically enabled when `micronaut-control-panel-toml` and `micronaut-toml` are present and at least one TOML-origin property source is loaded.
+Disable the panel with:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      toml:
+        enabled: false
+----
+
+By default, the panel is hidden when TOML support is present but no TOML property sources are loaded.
+Enable an empty diagnostics state with:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    toml:
+      show-empty: true
+----
+
+== Value Masking
+
+Configuration values are masked by default:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    toml:
+      show-values: false
+      show-overridden-values: false
+----
+
+Set `micronaut.control-panel.toml.show-values=true` to display non-sensitive effective TOML values.
+Set `micronaut.control-panel.toml.show-overridden-values=true` only when you also want non-sensitive shadowed or unproven TOML values to be displayed.
+
+Sensitive key names remain masked even when value display is enabled.
+Keys containing `password`, `credential`, `certificate`, `key`, `secret`, or `token` are always rendered as masked values.
+The panel renders the display value only in table cells and does not place raw values in DOM attributes.
+
+== Override Status
+
+The TOML panel uses `Environment.getPropertySources()` as Micronaut's runtime precedence order.
+For each key in each TOML property source, it looks for a higher-precedence property source with the same key.
+
+Status meanings:
+
+* `Effective`: no higher-precedence source contains the key, and the resolved environment value matches the TOML source value.
+* `Overridden by TOML source`: a higher-precedence TOML property source contains the same key.
+* `Overridden by non-TOML source`: a higher-precedence non-TOML source contains the same key.
+* `Unknown`: the Environment API does not expose enough information to prove the effective value.
+
+The TOML panel reports TOML source contribution.
+Use the Environment Properties panel when you need the complete resolved environment across all property sources.
+
+== Metadata Limitations
+
+Micronaut exposes property-source origin locations through the generic `Environment` / `PropertySource` API.
+The TOML panel shows those source locations when available.
+The generic Environment API does not expose TOML line or column metadata for flattened keys, so the panel does not report exact TOML file positions.
