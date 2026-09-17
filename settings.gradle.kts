@@ -8,7 +8,7 @@ pluginManagement {
 }
 
 plugins {
-    id("io.micronaut.build.shared.settings") version "8.0.1"
+    id("io.micronaut.build.shared.settings") version "8.1.1"
 }
 
 rootProject.name = "control-panel-parent"
@@ -24,6 +24,9 @@ include("control-panel-ui")
 include("control-panel-kafka")
 
 include("doc-examples:example-java")
+include("doc-examples:example-kotlin")
+include("doc-examples:example-groovy")
+include("doc-examples:example-python")
 
 // May be a no-op or deprecated depending on Gradle version; kept to preserve behavior from Groovy DSL
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")

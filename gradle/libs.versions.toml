@@ -19,6 +19,9 @@
 [versions]
 micronaut-platform = "5.1.2"
 micronaut = "5.1.12"
+# The Python compiler (micronaut-inject-python) of doc-examples/example-python ships with Micronaut core 5.2+, which this
+# branch does not use yet: only that project resolves this core version
+micronaut-python = "5.2.2"
 micronaut-security = "5.3.2"
 micronaut-views = "6.2.0"
 micronaut-reactor = "4.1.0"
@@ -33,7 +36,7 @@ micronaut-gradle-plugin = "5.0.2"
 micronaut-openapi = "7.1.2"
 micronaut-kafka = "6.1.0"
 kotlin-gradle-plugin = "2.4.10"
-micronaut-shared-settings = "8.0.1"
+micronaut-shared-settings = "8.1.1"
 playwright = "1.62.0"
 shadow-plugin = "9.6.1"
 test-logger-plugin = "4.0.0"
@@ -46,6 +49,9 @@ handlebars-humanize = "4.3.1"
 [libraries]
 micronaut-openapi = { module = "io.micronaut.openapi:micronaut-openapi-bom", version.ref = "micronaut-openapi" }
 micronaut-core = { module = 'io.micronaut:micronaut-core-bom', version.ref = 'micronaut' }
+micronaut-core-python = { module = "io.micronaut:micronaut-core-bom", version.ref = "micronaut-python" }
+micronaut-inject-python-test = { module = "io.micronaut:micronaut-inject-python-test" }
+micronaut-context-python = { module = "io.micronaut:micronaut-context-python" }
 micronaut-security = { module = 'io.micronaut.security:micronaut-security', version.ref = 'micronaut-security' }
 micronaut-platform = { module = "io.micronaut.platform:micronaut-platform", version.ref = "micronaut-platform"}
 micronaut-views = { module = 'io.micronaut.views:micronaut-views-bom', version.ref = 'micronaut-views' }
