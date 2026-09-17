@@ -9,6 +9,7 @@ controlPanels:
   objectStorage: Object Storage
   datasource: Datasource
   hibernate: Hibernate
+  httpClient: HTTP Client
   kafka: Kafka
 
 custom: Creating Custom Control Panels
