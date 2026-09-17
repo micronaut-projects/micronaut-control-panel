@@ -1,0 +1,9 @@
+micronaut:
+  application:
+    name: myApplication
+  control-panel:
+    panels:
+      my-application:
+        title: My Application Control Panel
+        icon: fa-plug
+        order: 10
