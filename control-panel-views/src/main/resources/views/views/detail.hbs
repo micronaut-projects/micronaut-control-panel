@@ -1,0 +1,238 @@
+{{#with controlPanel.body }}
+    <div class="cp-dashboard-stack">
+        <div class="cp-detail-card-grid">
+            <section class="card">
+                <div class="card-body">
+                    <h3 class="cp-detail-section-title">Views configuration</h3>
+                    <div class="cp-data-table-container cp-vertical-table">
+                        <table class="table cp-data-table-table">
+                            <tbody>
+                            <tr>
+                                <th scope="row">micronaut.views.enabled</th>
+                                <td>
+                                    {{#if configuration.viewsConfigurationAvailable}}
+                                        {{#if configuration.viewsEnabled}}
+                                            <span class="badge badge-success">enabled</span>
+                                        {{else}}
+                                            <span class="badge badge-warning">disabled</span>
+                                        {{/if}}
+                                    {{else}}
+                                        <span class="badge badge-secondary">unavailable</span>
+                                    {{/if}}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">micronaut.views.folder</th>
+                                <td><code class="cp-table-code">{{ configuration.folder }}</code></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Views filter</th>
+                                <td>{{ configuration.filterEnabled }}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">CSP</th>
+                                <td>
+                                    {{#if configuration.cspAvailable}}
+                                        {{ configuration.cspEnabled }}; report-only {{ configuration.cspReportOnly }}; nonce {{ configuration.cspNonce }}; path <code class="cp-table-code">{{ configuration.cspFilterPath }}</code>
+                                    {{else}}
+                                        unavailable
+                                    {{/if}}
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <div class="card-body">
+                    <h3 class="cp-detail-section-title">Model processors</h3>
+                    <div class="cp-data-table-container cp-vertical-table">
+                        <table class="table cp-data-table-table">
+                            <tbody>
+                            <tr>
+                                <th scope="row">Processor beans</th>
+                                <td>{{ processors.processorCount }}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Security model</th>
+                                <td>
+                                    {{ processors.securityEnabled }}
+                                    <span class="text-muted">keys</span>
+                                    <code class="cp-table-code">{{ processors.securityKey }}</code>
+                                    <code class="cp-table-code">{{ processors.principalNameKey }}</code>
+                                    <code class="cp-table-code">{{ processors.attributesKey }}</code>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">CSRF model</th>
+                                <td>
+                                    {{ processors.csrfEnabled }}
+                                    <span class="text-muted">key</span>
+                                    <code class="cp-table-code">{{ processors.csrfTokenKey }}</code>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <section class="card">
+            <div class="card-body">
+                <div class="cp-detail-section-heading">
+                    <h3 class="cp-detail-section-title">Warnings</h3>
+                    {{#if warnings}}
+                        <span class="badge badge-danger">{{ warningCount }}</span>
+                    {{else}}
+                        <span class="badge badge-success">0</span>
+                    {{/if}}
+                </div>
+                {{#if warnings}}
+                    <div class="cp-data-table-container">
+                        <table class="table cp-data-table-table">
+                            <thead>
+                            <tr>
+                                <th>Finding</th>
+                                <th>Detail</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {{#each warnings}}
+                                <tr>
+                                    <td>{{ title }}</td>
+                                    <td><code class="cp-table-code">{{ message }}</code></td>
+                                </tr>
+                            {{/each}}
+                            </tbody>
+                        </table>
+                    </div>
+                {{else}}
+                    <p class="text-muted">No static Views warnings were detected.</p>
+                {{/if}}
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="card-body">
+                <div class="cp-detail-section-heading">
+                    <h3 class="cp-detail-section-title">Active renderers</h3>
+                    <span class="badge badge-secondary">{{ rendererCount }}</span>
+                </div>
+                {{#if renderers}}
+                    <div class="cp-data-table cp-data-table-paged" data-filter-table data-filter-table-page-size="10" data-filter-table-label="renderer" data-filter-table-label-plural="renderers">
+                        <div class="cp-data-table-toolbar">
+                            <div class="cp-data-table-summary" data-filter-table-summary>{{ rendererCount }} renderers</div>
+                            <div class="cp-data-table-search">
+                                <input type="search" class="form-control" data-filter-table-search placeholder="Search renderers" aria-label="Search renderers">
+                            </div>
+                        </div>
+                        <div class="cp-data-table-container">
+                            <table class="table cp-data-table-table cp-data-table-fixed">
+                                <thead>
+                                <tr>
+                                    <th>Renderer</th>
+                                    <th>Engine</th>
+                                    <th>Produces</th>
+                                    <th>Order</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {{#each renderers}}
+                                    <tr data-filter-table-row>
+                                        <td><code class="cp-table-code">{{ className }}</code></td>
+                                        <td>{{ engine }}</td>
+                                        <td>
+                                            {{#each produces}}
+                                                <code class="cp-table-code">{{ this }}</code>
+                                            {{/each}}
+                                        </td>
+                                        <td>{{ order }}</td>
+                                    </tr>
+                                {{/each}}
+                                <tr data-filter-table-empty hidden>
+                                    <td colspan="4" class="cp-data-table-empty-cell">No renderers found.</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                {{else}}
+                    <p class="text-muted">No active ViewsRenderer beans were detected. Static templates cannot be checked.</p>
+                {{/if}}
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="card-body">
+                <div class="cp-detail-section-heading">
+                    <h3 class="cp-detail-section-title">View routes</h3>
+                    <span class="badge badge-secondary">{{ routeCount }}</span>
+                </div>
+                {{#if routes}}
+                    <div class="cp-data-table cp-data-table-paged" data-filter-table data-filter-table-page-size="12" data-filter-table-label="route" data-filter-table-label-plural="routes">
+                        <div class="cp-data-table-toolbar">
+                            <div class="cp-data-table-summary" data-filter-table-summary>{{ routeCount }} routes</div>
+                            <div class="cp-data-table-search">
+                                <input type="search" class="form-control" data-filter-table-search placeholder="Search view routes" aria-label="Search view routes">
+                            </div>
+                        </div>
+                        <div class="cp-data-table-container">
+                            <table class="table cp-data-table-table cp-data-table-fixed">
+                                <thead>
+                                <tr>
+                                    <th>Method</th>
+                                    <th>Route</th>
+                                    <th>Target</th>
+                                    <th>View</th>
+                                    <th>Produces</th>
+                                    <th>Status</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {{#each routes}}
+                                    <tr data-filter-table-row>
+                                        <td><span class="badge badge-secondary">{{ method }}</span></td>
+                                        <td><code class="cp-table-code">{{ uri }}</code></td>
+                                        <td><code class="cp-table-code">{{ targetMethod }}</code></td>
+                                        <td><code class="cp-table-code">{{ viewName }}</code></td>
+                                        <td>
+                                            {{#each produces}}
+                                                <code class="cp-table-code">{{ this }}</code>
+                                            {{/each}}
+                                        </td>
+                                        <td><span class="badge {{ statusBadgeClass }}">{{ statusLabel }}</span></td>
+                                    </tr>
+                                {{/each}}
+                                <tr data-filter-table-empty hidden>
+                                    <td colspan="6" class="cp-data-table-empty-cell">No view routes found.</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="cp-data-table-footer">
+                            <label class="cp-data-table-page-size">
+                                Rows per page
+                                <select class="form-control" data-filter-table-page-size-select aria-label="View routes per page">
+                                    <option value="8">8</option>
+                                    <option value="12" selected>12</option>
+                                    <option value="20">20</option>
+                                    <option value="50">50</option>
+                                </select>
+                            </label>
+                            <div class="cp-data-table-pagination">
+                                <span class="cp-data-table-page" data-filter-table-page>Page 1 of 1</span>
+                                <button type="button" class="btn btn-secondary btn-sm" data-filter-table-prev>Previous</button>
+                                <button type="button" class="btn btn-secondary btn-sm" data-filter-table-next>Next</button>
+                            </div>
+                        </div>
+                    </div>
+                {{else}}
+                    <p class="text-muted">No routes annotated with @View or returning ModelAndView were detected.</p>
+                {{/if}}
+            </div>
+        </section>
+    </div>
+{{/with}}

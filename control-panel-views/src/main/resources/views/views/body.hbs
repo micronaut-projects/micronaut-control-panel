@@ -1,0 +1,37 @@
+{{#with controlPanel.body }}
+    <div class="cp-data-table-container cp-vertical-table">
+        <table class="table cp-data-table-table">
+            <tbody>
+            <tr>
+                <th scope="row">View routes</th>
+                <td>{{ routeCount }} routes</td>
+            </tr>
+            <tr>
+                <th scope="row">Renderers</th>
+                <td>{{ rendererCount }} active</td>
+            </tr>
+            <tr>
+                <th scope="row">Views</th>
+                <td>
+                    {{#if configuration.viewsEnabled}}
+                        <span class="badge badge-secondary">enabled</span>
+                    {{else}}
+                        <span class="badge badge-secondary">disabled</span>
+                    {{/if}}
+                    <code class="cp-table-code">{{ configuration.folder }}</code>
+                </td>
+            </tr>
+            <tr>
+                <th scope="row">Warnings</th>
+                <td>
+                    {{#if warnings}}
+                        <span class="badge badge-danger">{{ warningCount }}</span>
+                    {{else}}
+                        <span class="badge badge-success">0</span>
+                    {{/if}}
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+{{/with}}
