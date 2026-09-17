@@ -41,6 +41,15 @@ ehcache:
     my-ehcache:
       enabled: true
 
+datasources:
+  my-postgres:
+    db-type: postgres
+    driver-class-name: org.postgresql.Driver
+
+jpa:
+  my-postgres:
+    enabled: false
+
 # Test properties to verify environment endpoint filtering
 test:
   username: john

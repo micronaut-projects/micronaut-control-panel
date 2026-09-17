@@ -1,0 +1,48 @@
+{{#with controlPanel.body as |body|}}
+    {{#if body.hasConfigurations}}
+        <p class="card-text">
+            <strong>{{body.totalChangeSets}}</strong> applied change sets across
+            <strong>{{body.enabledCount}}</strong> enabled Liquibase datasource configurations.
+            {{#if body.disabledCount}}<span class="badge badge-secondary">{{body.disabledCount}} disabled</span>{{/if}}
+            {{#if body.errorCount}}<span class="badge badge-danger">{{body.errorCount}} error</span>{{/if}}
+        </p>
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead>
+                <tr>
+                    <th scope="col">Datasource</th>
+                    <th scope="col">State</th>
+                    <th scope="col">Change sets</th>
+                    <th scope="col">Latest execution</th>
+                    {{#if body.showDeploymentIds}}<th scope="col">Deployment ID</th>{{/if}}
+                    <th scope="col">Latest tag</th>
+                </tr>
+                </thead>
+                <tbody>
+                {{#each body.dataSources as |history|}}
+                    <tr>
+                        <td><code>{{history.name}}</code></td>
+                        <td><span class="badge badge-{{history.badgeClass}}">{{history.stateLabel}}</span></td>
+                        <td>{{history.count}}</td>
+                        <td>{{#if history.latestExecutionDate}}<code>{{history.latestExecutionDate}}</code>{{else}}<span class="text-muted">None</span>{{/if}}</td>
+                        {{#if body.showDeploymentIds}}
+                            <td>{{#if history.latestDeploymentId}}<code>{{history.latestDeploymentId}}</code>{{else}}<span class="text-muted">None</span>{{/if}}</td>
+                        {{/if}}
+                        <td>{{#if history.latestTag}}<code>{{history.latestTag}}</code>{{else}}<span class="text-muted">None</span>{{/if}}</td>
+                    </tr>
+                {{/each}}
+                </tbody>
+            </table>
+        </div>
+        {{#unless body.showDeploymentIds}}
+            <p class="card-text text-muted">Deployment IDs are hidden by Control Panel configuration.</p>
+        {{/unless}}
+        {{#unless body.showChecksums}}
+            <p class="card-text text-muted">Checksums are hidden by Control Panel configuration.</p>
+        {{/unless}}
+    {{else}}
+        <p class="card-text text-muted">
+            No Liquibase datasource configuration was detected. Configure <code>liquibase.datasources.*</code> to show migration history.
+        </p>
+    {{/if}}
+{{/with}}
