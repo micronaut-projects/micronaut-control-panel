@@ -59,6 +59,24 @@ class DataSourceControllerTest {
     }
 
     @Test
+    void routesReturnNotFoundForDisabledPanel() {
+        // Given
+        var service = mock(DataSourceService.class);
+        doReturn(Map.of(DATA_SOURCE, service)).when(beanLocator).mapOfType(SERVICE_ARGUMENT);
+        var panel = mock(DataSourceControlPanel.class);
+        when(panel.isEnabled()).thenReturn(false);
+        doReturn(Map.of(DATA_SOURCE, panel)).when(beanLocator).mapOfType(PANEL_ARGUMENT);
+
+        // When
+        DataSourceController controller = new DataSourceController(beanLocator, jsonMapper);
+
+        // Then
+        assertEquals(404, controller.schemaJs(DATA_SOURCE).getStatus().getCode());
+        assertEquals(404, controller.tables(DATA_SOURCE, 1, 10, null, null).getStatus().getCode());
+        assertEquals(404, controller.query(DATA_SOURCE, new DataSourceController.QueryRequest("SELECT 1", 0, 10, 1)).getStatus().getCode());
+    }
+
+    @Test
     void schemaJs_returnsJavaScript_whenPanelExists() throws Exception {
         // Given
         var service = mock(DataSourceService.class);
@@ -614,6 +632,7 @@ class DataSourceControllerTest {
         var panel = mock(DataSourceControlPanel.class);
         when(panel.getBody()).thenReturn(body);
         when(panel.getBeanName()).thenReturn(DATA_SOURCE);
+        when(panel.isEnabled()).thenReturn(true);
         doReturn(Map.of(DATA_SOURCE, panel)).when(beanLocator).mapOfType(PANEL_ARGUMENT);
     }
 

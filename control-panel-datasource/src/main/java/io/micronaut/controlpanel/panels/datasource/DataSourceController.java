@@ -51,7 +51,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * REST controller to execute SQL queries against a specific DataSource for the Control Panel.
@@ -83,8 +85,16 @@ public final class DataSourceController {
 
     public DataSourceController(BeanLocator locator, JsonMapper jsonMapper) {
         // Map keyed by bean name (datasource name)
-        this.services = locator.mapOfType(SERVICE_ARGUMENT);
-        this.panels = locator.mapOfType(PANEL_ARGUMENT);
+        this.panels = locator.mapOfType(PANEL_ARGUMENT)
+            .values()
+            .stream()
+            .filter(DataSourceControlPanel::isEnabled)
+            .collect(Collectors.toUnmodifiableMap(DataSourceControlPanel::getBeanName, Function.identity()));
+        this.services = locator.mapOfType(SERVICE_ARGUMENT)
+            .entrySet()
+            .stream()
+            .filter(entry -> panels.containsKey(entry.getKey()))
+            .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
         this.schemas = computeSchemas();
         this.jsonMapper = jsonMapper;
         if (LOG.isDebugEnabled()) {
