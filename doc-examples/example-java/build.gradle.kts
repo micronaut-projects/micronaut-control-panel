@@ -50,6 +50,10 @@ dependencies {
     implementation(libs.avro)
     implementation(libs.avro.serde)
 
+    // CRaC
+    implementation(projects.micronautControlPanelCrac)
+    implementation(mnCrac.micronaut.crac)
+
     // OpenAPI + Swagger UI (views generated at compile-time)
     annotationProcessor(mnOpenapi.micronaut.openapi)
     testAnnotationProcessor(mnOpenapi.micronaut.openapi)

@@ -10,11 +10,14 @@ import io.micronaut.context.annotation.ContextConfigurer;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.event.StartupEvent;
 import io.micronaut.core.util.NativeImageUtils;
+import io.micronaut.crac.OrderedResource;
 import io.micronaut.objectstorage.local.LocalStorageConfiguration;
 import org.jspecify.annotations.NonNull;
 import io.micronaut.runtime.Micronaut;
 import io.micronaut.runtime.event.annotation.EventListener;
 import jakarta.inject.Singleton;
+import org.crac.Context;
+import org.crac.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -127,6 +130,25 @@ public class Application {
             if (!NativeImageUtils.inImageCode()) {
                 CacheInitializer.initCache(infinispanCacheManager.getCache("my-infinispan"));
             }
+        }
+    }
+
+    @Singleton
+    static class SearchIndexCheckpointLifecycleResourceWithLongDiagnosticName implements OrderedResource {
+
+        @Override
+        public void beforeCheckpoint(Context<? extends Resource> context) {
+            LOG.info("Preparing search index lifecycle resource before checkpoint");
+        }
+
+        @Override
+        public void afterRestore(Context<? extends Resource> context) {
+            LOG.info("Restoring search index lifecycle resource after restore");
+        }
+
+        @Override
+        public int getOrder() {
+            return 90;
         }
     }
 }

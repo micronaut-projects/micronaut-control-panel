@@ -12,6 +12,7 @@ datasources:
     keepalive-time: 300000
     connection-test-query: SELECT 1
     register-mbeans: true
+    allow-pool-suspension: true
   hibernate-reporting:
     db-type: postgres
     driver-class-name: org.postgresql.Driver
@@ -25,6 +26,7 @@ datasources:
     keepalive-time: 180000
     connection-test-query: SELECT 1
     isolate-internal-queries: true
+    allow-pool-suspension: true
 
 jpa:
   default:
