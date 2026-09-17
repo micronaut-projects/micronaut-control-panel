@@ -1,0 +1,20 @@
+<p class="card-text">
+    <strong>{{body.listenerCount}}</strong> listener methods across
+    <strong>{{body.connectionCount}}</strong> configured connections.
+</p>
+<p class="card-text">
+    <strong>Health</strong>:
+    {{#if body.health.available}}
+        <span class="badge badge-primary">{{body.health.status}}</span>
+    {{else}}
+        <span class="badge badge-secondary">Unavailable</span>
+    {{/if}}
+</p>
+<p class="card-text">
+    <strong>Metrics</strong>:
+    {{#if body.metricsPresent}}
+        <span class="badge badge-primary">Available</span>
+    {{else}}
+        <span class="badge badge-secondary">No RabbitMQ meters</span>
+    {{/if}}
+</p>

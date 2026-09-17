@@ -1,0 +1,212 @@
+{{#with controlPanel.body}}
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <strong>Health</strong><br>
+                    {{#if health.available}}
+                        <span class="badge badge-primary">{{health.status}}</span>
+                    {{else}}
+                        <span class="badge badge-secondary">Unavailable</span>
+                    {{/if}}
+                </div>
+                <div class="col-md-3">
+                    <strong>Listeners</strong><br>
+                    {{listenerCount}}
+                </div>
+                <div class="col-md-3">
+                    <strong>Connections</strong><br>
+                    {{connectionCount}}
+                </div>
+                <div class="col-md-3">
+                    <strong>Management UI</strong><br>
+                    {{#if managementUrl}}
+                        <a href="{{managementUrl}}" target="_blank" rel="noopener noreferrer">Open RabbitMQ Management</a>
+                    {{else}}
+                        <span class="text-muted">not configured</span>
+                    {{/if}}
+                </div>
+            </div>
+            <p class="text-muted mt-3 mb-0">{{health.message}}</p>
+        </div>
+    </div>
+
+    <div class="tabs cp-rabbitmq-tabs" data-tabs>
+        <div class="tabs-list" role="tablist" aria-label="RabbitMQ diagnostics">
+            <button type="button" class="tabs-trigger active" id="rabbitmq-listeners-tab" role="tab" aria-selected="true" aria-controls="rabbitmq-listeners" data-tabs-trigger="listeners">Listeners</button>
+            <button type="button" class="tabs-trigger" id="rabbitmq-connections-tab" role="tab" aria-selected="false" aria-controls="rabbitmq-connections" data-tabs-trigger="connections">Connections</button>
+            <button type="button" class="tabs-trigger" id="rabbitmq-metrics-tab" role="tab" aria-selected="false" aria-controls="rabbitmq-metrics" data-tabs-trigger="metrics">Metrics</button>
+            <button type="button" class="tabs-trigger" id="rabbitmq-health-tab" role="tab" aria-selected="false" aria-controls="rabbitmq-health" data-tabs-trigger="health">Health Details</button>
+        </div>
+
+        <section class="tabs-panel" id="rabbitmq-listeners" role="tabpanel" aria-labelledby="rabbitmq-listeners-tab" data-tabs-panel="listeners">
+            {{#if listeners}}
+                <div class="cp-data-table">
+                    <div class="cp-data-table-container">
+                        <table class="table cp-data-table-table cp-data-table-fixed cp-rabbitmq-listeners-table">
+                            <thead>
+                            <tr>
+                                <th class="cp-rabbitmq-method-column">Bean / method</th>
+                                <th class="cp-rabbitmq-queue-column">Queue</th>
+                                <th class="cp-rabbitmq-connection-column">Connection</th>
+                                <th class="cp-rabbitmq-small-column">Consumers</th>
+                                <th class="cp-rabbitmq-small-column">Prefetch</th>
+                                <th class="cp-rabbitmq-ack-column">Ack</th>
+                                <th class="cp-rabbitmq-small-column">Exclusive</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {{#each listeners}}
+                                <tr>
+                                    <td data-label="Bean / method">
+                                        <code class="cp-table-code">{{beanSimpleName}}.{{method}}</code><br>
+                                        <small class="text-muted">{{signature}}</small>
+                                    </td>
+                                    <td data-label="Queue"><code class="cp-table-code">{{queue}}</code></td>
+                                    <td data-label="Connection"><code class="cp-table-code">{{connection}}</code></td>
+                                    <td data-label="Consumers">{{numberOfConsumers}}</td>
+                                    <td data-label="Prefetch">{{prefetch}}</td>
+                                    <td data-label="Ack">
+                                        {{#if autoAcknowledgment}}
+                                            auto
+                                        {{else}}
+                                            {{#if acknowledgementArgument}}manual{{else}}framework{{/if}}
+                                        {{/if}}
+                                        {{#if reQueue}}<span class="badge badge-secondary">requeue</span>{{/if}}
+                                    </td>
+                                    <td data-label="Exclusive">{{exclusive}}</td>
+                                </tr>
+                            {{/each}}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {{else}}
+                <p>No RabbitMQ listener methods were detected. This means no bean with <code>@RabbitListener</code> and <code>@Queue</code> metadata is active in the current application context.</p>
+            {{/if}}
+        </section>
+
+        <section class="tabs-panel" id="rabbitmq-connections" role="tabpanel" aria-labelledby="rabbitmq-connections-tab" data-tabs-panel="connections" hidden>
+            {{#if connections}}
+                <div class="cp-data-table">
+                    <div class="cp-data-table-container">
+                        <table class="table cp-data-table-table cp-data-table-fixed cp-rabbitmq-connections-table">
+                            <thead>
+                            <tr>
+                                <th class="cp-rabbitmq-name-column">Name</th>
+                                <th class="cp-rabbitmq-address-column">Address</th>
+                                <th class="cp-rabbitmq-vhost-column">VHost</th>
+                                <th class="cp-rabbitmq-small-column">Heartbeat</th>
+                                <th class="cp-rabbitmq-details-column">Recovery</th>
+                                <th class="cp-rabbitmq-details-column">Channel pool</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {{#each connections}}
+                                <tr>
+                                    <td data-label="Name"><code class="cp-table-code">{{name}}</code></td>
+                                    <td data-label="Address">
+                                        <code class="cp-table-code">{{host}}:{{port}}</code>
+                                        {{#if addresses}}
+                                            <br>
+                                            <small class="text-muted">{{#each addresses}}<code>{{this}}</code> {{/each}}</small>
+                                        {{/if}}
+                                    </td>
+                                    <td data-label="VHost"><code class="cp-table-code">{{virtualHost}}</code></td>
+                                    <td data-label="Heartbeat">{{requestedHeartbeat}}s</td>
+                                    <td data-label="Recovery">
+                                        automatic: {{automaticRecovery}}<br>
+                                        topology: {{topologyRecovery}}<br>
+                                        interval: {{networkRecoveryInterval}}ms
+                                    </td>
+                                    <td data-label="Channel pool">
+                                        max idle: {{maxIdleChannels}}<br>
+                                        confirm: {{confirmTimeout}}<br>
+                                        RPC: {{rpcTimeout}}
+                                    </td>
+                                </tr>
+                            {{/each}}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {{else}}
+                <p>No RabbitMQ connection factory configuration beans were detected. RabbitMQ may be absent, disabled, or not configured in this application context.</p>
+            {{/if}}
+        </section>
+
+        <section class="tabs-panel" id="rabbitmq-metrics" role="tabpanel" aria-labelledby="rabbitmq-metrics-tab" data-tabs-panel="metrics" hidden>
+            <p class="text-muted">{{metrics.message}}</p>
+            {{#if metrics.meters}}
+                <div class="cp-data-table cp-data-table-paged" data-filter-table data-filter-table-page-size="12" data-filter-table-label="meter" data-filter-table-label-plural="meters">
+                    <div class="cp-data-table-toolbar">
+                        <div class="cp-data-table-summary" data-filter-table-summary>{{ metrics.meters.size }} meters</div>
+                        <div class="cp-data-table-search">
+                            <input type="search" class="form-control" data-filter-table-search placeholder="Search meters" aria-label="Search RabbitMQ meters">
+                        </div>
+                    </div>
+                    <div class="cp-data-table-container">
+                        <table class="table cp-data-table-table cp-data-table-fixed cp-rabbitmq-metrics-table">
+                            <thead>
+                            <tr>
+                                <th class="cp-rabbitmq-meter-column">Meter</th>
+                                <th class="cp-rabbitmq-type-column">Type</th>
+                                <th>Tags</th>
+                                <th class="cp-rabbitmq-measurements-column">Measurements</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {{#each metrics.meters}}
+                                <tr data-filter-table-row>
+                                    <td data-label="Meter"><code class="cp-table-code">{{name}}</code></td>
+                                    <td data-label="Type">{{type}}</td>
+                                    <td data-label="Tags">
+                                        {{#each tags}}
+                                            <code class="cp-table-code">{{key}}={{value}}</code><br>
+                                        {{/each}}
+                                    </td>
+                                    <td data-label="Measurements">
+                                        {{#each measurements}}
+                                            <code class="cp-table-code">{{statistic}}={{value}}</code><br>
+                                        {{/each}}
+                                    </td>
+                                </tr>
+                            {{/each}}
+                            <tr data-filter-table-empty hidden>
+                                <td class="cp-data-table-empty-cell" colspan="4">No RabbitMQ meters found.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {{/if}}
+        </section>
+
+        <section class="tabs-panel" id="rabbitmq-health" role="tabpanel" aria-labelledby="rabbitmq-health-tab" data-tabs-panel="health" hidden>
+            {{#if health.details}}
+                <div class="cp-data-table">
+                    <div class="cp-data-table-container">
+                        <table class="table cp-data-table-table cp-data-table-fixed">
+                            <thead>
+                            <tr>
+                                <th>Detail</th>
+                                <th>Value</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {{#each health.details}}
+                                <tr>
+                                    <td data-label="Detail"><code class="cp-table-code">{{name}}</code></td>
+                                    <td data-label="Value"><code class="cp-table-code">{{value}}</code></td>
+                                </tr>
+                            {{/each}}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {{else}}
+                <p>{{health.message}}</p>
+            {{/if}}
+        </section>
+    </div>
+{{/with}}
