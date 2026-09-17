@@ -1,0 +1,221 @@
+{{#with controlPanel.body }}
+    <div class="cp-dashboard-stack">
+        {{#if errors}}
+            <div class="card card-light">
+                <div class="card-header">
+                    <div class="cp-card-heading">
+                        <div class="cp-card-header-text">
+                            <h3 class="card-title">Client status</h3>
+                            <div class="card-description">Scoped MongoDB diagnostics that could not be read.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {{#each errors}}
+                        <div class="cp-data-table-empty"><strong>{{ scope }}</strong>: {{ message }}</div>
+                    {{/each}}
+                </div>
+            </div>
+        {{/if}}
+
+        <div class="tabs cp-mongodb-tabs" data-tabs data-tabs-storage-key="mongodb-tabs-{{ client.mode }}-{{ client.beanName }}">
+            <div class="cp-hibernate-tabs-header">
+                <div class="tabs-list" role="tablist" aria-label="MongoDB diagnostics">
+                    <button type="button" class="tabs-trigger active" role="tab" aria-selected="true" data-tabs-trigger="connection">
+                        <i class="fas fa-plug"></i>
+                        Connection
+                    </button>
+                    <button type="button" class="tabs-trigger" role="tab" aria-selected="false" data-tabs-trigger="collections">
+                        <i class="fas fa-table-list"></i>
+                        Collections
+                    </button>
+                    <button type="button" class="tabs-trigger" role="tab" aria-selected="false" data-tabs-trigger="schema">
+                        <i class="fas fa-diagram-project"></i>
+                        Schema
+                    </button>
+                </div>
+            </div>
+
+            <div class="tabs-panel" role="tabpanel" data-tabs-panel="connection">
+                <div class="card card-light">
+                    <div class="card-header">
+                        <div class="cp-card-heading">
+                            <div class="cp-card-header-text">
+                                <h3 class="card-title">Connection summary</h3>
+                                <div class="card-description">Sanitized client settings. Credentials and sensitive connection options are redacted.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="cp-data-table-container cp-vertical-table">
+                            <table class="table cp-data-table-table">
+                                <tbody>
+                                <tr><th scope="row">Bean</th><td><code class="cp-table-code">{{ client.beanName }}</code></td></tr>
+                                <tr><th scope="row">Driver mode</th><td><span class="badge badge-secondary">{{ client.mode }}</span></td></tr>
+                                {{#if client.configuredDatabase}}
+                                    <tr><th scope="row">Configured database</th><td><code class="cp-table-code">{{ client.configuredDatabase }}</code></td></tr>
+                                {{/if}}
+                                {{#if client.hosts}}
+                                    <tr>
+                                        <th scope="row">Hosts</th>
+                                        <td>
+                                            {{#each client.hosts}}
+                                                <code class="cp-table-code">{{ this }}</code>
+                                            {{/each}}
+                                        </td>
+                                    </tr>
+                                {{/if}}
+                                {{#if client.applicationName}}<tr><th scope="row">Application name</th><td><code class="cp-table-code">{{ client.applicationName }}</code></td></tr>{{/if}}
+                                {{#if client.readPreference}}<tr><th scope="row">Read preference</th><td><code class="cp-table-code">{{ client.readPreference }}</code></td></tr>{{/if}}
+                                {{#if client.readConcern}}<tr><th scope="row">Read concern</th><td><code class="cp-table-code">{{ client.readConcern }}</code></td></tr>{{/if}}
+                                {{#if client.writeConcern}}<tr><th scope="row">Write concern</th><td><code class="cp-table-code">{{ client.writeConcern }}</code></td></tr>{{/if}}
+                                {{#if client.uuidRepresentation}}<tr><th scope="row">UUID representation</th><td><code class="cp-table-code">{{ client.uuidRepresentation }}</code></td></tr>{{/if}}
+                                <tr><th scope="row">SSL</th><td><code class="cp-table-code">{{ client.sslEnabled }}</code></td></tr>
+                                {{#if client.poolSummary}}<tr><th scope="row">Pool</th><td><code class="cp-table-code">{{ client.poolSummary }}</code></td></tr>{{/if}}
+                                <tr><th scope="row">Codecs</th><td><code class="cp-table-code">{{ client.codecCount }}</code></td></tr>
+                                <tr><th scope="row">Codec registries</th><td><code class="cp-table-code">{{ client.codecRegistryCount }}</code></td></tr>
+                                <tr><th scope="row">Command listeners</th><td><code class="cp-table-code">{{ client.commandListenerCount }}</code></td></tr>
+                                <tr><th scope="row">Pool listeners</th><td><code class="cp-table-code">{{ client.connectionPoolListenerCount }}</code></td></tr>
+                                <tr><th scope="row">POJO packages</th><td><code class="cp-table-code">{{ client.packageCount }}</code></td></tr>
+                                {{#each client.options}}
+                                    <tr><th scope="row">{{ @key }}</th><td><code class="cp-table-code">{{ this }}</code></td></tr>
+                                {{/each}}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tabs-panel" role="tabpanel" data-tabs-panel="collections" hidden>
+                <div class="cp-dashboard-stack">
+                    {{#if databases}}
+                        {{#each databases}}
+                            <div class="card card-light">
+                                <div class="card-header">
+                                    <div class="cp-card-heading">
+                                        <div class="cp-card-header-text">
+                                            <h3 class="card-title">{{ name }}</h3>
+                                            <div class="card-description">{{ collectionCount }} collections loaded. Metadata is read-only and scoped per collection.</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    {{#each errors}}
+                                        <div class="cp-data-table-empty"><strong>{{ scope }}</strong>: {{ message }}</div>
+                                    {{/each}}
+                                    {{#if collections}}
+                                        {{#each collections}}
+                                            <section class="cp-dashboard-stack">
+                                                <h4 class="card-title">{{ name }}</h4>
+                                                <div class="cp-data-table-container cp-vertical-table">
+                                                    <table class="table cp-data-table-table">
+                                                        <tbody>
+                                                        <tr><th scope="row">Type</th><td><code class="cp-table-code">{{ type }}</code></td></tr>
+                                                        {{#if estimatedDocumentCount}}<tr><th scope="row">Estimated documents</th><td><code class="cp-table-code">{{ estimatedDocumentCount }}</code></td></tr>{{/if}}
+                                                        {{#if optionsJson}}<tr><th scope="row">Options</th><td><pre class="cp-query-code"><code>{{ optionsJson }}</code></pre></td></tr>{{/if}}
+                                                        {{#if validationJson}}<tr><th scope="row">Validation</th><td><pre class="cp-query-code"><code>{{ validationJson }}</code></pre></td></tr>{{/if}}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                {{#each errors}}
+                                                    <div class="cp-data-table-empty"><strong>{{ scope }}</strong>: {{ message }}</div>
+                                                {{/each}}
+                                                {{#if indexes}}
+                                                    <div class="cp-data-table-container">
+                                                        <table class="table cp-data-table-table cp-data-table-fixed">
+                                                            <thead>
+                                                            <tr>
+                                                                <th>Name</th>
+                                                                <th>Keys</th>
+                                                                <th>Properties</th>
+                                                                <th>Options</th>
+                                                            </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                            {{#each indexes}}
+                                                                <tr>
+                                                                    <td><code class="cp-table-code">{{ name }}</code></td>
+                                                                    <td><pre class="cp-query-code"><code>{{ keysJson }}</code></pre></td>
+                                                                    <td>
+                                                                        {{#if unique}}<span class="badge badge-secondary">unique</span>{{/if}}
+                                                                        {{#if sparse}}<span class="badge badge-secondary">sparse</span>{{/if}}
+                                                                        {{#if expireAfterSeconds}}<span class="badge badge-secondary">ttl {{ expireAfterSeconds }}s</span>{{/if}}
+                                                                    </td>
+                                                                    <td>
+                                                                        {{#if partialFilterJson}}<pre class="cp-query-code"><code>{{ partialFilterJson }}</code></pre>{{/if}}
+                                                                        {{#if collationJson}}<pre class="cp-query-code"><code>{{ collationJson }}</code></pre>{{/if}}
+                                                                        {{#if optionsJson}}<pre class="cp-query-code"><code>{{ optionsJson }}</code></pre>{{/if}}
+                                                                    </td>
+                                                                </tr>
+                                                            {{/each}}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                {{else}}
+                                                    <div class="cp-data-table-empty">No indexes returned for this collection.</div>
+                                                {{/if}}
+                                            </section>
+                                        {{/each}}
+                                    {{else}}
+                                        <div class="cp-data-table-empty">No collections returned for this database.</div>
+                                    {{/if}}
+                                </div>
+                            </div>
+                        {{/each}}
+                    {{else}}
+                        <div class="cp-data-table-empty">No databases returned. The client may be unavailable or the user may not have list-database permission.</div>
+                    {{/if}}
+                </div>
+            </div>
+
+            <div class="tabs-panel" role="tabpanel" data-tabs-panel="schema" hidden>
+                <div class="card card-light">
+                    <div class="card-header">
+                        <div class="cp-card-heading">
+                            <div class="cp-card-header-text">
+                                <h3 class="card-title">Sampled schema</h3>
+                                <div class="card-description">Schema sampling is read-only, bounded by configuration, and redacts values by default.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {{#if schemaEnabled}}
+                            {{#each databases}}
+                                {{#each collections}}
+                                    {{#if schema.enabled}}
+                                        <h4 class="card-title">{{ ../name }}.{{ name }}</h4>
+                                        {{#each schema.errors}}
+                                            <div class="cp-data-table-empty"><strong>{{ scope }}</strong>: {{ message }}</div>
+                                        {{/each}}
+                                        {{#if schema.fields}}
+                                            <div class="cp-data-table-container">
+                                                <table class="table cp-data-table-table">
+                                                    <thead><tr><th>Field</th><th>Types</th><th>Seen</th><th>Frequency</th></tr></thead>
+                                                    <tbody>
+                                                    {{#each schema.fields}}
+                                                        <tr>
+                                                            <td><code class="cp-table-code">{{ path }}</code></td>
+                                                            <td>{{#each types}}<span class="badge badge-secondary">{{ this }}</span>{{/each}}</td>
+                                                            <td><code class="cp-table-code">{{ count }}</code></td>
+                                                            <td><code class="cp-table-code">{{ frequency }}</code></td>
+                                                        </tr>
+                                                    {{/each}}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        {{else}}
+                                            <div class="cp-data-table-empty">No sampled fields returned.</div>
+                                        {{/if}}
+                                    {{/if}}
+                                {{/each}}
+                            {{/each}}
+                        {{else}}
+                            <div class="cp-data-table-empty">Schema sampling is disabled. Enable it with <code>micronaut.control-panel.panels.mongodb.schema.enabled=true</code> in trusted development environments.</div>
+                        {{/if}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{{/with}}

@@ -1,0 +1,126 @@
+The MongoDB Control Panel provides read-only diagnostics for Micronaut applications that use
+`micronaut-mongodb`. It is intended for trusted development environments where developers need to inspect configured
+MongoDB clients, reachable databases, collections, validation rules, indexes, and bounded document shape summaries
+without opening MongoDB Compass or running shell commands.
+
+To add the MongoDB control panels, add the following dependency:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-mongodb[scope=developmentOnly]
+
+The application must also use one or both of the Micronaut MongoDB driver integrations:
+
+dependency:io.micronaut.mongodb:micronaut-mongo-sync[scope=runtimeOnly]
+
+dependency:io.micronaut.mongodb:micronaut-mongo-reactive[scope=runtimeOnly]
+
+The module automatically creates one panel for each supported default or named MongoDB client bean. Default and named
+clients are discovered from the same Micronaut MongoDB configuration used by the driver, including `mongodb.uri` and
+`mongodb.servers.*.uri`.
+
+image::mongodb-desktop.png[MongoDB collection diagnostics desktop view]
+
+The panel remains responsive on narrow screens for long collection, index, and option values.
+
+image::mongodb-mobile.png[MongoDB collection diagnostics mobile view]
+
+== Supported Clients
+
+The first version supports the blocking `com.mongodb.client.MongoClient` and Reactive Streams
+`com.mongodb.reactivestreams.client.MongoClient` beans created by `micronaut-mongo-sync` and
+`micronaut-mongo-reactive`.
+
+Kotlin coroutine clients are not a separate first-version driver mode. If an application also exposes the underlying
+reactive client as a normal Micronaut bean, the reactive panel can inspect that client.
+
+== Diagnostics
+
+Each MongoDB client panel starts with a sanitized connection summary, including the bean name, driver mode, configured
+database name when present in the connection string, hosts, safe connection options, read preference, read concern, write
+concern, UUID representation, SSL flag, application name, codec/listener counts, package count, and safe pool size
+summary. Credentials and sensitive option values are redacted.
+
+The detail view then shows reachable databases and collections. For each collection, the panel attempts to show:
+
+* Collection type and options.
+* Validation rules and validation behavior when returned by `listCollections`.
+* Estimated document count when permitted.
+* Index name, key definition, uniqueness, sparse flag, TTL, partial filter, collation, and remaining index options.
+
+MongoDB permission errors, unavailable clients, and timeout failures are rendered as scoped errors for the client,
+database, or collection that failed. A failure in one collection does not prevent other collections or clients from
+rendering.
+
+image::mongodb-unavailable.png[MongoDB unavailable client scoped error view]
+
+== Schema Sampling
+
+Schema sampling is disabled by default. When enabled, it performs a bounded read-only `find` with a configured sample
+limit and displays field paths, BSON types, counts, and frequency. Sample values are redacted by default.
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      mongodb:
+        schema:
+          enabled: true
+          sample-size: 20
+          max-depth: 4
+          max-fields: 200
+          max-collections: 5
+          redact-values: true
+----
+
+The panel does not provide a Mongo shell, mutation controls, aggregation editor, arbitrary command execution, or a query
+explain helper in this first version. The reserved `explain.enabled` setting remains disabled and does not expose an
+executable endpoint.
+
+== Configuration
+
+The MongoDB control panel is automatically enabled when the module is present. You can disable it or tune server-side
+limits:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      mongodb:
+        enabled: false
+        timeout: 2s
+        max-databases: 25
+        max-collections-per-database: 100
+        max-indexes-per-collection: 100
+        explain:
+          enabled: false
+----
+
+All limits are enforced server-side. UI navigation cannot bypass them.
+
+== Permissions
+
+The MongoDB user needs read/list privileges for the metadata you want to display. Common operations include `buildInfo`
+against `admin`, `listDatabaseNames`, `listCollections`, `estimatedDocumentCount`, `listIndexes`, and optional sampled
+`find` reads. Limited users can still use the panel; unavailable data is shown as a scoped error rather than a full
+Control Panel failure.
+
+== Security
+
+Control Panel modules are designed for local and trusted development environments. Keep the Control Panel behind the
+normal Control Panel security settings and avoid enabling MongoDB schema sampling where sampled field names themselves
+are sensitive.
+
+The MongoDB panel is read-only. It does not insert, update, delete, drop databases or collections, create/drop indexes,
+or run arbitrary MongoDB commands. Connection strings and diagnostic errors are sanitized so credentials are not rendered
+in the UI.
+
+== Relationship To Other Panels
+
+This panel is separate from the JDBC Datasource panel. The Datasource panel inspects JDBC datasources, SQL schema, and
+SQL query behavior. The MongoDB panel inspects MongoDB driver clients, databases, collections, validation rules, indexes,
+and sampled BSON document shape.
+
+It is also separate from the Micronaut Data repository metadata work tracked by DEV-451. Repository metadata explains
+Micronaut Data repository methods and generated query metadata; this panel explains what MongoDB clients and collections
+are present at runtime, including applications that use the MongoDB driver directly without Micronaut Data.

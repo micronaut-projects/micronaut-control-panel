@@ -1,0 +1,15 @@
+mongodb:
+  servers:
+    default:
+      uri: ${MONGODB_URI}
+    inventory:
+      uri: ${MONGODB_INVENTORY_URI:${MONGODB_URI}}
+micronaut:
+  control-panel:
+    panels:
+      mongodb:
+        enabled: true
+        schema:
+          enabled: true
+          sample-size: 10
+          max-collections: 4
