@@ -50,6 +50,12 @@ dependencies {
     implementation(libs.avro)
     implementation(libs.avro.serde)
 
+    // Reactor
+    implementation(projects.micronautControlPanelReactor)
+    implementation(mnReactor.micronaut.reactor)
+    implementation(mnReactor.micronaut.reactor.http.client)
+    implementation(mnReactor.micrometer.context.propagation)
+
     // OpenAPI + Swagger UI (views generated at compile-time)
     annotationProcessor(mnOpenapi.micronaut.openapi)
     testAnnotationProcessor(mnOpenapi.micronaut.openapi)

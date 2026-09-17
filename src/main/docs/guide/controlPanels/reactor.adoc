@@ -1,0 +1,54 @@
+The Reactor diagnostics panel provides a read-only development-time view of Micronaut routes and beans that use
+https://micronaut-projects.github.io/micronaut-reactor/latest/guide/[Micronaut Reactor].
+
+To add the panel, include the Control Panel Reactor module:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-reactor[scope=developmentOnly]
+
+Your application also needs Reactor integration for reactive controller and client support:
+
+dependency:io.micronaut.reactor:micronaut-reactor[scope=runtimeOnly]
+
+Reactor HTTP client diagnostics appear only when the Reactor HTTP client module is present:
+
+dependency:io.micronaut.reactor:micronaut-reactor-http-client[scope=runtimeOnly]
+
+The panel lists application routes whose return type metadata contains `Mono` or `Flux`. Non-Reactor routes are not
+listed here and the regular HTTP Routes panel is unchanged.
+
+Route modes mean:
+
+* `single`: a `Mono` route that produces one result.
+* `multi`: a `Flux` route without an explicit streaming media type.
+* `streaming`: a `Flux` route that produces streaming JSON, NDJSON, or another stream media type.
+* `sse`: a `Flux` route that produces `text/event-stream`.
+* `unknown`: Reactor appears nested in route metadata but the panel cannot confidently infer a top-level mode.
+
+You can disable only this panel with:
+
+.Disabling the Reactor diagnostics panel
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      reactor:
+        enabled: false
+----
+
+=== Readiness Checks
+
+The context-propagation check reports whether the `io.micrometer:context-propagation` artifact is present. This is only
+a prerequisite signal; it does not prove automatic Reactor context propagation is enabled for every chain.
+
+The meter readiness checks report whether a Micrometer `MeterRegistry` bean exists and how many meter names beginning
+with `reactor.` are registered. The panel reads names and counts only. It is not a profiler, subscriber, tracing viewer,
+metrics backend, or alerting system.
+
+=== Security and Redaction
+
+The Reactor panel does not subscribe to publishers, invoke controller routes, or call HTTP clients. Reactor HTTP client
+diagnostics expose only sanitized bean labels and public Reactor client interface types.
+
+Endpoint URLs, headers, credentials, cookies, request bodies, response bodies, Reactor context values, MDC values,
+trace/span identifiers, metric tag values, measurements, and exporter configuration are hidden by design.
