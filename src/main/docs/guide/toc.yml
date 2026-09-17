@@ -10,6 +10,7 @@ controlPanels:
   datasource: Datasource
   hibernate: Hibernate
   kafka: Kafka
+  servlet: Servlet Runtime
 
 custom: Creating Custom Control Panels
 repository: Repository
