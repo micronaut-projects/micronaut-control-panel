@@ -17,6 +17,7 @@ package io.micronaut.controlpanel.panels.objectstorage;
 
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.objectstorage.ObjectStorageEntry;
+import io.micronaut.objectstorage.ObjectStorageException;
 import io.micronaut.objectstorage.ObjectStorageOperations;
 import io.micronaut.objectstorage.aws.AwsS3Configuration;
 import io.micronaut.objectstorage.configuration.AbstractObjectStorageConfiguration;
@@ -24,6 +25,7 @@ import io.micronaut.objectstorage.local.LocalStorageConfiguration;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.Optional;
 
@@ -115,6 +117,57 @@ class ObjectStorageControlPanelTest {
         assertEquals(1, body.entries().size());
         assertTrue(body.entries().contains(entry1));
         assertFalse(body.entries().contains(entry2));
+    }
+
+    @Test
+    void getBodyHasNoErrorWhenObjectsAreListed() {
+        ObjectStorageOperations operations = Mockito.mock(ObjectStorageOperations.class);
+        Mockito.doReturn(java.util.Set.of()).when(operations).listObjects();
+
+        ObjectStorageControlPanel panel = createPanel(operations, Mockito.mock(AbstractObjectStorageConfiguration.class), Mockito.mock(ControlPanelConfiguration.class));
+        assertNull(panel.getBody().error());
+    }
+
+    @Test
+    void getBodyReportsAnErrorWhenListingObjectsFails() {
+        ObjectStorageOperations operations = Mockito.mock(ObjectStorageOperations.class);
+        Mockito.when(operations.listObjects()).thenThrow(
+            new ObjectStorageException("Error listing objects", new NoSuchFileException("/tmp/missing-storage"))
+        );
+        LocalStorageConfiguration localConfig = Mockito.mock(LocalStorageConfiguration.class);
+        Mockito.when(localConfig.getName()).thenReturn("my-local");
+        Mockito.when(localConfig.getPath()).thenReturn(Path.of("/tmp/missing-storage"));
+
+        ObjectStorageControlPanel panel = createPanel(operations, localConfig, Mockito.mock(ControlPanelConfiguration.class));
+        var body = panel.getBody();
+        assertTrue(body.entries().isEmpty());
+        assertEquals("Error listing objects: NoSuchFileException: /tmp/missing-storage", body.error());
+        assertEquals(Path.of("/tmp/missing-storage"), body.metadata().get("path"));
+    }
+
+    @Test
+    void getBodyReportsAnErrorWhenRetrievingAnObjectFails() {
+        ObjectStorageOperations operations = Mockito.mock(ObjectStorageOperations.class);
+        Mockito.doReturn(java.util.Set.of("entry1")).when(operations).listObjects();
+        Mockito.when(operations.retrieve("entry1")).thenThrow(new ObjectStorageException("Access denied"));
+
+        ObjectStorageControlPanel panel = createPanel(operations, Mockito.mock(AbstractObjectStorageConfiguration.class), Mockito.mock(ControlPanelConfiguration.class));
+        var body = panel.getBody();
+        assertTrue(body.entries().isEmpty());
+        assertEquals("Access denied", body.error());
+    }
+
+    @Test
+    void describeFailureSkipsCausesWhoseMessageIsAlreadyIncluded() {
+        var cause = new NoSuchFileException("/tmp/missing-storage");
+        assertEquals("java.nio.file.NoSuchFileException: /tmp/missing-storage", ObjectStorageControlPanel.describeFailure(new RuntimeException(cause)));
+        assertEquals("IllegalStateException", ObjectStorageControlPanel.describeFailure(new IllegalStateException()));
+    }
+
+    @Test
+    void bodyCreatedWithoutAnErrorHasNoError() {
+        var body = new ObjectStorageControlPanel.Body(java.util.List.of(), java.util.Map.of());
+        assertNull(body.error());
     }
 
     @Test
