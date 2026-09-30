@@ -1,0 +1,48 @@
+{{#with controlPanel.body }}
+    {{#if errors}}
+        <div class="cp-data-table-empty">
+            {{#each errors}}
+                <div><strong>{{ scope }}</strong>: {{ message }}</div>
+            {{/each}}
+        </div>
+    {{/if}}
+    <div class="cp-data-table-container cp-vertical-table">
+        <table class="table cp-data-table-table">
+            <tbody>
+            <tr>
+                <th scope="row">Client</th>
+                <td><code class="cp-table-code">{{ client.beanName }}</code></td>
+            </tr>
+            <tr>
+                <th scope="row">Driver mode</th>
+                <td><span class="badge badge-secondary">{{ client.mode }}</span></td>
+            </tr>
+            <tr>
+                <th scope="row">Build info</th>
+                <td>
+                    {{#if client.buildOk}}
+                        <span class="badge badge-secondary">available</span>
+                        {{#if client.buildVersion}}<code class="cp-table-code">{{ client.buildVersion }}</code>{{/if}}
+                    {{else}}
+                        <span class="badge badge-secondary">unavailable</span>
+                    {{/if}}
+                </td>
+            </tr>
+            <tr>
+                <th scope="row">Databases</th>
+                <td>{{ databases.size }} databases loaded</td>
+            </tr>
+            <tr>
+                <th scope="row">Schema sampling</th>
+                <td>
+                    {{#if schemaEnabled}}
+                        <span class="badge badge-secondary">enabled</span>
+                    {{else}}
+                        <span class="badge badge-secondary">disabled</span>
+                    {{/if}}
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+{{/with}}
