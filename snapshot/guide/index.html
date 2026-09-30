@@ -24,7 +24,7 @@
         }
     </script>
     <style type="text/css">
-        .lang-java { display: block }; .lang-python { display: block }; .lang-kotlin { display: block }; .lang-groovy { display: block }; 
+        .lang-java { display: block }; .lang-python { display: block }; .lang-kotlin { display: block }; .lang-groovy { display: block }; .lang-scala { display: block }; 
     </style>
 </head>
 
@@ -199,6 +199,15 @@ cards, buttons, badges, dialogs, data tables, tabs, breadcrumbs, sidebars, and l
 &lt;/dependency&gt;</code></pre>
 </div>
 </div>
+<div class="listingblock multi-language-sample">
+<div class="title"></div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="pyronaut">[tool.pyronaut.dependencies]
+build = [
+    <span class="hljs-string">"io.micronaut.controlpanel:micronaut-control-panel-ui"</span>,
+]</code></pre>
+</div>
+</div>
 </p>
 </div>
 <div class="paragraph">
@@ -221,6 +230,15 @@ cards, buttons, badges, dialogs, data tables, tabs, breadcrumbs, sidebars, and l
 &lt;/dependency&gt;</code></pre>
 </div>
 </div>
+<div class="listingblock multi-language-sample">
+<div class="title"></div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="pyronaut">[tool.pyronaut.dependencies]
+build = [
+    <span class="hljs-string">"io.micronaut.controlpanel:micronaut-control-panel-management"</span>,
+]</code></pre>
+</div>
+</div>
 </p>
 </div>
 <div class="paragraph">
@@ -241,6 +259,15 @@ Micrometer is present and metrics are enabled:</p>
     &lt;artifactId&gt;micronaut-micrometer-core&lt;/artifactId&gt;
     &lt;scope&gt;runtime&lt;/scope&gt;
 &lt;/dependency&gt;</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="title"></div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="pyronaut">[tool.pyronaut.dependencies]
+runtime = [
+    <span class="hljs-string">"io.micronaut.micrometer:micronaut-micrometer-core"</span>,
+]</code></pre>
 </div>
 </div>
 </p>
@@ -486,6 +513,15 @@ Micronaut Endpoints require having the <code>io.micronaut:micronaut-management</
     &lt;artifactId&gt;micronaut-control-panel-cache&lt;/artifactId&gt;
     &lt;scope&gt;provided&lt;/scope&gt;
 &lt;/dependency&gt;</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="title"></div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="pyronaut">[tool.pyronaut.dependencies]
+build = [
+    <span class="hljs-string">"io.micronaut.controlpanel:micronaut-control-panel-cache"</span>,
+]</code></pre>
 </div>
 </div>
 </p>
@@ -748,6 +784,15 @@ Micronaut Endpoints require having the <code>io.micronaut:micronaut-management</
 &lt;/dependency&gt;</code></pre>
 </div>
 </div>
+<div class="listingblock multi-language-sample">
+<div class="title"></div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="pyronaut">[tool.pyronaut.dependencies]
+build = [
+    <span class="hljs-string">"io.micronaut.controlpanel:micronaut-control-panel-management"</span>,
+]</code></pre>
+</div>
+</div>
 </p>
 </div>
 <div class="paragraph">
@@ -770,6 +815,15 @@ Micronaut Endpoints require having the <code>io.micronaut:micronaut-management</
 &lt;/dependency&gt;</code></pre>
 </div>
 </div>
+<div class="listingblock multi-language-sample">
+<div class="title"></div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="pyronaut">[tool.pyronaut.dependencies]
+runtime = [
+    <span class="hljs-string">"io.micronaut:micronaut-management"</span>,
+]</code></pre>
+</div>
+</div>
 </p>
 </div>
 <div class="paragraph">
@@ -789,6 +843,15 @@ Micronaut Endpoints require having the <code>io.micronaut:micronaut-management</
     &lt;artifactId&gt;micronaut-micrometer-core&lt;/artifactId&gt;
     &lt;scope&gt;runtime&lt;/scope&gt;
 &lt;/dependency&gt;</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="title"></div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="pyronaut">[tool.pyronaut.dependencies]
+runtime = [
+    <span class="hljs-string">"io.micronaut.micrometer:micronaut-micrometer-core"</span>,
+]</code></pre>
 </div>
 </div>
 </p>
@@ -1889,6 +1952,15 @@ access outside the control panel.</p>
 &lt;/dependency&gt;</code></pre>
 </div>
 </div>
+<div class="listingblock multi-language-sample">
+<div class="title"></div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="pyronaut">[tool.pyronaut.dependencies]
+build = [
+    <span class="hljs-string">"io.micronaut.controlpanel:micronaut-control-panel-object-storage"</span>,
+]</code></pre>
+</div>
+</div>
 </p>
 </div>
 <div class="paragraph">
@@ -2118,6 +2190,15 @@ access outside the control panel.</p>
 &lt;/dependency&gt;</code></pre>
 </div>
 </div>
+<div class="listingblock multi-language-sample">
+<div class="title"></div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="pyronaut">[tool.pyronaut.dependencies]
+build = [
+    <span class="hljs-string">"io.micronaut.controlpanel:micronaut-control-panel-datasource"</span>,
+]</code></pre>
+</div>
+</div>
 </p>
 </div>
 <div class="paragraph">
@@ -2246,6 +2327,15 @@ Hibernate statistics, cache regions, named queries, and read-only HQL query resu
     &lt;artifactId&gt;micronaut-control-panel-hibernate&lt;/artifactId&gt;
     &lt;scope&gt;provided&lt;/scope&gt;
 &lt;/dependency&gt;</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="title"></div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="pyronaut">[tool.pyronaut.dependencies]
+build = [
+    <span class="hljs-string">"io.micronaut.controlpanel:micronaut-control-panel-hibernate"</span>,
+]</code></pre>
 </div>
 </div>
 </p>
@@ -2586,6 +2676,15 @@ You can disable it by setting:</p>
     &lt;artifactId&gt;micronaut-control-panel-kafka&lt;/artifactId&gt;
     &lt;scope&gt;provided&lt;/scope&gt;
 &lt;/dependency&gt;</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="title"></div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="pyronaut">[tool.pyronaut.dependencies]
+build = [
+    <span class="hljs-string">"io.micronaut.controlpanel:micronaut-control-panel-kafka"</span>,
+]</code></pre>
 </div>
 </div>
 </p>
@@ -3391,6 +3490,7 @@ a default category called <code>Dashboard</code> that is used for all control pa
 <a href="../api/io/micronaut/controlpanel/core/AbstractControlPanel.html">AbstractControlPanel</a>. For example:</p>
 </div>
 <div class="listingblock multi-language-sample">
+<div class="title">MyApplicationControlPanel</div>
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Singleton
 public class MyApplicationControlPanel extends AbstractControlPanel&lt;MyApplicationControlPanel.Body&gt; { // <b class="conum">(1)</b>
@@ -3413,6 +3513,78 @@ public class MyApplicationControlPanel extends AbstractControlPanel&lt;MyApplica
 
     @ReflectiveAccess // <b class="conum">(5)</b>
     public record Body(String text){}
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="title">MyApplicationControlPanel</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-python hljs" data-lang="python">NAME: str = "my-application"  # <b class="conum">(2)</b>
+
+
+@ReflectiveAccess  # <b class="conum">(5)</b>
+@dataclass
+class Body:
+    text: str
+
+
+@Singleton
+class MyApplicationControlPanel(AbstractControlPanel[Body]):  # <b class="conum">(1)</b>
+
+    def __init__(self, configuration: Annotated[ControlPanelConfiguration, Named(NAME)]):
+        super().__init__(NAME, configuration)  # <b class="conum">(3)</b>
+
+    def getBody(self) -&gt; Body:
+        return Body("This is an application-provided control panel. This text is coming from the body.")
+
+    def getCategory(self) -&gt; Category:
+        return Category(NAME, "My Application", "fas fa-copy", 1)  # <b class="conum">(4)</b></code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="title">MyApplicationControlPanel</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">@Singleton
+class MyApplicationControlPanel(@Named(NAME) configuration: ControlPanelConfiguration) :
+    AbstractControlPanel&lt;MyApplicationControlPanel.Body&gt;(NAME, configuration) { // <b class="conum">(1)</b> <b class="conum">(3)</b>
+
+    companion object {
+        const val NAME = "my-application" // <b class="conum">(2)</b>
+    }
+
+    override fun getBody() = Body("This is an application-provided control panel. This text is coming from the body.")
+
+    override fun getCategory() = ControlPanel.Category(NAME, "My Application", "fas fa-copy", 1) // <b class="conum">(4)</b>
+
+    @ReflectiveAccess // <b class="conum">(5)</b>
+    data class Body(val text: String)
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="title">MyApplicationControlPanel</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">@Singleton
+class MyApplicationControlPanel extends AbstractControlPanel&lt;MyApplicationControlPanel.Body&gt; { // <b class="conum">(1)</b>
+
+    private static final String NAME = "my-application" // <b class="conum">(2)</b>
+
+    MyApplicationControlPanel(@Named(NAME) ControlPanelConfiguration configuration) {
+        super(NAME, configuration) // <b class="conum">(3)</b>
+    }
+
+    @Override
+    Body getBody() {
+        new Body("This is an application-provided control panel. This text is coming from the body.")
+    }
+
+    @Override
+    ControlPanel.Category getCategory() {
+        new ControlPanel.Category(NAME, "My Application", "fas fa-copy", 1) // <b class="conum">(4)</b>
+    }
+
+    @ReflectiveAccess // <b class="conum">(5)</b>
+    static record Body(String text) {}
 }</code></pre>
 </div>
 </div>
