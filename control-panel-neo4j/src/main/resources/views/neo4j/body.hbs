@@ -1,0 +1,36 @@
+{{#with controlPanel.body }}
+    <div class="cp-data-table-container cp-vertical-table">
+        <table class="table cp-data-table-table">
+            <tbody>
+            <tr>
+                <th scope="row">Driver bean</th>
+                <td><code>{{ connection.beanName }}</code></td>
+            </tr>
+            <tr>
+                <th scope="row">Connection</th>
+                <td><code class="cp-table-code">{{ connection.uri }}</code></td>
+            </tr>
+            <tr>
+                <th scope="row">Status</th>
+                <td><span class="badge {{ status.badgeClass }}">{{ status.label }}</span></td>
+            </tr>
+            {{#unless noDriverBeans}}
+                <tr>
+                    <th scope="row">Schema inventory</th>
+                    <td>
+                        {{ labelCount }} labels,
+                        {{ relationshipTypeCount }} relationship types,
+                        {{ propertyKeyCount }} property keys
+                    </td>
+                </tr>
+            {{/unless}}
+            {{#if hasDiagnostics}}
+                <tr>
+                    <th scope="row">Diagnostics</th>
+                    <td>{{ diagnostics.size }} non-fatal diagnostic(s)</td>
+                </tr>
+            {{/if}}
+            </tbody>
+        </table>
+    </div>
+{{/with}}
