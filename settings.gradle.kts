@@ -24,6 +24,7 @@ include("control-panel-ui")
 include("control-panel-kafka")
 
 include("doc-examples:example-java")
+include("test-suite-thymeleaf")
 include("doc-examples:example-kotlin")
 include("doc-examples:example-groovy")
 include("doc-examples:example-python")
