@@ -60,7 +60,7 @@ loadScripts(document, 'script');</script>
 <li><a href="#method-summary" tabindex="0">Method Summary</a></li>
 <li><a href="#constructor-detail" tabindex="0">Constructor Details</a>
 <ol class="toc-list">
-<li><a href="#%3Cinit%3E(io.micronaut.controlpanel.core.ControlPanelRepository,io.micronaut.context.BeanContext,io.micronaut.management.endpoint.refresh.RefreshEndpoint,io.micronaut.management.endpoint.stop.ServerStopEndpoint,io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration,io.micronaut.controlpanel.core.security.ControlPanelWriteAccessEvaluator)" tabindex="0">ControlPanelController(ControlPanelRepository, BeanContext, RefreshEndpoint, ServerStopEndpoint, ControlPanelModuleConfiguration, ControlPanelWriteAccessEvaluator)</a></li>
+<li><a href="#%3Cinit%3E(io.micronaut.controlpanel.core.ControlPanelRepository,io.micronaut.context.BeanContext,io.micronaut.management.endpoint.refresh.RefreshEndpoint,io.micronaut.management.endpoint.stop.ServerStopEndpoint,io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration,io.micronaut.controlpanel.core.security.ControlPanelWriteAccessEvaluator,io.micronaut.controlpanel.ui.ControlPanelRenderer)" tabindex="0">ControlPanelController(ControlPanelRepository, BeanContext, RefreshEndpoint, ServerStopEndpoint, ControlPanelModuleConfiguration, ControlPanelWriteAccessEvaluator, ControlPanelRenderer)</a></li>
 </ol>
 </li>
 <li><a href="#method-detail" tabindex="0">Method Details</a>
@@ -131,12 +131,13 @@ implements <a href="ControlPanelApi.html" title="interface in io.micronaut.contr
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Constructor</div>
 <div class="table-header col-last">Description</div>
-<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(io.micronaut.controlpanel.core.ControlPanelRepository,io.micronaut.context.BeanContext,io.micronaut.management.endpoint.refresh.RefreshEndpoint,io.micronaut.management.endpoint.stop.ServerStopEndpoint,io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration,io.micronaut.controlpanel.core.security.ControlPanelWriteAccessEvaluator)" class="member-name-link">ControlPanelController</a><wbr>(<a href="../core/ControlPanelRepository.html" title="interface in io.micronaut.controlpanel.core">ControlPanelRepository</a>&nbsp;repository,
+<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(io.micronaut.controlpanel.core.ControlPanelRepository,io.micronaut.context.BeanContext,io.micronaut.management.endpoint.refresh.RefreshEndpoint,io.micronaut.management.endpoint.stop.ServerStopEndpoint,io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration,io.micronaut.controlpanel.core.security.ControlPanelWriteAccessEvaluator,io.micronaut.controlpanel.ui.ControlPanelRenderer)" class="member-name-link">ControlPanelController</a><wbr>(<a href="../core/ControlPanelRepository.html" title="interface in io.micronaut.controlpanel.core">ControlPanelRepository</a>&nbsp;repository,
  io.micronaut.context.BeanContext&nbsp;beanContext,
  @Nullable io.micronaut.management.endpoint.refresh.RefreshEndpoint&nbsp;refreshEndpoint,
  @Nullable io.micronaut.management.endpoint.stop.ServerStopEndpoint&nbsp;stopEndpoint,
  <a href="../core/config/ControlPanelModuleConfiguration.html" title="interface in io.micronaut.controlpanel.core.config">ControlPanelModuleConfiguration</a>&nbsp;configuration,
- <a href="../core/security/ControlPanelWriteAccessEvaluator.html" title="interface in io.micronaut.controlpanel.core.security">ControlPanelWriteAccessEvaluator</a>&nbsp;writeAccessEvaluator)</code></div>
+ <a href="../core/security/ControlPanelWriteAccessEvaluator.html" title="interface in io.micronaut.controlpanel.core.security">ControlPanelWriteAccessEvaluator</a>&nbsp;writeAccessEvaluator,
+ <a href="ControlPanelRenderer.html" title="class in io.micronaut.controlpanel.ui">ControlPanelRenderer</a>&nbsp;renderer)</code></div>
 <div class="col-last even-row-color">&nbsp;</div>
 </div>
 </section>
@@ -152,19 +153,19 @@ implements <a href="ControlPanelApi.html" title="interface in io.micronaut.contr
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>io.micronaut.http.HttpResponse<wbr>&lt;io.micronaut.views.ModelAndView&lt;?&gt;&gt;</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>io.micronaut.http.HttpResponse<wbr>&lt;<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#byCategory(java.lang.String,io.micronaut.http.HttpRequest)" class="member-name-link">byCategory</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;categoryId,
  io.micronaut.http.HttpRequest&lt;?&gt;&nbsp;request)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Renders the category view.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>io.micronaut.http.HttpResponse<wbr>&lt;io.micronaut.views.ModelAndView&lt;?&gt;&gt;</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>io.micronaut.http.HttpResponse<wbr>&lt;<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#detail(java.lang.String,io.micronaut.http.HttpRequest)" class="member-name-link">detail</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;controlPanelName,
  io.micronaut.http.HttpRequest&lt;?&gt;&nbsp;request)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Renders the control panel detailed view.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>io.micronaut.http.HttpResponse<wbr>&lt;io.micronaut.views.ModelAndView&lt;?&gt;&gt;</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>io.micronaut.http.HttpResponse<wbr>&lt;<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#index(io.micronaut.http.HttpRequest)" class="member-name-link">index</a><wbr>(io.micronaut.http.HttpRequest&lt;?&gt;&nbsp;request)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Renders the index view.</div>
@@ -197,7 +198,7 @@ implements <a href="ControlPanelApi.html" title="interface in io.micronaut.contr
 <h2>Constructor Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="&lt;init&gt;(io.micronaut.controlpanel.core.ControlPanelRepository,io.micronaut.context.BeanContext,io.micronaut.management.endpoint.refresh.RefreshEndpoint,io.micronaut.management.endpoint.stop.ServerStopEndpoint,io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration,io.micronaut.controlpanel.core.security.ControlPanelWriteAccessEvaluator)">
+<section class="detail" id="&lt;init&gt;(io.micronaut.controlpanel.core.ControlPanelRepository,io.micronaut.context.BeanContext,io.micronaut.management.endpoint.refresh.RefreshEndpoint,io.micronaut.management.endpoint.stop.ServerStopEndpoint,io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration,io.micronaut.controlpanel.core.security.ControlPanelWriteAccessEvaluator,io.micronaut.controlpanel.ui.ControlPanelRenderer)">
 <h3>ControlPanelController</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="annotations">@Inject
@@ -206,7 +207,18 @@ implements <a href="ControlPanelApi.html" title="interface in io.micronaut.contr
  @Nullable io.micronaut.management.endpoint.refresh.RefreshEndpoint&nbsp;refreshEndpoint,
  @Nullable io.micronaut.management.endpoint.stop.ServerStopEndpoint&nbsp;stopEndpoint,
  <a href="../core/config/ControlPanelModuleConfiguration.html" title="interface in io.micronaut.controlpanel.core.config">ControlPanelModuleConfiguration</a>&nbsp;configuration,
- <a href="../core/security/ControlPanelWriteAccessEvaluator.html" title="interface in io.micronaut.controlpanel.core.security">ControlPanelWriteAccessEvaluator</a>&nbsp;writeAccessEvaluator)</span></div>
+ <a href="../core/security/ControlPanelWriteAccessEvaluator.html" title="interface in io.micronaut.controlpanel.core.security">ControlPanelWriteAccessEvaluator</a>&nbsp;writeAccessEvaluator,
+ <a href="ControlPanelRenderer.html" title="class in io.micronaut.controlpanel.ui">ControlPanelRenderer</a>&nbsp;renderer)</span></div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>repository</code> - Control Panel Repository</dd>
+<dd><code>beanContext</code> - Bean Context</dd>
+<dd><code>refreshEndpoint</code> - Refresh endpoint</dd>
+<dd><code>stopEndpoint</code> - Stop Endpoint</dd>
+<dd><code>configuration</code> - Control Panel Module Configuration</dd>
+<dd><code>writeAccessEvaluator</code> - WriteAccess Evaluator</dd>
+<dd><code>renderer</code> - Control Panel Renderer</dd>
+</dl>
 </div>
 </section>
 </li>
@@ -222,7 +234,7 @@ implements <a href="ControlPanelApi.html" title="interface in io.micronaut.contr
 <section class="detail" id="index(io.micronaut.http.HttpRequest)">
 <h3>index</h3>
 <div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">io.micronaut.http.HttpResponse&lt;io.micronaut.views.ModelAndView&lt;?&gt;&gt;</span>&nbsp;<span class="element-name">index</span><wbr><span class="parameters">(io.micronaut.http.HttpRequest&lt;?&gt;&nbsp;request)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">io.micronaut.http.HttpResponse&lt;<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</span>&nbsp;<span class="element-name">index</span><wbr><span class="parameters">(io.micronaut.http.HttpRequest&lt;?&gt;&nbsp;request)</span></div>
 <div class="block"><span class="description-from-type-label">Description copied from interface:&nbsp;<code><a href="ControlPanelApi.html#index(io.micronaut.http.HttpRequest)">ControlPanelApi</a></code></span></div>
 <div class="block">Renders the index view.</div>
 <dl class="notes">
@@ -240,7 +252,7 @@ implements <a href="ControlPanelApi.html" title="interface in io.micronaut.contr
 <section class="detail" id="byCategory(java.lang.String,io.micronaut.http.HttpRequest)">
 <h3>byCategory</h3>
 <div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">io.micronaut.http.HttpResponse&lt;io.micronaut.views.ModelAndView&lt;?&gt;&gt;</span>&nbsp;<span class="element-name">byCategory</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;categoryId,
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">io.micronaut.http.HttpResponse&lt;<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</span>&nbsp;<span class="element-name">byCategory</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;categoryId,
  io.micronaut.http.HttpRequest&lt;?&gt;&nbsp;request)</span></div>
 <div class="block"><span class="description-from-type-label">Description copied from interface:&nbsp;<code><a href="ControlPanelApi.html#byCategory(java.lang.String,io.micronaut.http.HttpRequest)">ControlPanelApi</a></code></span></div>
 <div class="block">Renders the category view.</div>
@@ -260,7 +272,7 @@ implements <a href="ControlPanelApi.html" title="interface in io.micronaut.contr
 <section class="detail" id="detail(java.lang.String,io.micronaut.http.HttpRequest)">
 <h3>detail</h3>
 <div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">io.micronaut.http.HttpResponse&lt;io.micronaut.views.ModelAndView&lt;?&gt;&gt;</span>&nbsp;<span class="element-name">detail</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;controlPanelName,
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">io.micronaut.http.HttpResponse&lt;<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</span>&nbsp;<span class="element-name">detail</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;controlPanelName,
  io.micronaut.http.HttpRequest&lt;?&gt;&nbsp;request)</span></div>
 <div class="block"><span class="description-from-type-label">Description copied from interface:&nbsp;<code><a href="ControlPanelApi.html#detail(java.lang.String,io.micronaut.http.HttpRequest)">ControlPanelApi</a></code></span></div>
 <div class="block">Renders the control panel detailed view.</div>
