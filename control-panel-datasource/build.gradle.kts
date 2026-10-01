@@ -49,6 +49,10 @@ dependencies {
     testRuntimeOnly(mnTest.bytebuddy.agent)
     testRuntimeOnly(mnSql.ojdbc11)
     testRuntimeOnly(mnSql.postgresql)
+
+    // The Oracle Free test resource opens a JDBC connection to check readiness, so the test
+    // resources service needs the driver on its own classpath.
+    testResourcesService(mnSql.ojdbc11)
 }
 
 tasks.named("internalStartTestResourcesService") {
