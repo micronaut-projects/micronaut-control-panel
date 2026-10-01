@@ -18,7 +18,7 @@
 
 [versions]
 micronaut-platform = "5.2.0"
-micronaut = "5.2.8"
+micronaut = "5.2.10"
 # The Python compiler (micronaut-inject-python) of doc-examples/example-python ships with Micronaut core 5.2+, which this
 # branch does not use yet: only that project resolves this core version
 micronaut-python = "5.2.3"
