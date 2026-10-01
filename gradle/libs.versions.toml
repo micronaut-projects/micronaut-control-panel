@@ -17,8 +17,8 @@
 # a managed version (a version which alias starts with "managed-"
 
 [versions]
-micronaut-platform = "5.1.2"
 micronaut = "5.1.12"
+micronaut-platform = "5.2.0"
 # The Python compiler (micronaut-inject-python) of doc-examples/example-python ships with Micronaut core 5.2+, which this
 # branch does not use yet: only that project resolves this core version
 micronaut-python = "5.2.3"
