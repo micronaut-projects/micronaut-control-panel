@@ -25,6 +25,7 @@ import io.micronaut.controlpanel.panels.datasource.model.DataSourceInfo;
 import io.micronaut.controlpanel.panels.datasource.model.DatabaseType;
 import io.micronaut.controlpanel.panels.datasource.model.Table;
 import jakarta.inject.Named;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,12 +42,14 @@ public class DataSourceControlPanel extends AbstractEachBeanControlPanel<Body> {
 
     public static final String NAME = "datasource";
     public static final String DEFAULT_ICON_CLASS = "fas fa-database";
+    public static final String DATASOURCE_ENABLED_PROPERTY = "datasources.%s.control-panel.enabled";
     private static final Logger LOG = LoggerFactory.getLogger(DataSourceControlPanel.class);
 
     private final String beanName;
     private final List<Table> tables;
     private final Body body;
     private final DataSourceInfo dataSourceInfo;
+    private final boolean enabled;
 
     public DataSourceControlPanel(@Parameter String beanName,
                                   @Parameter DataSourceService dataSourceService,
@@ -57,26 +60,36 @@ public class DataSourceControlPanel extends AbstractEachBeanControlPanel<Body> {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Initializing DataSourceControlPanel for bean='{}'", beanName);
         }
-        this.tables = dataSourceService.getTables();
-        this.dataSourceInfo = createDataSourceInfo(environment, beanName, dataSourceService);
-        this.body = new Body(dataSourceInfo, tables, dataSourceService.generateMermaidER(tables), dataSourceService.getPoolInfo().orElse(null));
+        this.enabled = isDataSourceControlPanelEnabled(environment, beanName);
+        this.dataSourceInfo = createDataSourceInfo(environment, beanName, enabled ? dataSourceService : null);
+        this.tables = enabled ? dataSourceService.getTables() : List.of();
+        this.body = enabled
+            ? new Body(dataSourceInfo, tables, dataSourceService.generateMermaidER(tables), dataSourceService.getPoolInfo().orElse(null))
+            : new Body(dataSourceInfo, tables, EMPTY_STRING, null);
         if (LOG.isDebugEnabled()) {
             LOG.debug("DataSourceControlPanel initialized: bean='{}', tables={}, dbType={} URL='{}' user='{}'", beanName, tables.size(), dataSourceInfo.type(), safeUrl(dataSourceInfo.jdbcUrl()), safeUser(dataSourceInfo.username()));
         }
     }
 
-    private DataSourceInfo createDataSourceInfo(Environment env, String beanName, DataSourceService dataSourceService) {
+    private static boolean isDataSourceControlPanelEnabled(Environment env, String beanName) {
+        Boolean enabled = env.getProperty(DATASOURCE_ENABLED_PROPERTY.formatted(beanName), Boolean.class, Boolean.TRUE);
+        return enabled == null || enabled;
+    }
+
+    private DataSourceInfo createDataSourceInfo(Environment env, String beanName, @Nullable DataSourceService dataSourceService) {
         var jdbUrl = env.getProperty("datasources.%s.url".formatted(beanName), String.class, "");
         var username = env.getProperty("datasources.%s.username".formatted(beanName), String.class, "");
         var password = env.getProperty("datasources.%s.password".formatted(beanName), String.class, "");
         var dialect = env.getProperty("datasources.%s.dialect".formatted(beanName), String.class, "");
         var dbType = env.getProperty("datasources.%s.db-type".formatted(beanName), String.class, "");
-        var jdbcInfo = dataSourceService.getJdbcInfo();
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("Resolved datasource props for bean='{}': url='{}', user='{}', dialect='{}', dbType='{}'", beanName, safeUrl(jdbUrl), safeUser(username), dialect, dbType);
         }
-        return new DataSourceInfo(beanName, jdbUrl, username, password, DatabaseType.of(dialect, dbType), jdbcInfo);
+        if (dataSourceService == null) {
+            return new DataSourceInfo(beanName, jdbUrl, username, password, DatabaseType.of(dialect, dbType));
+        }
+        return new DataSourceInfo(beanName, jdbUrl, username, password, DatabaseType.of(dialect, dbType), dataSourceService.getJdbcInfo());
     }
 
     @Override
@@ -100,6 +113,11 @@ public class DataSourceControlPanel extends AbstractEachBeanControlPanel<Body> {
     @Override
     public String getBadge() {
         return EMPTY_STRING;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return enabled && super.isEnabled();
     }
 
     @Override
