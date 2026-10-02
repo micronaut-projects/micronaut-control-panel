@@ -1,0 +1,92 @@
+= Jackson XML Control Panel
+
+The Jackson XML Control Panel provides read-only diagnostics for applications that use
+https://micronaut-projects.github.io/micronaut-jackson-xml/latest/guide/[Micronaut Jackson XML].
+It helps you verify XML HTTP route metadata and the safe parts of the effective XML mapper configuration without
+serializing application data or invoking routes.
+
+To add the panel, add the following module as a development-time dependency:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-jackson-xml[scope=developmentOnly]
+
+For active XML diagnostics, the application must also include and configure `micronaut-jackson-xml`.
+If the Control Panel module is present but Micronaut Jackson XML is not on the classpath, the panel reports a missing
+dependency state instead of attempting to enable XML HTTP serialization.
+
+== Diagnostics
+
+The detail view shows:
+
+* Summary counters for XML routes, routes that consume XML, routes that produce XML, and Jackson customizations.
+* Whether the named `xml` mapper bean is available.
+* The XML mapper implementation class name.
+* The effective `jackson.xml.default-use-wrapper` value.
+* Configured `jackson.xml.parser.*` and `jackson.xml.generator.*` feature overrides.
+* XML-capable routes with method, path, consumes, produces, handler identity, and source classification.
+* Jackson customization bean class names such as modules, serializers, deserializers, modifiers, and key deserializers.
+
+Only route metadata, mapper class names, feature names, and customization class names are displayed.
+The panel does not display request bodies, response bodies, headers, credentials, cookies, arbitrary environment
+properties, serialized application objects, or XML payload samples.
+
+== Configuration
+
+The Jackson XML control panel is enabled when the `micronaut-control-panel-jackson-xml` module is present.
+You can disable it with:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      jackson-xml:
+        enabled: false
+----
+
+The panel reads the same XML configuration that Micronaut Jackson XML uses:
+
+[configuration]
+----
+jackson:
+  xml:
+    default-use-wrapper: false
+    parser:
+      auto-detect-xsi-type: true
+    generator:
+      write-xml-declaration: true
+----
+
+== States
+
+Missing dependency::
+The diagnostics module is present, but `micronaut-jackson-xml` is not available. Add Micronaut Jackson XML to activate
+the named XML mapper and XML HTTP message handler.
+
+No named `xml` mapper::
+Micronaut Jackson XML classes are present, but the named `xml` mapper bean was not created. Check bean conditions and
+classpath conflicts before debugging route serialization.
+
+No XML route metadata::
+No application route explicitly declares `application/xml`, `text/xml`, a subtype ending in `.xml`, or a structured
+syntax suffix ending in `+xml` in `@Consumes` or `@Produces`. Routes without explicit consumes or produces metadata are
+not treated as XML-capable because the panel cannot prove XML negotiation from implicit metadata.
+
+Configured XML support::
+The named `xml` mapper is present and one or more application routes declare XML consumes or produces metadata.
+
+Disabled panel::
+When `micronaut.control-panel.panels.jackson-xml.enabled=false`, the panel is not registered.
+
+== Troubleshooting
+
+For `406 Not Acceptable` responses, check whether the route lists an XML media type under Produces and whether the
+client sends an `Accept` header compatible with that media type.
+
+For `415 Unsupported Media Type` responses, check whether the route lists an XML media type under Consumes and whether
+the client sends a matching `Content-Type` header.
+
+For unexpected list wrapping, verify the displayed `defaultUseWrapper` value and any route-specific Jackson XML
+annotations in your application code.
+
+The panel is intentionally diagnostic only. It does not invoke routes, accept XML input, mutate the mapper, or provide an
+object serialization playground.
