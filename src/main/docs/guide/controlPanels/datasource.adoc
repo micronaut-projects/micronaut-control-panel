@@ -67,3 +67,19 @@ micronaut:
       datasource:
         enabled: false
 ----
+
+You can also hide an individual datasource from the panel. This is useful when a datasource is present in the application
+but its user does not have permission to inspect schema metadata or run ad hoc queries:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      datasource:
+        datasources:
+          reporting:
+            enabled: false
+----
+
+With this configuration, the `reporting` datasource is omitted from the datasource panel and datasource helper routes.
