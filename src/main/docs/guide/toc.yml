@@ -10,6 +10,7 @@ controlPanels:
   datasource: Datasource
   hibernate: Hibernate
   kafka: Kafka
+  oracleCloud: Oracle Cloud
 
 custom: Creating Custom Control Panels
 repository: Repository
