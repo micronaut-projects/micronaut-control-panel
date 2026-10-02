@@ -1,0 +1,139 @@
+{{#with controlPanel.body }}
+<section class="mb-4">
+    <h2 class="h5">Connection</h2>
+    <div class="table-responsive">
+        <table class="table table-sm align-middle">
+            <tbody>
+            <tr><th scope="row">Status</th><td>{{ connection.status }}</td></tr>
+            <tr><th scope="row">Connected URL</th><td>{{#if connection.connectedUrl }}{{ connection.connectedUrl }}{{else}}-{{/if}}</td></tr>
+            <tr><th scope="row">Max payload</th><td>{{ connection.maxPayload }}</td></tr>
+            <tr><th scope="row">Last error</th><td>{{#if connection.lastError }}{{ connection.lastError }}{{else}}-{{/if}}</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <h3 class="h6">Configured servers</h3>
+            {{#if connection.configuredServers }}
+            <ul class="mb-0">
+                {{#each connection.configuredServers }}<li class="text-break">{{ this }}</li>{{/each}}
+            </ul>
+            {{else}}
+            <p class="text-muted mb-0">No configured server metadata is available.</p>
+            {{/if}}
+        </div>
+        <div class="col-md-6">
+            <h3 class="h6">Known servers</h3>
+            {{#if connection.knownServers }}
+            <ul class="mb-0">
+                {{#each connection.knownServers }}<li class="text-break">{{ this }}</li>{{/each}}
+            </ul>
+            {{else}}
+            <p class="text-muted mb-0">No known servers are reported by the client.</p>
+            {{/if}}
+        </div>
+    </div>
+</section>
+
+<section class="mb-4">
+    <h2 class="h5">Connection Statistics</h2>
+    <div class="table-responsive">
+        <table class="table table-sm align-middle">
+            <tbody>
+            <tr><th scope="row">Messages in / out</th><td>{{ connection.statistics.inMsgs }} / {{ connection.statistics.outMsgs }}</td></tr>
+            <tr><th scope="row">Bytes in / out</th><td>{{ connection.statistics.inBytes }} / {{ connection.statistics.outBytes }}</td></tr>
+            <tr><th scope="row">Reconnects</th><td>{{ connection.statistics.reconnects }}</td></tr>
+            <tr><th scope="row">Dropped messages</th><td>{{ connection.statistics.dropped }}</td></tr>
+            <tr><th scope="row">Protocol errors</th><td>{{ connection.statistics.errors }}</td></tr>
+            <tr><th scope="row">Exceptions</th><td>{{ connection.statistics.exceptions }}</td></tr>
+            <tr><th scope="row">Outstanding requests</th><td>{{ connection.statistics.outstandingRequests }}</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="mb-4">
+    <h2 class="h5">Application Listeners</h2>
+    {{#if listeners.available }}
+        {{#if listeners.listeners }}
+        <div class="table-responsive">
+            <table class="table table-sm align-middle">
+                <thead>
+                <tr><th>Listener ID</th><th>Subject</th><th>Queue</th></tr>
+                </thead>
+                <tbody>
+                {{#each listeners.listeners }}
+                    {{#each subscriptions }}
+                    <tr>
+                        <td>{{ ../id }}</td>
+                        <td>{{#if subject }}{{ subject }}{{else}}-{{/if}}</td>
+                        <td>{{#if queue }}{{ queue }}{{else}}-{{/if}}</td>
+                    </tr>
+                    {{/each}}
+                {{/each}}
+                </tbody>
+            </table>
+        </div>
+        {{else}}
+        <p class="text-muted mb-0">No Micronaut NATS listeners are registered.</p>
+        {{/if}}
+    {{else}}
+    <p class="text-muted mb-0">{{ listeners.error }}</p>
+    {{/if}}
+</section>
+
+<section>
+    <h2 class="h5">JetStream</h2>
+    {{#if jetStream.available }}
+        {{#if jetStream.streams }}
+            {{#each jetStream.streams }}
+            <div class="mb-4">
+                <h3 class="h6 mb-2">{{ name }}</h3>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+                        <tbody>
+                        <tr><th scope="row">Subjects</th><td>{{#if subjects }}{{#each subjects }}<span class="badge text-bg-secondary me-1">{{ this }}</span>{{/each}}{{else}}-{{/if}}</td></tr>
+                        <tr><th scope="row">Storage</th><td>{{ storageType }}</td></tr>
+                        <tr><th scope="row">Retention</th><td>{{ retentionPolicy }}</td></tr>
+                        <tr><th scope="row">Messages</th><td>{{ messages }}</td></tr>
+                        <tr><th scope="row">Bytes</th><td>{{ bytes }}</td></tr>
+                        <tr><th scope="row">Consumers</th><td>{{ consumerCount }}</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                {{#if consumersError }}
+                <div class="alert alert-warning py-2">{{ consumersError }}</div>
+                {{/if}}
+                {{#if consumers }}
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+                        <thead>
+                        <tr><th>Consumer</th><th>Durable</th><th>Filters</th><th>Ack policy</th><th>Pending</th><th>Ack pending</th><th>Waiting</th><th>Redelivered</th></tr>
+                        </thead>
+                        <tbody>
+                        {{#each consumers }}
+                        <tr>
+                            <td>{{ name }}</td>
+                            <td>{{#if durable }}{{ durable }}{{else}}-{{/if}}</td>
+                            <td>{{#if filterSubjects }}{{#each filterSubjects }}<span class="badge text-bg-secondary me-1">{{ this }}</span>{{/each}}{{else}}-{{/if}}</td>
+                            <td>{{ ackPolicy }}</td>
+                            <td>{{ pending }}</td>
+                            <td>{{ ackPending }}</td>
+                            <td>{{ waiting }}</td>
+                            <td>{{ redelivered }}</td>
+                        </tr>
+                        {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+                {{/if}}
+            </div>
+            {{/each}}
+        {{else}}
+        <p class="text-muted mb-0">JetStream is configured, but no streams were returned.</p>
+        {{/if}}
+    {{else}}
+    <p class="text-muted mb-0">{{ jetStream.error }}</p>
+    {{/if}}
+</section>
+{{/with}}
