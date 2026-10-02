@@ -1,0 +1,69 @@
+The Views Control Panel provides read-only diagnostics for applications using Micronaut Views. It shows global Views
+configuration, active `ViewsRenderer` beans, routes that use `@View` or return `ModelAndView`, and warnings for common
+development-time issues such as missing static templates or no active renderer beans.
+
+To add the Views control panel, add the following development-time dependency:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-views[scope=developmentOnly]
+
+The application must also include `micronaut-views-core` and at least one Micronaut Views engine, such as Handlebars,
+Thymeleaf, Freemarker, Velocity, Rocker, Soy, Pebble, JTE, JStachio, or React SSR. The control panel uses generic
+Micronaut Views APIs and does not require an engine-specific control panel implementation.
+
+=== What It Shows
+
+The panel displays a concise summary and a detail page with:
+
+* The global `micronaut.views.enabled` value and normalized `micronaut.views.folder`.
+* Views filter state when the filter configuration bean is available.
+* CSP state, report-only state, nonce state, and filter path when CSP configuration is available.
+* Active `ViewsRenderer` beans with renderer class, inferred engine name, and order.
+* Routes annotated with `@View`, including HTTP method, URI, controller method, declared template name, produced media
+  types, and the static template check result.
+* Routes returning `ModelAndView` without `@View`, marked as dynamic because the template name is not statically known.
+* Security and CSRF model processor configuration keys when those optional beans are present.
+
+=== Warning Meanings
+
+The panel performs safe static checks only. For a route with a non-empty `@View` value, it calls
+`ViewsRenderer.exists(viewName)` on active renderer beans and treats any positive result as found.
+
+The following warnings may be shown:
+
+* Missing template: all active renderers reported that the static `@View` template was not present.
+* No renderer: no `ViewsRenderer` bean was active, so static templates could not be checked or rendered.
+* Views disabled: `micronaut.views.enabled` is false.
+* Template check failed: a renderer threw while checking `ViewsRenderer.exists(viewName)`.
+
+Dynamic `ModelAndView` routes are listed, but they are not treated as missing because the runtime view name may depend on
+controller logic.
+
+=== Safety Boundaries
+
+The Views control panel is read-only. It does not invoke controller methods, render templates, resolve a renderer with
+request-specific model data, inspect request or session state, expose model values, generate CSP nonces, or display
+rendered template output.
+
+Configuration display is intentionally limited to non-secret settings. The panel does not dump arbitrary
+`micronaut.views.*` properties or environment maps.
+
+=== Native Image Notes
+
+The static template existence check can help identify templates that are missing from the classpath or from renderer
+resource lookup. It does not replace native-image testing or the resource configuration required by a specific template
+engine. Treat missing-template warnings as development-time signals to verify the template path, Views folder, engine
+configuration, and native-image resource setup.
+
+=== Configuration
+
+The Views control panel is automatically enabled when you include the `micronaut-control-panel-views` module in your
+project. You can disable it by setting:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      views:
+        enabled: false
+----
