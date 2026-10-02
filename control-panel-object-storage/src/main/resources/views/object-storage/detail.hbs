@@ -25,7 +25,13 @@
                 <h3 class="card-title">Files</h3>
             </div>
             <div class="card-body">
-                {{#if entries }}
+                {{#if error }}
+                    <div class="cp-query-state cp-query-state-error" role="alert">
+                        <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
+                        <strong>Unable to list files</strong>
+                        <p>{{ error }}</p>
+                    </div>
+                {{else if entries }}
                     <div class="cp-data-table" data-filter-table data-filter-table-label="file" data-filter-table-label-plural="files">
                         <div class="cp-data-table-toolbar">
                             <div class="cp-data-table-summary" data-filter-table-summary>{{ entries.size }} files</div>
