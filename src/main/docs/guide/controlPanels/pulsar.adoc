@@ -1,0 +1,65 @@
+The Pulsar control panel displays registered Micronaut Pulsar producers, consumers, readers, and recent in-process failure events.
+
+To get started, add the following module as a development-time dependency:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-pulsar[scope=developmentOnly]
+
+The application must also include and configure `micronaut-pulsar` for real runtime data to appear. The panel uses the public Micronaut Pulsar registries when they are present:
+
+* `PulsarProducerRegistry` for producer IDs, names, topics, connection state, and partition count.
+* `PulsarConsumerRegistry` for consumer IDs, names, topics, subscriptions, connection state, and paused/running state.
+* `PulsarReaderRegistry` for reader topics and connection state.
+
+The panel renders clear empty states when a registry bean is missing or when no clients are registered. Broker/admin-derived topic statistics are not required for this first version, so the UI may show that broker/admin enrichment is unavailable while still displaying in-process registry data.
+
+== Configuration
+
+The standard per-panel properties can enable or disable the panel:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      pulsar:
+        enabled: true
+----
+
+Additional Pulsar panel properties are:
+
+include::{includedir}configurationProperties/io.micronaut.controlpanel.panels.pulsar.PulsarControlPanelConfiguration.adoc[]
+
+Consumer pause and resume actions are disabled by default. Enable them only for development or test environments protected by your application's Control Panel security:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      pulsar:
+        allow-consumer-actions: true
+----
+
+When actions are disabled, the panel remains read-only and pause/resume requests return a forbidden response. The module does not send messages, create or delete topics, delete subscriptions, or configure broker-admin credentials.
+
+== Failure Events
+
+By default, the panel keeps a bounded in-memory list of recent `PulsarFailureEvent` instances raised by Micronaut Pulsar. The Failures tab shows the event time, client type, client name when available, reason, and a bounded exception class/message. Stack traces and Pulsar authentication or TLS configuration are not displayed.
+
+You can disable failure event collection or adjust the retained count:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      pulsar:
+        include-failure-events: false
+        max-failure-events: 10
+----
+
+== Local Verification
+
+With `micronaut-control-panel-ui`, `micronaut-control-panel-pulsar`, and `micronaut-pulsar` on the classpath, start the application in the `dev` environment and open the Control Panel. The Messaging category contains the Pulsar panel. If no clients are registered, the panel displays empty registry states. If clients are registered, the Producers, Consumers, and Readers tabs show the public registry metadata available from the running application.
+
+The Java example application includes an opt-in Pulsar producer, consumer, and reader configuration in the `pulsar` environment. Run `./gradlew :micronaut-doc-examples:micronaut-example-java:run -Dmicronaut.environments=dev,pulsar` and open the Pulsar panel to inspect the registered example clients. During the Gradle `run` task, Micronaut Test Resources supplies `pulsar.service-url` and starts the required Pulsar container when Docker is available.
