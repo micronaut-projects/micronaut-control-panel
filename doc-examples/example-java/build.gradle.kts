@@ -50,6 +50,10 @@ dependencies {
     implementation(libs.avro)
     implementation(libs.avro.serde)
 
+    // Email
+    implementation(projects.micronautControlPanelEmail)
+    implementation(mnEmail.micronaut.email)
+
     // OpenAPI + Swagger UI (views generated at compile-time)
     annotationProcessor(mnOpenapi.micronaut.openapi)
     testAnnotationProcessor(mnOpenapi.micronaut.openapi)
