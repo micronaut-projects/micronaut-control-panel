@@ -50,6 +50,13 @@ dependencies {
     implementation(libs.avro)
     implementation(libs.avro.serde)
 
+    // Validation
+    annotationProcessor(platform(libs.micronaut.validation))
+    annotationProcessor("io.micronaut.validation:micronaut-validation-processor")
+    implementation(projects.micronautControlPanelValidation)
+    implementation(platform(libs.micronaut.validation))
+    implementation("io.micronaut.validation:micronaut-validation")
+
     // OpenAPI + Swagger UI (views generated at compile-time)
     annotationProcessor(mnOpenapi.micronaut.openapi)
     testAnnotationProcessor(mnOpenapi.micronaut.openapi)
@@ -64,6 +71,8 @@ dependencies {
     testImplementation(libs.playwright)
     testResourcesImplementation(mn.micronaut.jackson.databind)
     testRuntimeOnly(mnTest.junit.platform.suite)
+    testResourcesRuntimeOnly(mn.micronaut.discovery.core)
+    testResourcesRuntimeOnly(mn.micronaut.management)
 }
 
 micronaut {
