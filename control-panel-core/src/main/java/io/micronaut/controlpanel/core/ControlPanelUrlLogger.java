@@ -19,14 +19,16 @@ import io.micronaut.context.annotation.Requires;
 import io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration;
 import io.micronaut.controlpanel.util.ControlPanelUtils;
 import io.micronaut.core.util.StringUtils;
-import io.micronaut.discovery.event.ServiceReadyEvent;
 import io.micronaut.http.server.HttpServerConfiguration;
 import io.micronaut.runtime.ApplicationConfiguration;
 import io.micronaut.runtime.event.annotation.EventListener;
 import jakarta.inject.Singleton;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URI;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -36,6 +38,7 @@ import java.util.Optional;
 @Requires(property = ControlPanelModuleConfiguration.PREFIX + ".log-url", notEquals = StringUtils.FALSE)
 public class ControlPanelUrlLogger {
 
+    private static final String SERVICE_READY_EVENT = "io.micronaut.discovery.event.ServiceReadyEvent";
     private static final Logger LOG = LoggerFactory.getLogger(ControlPanelUrlLogger.class);
 
     private final String applicationPath;
@@ -53,14 +56,34 @@ public class ControlPanelUrlLogger {
     /**
      * Logs the Control Panel URL when the ServiceReadyEvent is triggered.
      *
-     * @param event the ServiceReadyEvent that triggered this method call
+     * @param event the event that triggered this method call
      */
     @EventListener
-    public void logUrl(ServiceReadyEvent event) {
-        var baseUrl = event.getSource().getURI().toString();
+    public void logUrl(Object event) {
+        if (!SERVICE_READY_EVENT.equals(event.getClass().getName())) {
+            return;
+        }
+        URI uri = getEventUri(event);
+        if (uri == null) {
+            return;
+        }
+        var baseUrl = uri.toString();
         var controlPanelUrl = baseUrl + ControlPanelUtils.computeControlPanelPath(applicationPath, controlPanelPath);
         var prefix = applicationName.map("[%s]"::formatted).orElse("");
         LOG.info("{} Control Panel available at {}", prefix, controlPanelUrl);
+    }
+
+    private static @Nullable URI getEventUri(Object event) {
+        try {
+            Object source = event.getClass().getMethod("getSource").invoke(event);
+            Object uri = Objects.requireNonNull(source).getClass().getMethod("getURI").invoke(source);
+            if (uri instanceof URI value) {
+                return value;
+            }
+        } catch (ReflectiveOperationException | NullPointerException e) {
+            LOG.debug("Unable to resolve ServiceReadyEvent URI", e);
+        }
+        return null;
     }
 
 }

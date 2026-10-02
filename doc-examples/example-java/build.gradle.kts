@@ -50,6 +50,18 @@ dependencies {
     implementation(libs.avro)
     implementation(libs.avro.serde)
 
+    // Spring Compatibility
+    annotationProcessor(mnSpring.micronaut.spring.annotation)
+    annotationProcessor(mnSpring.micronaut.spring.boot.annotation)
+    annotationProcessor(mnSpring.micronaut.spring.web.annotation)
+    implementation(projects.micronautControlPanelSpring)
+    implementation(mnSpring.micronaut.spring.annotation)
+    implementation(mnSpring.micronaut.spring.boot.annotation)
+    implementation(mnSpring.micronaut.spring.web.annotation)
+    implementation(mnSpring.spring.context)
+    implementation(mnSpring.spring.boot.starter.web)
+    implementation("org.springframework.boot:spring-boot-actuator:${mnSpring.versions.spring.boot.get()}")
+
     // OpenAPI + Swagger UI (views generated at compile-time)
     annotationProcessor(mnOpenapi.micronaut.openapi)
     testAnnotationProcessor(mnOpenapi.micronaut.openapi)
