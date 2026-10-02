@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.condition.DisabledInNativeImage;
 
+import java.nio.file.Paths;
 import java.util.regex.Pattern;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -240,6 +241,30 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Details")).click();
 
         assertThat(page.getByRole(AriaRole.DEFINITION)).containsText("/tmp/foo");
+    }
+
+    @Test
+    void testChatbots(Page page) {
+        page.setViewportSize(1440, 900);
+        page.navigate(baseUrl() + "/chatbots");
+
+        assertThat(body(page)).containsText("Chatbots");
+        assertThat(body(page)).containsText("support");
+        assertThat(body(page)).containsText("ops");
+        assertThat(body(page)).containsText("SupportTelegramHandler");
+        assertThat(body(page)).containsText("lookup disabled");
+        assertThat(body(page)).not().containsText("sample-telegram-webhook-secret");
+        page.screenshot(new Page.ScreenshotOptions()
+            .setPath(Paths.get("output/playwright/DEV-479-chatbots-1440x900.png"))
+            .setFullPage(true));
+
+        page.setViewportSize(390, 844);
+        page.navigate(baseUrl() + "/chatbots");
+        assertThat(body(page)).containsText("Chatbots");
+        assertThat(body(page)).not().containsText("sample-telegram-webhook-secret");
+        page.screenshot(new Page.ScreenshotOptions()
+            .setPath(Paths.get("output/playwright/DEV-479-chatbots-390x844.png"))
+            .setFullPage(true));
     }
 
     @Test
