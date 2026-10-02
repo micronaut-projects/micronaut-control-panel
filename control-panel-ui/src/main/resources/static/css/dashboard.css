@@ -2026,6 +2026,79 @@ dl.row dt {
     margin-bottom: 0;
 }
 
+.cp-toml-responsive-table td::before {
+    display: none;
+}
+
+@media (max-width: 640px) {
+    .cp-toml-table-container {
+        border: 0;
+        overflow: visible;
+    }
+
+    .cp-toml-responsive-table {
+        display: block;
+        border-collapse: separate;
+    }
+
+    .cp-toml-responsive-table thead {
+        display: none;
+    }
+
+    .cp-toml-responsive-table tbody {
+        display: grid;
+        gap: 0.75rem;
+    }
+
+    .cp-toml-responsive-table tr[data-filter-table-row] {
+        display: grid;
+        gap: 0;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--card);
+        overflow: hidden;
+    }
+
+    .cp-toml-responsive-table td {
+        display: grid;
+        grid-template-columns: minmax(6.5rem, 38%) minmax(0, 1fr);
+        gap: 0.75rem;
+        min-width: 0;
+        border-bottom: 1px solid var(--border);
+        padding: 0.7rem 0.85rem;
+    }
+
+    .cp-toml-responsive-table td:last-child {
+        border-bottom: 0;
+    }
+
+    .cp-toml-responsive-table td::before {
+        display: block;
+        content: attr(data-label);
+        color: var(--muted-foreground);
+        font-weight: 600;
+        overflow-wrap: anywhere;
+    }
+
+    .cp-toml-responsive-table tr[data-filter-table-empty] {
+        display: block;
+    }
+
+    .cp-toml-responsive-table tr[data-filter-table-empty][hidden] {
+        display: none;
+    }
+
+    .cp-toml-responsive-table tr[data-filter-table-empty] td {
+        display: block;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+    }
+
+    .cp-toml-responsive-table tr[data-filter-table-empty] td::before {
+        display: none;
+    }
+}
+
 .cp-actions-menu {
     position: relative;
     display: inline-flex;

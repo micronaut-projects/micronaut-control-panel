@@ -1,0 +1,7 @@
+[toml.demo]
+enabled = true
+name = "control-panel"
+ports = [8080, 8081]
+
+[toml.demo.credentials]
+token = "masked-token"
