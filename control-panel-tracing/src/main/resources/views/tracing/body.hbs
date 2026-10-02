@@ -1,0 +1,34 @@
+{{#with controlPanel.body }}
+    <div class="cp-data-table-container cp-vertical-table">
+        <table class="table cp-data-table-table">
+            <tbody>
+            <tr>
+                <th scope="row">Provider state</th>
+                <td>
+                    <span class="badge badge-secondary">{{ providerState }}</span>
+                </td>
+            </tr>
+            <tr>
+                <th scope="row">Service name</th>
+                <td><code>{{ serviceName }}</code></td>
+            </tr>
+            <tr>
+                <th scope="row">Sampler</th>
+                <td><code>{{ sampler }}</code></td>
+            </tr>
+            <tr>
+                <th scope="row">Propagators</th>
+                <td><code>{{ propagators }}</code></td>
+            </tr>
+            <tr>
+                <th scope="row">Instrumentation</th>
+                <td>{{ presentInstrumentationCount }} present of {{ instrumentations.size }} checked</td>
+            </tr>
+            <tr>
+                <th scope="row">Diagnostics</th>
+                <td>{{ diagnostics.size }} local findings</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+{{/with}}

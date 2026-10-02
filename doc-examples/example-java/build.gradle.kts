@@ -50,6 +50,9 @@ dependencies {
     implementation(libs.avro)
     implementation(libs.avro.serde)
 
+    // Tracing
+    implementation(projects.micronautControlPanelTracing)
+
     // OpenAPI + Swagger UI (views generated at compile-time)
     annotationProcessor(mnOpenapi.micronaut.openapi)
     testAnnotationProcessor(mnOpenapi.micronaut.openapi)
