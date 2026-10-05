@@ -19,7 +19,7 @@ dependencies {
 }
 
 micronautBuild {
-    binaryCompatibility.enabledAfter("2.2.0")
+    binaryCompatibility.enabledAfter("2.2.1")
 }
 
 // GraalPyRuntimeIntegrationTest boots a real polyglot engine and context, so it stays opt-in:
