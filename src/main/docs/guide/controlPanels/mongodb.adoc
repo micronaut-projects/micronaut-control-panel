@@ -121,6 +121,6 @@ This panel is separate from the JDBC Datasource panel. The Datasource panel insp
 SQL query behavior. The MongoDB panel inspects MongoDB driver clients, databases, collections, validation rules, indexes,
 and sampled BSON document shape.
 
-It is also separate from Micronaut Data repository metadata. Repository metadata explains
-Micronaut Data repository methods and generated query metadata; this panel explains what MongoDB clients and collections
-are present at runtime, including applications that use the MongoDB driver directly without Micronaut Data.
+It does not rely on Micronaut Data repository metadata, such as repository methods and generated queries. It shows the
+MongoDB clients and collections present at runtime, including in applications that use the MongoDB driver directly
+without Micronaut Data.
