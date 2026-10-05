@@ -103,6 +103,22 @@ final class NatsControlPanelTest {
     }
 
     @Test
+    void rendersWithoutConnectedUrlWhenLookupFails() {
+        BeanContext beanContext = mock(BeanContext.class);
+        Connection connection = connection(Connection.Status.RECONNECTING);
+        when(connection.getConnectedUrl()).thenThrow(new NullPointerException());
+        when(beanContext.findBean(eq(NatsConnectionFactoryConfig.class), any(Qualifier.class))).thenReturn(Optional.empty());
+        when(beanContext.findBean(ConsumerRegistry.class)).thenReturn(Optional.empty());
+        when(beanContext.findBean(eq(JetStreamManagement.class), any(Qualifier.class))).thenReturn(Optional.empty());
+
+        NatsControlPanel.Body body = panel(beanContext, connection).getBody();
+
+        assertNull(body.connection().connectedUrl());
+        assertEquals(List.of("nats://***@localhost:4222", "nats://backup:4222"), body.connection().knownServers());
+        assertEquals(7, body.connection().statistics().inMsgs());
+    }
+
+    @Test
     void handlesJetStreamExceptionsWithoutThrowing() throws Exception {
         BeanContext beanContext = mock(BeanContext.class);
         JetStreamManagement management = mock(JetStreamManagement.class);
@@ -129,7 +145,7 @@ final class NatsControlPanelTest {
         assertEquals("failed nats://***@localhost:4222?token=[redacted]",
             NatsControlPanel.redactSensitiveText("failed nats://user:password@localhost:4222?token=secret"));
         assertEquals("could not load [redacted]",
-            NatsControlPanel.redactSensitiveText("could not load /home/alvaro/.nats/app.creds"));
+            NatsControlPanel.redactSensitiveText("could not load /home/user/.nats/app.creds"));
         assertEquals("nkey seed [redacted] rejected",
             NatsControlPanel.redactSensitiveText("nkey seed " + NKEY_SEED + " rejected"));
         assertEquals("jwt [redacted] expired",

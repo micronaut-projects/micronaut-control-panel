@@ -124,7 +124,7 @@ public final class NatsControlPanel extends AbstractEachBeanControlPanel<NatsCon
         return new ConnectionInfo(
             status.name(),
             status == Connection.Status.CONNECTED,
-            redactUrl(connection.getConnectedUrl()),
+            redactUrl(safeConnectedUrl()),
             knownServers,
             configuredServers,
             redactSensitiveText(connection.getLastError()),
@@ -148,6 +148,14 @@ public final class NatsControlPanel extends AbstractEachBeanControlPanel<NatsCon
             return connection.getStatus();
         } catch (RuntimeException e) {
             return Connection.Status.DISCONNECTED;
+        }
+    }
+
+    private @Nullable String safeConnectedUrl() {
+        try {
+            return connection.getConnectedUrl();
+        } catch (RuntimeException e) {
+            return null;
         }
     }
 
