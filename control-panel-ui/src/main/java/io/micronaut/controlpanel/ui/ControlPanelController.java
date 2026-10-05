@@ -25,6 +25,7 @@ import io.micronaut.controlpanel.ui.util.EndpointUtils;
 import org.jspecify.annotations.Nullable;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
+import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.server.HttpServerConfiguration;
 import io.micronaut.management.endpoint.refresh.RefreshEndpoint;
@@ -32,7 +33,6 @@ import io.micronaut.management.endpoint.stop.ServerStopEndpoint;
 import io.micronaut.runtime.ApplicationConfiguration;
 import io.micronaut.scheduling.TaskExecutors;
 import io.micronaut.scheduling.annotation.ExecuteOn;
-import io.micronaut.views.ModelAndView;
 import jakarta.inject.Inject;
 
 import java.util.HashMap;
@@ -65,13 +65,26 @@ public class ControlPanelController implements ControlPanelApi {
     private final String appPath;
     private final String controlPanelPath;
     private final ControlPanelWriteAccessEvaluator writeAccessEvaluator;
+    private final ControlPanelRenderer renderer;
 
+    /**
+     *
+     * @param repository Control Panel Repository
+     * @param beanContext Bean Context
+     * @param refreshEndpoint Refresh endpoint
+     * @param stopEndpoint Stop Endpoint
+     * @param configuration Control Panel Module Configuration
+     * @param writeAccessEvaluator WriteAccess Evaluator
+     * @param renderer Control Panel Renderer
+     */
     @Inject
-    public ControlPanelController(ControlPanelRepository repository, BeanContext beanContext,
+    public ControlPanelController(ControlPanelRepository repository,
+                                  BeanContext beanContext,
                                   @Nullable RefreshEndpoint refreshEndpoint,
                                   @Nullable ServerStopEndpoint stopEndpoint,
                                   ControlPanelModuleConfiguration configuration,
-                                  ControlPanelWriteAccessEvaluator writeAccessEvaluator) {
+                                  ControlPanelWriteAccessEvaluator writeAccessEvaluator,
+                                  ControlPanelRenderer renderer) {
         ApplicationConfiguration applicationConfiguration = beanContext.getBean(ApplicationConfiguration.class);
         HttpServerConfiguration  serverConfiguration = beanContext.getBean(HttpServerConfiguration.class);
         Environment environment = beanContext.getBean(Environment.class);
@@ -85,15 +98,24 @@ public class ControlPanelController implements ControlPanelApi {
         this.appPath = Optional.ofNullable(serverConfiguration.getContextPath()).orElse("");
         this.controlPanelPath = computeControlPanelPath(appPath, configuration.getPath());
         this.writeAccessEvaluator = writeAccessEvaluator;
+        this.renderer = renderer;
     }
 
     @Override
-    public HttpResponse<ModelAndView<?>> index(HttpRequest<?> request) {
-        return byCategory(ControlPanel.Category.MAIN.id(), request);
+    public HttpResponse<String> index(HttpRequest<?> request) {
+        return byCategoryModel(ControlPanel.Category.MAIN.id(), request)
+            .map(this::htmlResponse)
+            .orElseGet(HttpResponse::notFound);
     }
 
     @Override
-    public HttpResponse<ModelAndView<?>> byCategory(String categoryId, HttpRequest<?> request) {
+    public HttpResponse<String> byCategory(String categoryId, HttpRequest<?> request) {
+        return byCategoryModel(categoryId, request)
+            .map(this::htmlResponse)
+            .orElseGet(HttpResponse::notFound);
+    }
+
+    final Optional<Model> byCategoryModel(String categoryId, HttpRequest<?> request) {
         var common = buildCommonData(request);
         var controlPanels = repository.findAllByCategory(categoryId);
         var optionalCategory = repository.findCategoryById(categoryId);
@@ -104,14 +126,20 @@ public class ControlPanelController implements ControlPanelApi {
             extraProperties.put("currentCategory", optionalCategory.get());
             var model = new Model(common.categories(), applicationName, activeEnvironments, Model.ContentView.INDEX,
                 canRefresh, canStop, extraProperties);
-            return HttpResponse.ok(new ModelAndView<>("layout", model));
+            return Optional.of(model);
         } else {
-            return HttpResponse.notFound();
+            return Optional.empty();
         }
     }
 
     @Override
-    public HttpResponse<ModelAndView<?>> detail(String controlPanelName, HttpRequest<?> request) {
+    public HttpResponse<String> detail(String controlPanelName, HttpRequest<?> request) {
+        return detailModel(controlPanelName, request)
+            .map(this::htmlResponse)
+            .orElseGet(HttpResponse::notFound);
+    }
+
+    final Optional<Model> detailModel(String controlPanelName, HttpRequest<?> request) {
         var common = buildCommonData(request);
         var optionalControlPanel = repository.findByName(controlPanelName);
         if (optionalControlPanel.isPresent()) {
@@ -121,9 +149,9 @@ public class ControlPanelController implements ControlPanelApi {
             optionalCategory.ifPresent(category -> extraProperties.put("currentCategory", category));
             var model = new Model(common.categories(), applicationName, activeEnvironments, Model.ContentView.DETAIL,
                 canRefresh, canStop, extraProperties);
-            return HttpResponse.ok(new ModelAndView<>("layout", model));
+            return Optional.of(model);
         } else {
-            return HttpResponse.notFound();
+            return Optional.empty();
         }
     }
 
@@ -141,6 +169,10 @@ public class ControlPanelController implements ControlPanelApi {
             return HttpResponse.notFound();
         }
         return HttpResponse.ok(stopEndpoint.stop());
+    }
+
+    private HttpResponse<String> htmlResponse(Model model) {
+        return HttpResponse.ok(renderer.render(model)).contentType(MediaType.TEXT_HTML_TYPE);
     }
 
     private CommonData buildCommonData(HttpRequest<?> request) {
