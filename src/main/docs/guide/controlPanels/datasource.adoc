@@ -67,3 +67,14 @@ micronaut:
       datasource:
         enabled: false
 ----
+
+You can also hide one datasource while leaving the datasource control panel available for the rest of the application.
+This prevents the panel from connecting to that datasource for metadata, schema, pool, or query operations:
+
+[configuration]
+----
+datasources:
+  reporting:
+    control-panel:
+      enabled: false
+----
