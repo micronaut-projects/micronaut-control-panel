@@ -43,6 +43,11 @@ public class DataSourceControlPanel extends AbstractEachBeanControlPanel<Body> {
 
     public static final String NAME = "datasource";
     public static final String DEFAULT_ICON_CLASS = "fas fa-database";
+    /**
+     * Property format, taking the datasource name, that hides one datasource from the control panel.
+     *
+     * @since 2.3.0
+     */
     public static final String DATASOURCE_ENABLED_PROPERTY = "datasources.%s.control-panel.enabled";
     private static final Logger LOG = LoggerFactory.getLogger(DataSourceControlPanel.class);
 
