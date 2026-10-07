@@ -25,7 +25,7 @@ import java.util.Optional;
 /**
  * Configuration for Chatbots diagnostics in Control Panel.
  *
- * @since 2.0.0
+ * @since 2.3.0
  */
 @ConfigurationProperties(ChatbotsPanelConfiguration.PREFIX)
 public class ChatbotsPanelConfiguration {

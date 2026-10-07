@@ -33,7 +33,7 @@ import java.util.List;
 /**
  * Aggregate diagnostics panel for Micronaut Chatbots.
  *
- * @since 2.0.0
+ * @since 2.3.0
  */
 @Singleton
 @Refreshable
