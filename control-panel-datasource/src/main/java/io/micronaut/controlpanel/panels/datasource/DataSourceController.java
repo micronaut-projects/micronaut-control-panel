@@ -17,6 +17,7 @@ package io.micronaut.controlpanel.panels.datasource;
 
 import io.micronaut.context.BeanLocator;
 import io.micronaut.controlpanel.core.security.ControlPanelSecurityPaths;
+import io.micronaut.controlpanel.ui.ControlPanelRenderer;
 import io.micronaut.controlpanel.panels.datasource.model.Column;
 import io.micronaut.controlpanel.panels.datasource.model.DatabaseType;
 import io.micronaut.controlpanel.panels.datasource.model.ForeignKey;
@@ -38,7 +39,6 @@ import io.micronaut.json.JsonMapper;
 import io.micronaut.scheduling.TaskExecutors;
 import io.micronaut.scheduling.annotation.ExecuteOn;
 import io.micronaut.serde.annotation.Serdeable;
-import io.micronaut.views.ModelAndView;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,8 +81,9 @@ public final class DataSourceController {
     private final Map<String, Schema> schemas;
 
     private final JsonMapper jsonMapper;
+    private final ControlPanelRenderer renderer;
 
-    public DataSourceController(BeanLocator locator, JsonMapper jsonMapper) {
+    public DataSourceController(BeanLocator locator, JsonMapper jsonMapper, ControlPanelRenderer renderer) {
         // Map keyed by bean name (datasource name)
         this.services = locator.mapOfType(SERVICE_ARGUMENT);
         this.panels = locator.mapOfType(PANEL_ARGUMENT)
@@ -92,6 +93,7 @@ public final class DataSourceController {
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (existing, replacement) -> existing, LinkedHashMap::new));
         this.schemas = computeSchemas();
         this.jsonMapper = jsonMapper;
+        this.renderer = renderer;
         if (LOG.isDebugEnabled()) {
             LOG.debug("Initialized DataSourceController with services={}, panels={}", services.keySet(), panels.keySet());
         }
@@ -154,7 +156,7 @@ public final class DataSourceController {
      * @return A server-rendered HTML fragment containing one table page
      */
     @Get(value = "/{dataSource}/tables", produces = MediaType.TEXT_HTML)
-    public HttpResponse<Object> tables(String dataSource,
+    public HttpResponse<String> tables(String dataSource,
                                        @Nullable @QueryValue Integer page,
                                        @Nullable @QueryValue Integer size,
                                        @Nullable @QueryValue String schema,
@@ -189,11 +191,11 @@ public final class DataSourceController {
      * @return A server-rendered HTML fragment for the selected table
      */
     @Get(value = "/{dataSource}/tables/detail", produces = MediaType.TEXT_HTML)
-    public HttpResponse<Object> tableDetail(String dataSource,
+    public HttpResponse<String> tableDetail(String dataSource,
                                             @Nullable @QueryValue String schema,
                                             @QueryValue("table") String tableName) {
         if (tableName == null || tableName.isBlank()) {
-            return HttpResponse.badRequest((Object) "Table name is required")
+            return HttpResponse.badRequest("Table name is required")
                 .contentType(MediaType.TEXT_HTML_TYPE);
         }
         var panel = panels.get(dataSource);
@@ -223,7 +225,7 @@ public final class DataSourceController {
      * @return A server-rendered HTML fragment for the current pool status
      */
     @Get(value = "/{dataSource}/pool/status", produces = MediaType.TEXT_HTML)
-    public HttpResponse<Object> poolStatus(String dataSource) {
+    public HttpResponse<String> poolStatus(String dataSource) {
         if (!panels.containsKey(dataSource)) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug(NO_CONTROL_PANEL_LOG_MESSAGE, dataSource);
@@ -352,8 +354,8 @@ public final class DataSourceController {
         return tableNode;
     }
 
-    private static HttpResponse<Object> fragment(String view, Object model) {
-        return HttpResponse.ok((Object) new ModelAndView<>(view, model))
+    private HttpResponse<String> fragment(String view, Object model) {
+        return HttpResponse.ok(renderer.render("controlpanelviews/" + view, model))
             .contentType(MediaType.TEXT_HTML_TYPE);
     }
 
