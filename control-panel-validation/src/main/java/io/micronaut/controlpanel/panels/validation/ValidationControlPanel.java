@@ -29,7 +29,7 @@ import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
 /**
  * Control panel that displays Micronaut Validation compile-time metadata and provider wiring.
  *
- * @since 2.0.0
+ * @since 2.3.0
  */
 @Singleton
 @Refreshable

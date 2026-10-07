@@ -48,7 +48,7 @@ import java.util.Set;
 /**
  * Collects read-only validation diagnostics from Micronaut compile-time metadata.
  *
- * @since 2.0.0
+ * @since 2.3.0
  */
 @Singleton
 @ReflectiveAccess

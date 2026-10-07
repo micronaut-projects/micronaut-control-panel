@@ -28,7 +28,7 @@ import java.util.Map;
 /**
  * Converts annotation members into safe display strings.
  *
- * @since 2.0.0
+ * @since 2.3.0
  */
 @Singleton
 final class ValidationAttributeSanitizer {

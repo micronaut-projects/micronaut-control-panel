@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * Applies package visibility rules for validation diagnostics.
  *
- * @since 2.0.0
+ * @since 2.3.0
  */
 @Singleton
 final class ValidationPackageFilter {

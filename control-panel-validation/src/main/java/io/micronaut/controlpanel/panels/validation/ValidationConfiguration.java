@@ -24,7 +24,7 @@ import java.util.List;
 /**
  * Configuration for the validation diagnostics panel.
  *
- * @since 2.0.0
+ * @since 2.3.0
  */
 @ConfigurationProperties(ValidationConfiguration.PREFIX)
 @ReflectiveAccess

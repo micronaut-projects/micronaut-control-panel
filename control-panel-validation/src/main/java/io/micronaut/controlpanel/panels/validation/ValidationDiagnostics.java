@@ -34,7 +34,7 @@ import java.util.List;
  * @param messages state messages
  * @param totalConstraints total number of collected constraint rows
  *
- * @since 2.0.0
+ * @since 2.3.0
  */
 @ReflectiveAccess
 public record ValidationDiagnostics(
