@@ -21,7 +21,7 @@ import io.micronaut.context.annotation.ConfigurationProperties;
  * Configuration for the Spring Compatibility Control Panel.
  *
  * @author Denis Stepanov
- * @since 2.0.0
+ * @since 2.3.0
  */
 @ConfigurationProperties(SpringCompatibilityControlPanel.ENABLED_PROPERTY_PREFIX)
 public class SpringCompatibilityConfiguration {

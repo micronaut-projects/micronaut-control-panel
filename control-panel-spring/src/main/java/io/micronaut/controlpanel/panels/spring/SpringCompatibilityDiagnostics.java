@@ -45,7 +45,7 @@ import static io.micronaut.controlpanel.panels.spring.SpringAnnotationCatalog.GR
  * Builds Spring compatibility diagnostics from Micronaut runtime metadata.
  *
  * @author Denis Stepanov
- * @since 2.0.0
+ * @since 2.3.0
  */
 @Singleton
 public final class SpringCompatibilityDiagnostics {

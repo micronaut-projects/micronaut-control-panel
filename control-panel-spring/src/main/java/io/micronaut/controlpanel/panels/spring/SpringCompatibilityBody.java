@@ -34,7 +34,7 @@ import java.util.List;
  * @param dataCompleteness data completeness message
  *
  * @author Denis Stepanov
- * @since 2.0.0
+ * @since 2.3.0
  */
 @ReflectiveAccess
 public record SpringCompatibilityBody(

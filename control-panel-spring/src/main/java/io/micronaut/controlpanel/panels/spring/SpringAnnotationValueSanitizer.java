@@ -25,7 +25,7 @@ import java.util.Locale;
  * Sanitizes optional annotation value summaries.
  *
  * @author Denis Stepanov
- * @since 2.0.0
+ * @since 2.3.0
  */
 @Internal
 final class SpringAnnotationValueSanitizer {

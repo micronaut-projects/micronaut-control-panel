@@ -29,7 +29,7 @@ import java.util.Optional;
  * Catalog of Spring annotations that Micronaut Spring can map to Micronaut metadata.
  *
  * @author Denis Stepanov
- * @since 2.0.0
+ * @since 2.3.0
  */
 @Internal
 public final class SpringAnnotationCatalog {

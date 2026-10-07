@@ -24,7 +24,7 @@ import jakarta.inject.Singleton;
  * Control panel for Micronaut Spring compatibility metadata.
  *
  * @author Denis Stepanov
- * @since 2.0.0
+ * @since 2.3.0
  */
 @Singleton
 public class SpringCompatibilityControlPanel extends AbstractControlPanel<SpringCompatibilityBody> {

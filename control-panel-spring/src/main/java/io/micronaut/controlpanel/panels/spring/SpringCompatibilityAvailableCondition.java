@@ -24,7 +24,7 @@ import io.micronaut.core.reflect.ClassUtils;
  * Enables the panel only when at least one Micronaut Spring integration marker is present.
  *
  * @author Denis Stepanov
- * @since 2.0.0
+ * @since 2.3.0
  */
 @Internal
 public final class SpringCompatibilityAvailableCondition implements Condition {
