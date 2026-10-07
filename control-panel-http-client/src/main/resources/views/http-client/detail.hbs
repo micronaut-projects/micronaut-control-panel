@@ -1,0 +1,126 @@
+<section aria-labelledby="http-client-summary-heading">
+    <div class="cp-data-table">
+        <div class="cp-data-table-container">
+            <table class="table cp-data-table-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Client</th>
+                        <th scope="col">Java type</th>
+                        <th scope="col">Target</th>
+                        <th scope="col">Path</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {{#if body.diagnostics.hasClients}}
+                    {{#each body.diagnostics.clients as |client|}}
+                        <tr tabindex="0">
+                            <td data-label="Client"><code class="cp-table-code">{{client.id}}</code></td>
+                            <td data-label="Java type"><code class="cp-table-code">{{abbreviate client.beanType 70}}</code></td>
+                            <td data-label="Target"><span class="badge {{client.target.badgeClass}}">{{client.target.kind}}</span> {{client.target.value}}</td>
+                            <td data-label="Path"><code class="cp-table-code">{{client.configuration.path}}</code></td>
+                        </tr>
+                    {{/each}}
+                {{else}}
+                    <tr>
+                        <td colspan="4">No Micronaut HTTP clients are visible in this application context.</td>
+                    </tr>
+                {{/if}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+{{#each body.diagnostics.clients as |client|}}
+<section aria-labelledby="http-client-{{client.id}}-heading">
+    <div class="cp-section-header">
+        <div>
+            <h5 id="http-client-{{client.id}}-heading">{{client.id}}</h5>
+            <p>Source: {{client.source}}. This panel is read-only and does not send test requests.</p>
+        </div>
+        <span class="badge {{client.target.badgeClass}}">{{client.target.kind}}</span>
+    </div>
+
+    <div class="cp-data-table">
+        <div class="cp-data-table-container">
+            <table class="table cp-data-table-table">
+                <tbody>
+                    <tr><th scope="row">Target</th><td>{{client.target.value}}</td></tr>
+                    <tr><th scope="row">Connect timeout</th><td>{{client.configuration.connectTimeout}}</td></tr>
+                    <tr><th scope="row">Read timeout</th><td>{{client.configuration.readTimeout}}</td></tr>
+                    <tr><th scope="row">Request timeout</th><td>{{client.configuration.requestTimeout}}</td></tr>
+                    <tr><th scope="row">Redirects</th><td>follow={{client.configuration.followRedirects}}, max={{client.configuration.maxRedirects}}</td></tr>
+                    <tr><th scope="row">HTTP version</th><td>{{client.configuration.httpVersion}}</td></tr>
+                    <tr><th scope="row">Plaintext mode</th><td>{{client.configuration.plaintextMode}}</td></tr>
+                    <tr><th scope="row">ALPN modes</th><td>{{client.configuration.alpnModes}}</td></tr>
+                    <tr><th scope="row">Proxy</th><td>{{client.configuration.proxy}}; credentials={{client.configuration.proxyCredentials}}</td></tr>
+                    <tr><th scope="row">TLS</th><td>{{client.configuration.tls}}</td></tr>
+                    <tr><th scope="row">Connection pool</th><td>{{client.configuration.connectionPool}}</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <h6>Discovery / instances</h6>
+    {{#if client.discovery.available}}
+        <div class="cp-data-table">
+            <div class="cp-data-table-container">
+                <table class="table cp-data-table-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Instance</th>
+                            <th scope="col">URI</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Zone</th>
+                            <th scope="col">Region</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {{#each client.discovery.instances as |instance|}}
+                        <tr tabindex="0">
+                            <td data-label="Instance"><code class="cp-table-code">{{instance.id}}</code></td>
+                            <td data-label="URI"><code class="cp-table-code">{{instance.uri}}</code></td>
+                            <td data-label="Status">{{instance.status}}</td>
+                            <td data-label="Zone">{{instance.zone}}</td>
+                            <td data-label="Region">{{instance.region}}</td>
+                        </tr>
+                    {{/each}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {{else}}
+        <p>{{client.discovery.message}}</p>
+    {{/if}}
+
+    <h6>Outbound filters</h6>
+    {{#if client.hasFilters}}
+        <div class="cp-data-table">
+            <div class="cp-data-table-container">
+                <table class="table cp-data-table-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Filter type</th>
+                            <th scope="col">Order</th>
+                            <th scope="col">Patterns</th>
+                            <th scope="col">Methods</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {{#each client.filters as |filter|}}
+                        <tr tabindex="0">
+                            <td data-label="Filter type"><code class="cp-table-code">{{abbreviate filter.type 80}}</code></td>
+                            <td data-label="Order">{{filter.order}}</td>
+                            <td data-label="Patterns">{{filter.patterns}}</td>
+                            <td data-label="Methods">{{filter.methods}}</td>
+                        </tr>
+                    {{/each}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {{else}}
+        <p>No matching outbound filters were reported for this client.</p>
+    {{/if}}
+</section>
+{{/each}}
