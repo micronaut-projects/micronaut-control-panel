@@ -43,6 +43,11 @@ tasks.withType<Test> {
     systemProperty("micronaut.test.resources.server.client.read.timeout", "420")
 }
 
+tasks.shadowJar {
+    // the example bundles every cache, object storage and datasource provider: more than 65535 entries
+    isZip64 = true
+}
+
 configurations.named("nativeImageTestClasspath") {
     resolutionStrategy {
         // Kafka and datasource - tests are @DisabledInNativeImage
