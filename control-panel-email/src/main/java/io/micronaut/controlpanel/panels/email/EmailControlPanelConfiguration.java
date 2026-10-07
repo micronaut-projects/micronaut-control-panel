@@ -21,6 +21,8 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Email control panel configuration.
+ *
+ * @since 2.3.0
  */
 @ConfigurationProperties(EmailControlPanelConfiguration.PREFIX)
 @ReflectiveAccess

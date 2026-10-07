@@ -27,6 +27,8 @@ import java.util.List;
 
 /**
  * Loads one email panel per stable sender name.
+ *
+ * @since 2.3.0
  */
 @Context
 @Requires(beans = ControlPanelConfiguration.class)

@@ -23,6 +23,8 @@ import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
 
 /**
  * Control panel for a Micronaut Email sender.
+ *
+ * @since 2.3.0
  */
 public class EmailControlPanel extends AbstractEachBeanControlPanel<EmailDiagnosticModel> {
 
