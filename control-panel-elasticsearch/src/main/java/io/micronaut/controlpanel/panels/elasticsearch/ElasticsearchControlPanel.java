@@ -25,7 +25,7 @@ import jakarta.inject.Singleton;
  * Control panel for read-only Elasticsearch cluster and index diagnostics.
  *
  * @author Sergio del Amo
- * @since 2.0.0
+ * @since 2.3.0
  */
 @Singleton
 public class ElasticsearchControlPanel extends AbstractControlPanel<ElasticsearchDiagnostics> {

@@ -24,7 +24,7 @@ import java.time.Duration;
  * Elasticsearch diagnostics panel probe limits.
  *
  * @author Sergio del Amo
- * @since 2.0.0
+ * @since 2.3.0
  */
 @ConfigurationProperties(ElasticsearchControlPanelConfiguration.PREFIX)
 public class ElasticsearchControlPanelConfiguration {

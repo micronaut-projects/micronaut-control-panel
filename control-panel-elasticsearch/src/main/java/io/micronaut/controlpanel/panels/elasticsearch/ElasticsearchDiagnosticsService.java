@@ -66,7 +66,7 @@ import static io.micronaut.controlpanel.panels.elasticsearch.ElasticsearchDiagno
  * Collects bounded, read-only Elasticsearch diagnostics for rendering.
  *
  * @author Sergio del Amo
- * @since 2.0.0
+ * @since 2.3.0
  */
 @Internal
 @Singleton
