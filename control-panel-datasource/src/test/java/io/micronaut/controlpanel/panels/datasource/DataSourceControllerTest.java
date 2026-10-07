@@ -1,6 +1,7 @@
 package io.micronaut.controlpanel.panels.datasource;
 
 import io.micronaut.context.BeanLocator;
+import io.micronaut.controlpanel.ui.ControlPanelRenderer;
 import io.micronaut.controlpanel.panels.datasource.model.Body;
 import io.micronaut.controlpanel.panels.datasource.model.Column;
 import io.micronaut.controlpanel.panels.datasource.model.ColumnType;
@@ -13,8 +14,8 @@ import io.micronaut.core.type.Argument;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
 import io.micronaut.json.JsonMapper;
-import io.micronaut.views.ModelAndView;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -44,6 +45,18 @@ class DataSourceControllerTest {
     private static final String DATA_SOURCE = "testDataSource";
     @Mock BeanLocator beanLocator;
     @Mock JsonMapper jsonMapper;
+    @Mock ControlPanelRenderer renderer;
+    private String renderedTemplate;
+    private Object renderedModel;
+
+    @BeforeEach
+    void captureRenderedFragment() {
+        lenient().doAnswer(invocation -> {
+            renderedTemplate = invocation.getArgument(0);
+            renderedModel = invocation.getArgument(1);
+            return "";
+        }).when(renderer).render(any(String.class), any());
+    }
 
     @Test
     void schemaJs_returnsNotFound_whenPanelNotFound() {
@@ -51,7 +64,7 @@ class DataSourceControllerTest {
         doReturn(Map.of()).when(beanLocator).mapOfType(any(Argument.class));
 
         // When
-        DataSourceController controller = new DataSourceController(beanLocator, jsonMapper);
+        DataSourceController controller = controller();
         HttpResponse<String> response = controller.schemaJs("unknown");
 
         // Then
@@ -86,7 +99,7 @@ class DataSourceControllerTest {
         mockPanel();
 
         // When
-        DataSourceController controller = new DataSourceController(beanLocator, jsonMapper);
+        DataSourceController controller = controller();
         HttpResponse<String> response = controller.schemaJs(DATA_SOURCE);
 
         // Then
@@ -103,7 +116,7 @@ class DataSourceControllerTest {
         doReturn(Map.of()).when(beanLocator).mapOfType(any(Argument.class));
 
         // When
-        DataSourceController controller = new DataSourceController(beanLocator, jsonMapper);
+        DataSourceController controller = controller();
         HttpResponse<?> response = controller.tables("unknown", 1, 10, null, null);
 
         // Then
@@ -124,7 +137,7 @@ class DataSourceControllerTest {
         mockPanel(tables);
 
         // When
-        DataSourceController controller = new DataSourceController(beanLocator, jsonMapper);
+        DataSourceController controller = controller();
         HttpResponse<?> response = controller.tables(DATA_SOURCE, 1, 10, null, null);
 
         // Then
@@ -159,7 +172,7 @@ class DataSourceControllerTest {
         mockPanel(List.of(department, employee));
 
         // When
-        DataSourceController controller = new DataSourceController(beanLocator, jsonMapper);
+        DataSourceController controller = controller();
         HttpResponse<?> response = controller.tables(DATA_SOURCE, 1, 10, null, null);
 
         // Then
@@ -181,7 +194,7 @@ class DataSourceControllerTest {
         mockPanel(List.of(table("schema1", "EMP")));
 
         // When
-        DataSourceController controller = new DataSourceController(beanLocator, jsonMapper);
+        DataSourceController controller = controller();
         HttpResponse<?> response = controller.tables(DATA_SOURCE, 1, 10, null, null);
 
         // Then
@@ -203,7 +216,7 @@ class DataSourceControllerTest {
         mockPanel(tables);
 
         // When
-        DataSourceController controller = new DataSourceController(beanLocator, jsonMapper);
+        DataSourceController controller = controller();
         HttpResponse<?> response = controller.tables(DATA_SOURCE, -1, 999, null, null);
 
         // Then
@@ -229,7 +242,7 @@ class DataSourceControllerTest {
         mockPanel(tables);
 
         // When
-        DataSourceController controller = new DataSourceController(beanLocator, jsonMapper);
+        DataSourceController controller = controller();
         HttpResponse<?> response = controller.tables(DATA_SOURCE, 1, 10, "schema2", null);
 
         // Then
@@ -253,7 +266,7 @@ class DataSourceControllerTest {
         mockPanel(tables);
 
         // When
-        DataSourceController controller = new DataSourceController(beanLocator, jsonMapper);
+        DataSourceController controller = controller();
         HttpResponse<?> response = controller.tables(DATA_SOURCE, 1, 10, null, "dept");
 
         // Then
@@ -283,7 +296,7 @@ class DataSourceControllerTest {
         mockPanel(List.of(department, employee));
 
         // When
-        DataSourceController controller = new DataSourceController(beanLocator, jsonMapper);
+        DataSourceController controller = controller();
         HttpResponse<?> response = controller.tableDetail(DATA_SOURCE, "schema1", "EMP");
 
         // Then
@@ -327,7 +340,7 @@ class DataSourceControllerTest {
         mockPanel(List.of(department, employee));
 
         // When
-        DataSourceController controller = new DataSourceController(beanLocator, jsonMapper);
+        DataSourceController controller = controller();
         HttpResponse<?> response = controller.tableDetail(DATA_SOURCE, "schema1", "EMP");
 
         // Then
@@ -365,7 +378,7 @@ class DataSourceControllerTest {
         mockPanel(List.of(table("schema1", "EMP")));
 
         // When
-        DataSourceController controller = new DataSourceController(beanLocator, jsonMapper);
+        DataSourceController controller = controller();
         HttpResponse<?> response = controller.tableDetail(DATA_SOURCE, "schema1", "EMP");
 
         // Then
@@ -394,7 +407,7 @@ class DataSourceControllerTest {
         mockPanel(List.of(department, employee));
 
         // When
-        DataSourceController controller = new DataSourceController(beanLocator, jsonMapper);
+        DataSourceController controller = controller();
         HttpResponse<?> response = controller.tableDetail(DATA_SOURCE, "schema1", "DEPT");
 
         // Then
@@ -413,7 +426,7 @@ class DataSourceControllerTest {
         mockPanel(List.of(table("schema1", "EMP")), DatabaseType.ORACLE);
 
         // When
-        DataSourceController controller = new DataSourceController(beanLocator, jsonMapper);
+        DataSourceController controller = controller();
         HttpResponse<?> response = controller.tableDetail(DATA_SOURCE, "schema1", "EMP");
 
         // Then
@@ -441,7 +454,7 @@ class DataSourceControllerTest {
         mockPanel(List.of(department, employee), DatabaseType.ORACLE);
 
         // When
-        DataSourceController controller = new DataSourceController(beanLocator, jsonMapper);
+        DataSourceController controller = controller();
         HttpResponse<?> response = controller.tableDetail(DATA_SOURCE, "schema1", "DEPT");
 
         // Then
@@ -463,13 +476,12 @@ class DataSourceControllerTest {
         mockPanel();
 
         // When
-        DataSourceController controller = new DataSourceController(beanLocator, jsonMapper);
+        DataSourceController controller = controller();
         HttpResponse<?> response = controller.poolStatus(DATA_SOURCE);
 
         // Then
         assertEquals(200, response.getStatus().getCode());
-        var modelAndView = modelAndView(response, "datasource/detail-pool-status-card");
-        assertEquals(poolInfo, modelAndView.getModel().orElseThrow());
+        assertEquals(poolInfo, fragment(response, "datasource/detail-pool-status-card").model());
     }
 
     @Test
@@ -481,7 +493,7 @@ class DataSourceControllerTest {
         mockPanel();
 
         // When
-        DataSourceController controller = new DataSourceController(beanLocator, jsonMapper);
+        DataSourceController controller = controller();
         HttpResponse<?> response = controller.poolStatus(DATA_SOURCE);
 
         // Then
@@ -494,7 +506,7 @@ class DataSourceControllerTest {
         doReturn(Map.of()).when(beanLocator).mapOfType(any(Argument.class));
 
         // When
-        DataSourceController controller = new DataSourceController(beanLocator, jsonMapper);
+        DataSourceController controller = controller();
         var request = new DataSourceController.QueryRequest("SELECT 1", 0, 10, 1);
         HttpResponse<?> response = controller.query("unknown", request);
 
@@ -510,7 +522,7 @@ class DataSourceControllerTest {
         mockPanel();
 
         // When
-        DataSourceController controller = new DataSourceController(beanLocator, jsonMapper);
+        DataSourceController controller = controller();
         var request = new DataSourceController.QueryRequest("", 0, 10, 1);
         HttpResponse<?> response = controller.query(DATA_SOURCE, request);
 
@@ -535,7 +547,7 @@ class DataSourceControllerTest {
         mockPanel();
 
         // When
-        DataSourceController controller = new DataSourceController(beanLocator, jsonMapper);
+        DataSourceController controller = controller();
         var request = new DataSourceController.QueryRequest("SELECT 1", 0, 10, 1);
         HttpResponse<?> response = controller.query(DATA_SOURCE, request);
 
@@ -562,7 +574,7 @@ class DataSourceControllerTest {
         mockPanel();
 
         // When
-        DataSourceController controller = new DataSourceController(beanLocator, jsonMapper);
+        DataSourceController controller = controller();
         var request = new DataSourceController.QueryRequest("INVALID", 0, 10, 1);
         HttpResponse<?> response = controller.query(DATA_SOURCE, request);
 
@@ -581,7 +593,7 @@ class DataSourceControllerTest {
         mockPanel();
 
         // When
-        DataSourceController controller = new DataSourceController(beanLocator, jsonMapper);
+        DataSourceController controller = controller();
         var request = new DataSourceController.QueryRequest("SELECT 1", 0, 10, 1);
         HttpResponse<?> response = controller.query(DATA_SOURCE, request);
 
@@ -591,14 +603,16 @@ class DataSourceControllerTest {
         assertEquals("Database error", body.error());
     }
 
-    private static DataSourceController.TablesPage tablesPage(HttpResponse<?> response) {
-        var modelAndView = modelAndView(response, "datasource/detail-tables-page");
-        return (DataSourceController.TablesPage) modelAndView.getModel().orElseThrow();
+    private DataSourceController controller() {
+        return new DataSourceController(beanLocator, jsonMapper, renderer);
     }
 
-    private static DataSourceController.TableDetail tableDetail(HttpResponse<?> response) {
-        var modelAndView = modelAndView(response, "datasource/detail-table-detail");
-        return (DataSourceController.TableDetail) modelAndView.getModel().orElseThrow();
+    private DataSourceController.TablesPage tablesPage(HttpResponse<?> response) {
+        return (DataSourceController.TablesPage) fragment(response, "datasource/detail-tables-page").model();
+    }
+
+    private DataSourceController.TableDetail tableDetail(HttpResponse<?> response) {
+        return (DataSourceController.TableDetail) fragment(response, "datasource/detail-table-detail").model();
     }
 
     private static PoolInfo poolInfo() {
@@ -611,11 +625,13 @@ class DataSourceControllerTest {
         );
     }
 
-    private static ModelAndView<?> modelAndView(HttpResponse<?> response, String view) {
-        assertTrue(response.body() instanceof ModelAndView<?>);
-        var modelAndView = (ModelAndView<?>) response.body();
-        assertEquals(view, modelAndView.getView().orElseThrow());
-        return modelAndView;
+    private Fragment fragment(HttpResponse<?> response, String view) {
+        assertEquals("", response.body());
+        assertEquals("controlpanelviews/" + view, renderedTemplate);
+        return new Fragment(renderedModel);
+    }
+
+    private record Fragment(Object model) {
     }
 
     private void mockPanel() {
