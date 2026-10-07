@@ -1,4 +1,4 @@
-To get started, add the UI module as a runtime dependency:
+To get started, add the UI module as a development-time dependency:
 
 dependency:io.micronaut.controlpanel:micronaut-control-panel-ui[scope=developmentOnly]
 

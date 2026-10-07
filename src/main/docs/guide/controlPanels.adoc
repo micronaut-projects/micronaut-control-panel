@@ -5,8 +5,8 @@ include::{includedir}configurationProperties/io.micronaut.controlpanel.core.conf
 For example, to disable the routes control panel, set the property
 `micronaut.control-panel.panels.routes.enabled` to `false`.
 
-Beyond displaying the available panels, the control panel also allows to perform 2 additional actions, provided that the
-corresponding endpoints are enabled. These actions are routed through control-panel-owned helper routes, so
+Beyond displaying the available panels, the control panel also allows you to perform two additional actions, provided
+that the corresponding endpoints are enabled. These actions are routed through control-panel-owned helper routes, so
 `micronaut.control-panel.security.write-access` applies to them independently of the raw management endpoint routes:
 
 * *Refresh*: refreshing the application will cause all `@Refreshable` beans in the context to be destroyed and
