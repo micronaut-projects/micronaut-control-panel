@@ -52,7 +52,7 @@ import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
  * Builds safe diagnostics for a single R2DBC {@link ConnectionFactory}.
  *
  * @author Sergio del Amo
- * @since 2.0.0
+ * @since 2.3.0
  */
 @EachBean(ConnectionFactory.class)
 public final class R2dbcDiagnosticsService {

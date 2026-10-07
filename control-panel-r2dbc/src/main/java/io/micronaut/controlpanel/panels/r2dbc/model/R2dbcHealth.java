@@ -26,7 +26,7 @@ import io.micronaut.core.annotation.ReflectiveAccess;
  * @param message the display message
  * @param errorType the sanitized error category
  * @author Sergio del Amo
- * @since 2.0.0
+ * @since 2.3.0
  */
 @ReflectiveAccess
 public record R2dbcHealth(

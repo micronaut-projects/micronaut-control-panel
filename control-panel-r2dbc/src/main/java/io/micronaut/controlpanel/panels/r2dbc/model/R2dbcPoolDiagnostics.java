@@ -28,7 +28,7 @@ import java.util.List;
  * @param metrics live pool metrics
  * @param configuration configured pool options
  * @author Sergio del Amo
- * @since 2.0.0
+ * @since 2.3.0
  */
 @ReflectiveAccess
 public record R2dbcPoolDiagnostics(

@@ -24,7 +24,7 @@ import java.time.Duration;
  * R2DBC diagnostics panel configuration.
  *
  * @author Sergio del Amo
- * @since 2.0.0
+ * @since 2.3.0
  */
 @ConfigurationProperties(R2dbcPanelConfiguration.PREFIX)
 public class R2dbcPanelConfiguration {

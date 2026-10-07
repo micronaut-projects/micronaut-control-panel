@@ -24,7 +24,7 @@ import io.micronaut.core.annotation.ReflectiveAccess;
  * @param value the sanitized option value
  * @param redacted whether the value was intentionally hidden
  * @author Sergio del Amo
- * @since 2.0.0
+ * @since 2.3.0
  */
 @ReflectiveAccess
 public record R2dbcOption(String name, String value, boolean redacted) {

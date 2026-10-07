@@ -34,7 +34,7 @@ import java.util.List;
  * @param driverMetadataName the driver metadata name
  * @param options safe option names and values
  * @author Sergio del Amo
- * @since 2.0.0
+ * @since 2.3.0
  */
 @ReflectiveAccess
 public record R2dbcConnectionSummary(

@@ -27,7 +27,7 @@ import java.util.List;
  * @param pool the pool diagnostics
  * @param warnings configuration warnings
  * @author Sergio del Amo
- * @since 2.0.0
+ * @since 2.3.0
  */
 @ReflectiveAccess
 public record R2dbcBody(

@@ -28,7 +28,7 @@ import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
  * Control panel for R2DBC connection factory diagnostics.
  *
  * @author Sergio del Amo
- * @since 2.0.0
+ * @since 2.3.0
  */
 @EachBean(R2dbcDiagnosticsService.class)
 public class R2dbcControlPanel extends AbstractEachBeanControlPanel<R2dbcBody> {
