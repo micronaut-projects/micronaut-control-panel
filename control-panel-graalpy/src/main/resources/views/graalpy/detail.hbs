@@ -1,0 +1,406 @@
+{{#with controlPanel.body}}
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Python beans</h5>
+                    <p class="card-text"><strong>{{pythonBeanCount}}</strong> bean definitions</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Context pool</h5>
+                    <p class="card-text"><span class="badge badge-secondary">{{pool.state}}</span></p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Idle contexts</h5>
+                    <p class="card-text">
+                        {{#if pool.available}}
+                            <strong>{{pool.statistics.idleContexts}}</strong> of {{pool.statistics.pooledContexts}}
+                        {{else}}
+                            <span>Unavailable</span>
+                        {{/if}}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Python VFS</h5>
+                    <p class="card-text"><strong>{{vfs.entryCount}}</strong> entries</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tabs mt-4 cp-graalpy-tabs" data-tabs>
+        <div class="tabs-list" role="tablist" aria-label="GraalPy diagnostics">
+            <button type="button" class="tabs-trigger active" id="tab-graalpy-beans" data-tabs-trigger="graalpy-beans" role="tab" aria-selected="true" aria-controls="panel-graalpy-beans">Python Beans</button>
+            <button type="button" class="tabs-trigger" id="tab-graalpy-pool" data-tabs-trigger="graalpy-pool" role="tab" aria-selected="false" aria-controls="panel-graalpy-pool">Context Pool</button>
+            <button type="button" class="tabs-trigger" id="tab-graalpy-configuration" data-tabs-trigger="graalpy-configuration" role="tab" aria-selected="false" aria-controls="panel-graalpy-configuration">Configuration</button>
+            <button type="button" class="tabs-trigger" id="tab-graalpy-vfs" data-tabs-trigger="graalpy-vfs" role="tab" aria-selected="false" aria-controls="panel-graalpy-vfs">Python VFS</button>
+            <button type="button" class="tabs-trigger" id="tab-graalpy-runtime" data-tabs-trigger="graalpy-runtime" role="tab" aria-selected="false" aria-controls="panel-graalpy-runtime">Runtime Notes</button>
+        </div>
+
+        <div id="panel-graalpy-beans" class="tabs-panel active" role="tabpanel" aria-labelledby="tab-graalpy-beans" data-tabs-panel="graalpy-beans">
+            {{#if hasPythonBeans}}
+                <div class="cp-data-table cp-data-table-paged" data-filter-table data-filter-table-page-size="12" data-filter-table-label="Python bean" data-filter-table-label-plural="Python beans">
+                    <div class="cp-data-table-toolbar">
+                        <div class="cp-data-table-summary" data-filter-table-summary>{{pythonBeanCount}} Python beans</div>
+                        <div class="cp-data-table-search">
+                            <input type="search" class="form-control" data-filter-table-search placeholder="Search Python beans" aria-label="Search Python beans">
+                        </div>
+                    </div>
+                    <div class="cp-data-table-container">
+                        <table class="table cp-data-table-table cp-graalpy-module-table">
+                            <thead>
+                            <tr>
+                                <th scope="col">Bean</th>
+                                <th scope="col">Kind</th>
+                                <th scope="col">Python identity</th>
+                                <th scope="col">Java type</th>
+                                <th scope="col">Bridge methods</th>
+                                <th scope="col">Scope</th>
+                                <th scope="col">State</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {{#each pythonBeans}}
+                                <tr data-filter-table-row>
+                                    <td data-label="Bean"><code class="cp-table-code" title="{{beanName}}">{{abbreviate beanName 44}}</code></td>
+                                    <td data-label="Kind"><span class="badge badge-secondary">{{kind}}</span></td>
+                                    <td data-label="Python identity">
+                                        <code class="cp-table-code" title="{{pythonIdentity}}">{{abbreviate pythonIdentity 40}}</code>
+                                        {{#if hasPackageName}}
+                                            <div class="text-muted" title="{{packageName}}">package {{abbreviate packageName 40}}</div>
+                                        {{/if}}
+                                        {{#if hasNestedMembers}}
+                                            <div class="text-muted">
+                                                nested: {{#each nestedMembers}}<code class="cp-table-code">{{this}}</code> {{/each}}
+                                            </div>
+                                        {{/if}}
+                                    </td>
+                                    <td data-label="Java type"><code class="cp-table-code" title="{{javaType}}">{{abbreviate javaType 56}}</code></td>
+                                    <td data-label="Bridge methods">
+                                        {{#if hasMethods}}
+                                            <ul class="cp-data-table-list cp-graalpy-method-list">
+                                                {{#each methods}}
+                                                    <li><code class="cp-table-code cp-graalpy-method-code" title="{{signature}}">{{signature}}</code></li>
+                                                {{/each}}
+                                            </ul>
+                                        {{else}}
+                                            <span class="text-muted">No executable methods detected.</span>
+                                        {{/if}}
+                                    </td>
+                                    <td data-label="Scope">
+                                        <span class="badge badge-secondary">{{scope}}</span>
+                                        <span class="text-muted">{{qualifier}}</span>
+                                    </td>
+                                    <td data-label="State">{{state}}</td>
+                                </tr>
+                            {{/each}}
+                            <tr data-filter-table-empty hidden>
+                                <td class="cp-data-table-empty-cell" colspan="7">No Python beans match this filter.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="cp-data-table-footer">
+                        <label class="cp-data-table-page-size">
+                            Rows per page
+                            <select class="form-control" data-filter-table-page-size-select aria-label="Python beans per page">
+                                <option value="8">8</option>
+                                <option value="12" selected>12</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                            </select>
+                        </label>
+                        <div class="cp-data-table-pagination">
+                            <span class="cp-data-table-page" data-filter-table-page>Page 1 of 1</span>
+                            <button type="button" class="btn btn-secondary btn-sm" data-filter-table-prev>Previous</button>
+                            <button type="button" class="btn btn-secondary btn-sm" data-filter-table-next>Next</button>
+                        </div>
+                    </div>
+                </div>
+            {{else}}
+                {{#if beanMetadataAvailable}}
+                    <div class="cp-data-table-empty">
+                        Micronaut for Python is on the classpath, but no generated Python bean definitions were found.
+                        Add <code>io.micronaut:micronaut-inject-python</code> as an annotation processor and point
+                        <code>micronaut.python.source.root</code> at your Python sources.
+                    </div>
+                {{else}}
+                    <div class="cp-data-table-empty">
+                        No Python bean metadata detected. This build of <code>micronaut-context-python</code> does not
+                        expose the expected bean annotations, so the inventory cannot be listed.
+                    </div>
+                {{/if}}
+            {{/if}}
+        </div>
+
+        <div id="panel-graalpy-pool" class="tabs-panel" role="tabpanel" aria-labelledby="tab-graalpy-pool" data-tabs-panel="graalpy-pool" hidden>
+            {{#if pool.hasMessage}}
+                <div class="alert alert-info" role="status">{{pool.message}}</div>
+            {{/if}}
+            {{#if pool.available}}
+                <div class="cp-data-table-container cp-vertical-table">
+                    <table class="table cp-data-table-table">
+                        <tbody>
+                        <tr><th scope="row">Pooling enabled</th><td>{{pool.statistics.enabled}}</td></tr>
+                        <tr><th scope="row">Pool closed</th><td>{{pool.statistics.closed}}</td></tr>
+                        <tr><th scope="row">Target size</th><td>{{pool.statistics.targetSize}}</td></tr>
+                        <tr><th scope="row">Pooled contexts</th><td>{{pool.statistics.pooledContexts}}</td></tr>
+                        <tr><th scope="row">Idle contexts</th><td>{{pool.statistics.idleContexts}}</td></tr>
+                        <tr><th scope="row">Event loop contexts</th><td>{{pool.statistics.eventLoopContexts}}</td></tr>
+                        <tr><th scope="row">Borrows</th><td>{{pool.statistics.borrows}}</td></tr>
+                        <tr><th scope="row">Waits</th><td>{{pool.statistics.waits}}</td></tr>
+                        <tr><th scope="row">Total wait</th><td>{{pool.statistics.totalWaitMillis}} ms</td></tr>
+                        <tr><th scope="row">Longest wait</th><td>{{pool.statistics.maxWaitMillis}} ms</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                {{#if pool.hasHints}}
+                    <div class="alert alert-info" role="status">
+                        {{#each pool.hints}}
+                            <p>{{this}}</p>
+                        {{/each}}
+                    </div>
+                {{/if}}
+            {{else}}
+                <div class="cp-data-table-empty">Pool statistics are unavailable. Configuration values are still shown below.</div>
+            {{/if}}
+
+            <h5 class="mt-4">Configuration</h5>
+            <div class="cp-data-table-container cp-vertical-table">
+                <table class="table cp-data-table-table">
+                    <tbody>
+                    <tr><th scope="row"><code>micronaut.python.enabled</code></th><td>{{pool.settings.pythonEnabled}}</td></tr>
+                    <tr><th scope="row"><code>micronaut.python.pool.enabled</code></th><td>{{pool.settings.poolEnabled}}</td></tr>
+                    <tr><th scope="row"><code>micronaut.python.pool.size</code></th><td>{{pool.settings.size}}</td></tr>
+                    <tr><th scope="row"><code>micronaut.python.pool.warn-wait</code></th><td>{{pool.settings.warnWait}}</td></tr>
+                    <tr><th scope="row"><code>micronaut.python.pool.max-event-loop-contexts</code></th><td>{{pool.settings.maxEventLoopContexts}}</td></tr>
+                    <tr><th scope="row"><code>micronaut.python.asyncio.enabled</code></th><td>{{pool.settings.asyncioEnabled}}</td></tr>
+                    <tr>
+                        <th scope="row">Polyglot engine</th>
+                        <td>
+                            {{#if pool.engine.available}}
+                                <code>{{pool.engine.implementationName}}</code> {{pool.engine.version}}
+                            {{else}}
+                                <span class="text-muted">Unknown. The panel never creates an engine to find out.</span>
+                            {{/if}}
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="panel-graalpy-configuration" class="tabs-panel" role="tabpanel" aria-labelledby="tab-graalpy-configuration" data-tabs-panel="graalpy-configuration" hidden>
+            {{#unless configuration.available}}
+                <div class="alert alert-info" role="status">
+                    No <code>graalpy.context</code> configuration bean is present, so only customizer and module detection is shown.
+                </div>
+            {{/unless}}
+            <h5>Context options</h5>
+            {{#if configuration.hasOptions}}
+                <div class="cp-data-table-container cp-vertical-table">
+                    <table class="table cp-data-table-table">
+                        <tbody>
+                        {{#each configuration.options}}
+                            <tr>
+                                <th scope="row"><code>{{key}}</code></th>
+                                <td>
+                                    <code>{{value}}</code>
+                                    {{#if masked}}<span class="badge badge-secondary">masked</span>{{/if}}
+                                </td>
+                            </tr>
+                        {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+            {{else}}
+                <div class="cp-data-table-empty">No <code>graalpy.context.options</code> are configured.</div>
+            {{/if}}
+
+            <h5 class="mt-4">Host class lookup</h5>
+            {{#if configuration.hasHostClassLookup}}
+                <ul>
+                    {{#each configuration.hostClassLookup}}
+                        <li><code>{{this}}</code></li>
+                    {{/each}}
+                </ul>
+            {{else}}
+                <div class="cp-data-table-empty">
+                    No <code>graalpy.context.host-class-lookup</code> patterns are configured, so host class lookup is unrestricted.
+                </div>
+            {{/if}}
+
+            <h5 class="mt-4">Context environment</h5>
+            {{#if configuration.hasEnvironmentKeys}}
+                <p class="text-muted">Values are never rendered because environment variables routinely carry credentials.</p>
+                <ul>
+                    {{#each configuration.environmentKeys}}
+                        <li><code>{{this}}</code></li>
+                    {{/each}}
+                </ul>
+            {{else}}
+                <div class="cp-data-table-empty">No <code>graalpy.context.environment</code> variables are configured.</div>
+            {{/if}}
+
+            <h5 class="mt-4">Context customizers</h5>
+            {{#if configuration.hasCustomizers}}
+                <p class="text-muted">Discovered through <code>ServiceLoader</code> provider types. The panel never instantiates them.</p>
+                <ul>
+                    {{#each configuration.customizers}}
+                        <li><code>{{this}}</code></li>
+                    {{/each}}
+                </ul>
+            {{else}}
+                <div class="cp-data-table-empty">No customizers registered.</div>
+            {{/if}}
+        </div>
+
+        <div id="panel-graalpy-vfs" class="tabs-panel" role="tabpanel" aria-labelledby="tab-graalpy-vfs" data-tabs-panel="graalpy-vfs" hidden>
+            {{#if vfs.hasWarnings}}
+                <div class="alert alert-warning" role="status">
+                    {{#each vfs.warnings}}
+                        <p>{{this}}</p>
+                    {{/each}}
+                </div>
+            {{/if}}
+            <p class="text-muted">
+                Probed resource roots:
+                {{#each vfs.roots}}<code class="cp-table-code">{{this}}</code> {{/each}}
+            </p>
+            {{#if vfs.hasResources}}
+                <div class="cp-data-table-container cp-vertical-table">
+                    <table class="table cp-data-table-table">
+                        <tbody>
+                        {{#each vfs.resources}}
+                            <tr>
+                                <th scope="row">{{label}}</th>
+                                <td>
+                                    <code class="cp-table-code" title="{{root}}">{{root}}</code>
+                                    <span class="badge badge-secondary">{{kind}}</span>
+                                    {{lineCount}} metadata lines
+                                    {{#if unreadable}}<span class="badge badge-secondary">unreadable</span>{{/if}}
+                                </td>
+                            </tr>
+                        {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+            {{/if}}
+            {{#if vfs.hasEntries}}
+                {{#if vfs.truncated}}
+                    <p class="text-muted">The displayed VFS metadata is capped at {{vfs.entryCount}} entries. {{vfs.omittedEntries}} additional entries were omitted after the cap.</p>
+                {{/if}}
+                <div class="cp-data-table cp-data-table-paged" data-filter-table data-filter-table-page-size="16" data-filter-table-label="VFS entry" data-filter-table-label-plural="VFS entries">
+                    <div class="cp-data-table-toolbar">
+                        <div class="cp-data-table-summary" data-filter-table-summary>{{vfs.entryCount}} VFS entries</div>
+                        <div class="cp-data-table-search">
+                            <input type="search" class="form-control" data-filter-table-search placeholder="Search VFS paths" aria-label="Search VFS paths">
+                        </div>
+                    </div>
+                    <div class="cp-data-table-container">
+                        <table class="table cp-data-table-table cp-graalpy-vfs-table">
+                            <thead>
+                            <tr>
+                                <th scope="col">Group</th>
+                                <th scope="col">Path</th>
+                                <th scope="col">Resource</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {{#each vfs.entries}}
+                                <tr data-filter-table-row>
+                                    <td data-label="Group"><span class="badge badge-secondary">{{group}}</span></td>
+                                    <td data-label="Path"><code class="cp-table-code" title="{{path}}">{{path}}</code></td>
+                                    <td data-label="Resource">{{resource}}</td>
+                                </tr>
+                            {{/each}}
+                            <tr data-filter-table-empty hidden>
+                                <td class="cp-data-table-empty-cell" colspan="3">No VFS entries match this filter.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="cp-data-table-footer">
+                        <label class="cp-data-table-page-size">
+                            Rows per page
+                            <select class="form-control" data-filter-table-page-size-select aria-label="VFS entries per page">
+                                <option value="8">8</option>
+                                <option value="16" selected>16</option>
+                                <option value="30">30</option>
+                                <option value="50">50</option>
+                            </select>
+                        </label>
+                        <div class="cp-data-table-pagination">
+                            <span class="cp-data-table-page" data-filter-table-page>Page 1 of 1</span>
+                            <button type="button" class="btn btn-secondary btn-sm" data-filter-table-prev>Previous</button>
+                            <button type="button" class="btn btn-secondary btn-sm" data-filter-table-next>Next</button>
+                        </div>
+                    </div>
+                </div>
+            {{else}}
+                <div class="cp-data-table-empty">
+                    No <code>fileslist.txt</code> metadata was found under the probed roots. Micronaut Core packages application
+                    Python sources under <code>META-INF/GRAALPY-VFS/micronaut-application/</code>; the standalone GraalPy build
+                    plugins use <code>org.graalvm.python.vfs/</code>. Check that your build packaged the Python sources.
+                </div>
+            {{/if}}
+        </div>
+
+        <div id="panel-graalpy-runtime" class="tabs-panel" role="tabpanel" aria-labelledby="tab-graalpy-runtime" data-tabs-panel="graalpy-runtime" hidden>
+            <div class="cp-data-table-container cp-vertical-table">
+                <table class="table cp-data-table-table">
+                    <tbody>
+                    <tr>
+                        <th scope="row">Asyncio Netty runtime</th>
+                        <td>
+                            {{#if modules.nettyPresent}}
+                                <code>micronaut-context-python-netty</code> is on the classpath.
+                            {{else}}
+                                <span class="text-muted">Not present. Add <code>io.micronaut:micronaut-context-python-netty</code> to run Python asyncio on the Netty event loop.</span>
+                            {{/if}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Pool endpoint</th>
+                        <td>
+                            {{#if modules.poolEndpointPresent}}
+                                Core exposes the same snapshot at <code>/pythonpool</code>. That endpoint is sensitive by default and needs <code>micronaut-management</code> plus explicit exposure.
+                            {{else}}
+                                <span class="text-muted">Not defined. Add <code>io.micronaut:micronaut-management</code> to expose <code>/pythonpool</code>.</span>
+                            {{/if}}
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="alert alert-info" role="status">
+                <p>This panel is read-only. It inspects bean-definition metadata, configuration values, the pool statistics
+                    snapshot and packaged VFS metadata. It does not borrow a pooled context, evaluate Python, call a generated
+                    bridge method, create a polyglot engine or context, instantiate a context customizer, or read the listed
+                    Python files.</p>
+                <p>Every GraalPy context has its own global interpreter lock. The context pool exists to reduce GIL contention
+                    across concurrent requests; growing waits usually mean the pool is too small. Context pooling and
+                    <code>@ContextPooled</code> are documented as experimental.</p>
+                <p>Python must not run on virtual threads. Keep Python-backed beans on a platform-thread executor as described
+                    in the Micronaut for Python documentation.</p>
+                <ul>
+                    <li><a href="https://docs.micronaut.io/latest/guide/#python" target="_blank" rel="noopener noreferrer">Micronaut for Python</a></li>
+                    <li><a href="https://www.graalvm.org/reference-manual/embed-languages/" target="_blank" rel="noopener noreferrer">GraalVM polyglot embedding</a></li>
+                    <li><a href="https://www.graalvm.org/latest/reference-manual/python/Embedding-Build-Tools/" target="_blank" rel="noopener noreferrer">GraalPy embedding build tools</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+{{/with}}
