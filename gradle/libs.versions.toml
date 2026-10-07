@@ -32,6 +32,7 @@ micronaut-testresources = "4.3.0"
 micronaut-gradle-plugin = "5.0.2"
 micronaut-openapi = "7.2.0"
 micronaut-kafka = "6.1.0"
+micronaut-spring = "6.0.0-RC1"
 kotlin-gradle-plugin = "2.4.10"
 micronaut-shared-settings = "8.1.1"
 playwright = "1.62.0"
@@ -43,6 +44,7 @@ avro-serde = "8.2.1"
 
 [libraries]
 micronaut-openapi = { module = "io.micronaut.openapi:micronaut-openapi-bom", version.ref = "micronaut-openapi" }
+micronaut-spring = { module = "io.micronaut.spring:micronaut-spring-bom", version.ref = "micronaut-spring" }
 micronaut-core = { module = 'io.micronaut:micronaut-core-bom', version.ref = 'micronaut' }
 micronaut-inject-python-test = { module = "io.micronaut:micronaut-inject-python-test" }
 micronaut-context-python = { module = "io.micronaut:micronaut-context-python" }

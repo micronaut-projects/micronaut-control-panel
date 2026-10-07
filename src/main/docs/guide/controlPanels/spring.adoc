@@ -1,0 +1,45 @@
+The Spring Compatibility Control Panel provides a read-only view of Micronaut Spring metadata that is useful during
+Spring Boot migration and shared-library development.
+
+To add the panel, add the following dependency:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-spring[scope=developmentOnly]
+
+The panel is active only when the module is on the classpath, the panel is enabled, and at least one Micronaut Spring
+integration module is detected. It does not invoke application beans, Spring Boot Actuator operations, or Micronaut
+management endpoint operations.
+
+The detail view shows:
+
+* Detected Micronaut Spring modules such as annotation, web annotation, boot annotation, and runtime context support.
+* Spring-origin beans discovered from Micronaut bean definition metadata.
+* Spring MVC routes where route metadata still carries Spring web annotations.
+* Spring Boot `@ConditionalOn*` annotations and their mapped Micronaut `@Requires` form.
+* Spring Boot Actuator endpoint operations and their mapped Micronaut endpoint annotations.
+* A support catalog for Spring annotations that Micronaut Spring can map.
+* Conservative unsupported-feature warnings for clear classpath or metadata signals such as AspectJ and Servlet API
+  route arguments.
+
+Spring annotation values are hidden by default. This avoids exposing property names, placeholder expressions, or
+annotation members that may contain sensitive values. If annotation values are enabled, names or values containing
+`password`, `secret`, `token`, `credential`, `key`, `certificate`, `tenant`, `user`, or `account` are redacted.
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      spring-compatibility:
+        enabled: true
+        include-classpath-summary: true
+        include-unsupported-feature-warnings: true
+        show-annotation-values: false
+----
+
+The panel reports partial data when only some Micronaut Spring modules are present. For example, applications with
+`micronaut-spring-annotation` but without `micronaut-spring-web-annotation` can show Spring-origin beans while route
+rows remain empty. Absence of an unsupported-feature warning is not a full static analysis result; it only means the
+panel did not find a clear runtime metadata or classpath signal.
+
+Use this panel alongside the Beans, Disabled Beans, Routes, Management, and Cache panels when comparing Spring-origin
+metadata with the generic Micronaut runtime view.
