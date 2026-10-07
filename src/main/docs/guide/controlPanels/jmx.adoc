@@ -1,0 +1,67 @@
+= JMX Control Panel
+
+The JMX Control Panel provides a read-only diagnostics view of the Micronaut endpoint MBeans registered in the application `MBeanServer`.
+It is intended for development and test environments where you want to confirm the JMX bridge before opening tools such as JConsole, Java Mission Control, Jolokia, or an external monitoring agent.
+
+To enable the panel, add the following module as a development-time dependency:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-jmx[scope=developmentOnly]
+
+To register Micronaut management endpoints as JMX MBeans, add the Micronaut JMX and Management modules as well:
+
+dependency:io.micronaut.jmx:micronaut-jmx[scope=developmentOnly]
+dependency:io.micronaut:micronaut-management[scope=developmentOnly]
+
+The JMX panel does not register MBeans by itself.
+It only reads metadata from an existing `MBeanServer` bean.
+
+=== Configuration
+
+The JMX Control Panel is automatically enabled when you include the `micronaut-control-panel-jmx` module.
+You can disable it with:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      jmx:
+        enabled: false
+----
+
+The panel also displays the configured or default Micronaut JMX settings when they are visible through application configuration:
+
+[configuration]
+----
+jmx:
+  register-endpoints: true
+  domain: io.micronaut.management.endpoint
+----
+
+When `jmx.register-endpoints=false`, the panel remains visible but shows a warning because Micronaut endpoint MBeans are not expected to be registered.
+When no Micronaut endpoint MBeans are present, the panel shows a no-data state and keeps the server and domain diagnostics available.
+
+=== What the Panel Shows
+
+The panel reports:
+
+* whether an `MBeanServer` bean is available;
+* the selected server implementation and default domain;
+* configured values for `jmx.agent-id`, `jmx.domain`, `jmx.add-to-factory`, `jmx.ignore-agent-not-found`, and `jmx.register-endpoints`;
+* total MBean count and domain counts grouped by JMX domain;
+* Micronaut endpoint MBean `ObjectName` values under `io.micronaut.management.endpoint`;
+* operation names, return types, parameter signatures, and JMX operation impacts;
+* attribute metadata names, types, and readable/writable flags.
+
+The panel does not display arbitrary non-Micronaut MBean `ObjectName` values.
+Non-Micronaut domains are grouped by count only.
+
+=== Read-Only Boundary
+
+The JMX Control Panel is diagnostics-only.
+It does not invoke JMX operations, read attribute values, write attributes, or change JMX registration.
+Attribute rows contain metadata only, not runtime values.
+
+Because JMX metadata can reveal implementation details, keep Control Panel access restricted to trusted development or test environments.
+Do not expose the Control Panel publicly without authentication and authorization.
+The JMX panel complements external JMX clients; it is not a replacement for production monitoring, auditing, Jolokia security configuration, or JVM-level access controls.

@@ -53,6 +53,10 @@ dependencies {
     // @MessageListener, an index type since Micronaut 5.2
     testRuntimeOnly(mn.micronaut.messaging)
 
+    // JMX
+    implementation(projects.micronautControlPanelJmx)
+    implementation(libs.micronaut.jmx)
+
     // OpenAPI + Swagger UI (views generated at compile-time)
     annotationProcessor(mnOpenapi.micronaut.openapi)
     testAnnotationProcessor(mnOpenapi.micronaut.openapi)
