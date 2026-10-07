@@ -36,6 +36,7 @@ import java.util.Locale;
  * @param available whether cluster diagnostics are available
  * @param statusLabel rendered status label
  * @param statusBadgeClass rendered status badge class
+ * @since 2.3.0
  */
 @ReflectiveAccess
 public record OpenSearchDiagnostics(String beanName,

@@ -22,6 +22,7 @@ import io.micronaut.core.annotation.ReflectiveAccess;
  *
  * @param name field path
  * @param type OpenSearch mapping type
+ * @since 2.3.0
  */
 @ReflectiveAccess
 public record MappingField(String name, String type) {

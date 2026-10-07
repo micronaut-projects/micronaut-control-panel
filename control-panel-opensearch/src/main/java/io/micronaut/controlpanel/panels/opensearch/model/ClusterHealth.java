@@ -34,6 +34,7 @@ import io.micronaut.core.annotation.ReflectiveAccess;
  * @param initializingShards initializing shard count
  * @param unassignedShards unassigned shard count
  * @param delayedUnassignedShards delayed unassigned shard count
+ * @since 2.3.0
  */
 @ReflectiveAccess
 public record ClusterHealth(String clusterName,

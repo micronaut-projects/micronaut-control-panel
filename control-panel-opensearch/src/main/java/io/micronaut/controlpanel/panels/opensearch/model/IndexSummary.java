@@ -34,6 +34,7 @@ import java.util.List;
  * @param mappingTruncated whether mapping fields were capped
  * @param hasAliases whether aliases are present
  * @param hasMappingFields whether mapping fields are present
+ * @since 2.3.0
  */
 @ReflectiveAccess
 public record IndexSummary(String name,

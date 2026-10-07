@@ -28,6 +28,7 @@ import java.util.List;
  * @param signingRegion Amazon request signing region
  * @param hasHosts whether host metadata is present
  * @param hasAmazon whether Amazon OpenSearch metadata is present
+ * @since 2.3.0
  */
 @ReflectiveAccess
 public record ConnectionContext(String transport,

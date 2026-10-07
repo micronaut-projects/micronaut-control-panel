@@ -28,6 +28,8 @@ import org.opensearch.client.opensearch.OpenSearchClient;
 
 /**
  * Control panel for read-only OpenSearch diagnostics.
+ *
+ * @since 2.3.0
  */
 @EachBean(OpenSearchClient.class)
 public class OpenSearchControlPanel extends AbstractEachBeanControlPanel<OpenSearchDiagnostics> {

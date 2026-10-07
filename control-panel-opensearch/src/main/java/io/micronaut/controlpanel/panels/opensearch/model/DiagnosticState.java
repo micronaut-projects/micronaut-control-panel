@@ -19,6 +19,8 @@ import io.micronaut.core.annotation.ReflectiveAccess;
 
 /**
  * Current diagnostic state for the OpenSearch panel.
+ *
+ * @since 2.3.0
  */
 @ReflectiveAccess
 public enum DiagnosticState {

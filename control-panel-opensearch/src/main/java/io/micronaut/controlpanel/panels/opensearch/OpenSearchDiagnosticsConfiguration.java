@@ -20,6 +20,8 @@ import io.micronaut.core.bind.annotation.Bindable;
 
 /**
  * Configuration for the OpenSearch diagnostics control panel.
+ *
+ * @since 2.3.0
  */
 @ConfigurationProperties(OpenSearchDiagnosticsConfiguration.PREFIX)
 public interface OpenSearchDiagnosticsConfiguration {
