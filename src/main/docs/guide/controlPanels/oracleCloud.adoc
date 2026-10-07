@@ -1,0 +1,116 @@
+= Oracle Cloud Control Panel
+
+The Oracle Cloud Control Panel adds read-only diagnostics for Micronaut Oracle Cloud applications that create OCI SDK clients.
+It is intended for development-time troubleshooting of client beans, authentication selection, region and endpoint configuration, service-specific HTTP configuration, and managed Netty migration state.
+
+To get started, add the following module as a development-time dependency:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-oracle-cloud[scope=developmentOnly]
+
+It is assumed that your application already has Micronaut Oracle Cloud configured.
+For Micronaut Oracle Cloud setup, see the https://micronaut-projects.github.io/micronaut-oracle-cloud/latest/guide/[Micronaut Oracle Cloud documentation].
+
+== OCI SDK Clients
+
+The `oci-sdk-clients` panel is enabled when the Oracle Cloud diagnostics module and Micronaut Oracle Cloud authentication classes are present.
+The panel shows an `Oracle Cloud` category and an `OCI SDK Clients` panel.
+
+The panel reports local bean and configuration metadata only:
+
+* OCI SDK client bean name or qualifier.
+* Client class.
+* Inferred service id.
+* Client kind, such as blocking, async, Reactor, or RxJava.
+* Authentication provider type.
+* Whether region or endpoint configuration is present.
+* Whether service-specific `oci.clients.*` configuration is present.
+* Whether global `oci.client.*` or `micronaut.http.services.oci.*` HTTP configuration is present.
+* Whether managed Netty flags are configured.
+* Local indicators for optional Oracle Cloud integrations such as Vault config import, Oracle Cloud Micrometer, OCI Logging, certificate refresh, and OKE Kubernetes client configuration.
+
+The panel distinguishes configuration states such as `not configured`, `configured`, `configured but value hidden`, and `not checked`.
+It does not imply that OCI is reachable.
+
+== Security And Redaction
+
+The panel uses an allow-list model and does not dump Oracle Cloud configuration maps.
+It intentionally hides credential and account-identifying values.
+
+The following values are never rendered:
+
+* Private keys and private key contents.
+* Private key file paths.
+* Passphrases.
+* Fingerprints.
+* Session tokens, security tokens, and resource principal token material.
+* Raw config-file contents.
+* Config file paths and profile values.
+* User OCIDs and tenancy OCIDs.
+* Vault secret values.
+* Proxy credentials.
+* Key store and trust store paths and passwords.
+* Certificate values and raw HTTP or log payloads.
+
+When one of these settings is present, the panel shows only a presence signal such as `configured but value hidden`.
+
+== No Network Calls
+
+The first version performs no OCI network calls by default.
+It does not call OCI SDK service methods, metadata endpoints, Vault, IAM, Monitoring, Logging, Certificates, Kubernetes, or Object Storage.
+It also avoids authentication-provider credential accessors such as tenant, user, fingerprint, private key, passphrase, and token methods.
+
+This keeps the panel safe for local development where IAM permissions, network latency, metadata service access, or resource identifiers may not be available or should not be exposed.
+Any future active OCI validation action would need to be explicitly opt-in and separately reviewed.
+
+== HTTP Configuration
+
+The panel shows presence signals for:
+
+* `oci.client.*` global OCI HTTP client configuration.
+* `oci.clients.<service>.*` service-specific OCI HTTP client configuration.
+* `micronaut.http.services.oci.*` Micronaut HTTP service configuration.
+* `oci.netty.legacy-netty-client`.
+* `oci.netty.use-managed-provider-globally`.
+
+For service-specific configuration, the panel groups keys into safe categories such as timeout, retry, proxy, SSL, logging, HTTP/2, connection pool, endpoint, and region.
+Raw values are not displayed.
+
+If both `oci.client.*` and `micronaut.http.services.oci.*` are configured, the panel shows a warning.
+Choose one HTTP configuration path to avoid non-unique client configuration.
+
+== Troubleshooting Workflows
+
+For config-file authentication, verify that the provider type is `config file`, that config-file/session configuration is present, and that region configuration is present.
+The config path and profile value remain hidden.
+
+For resource principals, verify that the provider type is `resource principal`.
+The panel does not read resource principal token files, claims, or metadata endpoints.
+
+For instance principals, verify that the provider type is `instance principal` and that instance-principal configuration is present when expected.
+The panel does not call the instance metadata service.
+
+For OKE workload identity, verify that OKE workload identity configuration is present and that the provider type or optional integration rows match the application setup.
+The panel does not call Kubernetes or OCI token endpoints.
+
+For session-token authentication, verify that config/session configuration is present and that the provider type is `session token` when the corresponding provider bean is active.
+The session token value is always hidden.
+
+For service-specific HTTP troubleshooting, check the row for the expected `oci.clients.<service>` service id.
+The row should show the configured safe categories without exposing timeout values, proxy credentials, SSL paths, certificates, or other sensitive data.
+
+For managed Netty migration, check the managed-provider and legacy-Netty badges.
+Use the badges as local configuration signals; they are not a runtime network probe.
+
+== Configuration
+
+The Oracle Cloud control panel is automatically enabled when you include the `micronaut-control-panel-oracle-cloud` module in your project.
+You can disable it by setting:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      oci-sdk-clients:
+        enabled: false
+----
