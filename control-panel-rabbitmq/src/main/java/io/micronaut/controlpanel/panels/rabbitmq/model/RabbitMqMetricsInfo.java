@@ -27,6 +27,7 @@ import java.util.List;
  * @param message metrics message
  * @param prefix RabbitMQ meter prefix
  * @param meters RabbitMQ meters
+ * @since 2.3.0
  */
 @ReflectiveAccess
 public record RabbitMqMetricsInfo(boolean available, String message, String prefix, List<MeterInfo> meters) {

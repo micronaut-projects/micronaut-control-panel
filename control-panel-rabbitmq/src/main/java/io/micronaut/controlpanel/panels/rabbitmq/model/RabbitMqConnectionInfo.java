@@ -37,6 +37,7 @@ import java.util.List;
  * @param confirmTimeout publisher confirm timeout
  * @param rpcTimeout RPC timeout
  * @param maxIdleChannels channel pool maximum idle channels
+ * @since 2.3.0
  */
 @ReflectiveAccess
 public record RabbitMqConnectionInfo(

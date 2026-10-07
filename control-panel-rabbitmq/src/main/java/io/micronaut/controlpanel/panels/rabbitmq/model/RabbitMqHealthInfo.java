@@ -26,6 +26,7 @@ import java.util.List;
  * @param status health status
  * @param message health message
  * @param details health details
+ * @since 2.3.0
  */
 @ReflectiveAccess
 public record RabbitMqHealthInfo(boolean available, String status, String message, List<HealthDetail> details) {

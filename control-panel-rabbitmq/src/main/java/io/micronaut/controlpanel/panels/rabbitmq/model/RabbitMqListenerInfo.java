@@ -35,6 +35,7 @@ import io.micronaut.core.annotation.ReflectiveAccess;
  * @param reQueue nack requeue flag
  * @param autoAcknowledgment automatic acknowledgement flag
  * @param acknowledgementArgument whether the method accepts an acknowledgement argument
+ * @since 2.3.0
  */
 @ReflectiveAccess
 public record RabbitMqListenerInfo(

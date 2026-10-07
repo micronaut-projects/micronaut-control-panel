@@ -31,6 +31,7 @@ import java.util.List;
  * @param listenerCount listener count
  * @param connectionCount connection count
  * @param metricsPresent whether RabbitMQ meters are present
+ * @since 2.3.0
  */
 @ReflectiveAccess
 public record RabbitMqBody(
