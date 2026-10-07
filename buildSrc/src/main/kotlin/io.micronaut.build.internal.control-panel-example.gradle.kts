@@ -7,6 +7,7 @@ plugins {
     id("io.micronaut.test-resources")
     id("com.gradleup.shadow")
     id("com.adarshr.test-logger")
+    id("io.micronaut.build.internal.control-panel-dependency-rules")
 }
 
 application {
@@ -40,6 +41,11 @@ tasks.withType<Test> {
     dependsOn(tasks.named("playwrightInstall"))
     maxHeapSize = "2g"
     systemProperty("micronaut.test.resources.server.client.read.timeout", "180")
+}
+
+tasks.shadowJar {
+    // the example bundles every cache, object storage and datasource provider: more than 65535 entries
+    isZip64 = true
 }
 
 configurations.named("nativeImageTestClasspath") {
