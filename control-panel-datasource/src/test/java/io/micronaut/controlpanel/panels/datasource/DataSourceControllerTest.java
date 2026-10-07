@@ -81,7 +81,7 @@ class DataSourceControllerTest {
         doReturn(Map.of(DATA_SOURCE, panel)).when(beanLocator).mapOfType(PANEL_ARGUMENT);
 
         // When
-        DataSourceController controller = new DataSourceController(beanLocator, jsonMapper);
+        DataSourceController controller = controller();
 
         // Then
         assertEquals(404, controller.schemaJs(DATA_SOURCE).getStatus().getCode());
