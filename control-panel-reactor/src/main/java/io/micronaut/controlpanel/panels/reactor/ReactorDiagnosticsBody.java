@@ -26,6 +26,7 @@ import java.util.List;
  * @param clients Reactor HTTP client bean diagnostics
  * @param readiness read-only readiness checks
  * @param errors section errors that did not prevent rendering
+ * @since 2.3.0
  */
 @ReflectiveAccess
 public record ReactorDiagnosticsBody(
