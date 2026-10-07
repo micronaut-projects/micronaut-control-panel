@@ -25,6 +25,7 @@ import java.util.List;
  * @param clients clients visible to the running application
  * @param clientCount number of clients
  * @param discoveryClientAvailable whether Micronaut discovery is available
+ * @since 2.3.0
  */
 @ReflectiveAccess
 public record HttpClientDiagnostics(

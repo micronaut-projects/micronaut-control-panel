@@ -28,6 +28,8 @@ import jakarta.inject.Singleton;
 
 /**
  * Control panel that displays read-only diagnostics for Micronaut HTTP clients.
+ *
+ * @since 2.3.0
  */
 @Singleton
 @Refreshable

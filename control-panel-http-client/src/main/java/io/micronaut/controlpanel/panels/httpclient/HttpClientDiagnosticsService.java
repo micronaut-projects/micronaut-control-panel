@@ -62,6 +62,8 @@ import static io.micronaut.controlpanel.panels.httpclient.HttpClientDiagnostics.
 
 /**
  * Collects read-only diagnostics for Micronaut HTTP clients from bean definitions and named client configuration.
+ *
+ * @since 2.3.0
  */
 @Singleton
 public class HttpClientDiagnosticsService {
