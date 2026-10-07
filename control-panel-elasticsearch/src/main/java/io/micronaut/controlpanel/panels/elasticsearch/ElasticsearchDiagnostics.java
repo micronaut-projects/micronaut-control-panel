@@ -33,6 +33,7 @@ import java.util.List;
  * @param displayedIndexCount displayed index count after limits
  * @param indicesTruncated whether the index list was truncated
  * @param mappingFieldsTruncated whether the mapping preview was truncated
+ * @since 2.3.0
  */
 @ReflectiveAccess
 public record ElasticsearchDiagnostics(State state,
