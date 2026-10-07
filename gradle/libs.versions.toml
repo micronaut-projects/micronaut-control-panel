@@ -17,24 +17,24 @@
 # a managed version (a version which alias starts with "managed-"
 
 [versions]
-micronaut-platform = "5.1.2"
-micronaut = "5.1.12"
+micronaut-platform = "5.2.0"
+micronaut = "5.2.10"
 micronaut-security = "5.3.2"
-micronaut-views = "6.2.0"
-micronaut-reactor = "4.1.0"
-micronaut-serde = "3.1.1"
-micronaut-micrometer = "6.0.1"
+micronaut-views = "6.3.1"
+micronaut-reactor = "4.3.0"
+micronaut-serde = "3.2.2"
+micronaut-micrometer = "6.0.2"
 micronaut-object-storage = "3.1.0"
 micronaut-cache = "6.1.1"
-micronaut-sql = "7.1.0"
-micronaut-data = "5.1.2"
-micronaut-testresources = "4.2.0"
+micronaut-sql = "7.2.0"
+micronaut-data = "5.2.0"
+micronaut-testresources = "4.3.0"
 micronaut-gradle-plugin = "5.0.2"
-micronaut-openapi = "7.1.2"
+micronaut-openapi = "7.2.0"
 micronaut-kafka = "6.1.0"
 micronaut-pulsar = "3.0.0-RC1"
 kotlin-gradle-plugin = "2.4.10"
-micronaut-shared-settings = "8.0.1"
+micronaut-shared-settings = "8.1.1"
 playwright = "1.62.0"
 shadow-plugin = "9.6.1"
 test-logger-plugin = "4.0.0"
@@ -42,11 +42,11 @@ gradle-node-plugin = "7.1.0"
 avro = "1.12.2"
 avro-serde = "8.2.1"
 
-handlebars-humanize = "4.3.1"
-
 [libraries]
 micronaut-openapi = { module = "io.micronaut.openapi:micronaut-openapi-bom", version.ref = "micronaut-openapi" }
 micronaut-core = { module = 'io.micronaut:micronaut-core-bom', version.ref = 'micronaut' }
+micronaut-inject-python-test = { module = "io.micronaut:micronaut-inject-python-test" }
+micronaut-context-python = { module = "io.micronaut:micronaut-context-python" }
 micronaut-security = { module = 'io.micronaut.security:micronaut-security', version.ref = 'micronaut-security' }
 micronaut-platform = { module = "io.micronaut.platform:micronaut-platform", version.ref = "micronaut-platform"}
 micronaut-views = { module = 'io.micronaut.views:micronaut-views-bom', version.ref = 'micronaut-views' }
