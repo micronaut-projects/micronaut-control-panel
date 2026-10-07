@@ -1,0 +1,11 @@
+{{#with body.summary as |summary|}}
+    <p class="card-text">
+        <strong>{{summary.enabledBots}}</strong> enabled of <strong>{{summary.totalBots}}</strong> configured bot(s).
+    </p>
+    <p class="card-text">
+        <strong>{{summary.handlerCount}}</strong> handler bean(s), <strong>{{summary.registeredEndpointCount}}</strong> registered endpoint(s).
+    </p>
+    <p class="card-text">
+        <strong>Webhook lookup</strong>: <span class="badge badge-secondary">{{summary.webhookLookupState}}</span>
+    </p>
+{{/with}}

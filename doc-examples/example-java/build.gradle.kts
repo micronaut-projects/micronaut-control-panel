@@ -53,6 +53,11 @@ dependencies {
     // @MessageListener, an index type since Micronaut 5.2
     testRuntimeOnly(mn.micronaut.messaging)
 
+    // Chatbots
+    implementation(projects.micronautControlPanelChatbots)
+    implementation(mnChatbots.micronaut.chatbots.telegram.http)
+    implementation(mnChatbots.micronaut.chatbots.basecamp.http)
+
     // OpenAPI + Swagger UI (views generated at compile-time)
     annotationProcessor(mnOpenapi.micronaut.openapi)
     testAnnotationProcessor(mnOpenapi.micronaut.openapi)

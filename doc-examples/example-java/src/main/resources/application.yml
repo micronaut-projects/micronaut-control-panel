@@ -11,6 +11,8 @@ micronaut:
 #end::control-panel[]
     env:
       show-values: true
+    chatbots:
+      public-url: https://example.test
   router:
     static-resources:
       swagger:
@@ -28,6 +30,21 @@ micronaut:
       initial-capacity: 2
   application:
     name: myApplication
+  chatbots:
+    telegram:
+      endpoint:
+        path: /telegram
+      bots:
+        support:
+          token: sample-telegram-webhook-secret
+          at-username: "@SupportExampleBot"
+          enabled: true
+    basecamp:
+      endpoint:
+        path: /basecamp
+      bots:
+        ops:
+          enabled: true
 
 info:
   demo:
