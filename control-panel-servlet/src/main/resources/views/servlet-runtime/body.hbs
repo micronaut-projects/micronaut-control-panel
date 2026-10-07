@@ -1,0 +1,28 @@
+{{#with controlPanel.body }}
+    <div class="cp-data-table-container cp-vertical-table">
+        <table class="table cp-data-table-table">
+            <tbody>
+            <tr>
+                <th scope="row">Runtime</th>
+                <td><span class="badge badge-secondary">{{runtimeName}}</span> {{runtimeMode}}</td>
+            </tr>
+            <tr>
+                <th scope="row">Context</th>
+                <td><code>{{context.contextPath}}</code> {{context.serverInfo}}</td>
+            </tr>
+            <tr>
+                <th scope="row">Servlet API</th>
+                <td>{{context.servletApiVersion}} effective {{context.effectiveServletApiVersion}}</td>
+            </tr>
+            <tr>
+                <th scope="row">Registrations</th>
+                <td>{{servlets.size}} servlets, {{filters.size}} filters</td>
+            </tr>
+            <tr>
+                <th scope="row">Warnings</th>
+                <td>{{warnings.size}}</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+{{/with}}
