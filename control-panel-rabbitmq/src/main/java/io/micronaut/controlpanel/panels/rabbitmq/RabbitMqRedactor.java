@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
  * Redacts credential-like RabbitMQ values before rendering.
  *
  * @author Micronaut Control Panel contributors
- * @since 2.0.0
+ * @since 2.3.0
  */
 @Internal
 final class RabbitMqRedactor {

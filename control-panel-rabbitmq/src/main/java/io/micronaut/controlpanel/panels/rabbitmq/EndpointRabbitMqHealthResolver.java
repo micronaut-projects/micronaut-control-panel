@@ -34,7 +34,7 @@ import java.util.Map;
  * Resolves RabbitMQ health through the Micronaut health endpoint.
  *
  * @author Micronaut Control Panel contributors
- * @since 2.0.0
+ * @since 2.3.0
  */
 @Singleton
 @Requires(classes = HealthEndpoint.class)

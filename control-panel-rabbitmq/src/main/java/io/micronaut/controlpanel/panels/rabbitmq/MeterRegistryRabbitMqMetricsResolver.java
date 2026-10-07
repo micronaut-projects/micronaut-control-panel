@@ -34,7 +34,7 @@ import java.util.stream.StreamSupport;
  * Resolves RabbitMQ Micrometer meters from the active registry.
  *
  * @author Micronaut Control Panel contributors
- * @since 2.0.0
+ * @since 2.3.0
  */
 @Singleton
 @Requires(classes = MeterRegistry.class)

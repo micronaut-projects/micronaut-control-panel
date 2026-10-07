@@ -21,7 +21,7 @@ import io.micronaut.controlpanel.panels.rabbitmq.model.RabbitMqMetricsInfo;
  * Resolves RabbitMQ Micrometer diagnostics.
  *
  * @author Micronaut Control Panel contributors
- * @since 2.0.0
+ * @since 2.3.0
  */
 public interface RabbitMqMetricsResolver {
 

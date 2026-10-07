@@ -26,7 +26,7 @@ import java.util.Optional;
  * RabbitMQ panel configuration.
  *
  * @author Micronaut Control Panel contributors
- * @since 2.0.0
+ * @since 2.3.0
  */
 @ConfigurationProperties(RabbitMqControlPanelConfiguration.PREFIX)
 public class RabbitMqControlPanelConfiguration {

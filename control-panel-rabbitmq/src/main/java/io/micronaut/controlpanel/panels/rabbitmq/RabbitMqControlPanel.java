@@ -28,7 +28,7 @@ import jakarta.inject.Singleton;
  * Control panel for RabbitMQ listener, connection, health, and metrics diagnostics.
  *
  * @author Micronaut Control Panel contributors
- * @since 2.0.0
+ * @since 2.3.0
  */
 @Singleton
 @Requires(property = RabbitMqControlPanel.ENABLED_PROPERTY, notEquals = StringUtils.FALSE)

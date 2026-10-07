@@ -43,7 +43,7 @@ import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
  * Builds the RabbitMQ diagnostics model rendered by the control panel.
  *
  * @author Micronaut Control Panel contributors
- * @since 2.0.0
+ * @since 2.3.0
  */
 @Singleton
 public class RabbitMqDiagnosticsService {

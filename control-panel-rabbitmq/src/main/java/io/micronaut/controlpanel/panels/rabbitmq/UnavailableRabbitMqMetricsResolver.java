@@ -25,7 +25,7 @@ import java.util.List;
  * Metrics resolver used when Micrometer is not available.
  *
  * @author Micronaut Control Panel contributors
- * @since 2.0.0
+ * @since 2.3.0
  */
 @Singleton
 @Requires(missingBeans = RabbitMqMetricsResolver.class)
