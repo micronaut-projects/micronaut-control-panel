@@ -9,7 +9,7 @@ This module owns JDBC datasource panels for schema inspection, SQL querying, and
 - Panel implementation: `src/main/java/io/micronaut/controlpanel/panels/datasource/DataSourceControlPanel.java`
 - Schema models: `src/main/java/io/micronaut/controlpanel/panels/datasource/model`
 - Mermaid generation: `src/main/java/io/micronaut/controlpanel/panels/datasource/MermaidUtils.java`
-- Templates: `src/main/resources/views/datasource`
+- Templates: `src/main/resources/controlpanelviews/datasource`
 - Tests: `src/test/java/io/micronaut/controlpanel/panels/datasource`
 
 ## Rules
