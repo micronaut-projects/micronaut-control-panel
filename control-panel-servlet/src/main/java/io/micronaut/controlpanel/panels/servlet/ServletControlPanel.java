@@ -27,7 +27,7 @@ import jakarta.servlet.ServletContext;
  * Control panel that displays read-only Servlet runtime metadata.
  *
  * @author Sergio del Amo
- * @since 2.0.0
+ * @since 2.3.0
  */
 @Singleton
 @Requires(classes = ServletContext.class)
