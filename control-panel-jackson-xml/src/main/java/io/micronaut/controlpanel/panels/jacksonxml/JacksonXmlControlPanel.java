@@ -49,6 +49,8 @@ import java.util.Optional;
 
 /**
  * Control panel for development-time Jackson XML HTTP serialization diagnostics.
+ *
+ * @since 2.3.0
  */
 @Singleton
 @Requires(property = JacksonXmlControlPanel.ENABLED_PROPERTY, notEquals = StringUtils.FALSE)
