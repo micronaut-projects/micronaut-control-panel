@@ -1,0 +1,8 @@
+rabbitmq:
+  enabled: true
+  host: localhost
+  port: 5672
+  username: guest
+  password: guest
+  channel-pool:
+    max-idle-channels: 4
