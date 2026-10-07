@@ -506,7 +506,7 @@ class DataSourceControllerTest {
         when(panel.isEnabled()).thenReturn(false);
 
         // When
-        DataSourceController controller = new DataSourceController(beanLocator, jsonMapper);
+        DataSourceController controller = controller();
         var request = new DataSourceController.QueryRequest("SELECT 1", 0, 10, 1);
         HttpResponse<?> response = controller.query(DATA_SOURCE, request);
 
