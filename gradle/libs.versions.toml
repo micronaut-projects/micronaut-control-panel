@@ -36,6 +36,7 @@ kotlin-gradle-plugin = "2.4.10"
 micronaut-shared-settings = "8.1.1"
 playwright = "1.62.0"
 shadow-plugin = "9.6.1"
+micronaut-opensearch = "2.0.0-RC1"
 test-logger-plugin = "4.0.0"
 gradle-node-plugin = "7.1.0"
 avro = "1.12.2"
@@ -43,6 +44,7 @@ avro-serde = "8.2.1"
 
 [libraries]
 micronaut-openapi = { module = "io.micronaut.openapi:micronaut-openapi-bom", version.ref = "micronaut-openapi" }
+micronaut-opensearch = { module = "io.micronaut.opensearch:micronaut-opensearch-bom", version.ref = "micronaut-opensearch" }
 micronaut-core = { module = 'io.micronaut:micronaut-core-bom', version.ref = 'micronaut' }
 micronaut-inject-python-test = { module = "io.micronaut:micronaut-inject-python-test" }
 micronaut-context-python = { module = "io.micronaut:micronaut-context-python" }
