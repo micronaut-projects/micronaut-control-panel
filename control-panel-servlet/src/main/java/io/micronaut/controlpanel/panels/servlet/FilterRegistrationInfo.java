@@ -27,6 +27,7 @@ import java.util.List;
  * @param urlPatternMappings URL pattern mappings
  * @param servletNameMappings servlet-name mappings
  * @param initParameters redacted init-parameter summary
+ * @since 2.3.0
  */
 @ReflectiveAccess
 public record FilterRegistrationInfo(

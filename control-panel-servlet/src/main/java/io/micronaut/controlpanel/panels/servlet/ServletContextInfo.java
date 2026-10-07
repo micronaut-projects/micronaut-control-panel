@@ -25,6 +25,7 @@ import io.micronaut.core.annotation.ReflectiveAccess;
  * @param servletApiVersion declared Servlet API version
  * @param effectiveServletApiVersion effective Servlet API version
  * @param virtualServerName virtual server name
+ * @since 2.3.0
  */
 @ReflectiveAccess
 public record ServletContextInfo(

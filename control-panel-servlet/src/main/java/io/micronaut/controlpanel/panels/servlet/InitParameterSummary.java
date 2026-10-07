@@ -24,6 +24,7 @@ import java.util.List;
  *
  * @param count init-parameter count
  * @param names init-parameter names
+ * @since 2.3.0
  */
 @ReflectiveAccess
 public record InitParameterSummary(int count, List<String> names) {

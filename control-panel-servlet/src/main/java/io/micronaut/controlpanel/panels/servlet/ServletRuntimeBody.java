@@ -30,6 +30,7 @@ import java.util.List;
  * @param filters filter registrations
  * @param config runtime configuration summaries
  * @param warnings diagnostic warnings
+ * @since 2.3.0
  */
 @ReflectiveAccess
 public record ServletRuntimeBody(

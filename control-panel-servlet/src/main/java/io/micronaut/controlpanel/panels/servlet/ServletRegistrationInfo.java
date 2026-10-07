@@ -27,6 +27,7 @@ import java.util.List;
  * @param mappings URL mappings
  * @param runAsRole run-as role, if available
  * @param initParameters redacted init-parameter summary
+ * @since 2.3.0
  */
 @ReflectiveAccess
 public record ServletRegistrationInfo(

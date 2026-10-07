@@ -23,6 +23,7 @@ import io.micronaut.core.annotation.ReflectiveAccess;
  * @param label setting label
  * @param value setting value
  * @param source setting source
+ * @since 2.3.0
  */
 @ReflectiveAccess
 public record RuntimeConfigInfo(String label, String value, String source) {

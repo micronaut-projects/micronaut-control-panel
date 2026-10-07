@@ -33,6 +33,8 @@ import java.util.Optional;
 
 /**
  * Extracts read-only Servlet runtime metadata for the control panel.
+ *
+ * @since 2.3.0
  */
 @Singleton
 @Requires(classes = ServletContext.class)

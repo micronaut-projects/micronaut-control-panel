@@ -23,6 +23,7 @@ import io.micronaut.core.annotation.ReflectiveAccess;
  * @param code stable warning code
  * @param severity warning severity
  * @param summary warning summary
+ * @since 2.3.0
  */
 @ReflectiveAccess
 public record DiagnosticWarning(String code, String severity, String summary) {
