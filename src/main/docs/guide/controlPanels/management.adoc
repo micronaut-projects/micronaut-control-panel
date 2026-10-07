@@ -20,6 +20,7 @@ The following panels are available:
 * `beans`: Bean Definitions
 * `disabled-beans`: Disabled Beans
 * `loggers`: Logging Configuration
+* `threaddump`: Thread Dump
 
 == Protecting The Control Panel
 
@@ -213,6 +214,87 @@ micronaut:
       metrics:
         enabled: false
 ----
+
+== Thread Dump
+
+This panel displays a read-only JVM thread dump, and relies on the
+https://docs.micronaut.io/latest/guide/#threadDumpEndpoint[Thread Dump Endpoint] from Micronaut Management. It shows
+summary counts by thread state and a searchable per-thread table with thread name, id, daemon status, lock owner data,
+blocked/waited counts, and expandable stack traces.
+
+The panel appears when the Thread Dump endpoint bean is available. Like other Micronaut Management endpoints, that
+endpoint is enabled by default, so wherever the Control Panel itself is available this panel is present by default too.
+
+IMPORTANT: Thread names, lock names, and stack traces can reveal implementation details. Keep the Control Panel, and
+therefore this panel, restricted to trusted development or test environments.
+
+If you do not want the thread dump capability in a given environment, disable the endpoint there. Note that endpoint
+configuration is additive per environment: setting `enabled: true` in one environment-specific file does not turn the
+endpoint off anywhere else, so disable it explicitly where you do not want it.
+
+.Disabling the Thread Dump Endpoint
+[configuration]
+----
+endpoints:
+  threaddump:
+    enabled: false
+----
+
+Access to the Thread Dump panel is governed by the Control Panel route protection described above. Micronaut Management
+endpoint security and sensitivity settings apply separately if you expose the raw `/threaddump` management endpoint over
+HTTP. The Thread Dump panel does not expose heap dumps, store thread dumps, or provide thread interruption or remediation
+actions. Use it as a trusted development/test diagnostics view, not as a production observability replacement.
+
+=== Filtering And Redacting Threads
+
+The panel reads thread data through the application's
+https://docs.micronaut.io/latest/api/io/micronaut/management/endpoint/threads/ThreadInfoMapper.html[`ThreadInfoMapper`]
+bean, which is the same extension point the `/threaddump` endpoint uses. If you replace the default mapper to filter or
+redact threads, the panel shows exactly what your mapper emits, and threads your mapper drops never reach the UI.
+
+Your mapper is always given the same input the `/threaddump` endpoint gives it: a full dump including stack traces,
+locked monitors and locked synchronizers. That matters because a mapper may filter on any of those. The dashboard card,
+however, does not collect a full dump on every Control Panel landing page visit, so with a replaced mapper it cannot
+produce counts your mapper would agree with. In that case the card shows no counts and the panel shows no card badge;
+open the panel to see the mapped dump. Only the framework's default pass-through mapper keeps the summary counts, the
+state badges and the card badge on the dashboard.
+
+A mapper that emits something other than `java.lang.management.ThreadInfo` describes a shape the panel cannot render. In
+that case the panel reports how many entries the mapper emitted, displays no thread details, and never falls back to the
+unmapped thread data. Read the mapped output from the `/threaddump` endpoint instead.
+
+=== Disabling The Panel
+
+You can disable only this panel with:
+
+.Disabling the Thread Dump panel
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      threaddump:
+        enabled: false
+----
+
+To verify it safely, open the Control Panel in a trusted environment, select **Thread Dump**, expand one stack trace, and
+use **Refresh dump** to re-read the current JVM snapshot.
+
+=== GraalVM Native Image Limitation
+
+In a GraalVM native image, this panel always renders its empty state: it reports no threads, no state counts and no stack
+traces, and its card badge shows `0`. The panel itself is still registered and its route is still reachable; only the
+dump contents are unavailable.
+
+This is a native image limitation, not a Control Panel one. The panel and Micronaut Management's own `/threaddump`
+endpoint both read the snapshot from `java.lang.management.ThreadMXBean`, and the native image substitution of that bean
+always returns an empty result. Building with `--enable-monitoring=threaddump`, or even
+`--enable-monitoring=all`, does not change this, because that option enables the VM's own signal-triggered thread dumps
+rather than the `ThreadMXBean` API.
+
+To inspect threads in a native executable, use the mechanism GraalVM provides for it: build with
+`--enable-monitoring=threaddump` and send `SIGQUIT` to the running process, which prints a full thread dump to standard
+output.
 
 == Bean Definitions
 
