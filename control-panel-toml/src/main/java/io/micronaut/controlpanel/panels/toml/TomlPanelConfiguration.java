@@ -20,6 +20,8 @@ import io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration;
 
 /**
  * Configuration for the TOML configuration diagnostics panel.
+ *
+ * @since 2.3.0
  */
 @ConfigurationProperties(TomlPanelConfiguration.PREFIX)
 public class TomlPanelConfiguration {

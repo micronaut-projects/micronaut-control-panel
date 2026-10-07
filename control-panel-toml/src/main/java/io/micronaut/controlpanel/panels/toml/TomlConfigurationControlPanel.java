@@ -28,6 +28,8 @@ import java.util.Set;
 
 /**
  * Read-only diagnostics for TOML-backed configuration property sources.
+ *
+ * @since 2.3.0
  */
 @Singleton
 public class TomlConfigurationControlPanel extends AbstractControlPanel<TomlConfigurationControlPanel.Body> {
