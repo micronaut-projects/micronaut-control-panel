@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
  * Loads sample MongoDB data for the optional example application MongoDB environment.
  *
  * @author Denis Stepanov
- * @since 2.0.0
+ * @since 2.3.0
  */
 @Singleton
 @Requires(env = "mongodb")

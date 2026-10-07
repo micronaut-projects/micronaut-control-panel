@@ -24,7 +24,7 @@ import java.util.Map;
  * Body models used by the MongoDB Control Panel templates.
  *
  * @author Denis Stepanov
- * @since 2.0.0
+ * @since 2.3.0
  */
 final class MongoDbModels {
 

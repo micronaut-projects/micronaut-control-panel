@@ -24,7 +24,7 @@ import java.time.Duration;
  * MongoDB diagnostics panel configuration.
  *
  * @author Denis Stepanov
- * @since 2.0.0
+ * @since 2.3.0
  */
 @ConfigurationProperties(MongoDbControlPanelConfiguration.PREFIX)
 public final class MongoDbControlPanelConfiguration {

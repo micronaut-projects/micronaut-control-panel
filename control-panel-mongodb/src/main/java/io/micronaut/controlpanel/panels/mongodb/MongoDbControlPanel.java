@@ -27,7 +27,7 @@ import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
  * MongoDB client diagnostics control panel.
  *
  * @author Denis Stepanov
- * @since 2.0.0
+ * @since 2.3.0
  */
 public class MongoDbControlPanel extends AbstractEachBeanControlPanel<MongoDbModels.Body> {
 
