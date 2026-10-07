@@ -1,0 +1,48 @@
+{{#with controlPanel.body as |body|}}
+    <div class="cp-data-table-container cp-vertical-table">
+        <table class="table cp-data-table-table">
+            <tbody>
+            <tr>
+                <th scope="row">State</th>
+                <td><span class="badge {{ body.badgeClass }}">{{ body.stateLabel }}</span></td>
+            </tr>
+            {{#if body.connection.hasHosts}}
+                <tr>
+                    <th scope="row">Hosts</th>
+                    <td>
+                        {{#each body.connection.hosts as |host|}}
+                            <code class="cp-table-code">{{ host }}</code>
+                        {{/each}}
+                    </td>
+                </tr>
+            {{else}}
+                <tr>
+                    <th scope="row">Hosts</th>
+                    <td>Not reported by the Elasticsearch client configuration.</td>
+                </tr>
+            {{/if}}
+            {{#if body.available}}
+                <tr>
+                    <th scope="row">Cluster</th>
+                    <td>
+                        {{#if body.cluster.name}}<code class="cp-table-code">{{ body.cluster.name }}</code>{{else}}Unknown{{/if}}
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Health</th>
+                    <td><span class="badge {{ body.health.statusBadgeClass }}">{{ body.health.status }}</span></td>
+                </tr>
+                <tr>
+                    <th scope="row">Indices</th>
+                    <td>{{ body.indexCount }} visible indices</td>
+                </tr>
+            {{else}}
+                <tr>
+                    <th scope="row">Message</th>
+                    <td>{{ body.message }}</td>
+                </tr>
+            {{/if}}
+            </tbody>
+        </table>
+    </div>
+{{/with}}
