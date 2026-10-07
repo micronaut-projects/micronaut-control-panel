@@ -30,6 +30,7 @@ import java.util.List;
  * @param propertyKeys bounded property keys
  * @param diagnostics non-fatal diagnostics
  * @param noDriverBeans whether no Driver beans were found
+ * @since 2.3.0
  */
 @ReflectiveAccess
 public record Neo4jBody(

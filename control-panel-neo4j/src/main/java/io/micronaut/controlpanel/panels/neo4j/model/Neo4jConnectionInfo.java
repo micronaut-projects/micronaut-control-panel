@@ -25,6 +25,7 @@ import io.micronaut.core.annotation.ReflectiveAccess;
  * @param username configured username, when available
  * @param encryption encryption setting, when available
  * @param trustStrategy trust strategy, when available
+ * @since 2.3.0
  */
 @ReflectiveAccess
 public record Neo4jConnectionInfo(String beanName, String uri, String username, String encryption, String trustStrategy) {

@@ -23,6 +23,7 @@ import io.micronaut.core.annotation.ReflectiveAccess;
  * @param agent server agent
  * @param address server address
  * @param protocolVersion Bolt protocol version
+ * @since 2.3.0
  */
 @ReflectiveAccess
 public record Neo4jServerInfo(String agent, String address, String protocolVersion) {

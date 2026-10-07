@@ -24,6 +24,7 @@ import io.micronaut.core.annotation.ReflectiveAccess;
  * @param label display label
  * @param badgeClass badge CSS class
  * @param connected whether the driver is connected
+ * @since 2.3.0
  */
 @ReflectiveAccess
 public record Neo4jStatus(String name, String label, String badgeClass, boolean connected) {

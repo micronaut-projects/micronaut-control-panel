@@ -23,6 +23,7 @@ import io.micronaut.core.annotation.ReflectiveAccess;
  * @param area diagnostic area
  * @param message sanitized message
  * @param permission whether this diagnostic represents hidden metadata due to permissions
+ * @since 2.3.0
  */
 @ReflectiveAccess
 public record Neo4jDiagnostic(String area, String message, boolean permission) {
