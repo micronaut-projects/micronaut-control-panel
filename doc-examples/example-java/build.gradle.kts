@@ -54,6 +54,9 @@ dependencies {
     implementation(mnKafka.micronaut.kafka.streams)
     implementation(libs.avro)
     implementation(libs.avro.serde)
+    // The native test image excludes Kafka, but the definition of the Kafka listener still loads
+    // @MessageListener, an index type since Micronaut 5.2
+    testRuntimeOnly(mn.micronaut.messaging)
 
     // OpenAPI + Swagger UI (views generated at compile-time)
     annotationProcessor(mnOpenapi.micronaut.openapi)
