@@ -25,6 +25,8 @@ import jakarta.inject.Singleton;
 
 /**
  * Read-only diagnostics panel for Micronaut endpoint MBeans registered through JMX.
+ *
+ * @since 2.3.0
  */
 @Singleton
 @Requires(property = JmxControlPanel.ENABLED_PROPERTY, notEquals = StringUtils.FALSE)

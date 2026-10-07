@@ -37,6 +37,8 @@ import java.util.regex.Pattern;
 
 /**
  * Collects read-only JMX metadata for the Control Panel.
+ *
+ * @since 2.3.0
  */
 @Singleton
 public class JmxDiagnosticsService {
