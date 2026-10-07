@@ -29,7 +29,7 @@ a default category called `Dashboard` that is used for all control panels that d
 The easiest way to implement a custom panel is to extend from
 api:controlpanel.core.AbstractControlPanel[]. For example:
 
-snippet::example.MyApplicationControlPanel[project-base="doc-examples/example", source="main", indent="0", tags="class"]
+snippet::example.MyApplicationControlPanel[project-base="doc-examples/example", source="main", indent="0", tags="class", title="MyApplicationControlPanel"]
 
 <1> The type parameter indicates the object type of the body. You can use your own classes or records to return
     custom data to the view.
