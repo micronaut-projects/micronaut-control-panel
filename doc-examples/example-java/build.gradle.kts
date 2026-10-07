@@ -53,6 +53,10 @@ dependencies {
     // @MessageListener, an index type since Micronaut 5.2
     testRuntimeOnly(mn.micronaut.messaging)
 
+    // Pulsar
+    implementation(projects.micronautControlPanelPulsar)
+    implementation(mnPulsar.micronaut.pulsar)
+
     // OpenAPI + Swagger UI (views generated at compile-time)
     annotationProcessor(mnOpenapi.micronaut.openapi)
     testAnnotationProcessor(mnOpenapi.micronaut.openapi)
@@ -65,6 +69,8 @@ dependencies {
     testImplementation(mn.micronaut.http.client)
     testImplementation(mnTest.micronaut.test.junit5)
     testImplementation(libs.playwright)
+    testResourcesImplementation(mn.micronaut.discovery.core)
+    testResourcesImplementation(mn.micronaut.management)
     testResourcesImplementation(mn.micronaut.jackson.databind)
     testRuntimeOnly(mnTest.junit.platform.suite)
 }
@@ -75,6 +81,7 @@ micronaut {
         additionalModules.add(KnownModules.JDBC_ORACLE_FREE)
         additionalModules.add(KnownModules.JDBC_POSTGRESQL)
         additionalModules.add(KnownModules.KAFKA)
+        additionalModules.add("pulsar")
         additionalModules.add("infinispan")
         additionalModules.add("hazelcast")
     }

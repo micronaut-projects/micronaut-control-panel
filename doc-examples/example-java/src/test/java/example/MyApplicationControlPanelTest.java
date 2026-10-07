@@ -1,7 +1,9 @@
 package example;
 
+import example.pulsar.PulsarExampleConsumer;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
+import io.micronaut.controlpanel.panels.pulsar.PulsarControlPanelConfiguration;
 import io.micronaut.inject.qualifiers.Qualifiers;
 import org.junit.jupiter.api.Test;
 
@@ -29,6 +31,17 @@ class MyApplicationControlPanelTest {
             // And: body content matches implementation
             MyApplicationControlPanel.Body body = panel.getBody();
             assertEquals("This is an application-provided control panel. This text is coming from the body.", body.text());
+        }
+    }
+
+    @Test
+    void pulsarExampleConsumerIsConfiguredWhenPulsarIsAvailable() {
+        try (ApplicationContext ctx = ApplicationContext.run(Map.of(
+            "infinispan.enabled", "false",
+            "pulsar.service-url", "pulsar://localhost:6650"
+        ), "pulsar")) {
+            assertTrue(ctx.containsBean(PulsarExampleConsumer.class), "Pulsar example consumer should be a message listener bean");
+            assertTrue(ctx.getBean(PulsarControlPanelConfiguration.class).isAllowConsumerActions(), "Pulsar consumer actions should be enabled in the example app");
         }
     }
 }
