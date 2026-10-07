@@ -3,6 +3,7 @@ package example.e2e;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Page.GetByRoleOptions;
+import com.microsoft.playwright.Route;
 import com.microsoft.playwright.junit.UsePlaywright;
 import com.microsoft.playwright.options.AriaRole;
 import com.microsoft.playwright.options.WaitUntilState;
@@ -149,7 +150,7 @@ class ControlPanelE2ETest extends AbstractE2ETest {
 
         assertThat(page.getByRole(AriaRole.DEFINITION).nth(1)).containsText("INFO");
 
-        var loggerName = "example";
+        var loggerName = "ROOT";
         page.locator("tbody tr")
             .filter(new Locator.FilterOptions().setHasText(loggerName))
             .getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName("Reconfigure"))
@@ -157,13 +158,22 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         assertThat(page.locator("#actionsModal")).isVisible();
         assertThat(page.locator("#modalLabel")).containsText("Reconfigure logger " + loggerName);
 
+        var loggerInput = page.locator("#actionsModal").getByLabel("Logger name:");
+        loggerInput.fill(" ");
+        id(page, "submit").click();
+        assertThat(page.getByRole(AriaRole.ALERT)).containsText("Enter a logger name");
+        assertThat(loggerInput).hasAttribute("aria-invalid", "true");
+
+        loggerInput.fill("ROOT");
         page.locator("#actionsModal").getByLabel("Level:").selectOption("DEBUG");
         waitForLoggerUpdate(page, loggerName, () -> id(page, "submit").click());
-        assertThat(page.getByRole(AriaRole.ALERT)).containsText("Logger configured");
+        assertThat(page.getByRole(AriaRole.ALERT)).containsText("Logger configured through the Control Panel route.");
+        assertThat(page.getByRole(AriaRole.BUTTON, new GetByRoleOptions().setName("Refresh table"))).isVisible();
 
         page.locator("#actionsModal .modal-footer [data-dismiss='modal']").click();
-        page.navigate(baseUrl() + "/loggers");
+        assertThat(page.locator("#actionsModal")).isHidden();
         assertThat(page.locator("tbody tr").filter(new Locator.FilterOptions().setHasText(loggerName))).containsText("DEBUG");
+        assertTrue((Boolean) page.evaluate("document.activeElement && document.activeElement.dataset.logger === 'ROOT'"));
 
         page.locator("tbody tr")
             .filter(new Locator.FilterOptions().setHasText(loggerName))
@@ -171,6 +181,22 @@ class ControlPanelE2ETest extends AbstractE2ETest {
             .click();
         page.locator("#actionsModal").getByLabel("Level:").selectOption("INFO");
         waitForLoggerUpdate(page, loggerName, () -> id(page, "submit").click());
+        assertThat(page.getByRole(AriaRole.ALERT)).containsText("Logger configured through the Control Panel route.");
+        page.locator("#actionsModal .modal-footer [data-dismiss='modal']").click();
+        assertThat(page.locator("#actionsModal")).isHidden();
+
+        page.route("**/control-panel/loggers-control-panel-controller/**", route -> route.fulfill(new Route.FulfillOptions()
+            .setStatus(403)
+            .setContentType("application/json")
+            .setBody("{\"message\":\"Forbidden\"}")));
+        page.locator("tbody tr")
+            .filter(new Locator.FilterOptions().setHasText("ROOT"))
+            .getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName("Reconfigure"))
+            .click();
+        page.locator("#actionsModal").getByLabel("Level:").selectOption("DEBUG");
+        id(page, "submit").click();
+        assertThat(page.getByRole(AriaRole.ALERT)).containsText("You do not have permission to reconfigure loggers through the Control Panel.");
+        assertThat(id(page, "submit")).isDisabled();
     }
 
     private static void waitForLoggerUpdate(Page page, String loggerName, Runnable action) {
