@@ -52,7 +52,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * Control panel for Micronaut Views runtime diagnostics.
  *
  * @author Denis Stepanov
- * @since 2.0.0
+ * @since 2.3.0
  */
 @Singleton
 @Requires(classes = ViewsRenderer.class)
