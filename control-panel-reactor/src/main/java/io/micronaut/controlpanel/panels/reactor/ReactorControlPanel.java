@@ -32,7 +32,7 @@ import java.util.List;
  * Control panel that displays Reactor route, client, and readiness diagnostics.
  *
  * @author Álvaro Sánchez-Mariscal
- * @since 2.0.0
+ * @since 2.3.0
  */
 @Singleton
 @Requires(classes = {Mono.class, Flux.class})

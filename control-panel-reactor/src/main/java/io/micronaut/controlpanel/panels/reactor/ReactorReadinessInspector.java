@@ -26,7 +26,7 @@ import java.util.List;
  * Reports read-only Reactor context propagation and meter readiness.
  *
  * @author Álvaro Sánchez-Mariscal
- * @since 2.0.0
+ * @since 2.3.0
  */
 @Singleton
 final class ReactorReadinessInspector {

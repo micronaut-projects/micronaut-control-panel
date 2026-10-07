@@ -29,7 +29,7 @@ import java.util.Locale;
  * Builds Reactor route diagnostics from route metadata without invoking routes.
  *
  * @author Álvaro Sánchez-Mariscal
- * @since 2.0.0
+ * @since 2.3.0
  */
 @Singleton
 final class ReactorRouteAnalyzer {
