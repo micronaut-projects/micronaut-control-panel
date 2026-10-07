@@ -42,6 +42,8 @@ import java.util.stream.Collectors;
  * <p>The Micronaut Core Python annotations are {@code @Internal}, so they are never referenced at compile time.
  * They are matched by fully qualified name through {@link AnnotationMetadata}, which degrades to an explicit
  * empty state if Core ever renames them.</p>
+ *
+ * @since 2.3.0
  */
 @Singleton
 public final class PythonBeanScanner {

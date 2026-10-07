@@ -45,6 +45,8 @@ import java.util.ServiceLoader;
  * <p>Every lookup here is metadata only: the inspector never borrows a pooled context, never evaluates Python,
  * never instantiates a {@link GraalPyContextCustomizer}, and never creates a polyglot {@code Engine} or
  * {@code Context}.</p>
+ *
+ * @since 2.3.0
  */
 @Singleton
 public final class PythonRuntimeInspector {

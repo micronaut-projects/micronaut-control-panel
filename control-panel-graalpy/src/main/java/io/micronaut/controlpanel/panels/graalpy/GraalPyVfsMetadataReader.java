@@ -41,6 +41,8 @@ import java.util.jar.JarFile;
 
 /**
  * Reads GraalPy virtual filesystem metadata without opening any listed Python files.
+ *
+ * @since 2.3.0
  */
 @Singleton
 public final class GraalPyVfsMetadataReader {

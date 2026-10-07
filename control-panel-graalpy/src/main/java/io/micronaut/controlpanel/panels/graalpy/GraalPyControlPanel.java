@@ -32,6 +32,8 @@ import java.util.List;
  * <p>The panel renders bean-definition metadata, the context pool snapshot, context configuration and
  * packaged virtual-filesystem metadata. It never borrows a pooled context, evaluates Python, calls a generated
  * bridge method, or creates a polyglot engine or context.</p>
+ *
+ * @since 2.3.0
  */
 @Singleton
 @Requires(classes = PythonContextExecutor.class)
