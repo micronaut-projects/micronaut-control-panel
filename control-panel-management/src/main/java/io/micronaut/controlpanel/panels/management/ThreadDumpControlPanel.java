@@ -58,7 +58,7 @@ import java.util.Objects;
  * gets a count-free card and no badge, and runs only on the detail view's full dump.</p>
  *
  * @author Álvaro Sánchez-Mariscal
- * @since 2.2.0
+ * @since 2.3.0
  */
 @Singleton
 @Requires(beans = ThreadDumpEndpoint.class)
@@ -220,7 +220,7 @@ public class ThreadDumpControlPanel extends AbstractControlPanel<ThreadDumpContr
      *     {@code summaryAvailable} is {@code false}.
      * @param stateCounts counts per thread state, in diagnostic order; empty when {@code summaryAvailable} is
      *     {@code false}.
-     * @since 2.2.0
+     * @since 2.3.0
      */
     @ReflectiveAccess
     public record Body(boolean summaryAvailable, int totalThreads, List<StateCount> stateCounts) {
@@ -237,7 +237,7 @@ public class ThreadDumpControlPanel extends AbstractControlPanel<ThreadDumpContr
      * @param stateCounts counts per thread state, in diagnostic order; empty when the mapper output is unsupported.
      * @param threads the thread rows; empty when the mapper output is unsupported.
      * @param unsupportedMapper whether the configured mapper emitted a shape this panel cannot render.
-     * @since 2.2.0
+     * @since 2.3.0
      */
     @ReflectiveAccess
     public record ThreadDump(int totalThreads, List<StateCount> stateCounts, List<ThreadRow> threads, boolean unsupportedMapper) {
@@ -253,7 +253,7 @@ public class ThreadDumpControlPanel extends AbstractControlPanel<ThreadDumpContr
      * @param state the {@link Thread.State} name.
      * @param count how many threads are in that state.
      * @param badgeClass CSS class used to render the state badge.
-     * @since 2.2.0
+     * @since 2.3.0
      */
     @ReflectiveAccess
     public record StateCount(String state, int count, String badgeClass) {
@@ -279,7 +279,7 @@ public class ThreadDumpControlPanel extends AbstractControlPanel<ThreadDumpContr
      * @param badgeClass CSS class used to render the state badge.
      * @param blocked whether the thread is {@link Thread.State#BLOCKED}.
      * @param hasLockOwner whether lock ownership information is available.
-     * @since 2.2.0
+     * @since 2.3.0
      */
     @ReflectiveAccess
     public record ThreadRow(
