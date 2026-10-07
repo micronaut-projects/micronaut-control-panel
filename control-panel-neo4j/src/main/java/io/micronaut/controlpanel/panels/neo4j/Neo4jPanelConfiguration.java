@@ -21,7 +21,7 @@ import io.micronaut.context.annotation.ConfigurationProperties;
  * Configuration for the Neo4j control panel.
  *
  * @author Sergio del Amo
- * @since 2.0.0
+ * @since 2.3.0
  */
 @ConfigurationProperties(Neo4jPanelConfiguration.PREFIX)
 public class Neo4jPanelConfiguration {

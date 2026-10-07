@@ -33,7 +33,7 @@ import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
  * Control panel for Neo4j driver diagnostics and schema metadata.
  *
  * @author Sergio del Amo
- * @since 2.0.0
+ * @since 2.3.0
  */
 @EachBean(Driver.class)
 public class Neo4jControlPanel extends AbstractEachBeanControlPanel<Neo4jBody> {

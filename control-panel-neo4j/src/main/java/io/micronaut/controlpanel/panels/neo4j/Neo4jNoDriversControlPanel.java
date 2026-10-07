@@ -28,7 +28,7 @@ import org.neo4j.driver.Driver;
  * Empty-state panel shown when the Neo4j module is present but no driver beans exist.
  *
  * @author Sergio del Amo
- * @since 2.0.0
+ * @since 2.3.0
  */
 @Singleton
 @Requires(missingBeans = Driver.class)

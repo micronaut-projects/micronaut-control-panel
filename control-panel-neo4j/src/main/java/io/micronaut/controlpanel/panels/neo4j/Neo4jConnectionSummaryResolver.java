@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
  * Resolves safe, masked connection information from Micronaut Neo4j configuration.
  *
  * @author Sergio del Amo
- * @since 2.0.0
+ * @since 2.3.0
  */
 public class Neo4jConnectionSummaryResolver {
 

@@ -48,7 +48,7 @@ import java.util.function.Function;
  * Read-only diagnostics for a Neo4j driver bean.
  *
  * @author Sergio del Amo
- * @since 2.0.0
+ * @since 2.3.0
  */
 public class Neo4jDiagnosticsService {
 
