@@ -18,9 +18,9 @@ micronaut {
 
 dependencies {
     api(projects.micronautControlPanelCore)
-    api(mnViews.micronaut.views.core)
     annotationProcessor(mnSerde.micronaut.serde.processor)
 
+    implementation(projects.micronautControlPanelUi)
     implementation(mnSql.micronaut.jdbc)
     implementation(mnSerde.micronaut.serde.api)
 
@@ -32,14 +32,15 @@ dependencies {
     compileOnly(mnSql.micronaut.jdbc.ucp)
 
     testImplementation(mnTest.micronaut.test.junit5)
+    testImplementation(mnViews.handlebars) {
+        exclude(group = "org.openjdk.nashorn", module = "nashorn-core")
+    }
+    testRuntimeOnly(mn.micronaut.management)
     testRuntimeOnly(mnTest.junit.jupiter.engine)
 
     testAnnotationProcessor(mn.micronaut.inject.java)
     testImplementation(mn.micronaut.http.server.netty)
     testImplementation(mn.micronaut.http.client)
-    testImplementation(mnViews.micronaut.views.handlebars) {
-        exclude(group = "org.openjdk.nashorn", module = "nashorn-core")
-    }
     testImplementation(mnSql.micronaut.jdbc.hikari)
     testImplementation(mnSql.micronaut.jdbc.ucp)
     testImplementation(mnSerde.micronaut.serde.jackson)
@@ -48,6 +49,10 @@ dependencies {
     testRuntimeOnly(mnTest.bytebuddy.agent)
     testRuntimeOnly(mnSql.ojdbc11)
     testRuntimeOnly(mnSql.postgresql)
+
+    // The Oracle Free test resource opens a JDBC connection to check readiness, so the test
+    // resources service needs the driver on its own classpath.
+    testResourcesService(mnSql.ojdbc11)
 }
 
 tasks.named("internalStartTestResourcesService") {
