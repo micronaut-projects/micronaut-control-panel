@@ -53,6 +53,12 @@ dependencies {
     // @MessageListener, an index type since Micronaut 5.2
     testRuntimeOnly(mn.micronaut.messaging)
 
+    // MongoDB
+    compileOnly(mnMongo.micronaut.mongo.sync)
+    developmentOnly(projects.micronautControlPanelMongodb)
+    developmentOnly(mnMongo.micronaut.mongo.sync)
+    developmentOnly(mnMongo.micronaut.mongo.reactive)
+
     // OpenAPI + Swagger UI (views generated at compile-time)
     annotationProcessor(mnOpenapi.micronaut.openapi)
     testAnnotationProcessor(mnOpenapi.micronaut.openapi)
