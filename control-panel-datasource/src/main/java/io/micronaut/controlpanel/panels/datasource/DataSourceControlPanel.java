@@ -42,6 +42,11 @@ import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
 public class DataSourceControlPanel extends AbstractEachBeanControlPanel<Body> {
 
     public static final String NAME = "datasource";
+    /**
+     * Configuration prefix for per-datasource settings, such as {@code <prefix>.<name>.enabled}.
+     *
+     * @since 2.3.0
+     */
     public static final String DATASOURCES_CONFIGURATION_PREFIX = ControlPanelConfiguration.PREFIX + "." + NAME + ".datasources";
     public static final String DEFAULT_ICON_CLASS = "fas fa-database";
     private static final Logger LOG = LoggerFactory.getLogger(DataSourceControlPanel.class);
