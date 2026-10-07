@@ -25,6 +25,6 @@ dependencies {
 
 micronautBuild {
     // This module has no released artifact yet, so there is no baseline to compare against.
-    // It ships in 2.3.0 at the earliest.
+    // It first ships in 2.3.0.
     binaryCompatibility.enabledAfter("2.3.0")
 }
