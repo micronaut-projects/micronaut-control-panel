@@ -10,6 +10,7 @@ controlPanels:
   datasource: Datasource
   hibernate: Hibernate
   kafka: Kafka
+  flyway: Flyway
 
 custom: Creating Custom Control Panels
 repository: Repository

@@ -65,6 +65,14 @@ class AbstractE2ETest {
             .first();
     }
 
+    static Locator controlPanelDetailsByTitle(final Page page, final String name) {
+        return page
+            .locator(".cp-panel-card")
+            .filter(new Locator.FilterOptions().setHas(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName(name).setExact(true))))
+            .locator(".cp-card-footer a, .cp-card-footer button")
+            .first();
+    }
+
     static Locator categoryLink(final Page page, final String name) {
         return page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName(nameRegex(name)));
     }

@@ -1,0 +1,39 @@
+{{#with controlPanel.body }}
+    {{#if hasConfigurations}}
+        <div class="cp-data-table-container cp-vertical-table">
+            <table class="table cp-data-table-table">
+                <tbody>
+                <tr>
+                    <th scope="row">Configurations</th>
+                    <td>{{ totalConfigurations }} Flyway datasource{{#neq totalConfigurations 1}}s{{/neq}}</td>
+                </tr>
+                <tr>
+                    <th scope="row">Migrations</th>
+                    <td>{{ totalMigrations }} migration{{#neq totalMigrations 1}}s{{/neq}}</td>
+                </tr>
+                <tr>
+                    <th scope="row">Readable</th>
+                    <td>
+                        <span class="badge badge-primary">{{ availableConfigurations }}</span>
+                        {{#if unavailableConfigurations}}
+                            <span class="badge badge-destructive">{{ unavailableConfigurations }} unavailable</span>
+                        {{/if}}
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">States</th>
+                    <td>
+                        {{#each stateSummaries as |summary|}}
+                            {{#if summary.count}}
+                                <span class="badge {{ summary.badgeClass }}">{{ summary.label }} {{ summary.count }}</span>
+                            {{/if}}
+                        {{/each}}
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    {{else}}
+        <div class="cp-data-table-empty">No Flyway configurations detected.</div>
+    {{/if}}
+{{/with}}
