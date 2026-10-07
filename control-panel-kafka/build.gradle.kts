@@ -15,6 +15,7 @@ micronaut {
 dependencies {
     api(projects.micronautControlPanelCore)
     implementation(mnReactor.micronaut.reactor)
+    implementation(mn.micronaut.http.client)
 
     compileOnly(mnKafka.micronaut.kafka)
     compileOnly(mnKafka.micronaut.kafka.streams)

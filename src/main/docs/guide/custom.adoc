@@ -29,10 +29,7 @@ a default category called `Dashboard` that is used for all control panels that d
 The easiest way to implement a custom panel is to extend from
 api:controlpanel.core.AbstractControlPanel[]. For example:
 
-[source,java]
-----
-include::doc-examples/example-java/src/main/java/example/MyApplicationControlPanel.java[tags=class,indent=0]
-----
+snippet::example.MyApplicationControlPanel[project-base="doc-examples/example", source="main", indent="0", tags="class", title="MyApplicationControlPanel"]
 
 <1> The type parameter indicates the object type of the body. You can use your own classes or records to return
     custom data to the view.
@@ -61,6 +58,10 @@ include::doc-examples/example-java/src/main/resources/application.yml[tags=contr
 For rendering the views, the Control Panel uses
 https://micronaut-projects.github.io/micronaut-views/latest/guide/[Micronaut Views] with
 https://micronaut-projects.github.io/micronaut-views/latest/guide/#handlebars[Handlebars.java] templates.
+
+The Control Panel uses Java helpers and ordinary Handlebars template rendering, so it excludes the optional Nashorn
+JavaScript engine from its dependency graph. If your application registers Handlebars JavaScript helpers or uses
+Handlebars' JavaScript precompilation APIs, declare `org.openjdk.nashorn:nashorn-core` explicitly.
 
 Each control panel needs to provide two views: one for the control panel list, that can contain a summary of the
 information to be displayed, and another one for the detailed view. They must be placed in a `views/<panel-name>` directory
