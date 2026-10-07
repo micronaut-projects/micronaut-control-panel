@@ -18,4 +18,14 @@ class ControlPanelRenderingTest {
         assertTrue(body.contains("my-local"));
         assertTrue(body.contains("files stored."));
     }
+
+    @Test
+    void rendersTracingDiagnostics(@Client("/") HttpClient client) {
+        var body = client.toBlocking().retrieve(HttpRequest.GET("/control-panel/tracing"));
+
+        assertTrue(body.contains("Tracing overview"));
+        assertTrue(body.contains("control-panel-example"));
+        assertTrue(body.contains("Traces exporter is set to none."));
+        assertTrue(body.contains("[redacted]"));
+    }
 }
