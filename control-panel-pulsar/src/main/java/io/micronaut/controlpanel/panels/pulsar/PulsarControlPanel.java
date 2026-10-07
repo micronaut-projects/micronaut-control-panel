@@ -42,7 +42,7 @@ import java.util.function.Supplier;
  * A control panel for registered Pulsar producers, consumers, readers, and in-process failure events.
  *
  * @author Álvaro Sánchez-Mariscal
- * @since 2.0.0
+ * @since 2.3.0
  */
 @Singleton
 @Requires(classes = PulsarConsumerRegistry.class)

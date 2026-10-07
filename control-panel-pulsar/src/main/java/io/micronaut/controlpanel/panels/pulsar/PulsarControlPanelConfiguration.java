@@ -22,7 +22,7 @@ import io.micronaut.core.bind.annotation.Bindable;
  * Configuration properties for the Pulsar control panel.
  *
  * @author Álvaro Sánchez-Mariscal
- * @since 2.0.0
+ * @since 2.3.0
  */
 @ConfigurationProperties(PulsarControlPanelConfiguration.PREFIX)
 public interface PulsarControlPanelConfiguration {

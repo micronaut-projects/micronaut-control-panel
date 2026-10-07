@@ -36,7 +36,7 @@ import io.micronaut.serde.annotation.Serdeable;
  * REST controller for explicitly enabled Pulsar consumer actions.
  *
  * @author Álvaro Sánchez-Mariscal
- * @since 2.0.0
+ * @since 2.3.0
  */
 @Controller(ControlPanelSecurityPaths.PULSAR)
 @ExecuteOn(TaskExecutors.BLOCKING)
