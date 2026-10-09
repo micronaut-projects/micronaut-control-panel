@@ -12,9 +12,13 @@ The panel is available when Micronaut LangChain4j is on the classpath, and provi
 * The tools of the `@Tool` beans, with their descriptions
 * A chat that sends a message to any chat model and displays its answer
 
+image::langchain4j-models.png["LangChain4j models, AI services and tools"]
+
 == Chat
 
 Sending a message to a model costs tokens, so the chat requires write access to the control panel (see the security configuration of the control panel). Without write access, the chat answers with the reason it is not allowed.
+
+image::langchain4j-chat.png[Chat with a chat model]
 
 == Configuration
 
