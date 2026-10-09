@@ -1,0 +1,30 @@
+The LangChain4j control panel provides an *AI* section for applications that use https://micronaut-projects.github.io/micronaut-langchain4j/latest/guide/[Micronaut LangChain4j].
+
+To add the LangChain4j control panel, add the following dependency:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-langchain4j[scope=developmentOnly]
+
+The panel is available when Micronaut LangChain4j is on the classpath, and provides:
+
+* The number of chat models (displayed as a badge)
+* The chat, embedding, image and scoring models, and the embedding stores, by bean name and implementation type
+* The interfaces of the `@AiService` beans
+* The tools of the `@Tool` beans, with their descriptions
+* A chat that sends a message to any chat model and displays its answer
+
+== Chat
+
+Sending a message to a model costs tokens, so the chat requires write access to the control panel (see the security configuration of the control panel). Without write access, the chat answers with the reason it is not allowed.
+
+== Configuration
+
+Disable the panel with:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      langchain4j:
+        enabled: false
+----
