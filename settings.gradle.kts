@@ -22,6 +22,7 @@ include("control-panel-datasource")
 include("control-panel-hibernate")
 include("control-panel-ui")
 include("control-panel-kafka")
+include("control-panel-tracing")
 
 include("doc-examples:example-java")
 include("test-suite-thymeleaf")
@@ -46,4 +47,19 @@ configure<MicronautBuildSettingsExtension> {
     importMicronautCatalog("micronaut-testresources")
     importMicronautCatalog("micronaut-openapi")
     importMicronautCatalog("micronaut-kafka")
+}
+
+// Micronaut Tracing 8.4.0-SNAPSHOT (the trace inspector) comes from the Central snapshots repository. Only io.micronaut
+// snapshots are resolved from it. Projects declare their own repositories, so it is added to each project.
+// Remove once the build moves to a Micronaut Tracing 8.4.0 release.
+gradle.beforeProject {
+    repositories.maven {
+        url = uri("https://central.sonatype.com/repository/maven-snapshots/")
+        mavenContent {
+            snapshotsOnly()
+        }
+        content {
+            includeGroupByRegex("io\\.micronaut(\\..*)?")
+        }
+    }
 }

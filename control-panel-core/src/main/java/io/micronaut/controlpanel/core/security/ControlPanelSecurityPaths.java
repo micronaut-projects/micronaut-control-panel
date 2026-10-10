@@ -35,6 +35,7 @@ public final class ControlPanelSecurityPaths {
     public static final String KAFKA_PATH = "/kafka-control-panel-controller";
     public static final String LOGGERS_PATH = "/loggers-control-panel-controller";
     public static final String OBJECT_STORAGE_PATH = "/object-storage-control-panel-controller";
+    public static final String TRACING_PATH = "/tracing-control-panel-controller";
     public static final String APPLICATION_PATH = "/application-control-panel-controller";
     public static final String CACHE = CONTROL_PANEL + CACHE_PATH;
     public static final String DATASOURCE = CONTROL_PANEL + DATASOURCE_PATH;
@@ -42,9 +43,10 @@ public final class ControlPanelSecurityPaths {
     public static final String KAFKA = CONTROL_PANEL + KAFKA_PATH;
     public static final String LOGGERS = CONTROL_PANEL + LOGGERS_PATH;
     public static final String OBJECT_STORAGE = CONTROL_PANEL + OBJECT_STORAGE_PATH;
+    public static final String TRACING = CONTROL_PANEL + TRACING_PATH;
     public static final String APPLICATION = CONTROL_PANEL + APPLICATION_PATH;
 
-    private static final List<String> HELPER_PATHS = List.of(CACHE_PATH, DATASOURCE_PATH, HIBERNATE_PATH, KAFKA_PATH, LOGGERS_PATH, OBJECT_STORAGE_PATH, APPLICATION_PATH);
+    private static final List<String> HELPER_PATHS = List.of(CACHE_PATH, DATASOURCE_PATH, HIBERNATE_PATH, KAFKA_PATH, LOGGERS_PATH, OBJECT_STORAGE_PATH, TRACING_PATH, APPLICATION_PATH);
 
     private ControlPanelSecurityPaths() {
     }
@@ -69,7 +71,8 @@ public final class ControlPanelSecurityPaths {
         if (method == HttpMethod.DELETE) {
             return isHelperPath(controlPanelPath, CACHE_PATH, path)
                 || isHelperPath(controlPanelPath, HIBERNATE_PATH, path)
-                || isHelperPath(controlPanelPath, OBJECT_STORAGE_PATH, path);
+                || isHelperPath(controlPanelPath, OBJECT_STORAGE_PATH, path)
+                || isHelperPath(controlPanelPath, TRACING_PATH, path);
         }
         if (method == HttpMethod.POST) {
             return isHelperPath(controlPanelPath, LOGGERS_PATH, path)
