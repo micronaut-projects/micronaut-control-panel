@@ -1,0 +1,63 @@
+{{#with controlPanel.body }}
+    {{#if running}}
+        <p class="card-text">
+            <span class="cp-health-indicator cp-health-up" aria-hidden="true"><i class="fas fa-circle-play"></i></span>
+            Continuous testing is running{{#if runInProgress}}: a test run is in progress, {{ finishedInRun }} tests finished so far{{/if}}.
+        </p>
+    {{else}}
+        {{#if mayBeRunning}}
+            <p class="card-text">
+                <span class="cp-health-indicator cp-health-unknown" aria-hidden="true"><i class="fas fa-circle-question"></i></span>
+                Continuous testing may be running without a live report. If it is not, start it in a separate terminal, in the project directory:
+            </p>
+        {{else}}
+            <p class="card-text">
+                <span class="cp-health-indicator cp-health-unknown" aria-hidden="true"><i class="fas fa-circle-pause"></i></span>
+                Continuous testing is not running. Start it in a separate terminal, in the project directory:
+            </p>
+        {{/if}}
+    {{/if}}
+    <div class="cp-data-table-container cp-vertical-table">
+        <table class="table cp-data-table-table">
+            <tbody>
+            {{#if compileFailure}}
+                <tr>
+                    <th scope="row">Compilation</th>
+                    <td><span class="badge badge-destructive">does not compile</span></td>
+                </tr>
+            {{/if}}
+            {{#with lastRun}}
+                <tr>
+                    <th scope="row">Last run</th>
+                    <td>
+                        {{#if problems}}
+                            <span class="badge badge-destructive">{{ problems }} failing</span>
+                            <span class="badge badge-secondary">{{ passed }} passed</span>
+                        {{else}}
+                            <span class="badge badge-primary">{{ passed }} passed</span>
+                        {{/if}}
+                        {{#if skipped}}<span class="badge badge-outline">{{ skipped }} skipped</span>{{/if}}
+                        {{#if cancelled}}<span class="badge badge-outline">cancelled</span>{{/if}}
+                    </td>
+                </tr>
+            {{/with}}
+            {{#unless running}}
+                {{#each commands as |command|}}
+                    <tr>
+                        <th scope="row">{{ command.tool }}</th>
+                        <td><code>{{ command.command }}</code></td>
+                    </tr>
+                {{/each}}
+            {{/unless}}
+            </tbody>
+        </table>
+    </div>
+    {{#if reportUrl}}
+        <p class="card-text">
+            <a class="btn btn-primary btn-sm" href="{{ reportUrl }}" target="_blank" rel="noopener noreferrer" title="Open the live test report in a new window">
+                Open the live test report
+                <i class="fas fa-arrow-up-right-from-square"></i>
+            </a>
+        </p>
+    {{/if}}
+{{/with}}
