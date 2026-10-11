@@ -3811,6 +3811,404 @@ body.cp-table-browser-resizing .cp-table-browser-splitter::before {
     }
 }
 
+/* Tracing panel */
+
+.cp-tracing-card-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    gap: 1rem;
+}
+
+.cp-tracing-card-metric {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.4rem;
+    min-width: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.9rem 1rem;
+    background: var(--card);
+}
+
+.cp-tracing-card-metric-wide {
+    grid-column: 1 / -1;
+}
+
+.cp-tracing-card-label,
+.cp-tracing-muted {
+    color: var(--muted-foreground);
+}
+
+.cp-tracing-card-label {
+    font-size: 0.875rem;
+    line-height: 1.25;
+}
+
+.cp-tracing-card-value {
+    color: var(--foreground);
+    font-size: 1.375rem;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.cp-tracing-card-slowest {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.cp-tracing-tools,
+.cp-tracing-filter-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.cp-tracing-filter-controls {
+    flex: 1 1 auto;
+    justify-content: flex-end;
+}
+
+.cp-tracing-filter-controls .cp-data-table-search {
+    width: min(100%, 18rem);
+}
+
+.cp-tracing-min-duration {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--muted-foreground);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.cp-tracing-min-duration label {
+    margin: 0;
+    color: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+}
+
+.cp-tracing-min-duration .form-control {
+    width: 6rem;
+}
+
+.cp-tracing-table {
+    min-width: 44rem;
+}
+
+.cp-tracing-table td {
+    white-space: nowrap;
+}
+
+.cp-tracing-col-marker {
+    width: 2rem;
+    text-align: center;
+}
+
+.cp-tracing-col-number {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.cp-tracing-error-icon {
+    color: var(--destructive);
+}
+
+.cp-tracing-trace-view {
+    display: grid;
+    gap: 1rem;
+    min-width: 0;
+}
+
+.cp-tracing-trace-view[hidden],
+.cp-tracing-list-view[hidden] {
+    display: none;
+}
+
+.cp-tracing-trace-title {
+    overflow-wrap: anywhere;
+}
+
+.cp-tracing-facts {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 0.4rem 1rem;
+    margin: 0 0 1rem;
+}
+
+.cp-tracing-facts-wide {
+    grid-template-columns: repeat(auto-fill, minmax(7rem, max-content) minmax(10rem, 1fr));
+    margin: 0;
+}
+
+.cp-tracing-facts dt {
+    color: var(--muted-foreground);
+    font-weight: 500;
+}
+
+.cp-tracing-facts dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.cp-tracing-trace-body {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(18rem, 2fr);
+    gap: 1rem;
+    align-items: start;
+}
+
+.cp-tracing-waterfall {
+    min-width: 0;
+    --cp-tracing-label-width: minmax(12rem, 34%);
+}
+
+.cp-tracing-waterfall-axis,
+.cp-tracing-span-row {
+    display: grid;
+    grid-template-columns: var(--cp-tracing-label-width) minmax(0, 1fr);
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.cp-tracing-waterfall-axis {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.35rem;
+    color: var(--muted-foreground);
+    font-size: 0.75rem;
+}
+
+.cp-tracing-waterfall-ticks {
+    position: relative;
+    height: 1rem;
+    margin-right: 3rem;
+}
+
+.cp-tracing-waterfall-tick {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    white-space: nowrap;
+}
+
+.cp-tracing-waterfall-tick:first-child {
+    transform: none;
+}
+
+.cp-tracing-waterfall-rows {
+    display: grid;
+}
+
+.cp-tracing-span-row {
+    width: 100%;
+    min-height: 2.25rem;
+    border: 0;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+    background: transparent;
+    color: var(--foreground);
+    padding: 0.3rem 0.25rem;
+    text-align: left;
+    cursor: pointer;
+}
+
+.cp-tracing-span-row:hover {
+    background: var(--accent);
+    color: var(--accent-foreground);
+}
+
+.cp-tracing-span-row:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: -2px;
+}
+
+.cp-tracing-span-selected {
+    background: var(--muted);
+    box-shadow: inset 3px 0 0 var(--ring);
+}
+
+.cp-tracing-span-label {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    min-width: 0;
+    padding-left: calc(var(--cp-tracing-depth, 0) * 0.875rem);
+}
+
+.cp-tracing-span-name {
+    overflow: hidden;
+    font-size: 0.8125rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cp-tracing-span-kind {
+    flex: 0 0 auto;
+    color: var(--muted-foreground);
+    font-size: 0.6875rem;
+    text-transform: lowercase;
+}
+
+.cp-tracing-span-track {
+    position: relative;
+    height: 1.25rem;
+    margin-right: 3rem;
+}
+
+.cp-tracing-span-bar {
+    position: absolute;
+    top: 0.25rem;
+    height: 0.75rem;
+    min-width: 2px;
+    border-radius: calc(var(--radius) / 3);
+    background: var(--chart-1);
+}
+
+.cp-tracing-kind-client {
+    background: var(--chart-2);
+}
+
+.cp-tracing-kind-producer,
+.cp-tracing-kind-consumer {
+    background: var(--chart-3);
+}
+
+.cp-tracing-kind-internal {
+    background: var(--chart-4);
+}
+
+.cp-tracing-span-error .cp-tracing-span-bar {
+    background: var(--destructive);
+}
+
+.cp-tracing-span-duration {
+    position: absolute;
+    top: 0;
+    padding-left: 0.35rem;
+    color: var(--muted-foreground);
+    font-size: 0.6875rem;
+    line-height: 1.25rem;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+.cp-tracing-span-panel {
+    position: sticky;
+    top: calc(var(--header-height) + 1rem);
+    min-width: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--background);
+    padding: 1rem;
+}
+
+.cp-tracing-span-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.cp-tracing-span-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.cp-tracing-badges {
+    display: inline-flex;
+    gap: 0.35rem;
+}
+
+.cp-tracing-section-title {
+    margin: 1rem 0 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.cp-tracing-attributes td {
+    vertical-align: top;
+}
+
+.cp-tracing-attribute-value {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+}
+
+.cp-tracing-exception {
+    margin-bottom: 0.75rem;
+    border: 1px solid var(--destructive);
+    border-radius: var(--radius);
+    padding: 0.75rem;
+}
+
+.cp-tracing-exception-title {
+    margin: 0 0 0.5rem;
+    color: var(--destructive);
+    overflow-wrap: anywhere;
+}
+
+.cp-tracing-stacktrace {
+    max-height: 20rem;
+    margin: 0;
+    padding: 0.75rem;
+    font-size: 0.75rem;
+}
+
+.cp-tracing-events {
+    display: grid;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.cp-tracing-event-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.35rem;
+}
+
+@media (max-width: 1280px) {
+    .cp-tracing-trace-body {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .cp-tracing-span-panel {
+        position: static;
+    }
+}
+
+@media (max-width: 640px) {
+    .cp-tracing-waterfall-axis,
+    .cp-tracing-span-row {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0.2rem;
+    }
+
+    .cp-tracing-waterfall-axis-label {
+        display: none;
+    }
+
+    .cp-tracing-facts-wide {
+        grid-template-columns: max-content minmax(0, 1fr);
+    }
+}
+
 @media (max-width: 1000px) {
     .cp-sidebar {
         position: fixed;

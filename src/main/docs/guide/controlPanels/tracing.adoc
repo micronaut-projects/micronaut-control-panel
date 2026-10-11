@@ -1,0 +1,86 @@
+The Tracing control panel shows the recent traces of the application, as retained in memory by the
+https://micronaut-projects.github.io/micronaut-tracing/latest/guide/[Micronaut Tracing] trace inspector. It is meant for
+local development: see the request you just sent, find the slow or failing ones, and drill into their spans without
+running a separate tracing backend.
+
+To add the Tracing control panel, add the following dependencies:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-tracing[scope=developmentOnly]
+
+dependency:io.micronaut.tracing:micronaut-tracing-opentelemetry-inspector[scope=developmentOnly]
+
+The trace inspector requires Micronaut Tracing 8.4.0 or later, configured with OpenTelemetry, for example through
+`micronaut-tracing-opentelemetry-http`. The panel is only registered when a `TraceInspector` bean exists. By default
+the inspector is enabled in the `dev` environment only. Set `tracing.opentelemetry.inspector.enabled` to enable it
+elsewhere, and see the Micronaut Tracing documentation for how many traces it retains.
+
+TIP: The inspector only sees sampled spans. If the application configures ratio sampling, set
+`otel.traces.sampler: always_on` in `application-dev.yml`.
+
+== Card
+
+The card on the dashboard shows:
+
+* The number of traces retained by the inspector.
+* The number of traces with an error that started in the last minute.
+* The slowest retained trace, with its HTTP method, route and duration.
+
+The badge shows the number of retained traces with an error.
+
+== Recent Traces
+
+The detail page lists the retained traces, newest first, with the root span name, HTTP method and route, response
+status, duration, span count, an error marker, and the start time. The list can be filtered by:
+
+* *Errors only*: traces with a span whose status is `ERROR`.
+* *Slower than*: a minimum trace duration, in milliseconds.
+* *Search*: text that the root span name, HTTP route or URL path contains, ignoring case.
+
+Turn on *Auto-refresh* to reload the list every five seconds, and use *Clear* to discard all retained traces. Clearing
+traces is a write operation, so it follows `micronaut.control-panel.security.write-access`.
+
+image::tracing-traces.png[Recent traces in the Tracing control panel]
+
+== Trace Detail
+
+Selecting a trace opens its span waterfall. Each span is drawn as a bar offset by its start time relative to the start of
+the trace and nested under its parent span. Spans with an error are highlighted. Selecting a span shows its kind, status,
+timing, ids and instrumentation scope, together with its attributes, events and links. Exceptions recorded on a span are
+shown with their type, message and stack trace. When the trace has an error, the first failing span is selected.
+
+The trace detail has its own URL, with the trace id in the `trace` query parameter, so it can be bookmarked or shared
+while the trace is retained.
+
+image::tracing-trace.png[Span waterfall of a failing trace in the Tracing control panel]
+
+== Opening Traces in an External Tracing UI
+
+If the application also exports traces to a tracing backend such as Jaeger, Grafana Tempo or Zipkin, configure a URL
+template to add an *Open in tracing UI* button to the trace detail. The `\{traceId}` placeholder is replaced with the
+trace id:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      tracing:
+        external-url: http://localhost:16686/trace/{traceId}
+----
+
+For example, use `http://localhost:9411/zipkin/traces/\{traceId}` for Zipkin.
+
+== Configuration
+
+include::{includedir}configurationProperties/io.micronaut.controlpanel.panels.tracing.TracingControlPanelConfiguration.adoc[]
+
+The Tracing control panel can be disabled by setting:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      tracing:
+        enabled: false
+----

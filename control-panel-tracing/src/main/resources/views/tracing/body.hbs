@@ -1,0 +1,26 @@
+<div class="cp-tracing-card-summary">
+    <div class="cp-tracing-card-metric">
+        <span class="cp-tracing-card-label">Traces retained</span>
+        <strong class="cp-tracing-card-value" data-tracing-retained>{{body.retained}}</strong>
+    </div>
+    <div class="cp-tracing-card-metric">
+        <span class="cp-tracing-card-label">Errors in the last minute</span>
+        {{#if body.recentErrors}}
+            <span class="badge badge-destructive" data-tracing-recent-errors>{{body.recentErrors}}</span>
+        {{else}}
+            <span class="badge badge-secondary" data-tracing-recent-errors>0</span>
+        {{/if}}
+    </div>
+    <div class="cp-tracing-card-metric cp-tracing-card-metric-wide">
+        <span class="cp-tracing-card-label">Slowest trace</span>
+        {{#if body.slowest}}
+            <span class="cp-tracing-card-slowest" title="{{body.slowest.name}}" data-tracing-slowest>
+                {{#if body.slowest.httpMethod}}<span class="badge badge-outline">{{body.slowest.httpMethod}}</span>{{/if}}
+                <code class="cp-table-code">{{#if body.slowest.route}}{{abbreviate body.slowest.route 40}}{{else}}{{abbreviate body.slowest.name 40}}{{/if}}</code>
+                <strong>{{body.slowest.duration}}</strong>
+            </span>
+        {{else}}
+            <span class="cp-tracing-muted">No traces yet</span>
+        {{/if}}
+    </div>
+</div>

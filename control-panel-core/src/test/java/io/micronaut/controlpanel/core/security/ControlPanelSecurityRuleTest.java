@@ -138,6 +138,7 @@ class ControlPanelSecurityRuleTest {
         assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.GET("/control-panel"), null));
         assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.POST("/control-panel" + ControlPanelSecurityPaths.HIBERNATE_PATH + "/default/hql", "{}"), null));
         assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.GET("/control-panel" + ControlPanelSecurityPaths.KAFKA_PATH + "/topics"), null));
+        assertEquals(SecurityRuleResult.ALLOWED, check(rule, HttpRequest.GET("/control-panel" + ControlPanelSecurityPaths.TRACING_PATH + "/traces"), null));
         for (HttpRequest<?> request : writeRequests("/control-panel")) {
             assertEquals(SecurityRuleResult.REJECTED, check(rule, request, null));
         }
@@ -266,7 +267,8 @@ class ControlPanelSecurityRuleTest {
             HttpRequest.POST(controlPanelPath + ControlPanelSecurityPaths.APPLICATION_PATH + "/refresh", "{}"),
             HttpRequest.POST(controlPanelPath + ControlPanelSecurityPaths.APPLICATION_PATH + "/stop", ""),
             HttpRequest.POST(controlPanelPath + ControlPanelSecurityPaths.OBJECT_STORAGE_PATH + "/default", ""),
-            HttpRequest.DELETE(controlPanelPath + ControlPanelSecurityPaths.OBJECT_STORAGE_PATH + "/default/hello.txt")
+            HttpRequest.DELETE(controlPanelPath + ControlPanelSecurityPaths.OBJECT_STORAGE_PATH + "/default/hello.txt"),
+            HttpRequest.DELETE(controlPanelPath + ControlPanelSecurityPaths.TRACING_PATH + "/traces")
         );
     }
 

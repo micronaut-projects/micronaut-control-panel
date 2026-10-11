@@ -1,0 +1,455 @@
+{{#with controlPanel.body }}
+<div class="cp-dashboard-stack cp-tracing" data-tracing data-tracing-base="{{ ext.controlPanelPath }}{{ controllerPath }}" data-tracing-limit="{{ limit }}">
+    <section class="cp-tracing-list-view" data-tracing-list-view aria-labelledby="tracing-list-title">
+        <div class="card card-light">
+            <div class="card-header">
+                <h3 class="card-title" id="tracing-list-title">Recent traces</h3>
+                <div class="card-tools cp-tracing-tools">
+                    <span class="cp-switch-control">
+                        <button type="button" class="cp-switch" role="switch" aria-checked="false" aria-label="Auto-refresh every 5 seconds" data-tracing-auto-refresh>
+                            <span class="cp-switch-thumb"></span>
+                        </button>
+                        <span aria-hidden="true">Auto-refresh</span>
+                    </span>
+                    <button type="button" class="btn btn-secondary btn-sm" data-tracing-refresh>
+                        <i class="fa fa-rotate" aria-hidden="true"></i>
+                        Refresh
+                    </button>
+                    <button type="button" class="btn btn-danger btn-sm" data-tracing-clear{{#unless ext.writeAccess.allowed}} disabled aria-disabled="true" title="{{ ext.writeAccess.reason }}"{{/unless}}>
+                        <i class="fa fa-trash" aria-hidden="true"></i>
+                        Clear
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="cp-data-table">
+                    <form class="cp-data-table-toolbar cp-tracing-filters" data-tracing-filters role="search">
+                        <div class="cp-data-table-summary" data-tracing-summary aria-live="polite">{{ retained }} traces retained</div>
+                        <div class="cp-tracing-filter-controls">
+                            <span class="cp-switch-control">
+                                <button type="button" class="cp-switch" role="switch" aria-checked="false" aria-label="Errors only" data-tracing-errors-only>
+                                    <span class="cp-switch-thumb"></span>
+                                </button>
+                                <span aria-hidden="true">Errors only</span>
+                            </span>
+                            <div class="cp-tracing-min-duration">
+                                <label for="tracing-min-duration">Slower than</label>
+                                <input type="number" min="0" step="1" class="form-control" id="tracing-min-duration" name="minDurationMs" placeholder="ms" inputmode="numeric" data-tracing-min-duration>
+                                <span class="cp-tracing-muted" aria-hidden="true">ms</span>
+                            </div>
+                            <div class="cp-data-table-search">
+                                <input type="search" class="form-control" name="name" placeholder="Search route or span name" aria-label="Search route or span name" data-tracing-search>
+                            </div>
+                        </div>
+                    </form>
+                    <div class="cp-data-table-container">
+                        <table class="table cp-data-table-table cp-tracing-table">
+                            <thead>
+                            <tr>
+                                <th scope="col" class="cp-tracing-col-marker"><span class="sr-only">Error</span></th>
+                                <th scope="col">Root span</th>
+                                <th scope="col">Route</th>
+                                <th scope="col">Status</th>
+                                <th scope="col" class="cp-tracing-col-number">Duration</th>
+                                <th scope="col" class="cp-tracing-col-number">Spans</th>
+                                <th scope="col">Started</th>
+                            </tr>
+                            </thead>
+                            <tbody data-tracing-rows>
+                            <tr>
+                                <td class="cp-data-table-empty-cell" colspan="7">Loading traces…</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cp-tracing-trace-view" data-tracing-trace-view hidden aria-labelledby="tracing-trace-title">
+        <nav aria-label="Breadcrumb">
+            <a href="?" class="btn btn-outline btn-sm" data-tracing-back>
+                <i class="fa fa-arrow-left" aria-hidden="true"></i>
+                All traces
+            </a>
+        </nav>
+        <div class="card card-light">
+            <div class="card-header">
+                <h3 class="card-title cp-tracing-trace-title" id="tracing-trace-title" data-tracing-trace-title>Trace</h3>
+                <div class="card-tools" data-tracing-trace-tools></div>
+            </div>
+            <div class="card-body" data-tracing-trace-summary></div>
+        </div>
+        <div class="card card-light">
+            <div class="card-header">
+                <h3 class="card-title">Spans</h3>
+            </div>
+            <div class="card-body cp-tracing-trace-body">
+                <div class="cp-tracing-waterfall" data-tracing-waterfall></div>
+                <aside class="cp-tracing-span-panel" data-tracing-span-panel aria-live="polite" aria-label="Selected span"></aside>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+(function () {
+    var root = document.querySelector('[data-tracing]');
+    if (!root) {
+        return;
+    }
+    var base = root.getAttribute('data-tracing-base');
+    var listView = root.querySelector('[data-tracing-list-view]');
+    var traceView = root.querySelector('[data-tracing-trace-view]');
+    var rows = root.querySelector('[data-tracing-rows]');
+    var summary = root.querySelector('[data-tracing-summary]');
+    var search = root.querySelector('[data-tracing-search]');
+    var minDuration = root.querySelector('[data-tracing-min-duration]');
+    var errorsOnly = root.querySelector('[data-tracing-errors-only]');
+    var autoRefresh = root.querySelector('[data-tracing-auto-refresh]');
+    var clearButton = root.querySelector('[data-tracing-clear]');
+    var waterfall = root.querySelector('[data-tracing-waterfall]');
+    var spanPanel = root.querySelector('[data-tracing-span-panel]');
+    var refreshTimer = null;
+    var searchTimer = null;
+    var currentTrace = null;
+
+    function esc(value) {
+        if (value === null || value === undefined) {
+            return '';
+        }
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function getJson(url) {
+        return fetch(url, { headers: { 'Accept': 'application/json' }, credentials: 'same-origin' }).then(function (response) {
+            if (!response.ok) {
+                var error = new Error(response.status === 404 ? 'The trace is no longer retained.' : 'Request failed with status ' + response.status);
+                error.status = response.status;
+                throw error;
+            }
+            return response.json();
+        });
+    }
+
+    function isOn(toggle) {
+        return toggle.getAttribute('aria-checked') === 'true';
+    }
+
+    function setToggle(toggle, on) {
+        toggle.setAttribute('aria-checked', on ? 'true' : 'false');
+        toggle.classList.toggle('cp-switch-checked', on);
+    }
+
+    function statusBadge(trace) {
+        if (trace.httpStatus === null || trace.httpStatus === undefined) {
+            return trace.error ? '<span class="badge badge-destructive">Error</span>' : '<span class="cp-tracing-muted">—</span>';
+        }
+        var css = trace.httpStatus >= 500 || trace.error ? 'badge-destructive' : (trace.httpStatus >= 400 ? 'badge-outline' : 'badge-secondary');
+        return '<span class="badge ' + css + '">' + esc(trace.httpStatus) + '</span>';
+    }
+
+    function traceHref(traceId) {
+        return '?trace=' + encodeURIComponent(traceId);
+    }
+
+    function formatTime(epochMillis) {
+        var date = new Date(epochMillis);
+        return date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' }) +
+            '.' + String(date.getMilliseconds()).padStart(3, '0');
+    }
+
+    // empty collections and default values may be omitted from the JSON, depending on the serialization configuration
+    function list(value) {
+        return Array.isArray(value) ? value : [];
+    }
+
+    function normalizeDetail(detail) {
+        detail.ticks = list(detail.ticks);
+        detail.spans = list(detail.spans).map(function (span) {
+            span.depth = span.depth || 0;
+            span.offsetPercent = span.offsetPercent || 0;
+            span.widthPercent = span.widthPercent || 0;
+            span.attributes = list(span.attributes);
+            span.exceptions = list(span.exceptions);
+            span.events = list(span.events).map(function (event) {
+                event.attributes = list(event.attributes);
+                return event;
+            });
+            span.links = list(span.links);
+            return span;
+        });
+        return detail;
+    }
+
+    function renderRows(data) {
+        data.traces = list(data.traces);
+        data.retained = data.retained || 0;
+        summary.textContent = data.traces.length === data.retained
+            ? data.retained + (data.retained === 1 ? ' trace retained' : ' traces retained')
+            : data.traces.length + ' of ' + data.retained + ' traces';
+        if (data.traces.length === 0) {
+            rows.innerHTML = '<tr><td class="cp-data-table-empty-cell" colspan="7">' +
+                (data.retained === 0 ? 'No traces retained yet. Send a request to the application to record one.' : 'No traces match the filters.') +
+                '</td></tr>';
+            return;
+        }
+        rows.innerHTML = data.traces.map(function (trace) {
+            var marker = trace.error
+                ? '<i class="fa fa-circle-exclamation cp-tracing-error-icon" role="img" aria-label="Error" title="Error"></i>'
+                : '';
+            var route = trace.route
+                ? (trace.httpMethod ? '<span class="badge badge-outline">' + esc(trace.httpMethod) + '</span> ' : '') + '<code class="cp-table-code">' + esc(trace.route) + '</code>'
+                : '<span class="cp-tracing-muted">—</span>';
+            var spans = esc(trace.spanCount) + (trace.droppedSpanCount > 0 ? ' <span class="cp-tracing-muted" title="Dropped spans">(+' + esc(trace.droppedSpanCount) + ')</span>' : '');
+            return '<tr data-tracing-row data-trace-id="' + esc(trace.traceId) + '"' + (trace.error ? ' class="cp-tracing-row-error"' : '') + '>' +
+                '<td class="cp-tracing-col-marker" data-label="Error">' + marker + '</td>' +
+                '<td data-label="Root span"><a href="' + traceHref(trace.traceId) + '" data-tracing-open="' + esc(trace.traceId) + '">' + esc(trace.name) + '</a></td>' +
+                '<td data-label="Route">' + route + '</td>' +
+                '<td data-label="Status">' + statusBadge(trace) + '</td>' +
+                '<td class="cp-tracing-col-number" data-label="Duration">' + esc(trace.duration) + '</td>' +
+                '<td class="cp-tracing-col-number" data-label="Spans">' + spans + '</td>' +
+                '<td data-label="Started"><time datetime="' + esc(trace.start) + '" title="' + esc(trace.start) + '">' + esc(formatTime(trace.startEpochMillis)) + '</time></td>' +
+                '</tr>';
+        }).join('');
+    }
+
+    function loadTraces() {
+        var params = new URLSearchParams();
+        if (search.value.trim()) {
+            params.set('name', search.value.trim());
+        }
+        if (isOn(errorsOnly)) {
+            params.set('errorsOnly', 'true');
+        }
+        if (minDuration.value && Number(minDuration.value) > 0) {
+            params.set('minDurationMs', String(Math.floor(Number(minDuration.value))));
+        }
+        var query = params.toString();
+        return getJson(base + '/traces' + (query ? '?' + query : '')).then(renderRows).catch(function (error) {
+            rows.innerHTML = '<tr><td class="cp-data-table-empty-cell" colspan="7">Unable to load traces: ' + esc(error.message) + '</td></tr>';
+        });
+    }
+
+    function attributesTable(attributes, label) {
+        if (!attributes || attributes.length === 0) {
+            return '<p class="cp-tracing-muted">No ' + esc(label) + '.</p>';
+        }
+        return '<div class="cp-data-table-container"><table class="table cp-data-table-table cp-tracing-attributes">' +
+            '<thead><tr><th scope="col">Key</th><th scope="col">Value</th></tr></thead><tbody>' +
+            attributes.map(function (attribute) {
+                return '<tr><td><code class="cp-table-code">' + esc(attribute.key) + '</code></td><td class="cp-tracing-attribute-value">' + esc(attribute.value) + '</td></tr>';
+            }).join('') +
+            '</tbody></table></div>';
+    }
+
+    function renderSpanPanel(span) {
+        var html = '<div class="cp-tracing-span-header">' +
+            '<h4 class="cp-tracing-span-title">' + esc(span.name) + '</h4>' +
+            '<div class="cp-tracing-badges">' +
+            '<span class="badge badge-outline">' + esc(span.kind) + '</span>' +
+            '<span class="badge ' + (span.error ? 'badge-destructive' : 'badge-secondary') + '">' + esc(span.status) + '</span>' +
+            '</div></div>' +
+            '<dl class="cp-tracing-facts">' +
+            '<dt>Duration</dt><dd>' + esc(span.duration) + '</dd>' +
+            '<dt>Starts at</dt><dd>+' + esc(span.offset) + '</dd>' +
+            '<dt>Span id</dt><dd><code class="cp-table-code">' + esc(span.spanId) + '</code></dd>' +
+            (span.parentSpanId ? '<dt>Parent</dt><dd><code class="cp-table-code">' + esc(span.parentSpanId) + '</code></dd>' : '') +
+            '<dt>Scope</dt><dd>' + esc(span.instrumentationScope) + '</dd>' +
+            (span.statusDescription ? '<dt>Status</dt><dd>' + esc(span.statusDescription) + '</dd>' : '') +
+            '</dl>';
+        if (span.exceptions.length > 0) {
+            html += '<h5 class="cp-tracing-section-title">Exceptions</h5>' + span.exceptions.map(function (exception) {
+                return '<div class="cp-tracing-exception" data-tracing-exception>' +
+                    '<p class="cp-tracing-exception-title"><i class="fa fa-circle-exclamation" aria-hidden="true"></i> <strong>' + esc(exception.type || 'Exception') + '</strong>' +
+                    (exception.message ? ': ' + esc(exception.message) : '') + '</p>' +
+                    (exception.stacktrace ? '<pre class="cp-tracing-stacktrace"><code>' + esc(exception.stacktrace) + '</code></pre>' : '') +
+                    '</div>';
+            }).join('');
+        }
+        html += '<h5 class="cp-tracing-section-title">Attributes</h5>' + attributesTable(span.attributes, 'attributes');
+        html += '<h5 class="cp-tracing-section-title">Events</h5>';
+        if (span.events.length === 0) {
+            html += '<p class="cp-tracing-muted">No events.</p>';
+        } else {
+            html += '<ul class="cp-tracing-events">' + span.events.map(function (event) {
+                return '<li><div class="cp-tracing-event-header"><strong>' + esc(event.name) + '</strong><span class="cp-tracing-muted">+' + esc(event.offset) + '</span></div>' +
+                    (event.attributes.length > 0 ? attributesTable(event.attributes, 'attributes') : '') + '</li>';
+            }).join('') + '</ul>';
+        }
+        if (span.links.length > 0) {
+            html += '<h5 class="cp-tracing-section-title">Links</h5><ul class="cp-tracing-events">' + span.links.map(function (link) {
+                return '<li><a href="' + traceHref(link.traceId) + '" data-tracing-open="' + esc(link.traceId) + '"><code class="cp-table-code">' + esc(link.traceId) + '</code></a>' +
+                    ' <span class="cp-tracing-muted">span</span> <code class="cp-table-code">' + esc(link.spanId) + '</code></li>';
+            }).join('') + '</ul>';
+        }
+        spanPanel.innerHTML = html;
+    }
+
+    function selectSpan(spanId) {
+        if (!currentTrace) {
+            return;
+        }
+        var span = currentTrace.spans.find(function (candidate) { return candidate.spanId === spanId; });
+        if (!span) {
+            return;
+        }
+        waterfall.querySelectorAll('[data-tracing-span]').forEach(function (button) {
+            var selected = button.getAttribute('data-tracing-span') === spanId;
+            button.setAttribute('aria-pressed', selected ? 'true' : 'false');
+            button.classList.toggle('cp-tracing-span-selected', selected);
+        });
+        renderSpanPanel(span);
+    }
+
+    function renderTrace(detail) {
+        currentTrace = detail;
+        var trace = detail.summary;
+        root.querySelector('[data-tracing-trace-title]').innerHTML =
+            (trace.error ? '<i class="fa fa-circle-exclamation cp-tracing-error-icon" role="img" aria-label="Error"></i> ' : '') + esc(trace.name);
+        root.querySelector('[data-tracing-trace-tools]').innerHTML = trace.externalUrl
+            ? '<a class="btn btn-secondary btn-sm" href="' + esc(trace.externalUrl) + '" target="_blank" rel="noopener noreferrer" data-tracing-external>' +
+              '<i class="fa fa-arrow-up-right-from-square" aria-hidden="true"></i> Open in tracing UI</a>'
+            : '';
+        root.querySelector('[data-tracing-trace-summary]').innerHTML = '<dl class="cp-tracing-facts cp-tracing-facts-wide">' +
+            '<dt>Trace id</dt><dd><code class="cp-table-code">' + esc(trace.traceId) + '</code></dd>' +
+            (trace.route ? '<dt>Route</dt><dd>' + (trace.httpMethod ? '<span class="badge badge-outline">' + esc(trace.httpMethod) + '</span> ' : '') + '<code class="cp-table-code">' + esc(trace.route) + '</code></dd>' : '') +
+            '<dt>Status</dt><dd>' + statusBadge(trace) + '</dd>' +
+            '<dt>Duration</dt><dd>' + esc(trace.duration) + '</dd>' +
+            '<dt>Spans</dt><dd>' + esc(trace.spanCount) + (trace.droppedSpanCount > 0 ? ' (' + esc(trace.droppedSpanCount) + ' dropped)' : '') + '</dd>' +
+            (trace.serviceName ? '<dt>Service</dt><dd>' + esc(trace.serviceName) + '</dd>' : '') +
+            '<dt>Started</dt><dd><time datetime="' + esc(trace.start) + '">' + esc(new Date(trace.startEpochMillis).toLocaleString()) + '</time></dd>' +
+            '</dl>';
+        var axis = '<div class="cp-tracing-waterfall-axis" aria-hidden="true"><span class="cp-tracing-waterfall-axis-label"></span><div class="cp-tracing-waterfall-ticks">' +
+            detail.ticks.map(function (tick) {
+                return '<span class="cp-tracing-waterfall-tick" style="left: ' + Number(tick.percent) + '%">' + esc(tick.label) + '</span>';
+            }).join('') + '</div></div>';
+        var spans = detail.spans.map(function (span) {
+            var width = Math.max(Number(span.widthPercent), 0.4);
+            var left = Math.min(Number(span.offsetPercent), 100 - width);
+            return '<button type="button" class="cp-tracing-span-row' + (span.error ? ' cp-tracing-span-error' : '') + '" aria-pressed="false" data-tracing-span="' + esc(span.spanId) + '"' +
+                ' style="--cp-tracing-depth: ' + Number(span.depth) + '" aria-label="' + esc(span.name + ', ' + span.duration + ', starts at +' + span.offset + (span.error ? ', error' : '')) + '">' +
+                '<span class="cp-tracing-span-label" title="' + esc(span.name) + '">' +
+                (span.error ? '<i class="fa fa-circle-exclamation cp-tracing-error-icon" aria-hidden="true"></i>' : '') +
+                '<span class="cp-tracing-span-name">' + esc(span.name) + '</span>' +
+                '<span class="cp-tracing-span-kind">' + esc(span.kind) + '</span></span>' +
+                '<span class="cp-tracing-span-track"><span class="cp-tracing-span-bar cp-tracing-kind-' + esc(span.kind.toLowerCase()) + '" style="left: ' + left + '%; width: ' + width + '%"></span>' +
+                '<span class="cp-tracing-span-duration" style="left: ' + (left + width) + '%">' + esc(span.duration) + '</span></span>' +
+                '</button>';
+        }).join('');
+        waterfall.innerHTML = axis + '<div class="cp-tracing-waterfall-rows">' + spans + '</div>';
+        if (detail.spans.length === 0) {
+            spanPanel.innerHTML = '<p class="cp-tracing-muted">This trace has no retained spans.</p>';
+            return;
+        }
+        var firstError = detail.spans.find(function (span) { return span.exceptions.length > 0; }) ||
+            detail.spans.find(function (span) { return span.error; });
+        selectSpan((firstError || detail.spans[0]).spanId);
+    }
+
+    function showList() {
+        currentTrace = null;
+        traceView.hidden = true;
+        listView.hidden = false;
+        loadTraces();
+    }
+
+    function showTrace(traceId) {
+        listView.hidden = true;
+        traceView.hidden = false;
+        waterfall.innerHTML = '<p class="cp-tracing-muted">Loading trace…</p>';
+        spanPanel.innerHTML = '';
+        root.querySelector('[data-tracing-trace-title]').textContent = 'Trace ' + traceId;
+        root.querySelector('[data-tracing-trace-tools]').innerHTML = '';
+        root.querySelector('[data-tracing-trace-summary]').innerHTML = '';
+        getJson(base + '/traces/' + encodeURIComponent(traceId)).then(function (detail) { renderTrace(normalizeDetail(detail)); }).catch(function (error) {
+            waterfall.innerHTML = '<div class="alert alert-warning" role="alert">' + esc(error.message) + '</div>';
+        });
+    }
+
+    function route() {
+        var traceId = new URLSearchParams(window.location.search).get('trace');
+        if (traceId) {
+            showTrace(traceId);
+        } else {
+            showList();
+        }
+    }
+
+    function navigate(href) {
+        window.history.pushState({}, '', href === '?' ? window.location.pathname : href);
+        route();
+    }
+
+    root.addEventListener('click', function (event) {
+        var open = event.target.closest('[data-tracing-open]');
+        if (open && !event.metaKey && !event.ctrlKey && !event.shiftKey) {
+            event.preventDefault();
+            navigate(traceHref(open.getAttribute('data-tracing-open')));
+            return;
+        }
+        var back = event.target.closest('[data-tracing-back]');
+        if (back && !event.metaKey && !event.ctrlKey && !event.shiftKey) {
+            event.preventDefault();
+            navigate('?');
+            return;
+        }
+        var span = event.target.closest('[data-tracing-span]');
+        if (span) {
+            selectSpan(span.getAttribute('data-tracing-span'));
+        }
+    });
+
+    window.addEventListener('popstate', route);
+
+    root.querySelector('[data-tracing-filters]').addEventListener('submit', function (event) {
+        event.preventDefault();
+        loadTraces();
+    });
+    search.addEventListener('input', function () {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(loadTraces, 250);
+    });
+    minDuration.addEventListener('input', function () {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(loadTraces, 250);
+    });
+    errorsOnly.addEventListener('click', function () {
+        setToggle(errorsOnly, !isOn(errorsOnly));
+        loadTraces();
+    });
+    root.querySelector('[data-tracing-refresh]').addEventListener('click', loadTraces);
+    autoRefresh.addEventListener('click', function () {
+        var on = !isOn(autoRefresh);
+        setToggle(autoRefresh, on);
+        clearInterval(refreshTimer);
+        refreshTimer = on ? setInterval(function () {
+            if (!listView.hidden && !document.hidden) {
+                loadTraces();
+            }
+        }, 5000) : null;
+    });
+    clearButton.addEventListener('click', function () {
+        if (clearButton.disabled || !window.confirm('Discard all retained traces?')) {
+            return;
+        }
+        fetch(base + '/traces', { method: 'DELETE', credentials: 'same-origin' }).then(function (response) {
+            if (!response.ok) {
+                throw new Error('Request failed with status ' + response.status);
+            }
+            return loadTraces();
+        }).catch(function (error) {
+            summary.textContent = 'Unable to clear traces: ' + error.message;
+        });
+    });
+
+    route();
+})();
+</script>
+{{/with}}
