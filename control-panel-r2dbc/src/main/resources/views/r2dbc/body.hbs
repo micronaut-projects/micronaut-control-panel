@@ -1,0 +1,41 @@
+{{#with controlPanel.body }}
+    <div class="cp-data-table-container cp-vertical-table">
+        <table class="table cp-data-table-table">
+            <tbody>
+            <tr>
+                <th scope="row">Datasource</th>
+                <td><code class="cp-table-code" title="{{ summary.name }}">{{ summary.name }}</code></td>
+            </tr>
+            <tr>
+                <th scope="row">Driver</th>
+                <td>
+                    {{#if summary.driver}}
+                        <span class="badge badge-secondary">{{ summary.driver }}</span>
+                    {{else}}
+                        <span class="badge badge-secondary">not configured</span>
+                    {{/if}}
+                    {{#if summary.protocol}}
+                        <code class="cp-table-code">{{ summary.protocol }}</code>
+                    {{/if}}
+                </td>
+            </tr>
+            <tr>
+                <th scope="row">Target</th>
+                <td>
+                    {{#if summary.host}}<code class="cp-table-code" title="{{ summary.host }}">{{ summary.host }}</code>{{else}}not configured{{/if}}
+                    {{#if summary.port}}:<code class="cp-table-code">{{ summary.port }}</code>{{/if}}
+                    {{#if summary.database}} / <code class="cp-table-code" title="{{ summary.database }}">{{ summary.database }}</code>{{/if}}
+                </td>
+            </tr>
+            <tr>
+                <th scope="row">Health</th>
+                <td><span class="badge badge-secondary">{{ health.label }}</span> {{ health.message }}</td>
+            </tr>
+            <tr>
+                <th scope="row">Pool</th>
+                <td><span class="badge badge-secondary">{{ pool.label }}</span> {{ pool.message }}</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+{{/with}}
