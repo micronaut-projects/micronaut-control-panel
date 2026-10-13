@@ -1,0 +1,208 @@
+{{#with controlPanel.body }}
+    <div class="cp-dashboard-stack cp-continuous-testing-detail">
+        {{#if running}}
+            <div class="card {{#if compileFailure}}card-danger{{else}}{{#if failureCount}}card-danger{{else}}card-success{{/if}}{{/if}}">
+                <div class="card-header">
+                    <h3 class="card-title">Continuous testing is running</h3>
+                </div>
+                <div class="card-body">
+                    {{#if runInProgress}}
+                        <p class="card-text"><i class="fas fa-spinner"></i> A test run is in progress: {{ finishedInRun }} tests finished so far.</p>
+                    {{/if}}
+                    {{#if reportUrl}}
+                        <p class="card-text">The live report follows each run test by test.</p>
+                        <a class="btn btn-primary btn-sm" href="{{ reportUrl }}" target="_blank" rel="noopener noreferrer" title="Open the live test report in a new window">
+                            Open the live test report
+                            <i class="fas fa-arrow-up-right-from-square"></i>
+                        </a>
+                    {{else}}
+                        <p class="card-text">The continuous testing process does not serve its report: add <code>micronaut-dev-livereload</code> to its classpath for a live report.</p>
+                    {{/if}}
+                </div>
+            </div>
+        {{else}}
+            <div class="card card-warning">
+                <div class="card-header">
+                    <h3 class="card-title">{{#if mayBeRunning}}Continuous testing may be running{{else}}Continuous testing is not running{{/if}}</h3>
+                </div>
+                <div class="card-body">
+                    {{#if mayBeRunning}}
+                        <p class="card-text">
+                            Its last report was written without a live server, as happens when the application's LiveReload server holds the port,
+                            so the panel cannot tell whether it still runs. Give continuous testing a LiveReload port of its own to follow it live.
+                        </p>
+                    {{/if}}
+                    <p class="card-text">
+                        Continuous testing runs in a process of its own, beside the application. Start it in a separate terminal,
+                        in the project directory, with the command of the project's build tool. It compiles every change and runs the
+                        tests the change can affect, and serves a live report this panel links to.
+                    </p>
+                    <div class="cp-data-table-container cp-vertical-table">
+                        <table class="table cp-data-table-table">
+                            <tbody>
+                            {{#each commands as |command|}}
+                                <tr>
+                                    <th scope="row">{{ command.tool }}</th>
+                                    <td>
+                                        <code>{{ command.command }}</code>
+                                        {{#if command.detected}}<span class="badge badge-outline">this project</span>{{/if}}
+                                    </td>
+                                </tr>
+                            {{/each}}
+                            </tbody>
+                        </table>
+                    </div>
+                    {{#if reportFound}}
+                        <p class="card-text">The results below are those of the last report it wrote.</p>
+                    {{/if}}
+                </div>
+            </div>
+        {{/if}}
+
+        {{#if compileFailure}}
+            <div class="card card-danger">
+                <div class="card-header">
+                    <h3 class="card-title">The last change does not compile</h3>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">No test runs until it compiles again: the results below are those of the last change that compiled.</p>
+                    <pre><code>{{#each compileFailure as |diagnostic|}}{{ diagnostic }}
+{{/each}}</code></pre>
+                </div>
+            </div>
+        {{/if}}
+
+        <div class="cp-detail-card-grid">
+            {{#with lastRun}}
+                <div class="card card-light">
+                    <div class="card-header">
+                        <h3 class="card-title">Last run</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="cp-data-table-container cp-vertical-table">
+                            <table class="table cp-data-table-table">
+                                <tbody>
+                                <tr>
+                                    <th scope="row">Result</th>
+                                    <td>
+                                        {{#if problems}}
+                                            <span class="badge badge-destructive">failed</span>
+                                        {{else}}
+                                            {{#if cancelled}}
+                                                <span class="badge badge-outline">cancelled</span>
+                                            {{else}}
+                                                <span class="badge badge-primary">passed</span>
+                                            {{/if}}
+                                        {{/if}}
+                                    </td>
+                                </tr>
+                                <tr><th scope="row">Tests</th><td>{{ total }}</td></tr>
+                                <tr><th scope="row">Passed</th><td>{{ passed }}</td></tr>
+                                <tr><th scope="row">Failed</th><td>{{ failed }}</td></tr>
+                                <tr><th scope="row">Errored</th><td>{{ errored }}</td></tr>
+                                <tr><th scope="row">Skipped</th><td>{{ skipped }}</td></tr>
+                                <tr><th scope="row">Duration</th><td>{{ durationMillis }} ms</td></tr>
+                                {{#if selection}}<tr><th scope="row">Selection</th><td>{{ selection }}</td></tr>{{/if}}
+                                {{#if startedAt}}<tr><th scope="row">Started</th><td><code>{{ startedAt }}</code></td></tr>{{/if}}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            {{/with}}
+
+            {{#if reportFound}}
+                <div class="card card-light">
+                    <div class="card-header">
+                        <h3 class="card-title">Report</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="cp-data-table-container cp-vertical-table">
+                            <table class="table cp-data-table-table">
+                                <tbody>
+                                {{#if project}}<tr><th scope="row">Project</th><td>{{ project }}</td></tr>{{/if}}
+                                {{#if reportUrl}}<tr><th scope="row">Live report</th><td><a href="{{ reportUrl }}" target="_blank" rel="noopener noreferrer"><code>{{ reportUrl }}</code></a></td></tr>{{/if}}
+                                {{#if reportFile}}<tr><th scope="row">File</th><td><code>{{ reportFile }}</code></td></tr>{{/if}}
+                                {{#if updatedAt}}<tr><th scope="row">Updated</th><td><code>{{ updatedAt }}</code></td></tr>{{/if}}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            {{/if}}
+        </div>
+
+        {{#if failures}}
+            <div class="card card-light">
+                <div class="card-header">
+                    <h3 class="card-title">Failing tests</h3>
+                </div>
+                <div class="card-body">
+                    <div class="cp-data-table-container">
+                        <table class="table cp-data-table-table">
+                            <thead>
+                            <tr>
+                                <th>Class</th>
+                                <th>Test</th>
+                                <th>Result</th>
+                                <th>Message</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {{#each failures as |failure|}}
+                                <tr>
+                                    <td><code>{{ failure.className }}</code></td>
+                                    <td>{{ failure.displayName }}</td>
+                                    <td><span class="badge badge-destructive">{{ failure.status }}</span></td>
+                                    <td>{{ failure.message }}</td>
+                                </tr>
+                            {{/each}}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {{#if moreFailures}}
+                    <div class="card-footer">
+                        <span class="badge badge-secondary">{{ failures.size }} of {{ failureCount }} failing tests</span>
+                    </div>
+                {{/if}}
+            </div>
+        {{/if}}
+
+        {{#if history}}
+            <div class="card card-light">
+                <div class="card-header">
+                    <h3 class="card-title">Recent runs</h3>
+                </div>
+                <div class="card-body">
+                    <div class="cp-data-table-container">
+                        <table class="table cp-data-table-table">
+                            <thead>
+                            <tr>
+                                <th>Started</th>
+                                <th>Selection</th>
+                                <th>Passed</th>
+                                <th>Failing</th>
+                                <th>Skipped</th>
+                                <th>Duration</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {{#each history as |run|}}
+                                <tr>
+                                    <td><code>{{ run.startedAt }}</code></td>
+                                    <td>{{ run.selection }}</td>
+                                    <td>{{ run.passed }}</td>
+                                    <td>{{#if run.problems}}<span class="badge badge-destructive">{{ run.problems }}</span>{{else}}0{{/if}}</td>
+                                    <td>{{ run.skipped }}</td>
+                                    <td>{{ run.durationMillis }} ms</td>
+                                </tr>
+                            {{/each}}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {{/if}}
+    </div>
+{{/with}}
