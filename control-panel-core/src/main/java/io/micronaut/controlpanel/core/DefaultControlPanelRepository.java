@@ -113,7 +113,8 @@ public class DefaultControlPanelRepository implements ControlPanelRepository {
         return Stream.concat(
             beanContext.getBeansOfType(ControlPanel.class).stream(),
             loadDynamicControlPanels().stream()
-        ).sorted(byOrderAndName);
+        ).filter(ControlPanel::isEnabled)
+            .sorted(byOrderAndName);
     }
 
     private Stream<ControlPanel.Category> getCategories() {
