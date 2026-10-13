@@ -306,6 +306,21 @@
         document.querySelectorAll("[data-hover-card]:hover, [data-hover-card]:focus-within").forEach(positionHoverCard);
     }
 
+    function setFilterTableRowHidden($table, row, hidden) {
+        row.hidden = hidden;
+
+        var rowId = row.getAttribute("data-filter-table-row-id");
+        if (!rowId) {
+            return;
+        }
+
+        $table.find("[data-filter-table-row-peer]").each(function () {
+            if (this.getAttribute("data-filter-table-row-peer") === rowId) {
+                this.hidden = hidden;
+            }
+        });
+    }
+
     function updateFilterTable(table) {
         var $table = $(table);
         var $rows = $table.find("[data-filter-table-row]");
@@ -327,10 +342,10 @@
 
         if (unpaged) {
             $rows.each(function () {
-                this.hidden = true;
+                setFilterTableRowHidden($table, this, true);
             });
             matchedRows.forEach(function (row) {
-                row.hidden = false;
+                setFilterTableRowHidden($table, row, false);
             });
 
             var unpagedLabel = pluralize(visibleRows, singular, plural);
@@ -352,10 +367,10 @@
         var start = (page - 1) * pageSize;
         var end = start + pageSize;
         $rows.each(function () {
-            this.hidden = true;
+            setFilterTableRowHidden($table, this, true);
         });
         matchedRows.forEach(function (row, index) {
-            row.hidden = index < start || index >= end;
+            setFilterTableRowHidden($table, row, index < start || index >= end);
         });
 
         var label = pluralize(visibleRows, singular, plural);
