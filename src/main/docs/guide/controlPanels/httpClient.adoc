@@ -1,0 +1,67 @@
+= HTTP Client Control Panel
+
+The HTTP Client control panel shows read-only diagnostics for Micronaut HTTP clients that are visible in the running application context.
+
+Add the module as a development-time dependency:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-http-client[scope=developmentOnly]
+
+== Enabling and disabling
+
+The panel is enabled when the module and Micronaut HTTP client support are present. You can disable it with:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      http-client:
+        enabled: false
+----
+
+Disabling the panel prevents the HTTP client diagnostics control panel bean from being registered.
+
+== What the panel shows
+
+The first version is read-only. It does not send test requests, replay traffic, capture request or response bodies, or mutate configuration.
+
+For each detected client, the panel shows safe metadata such as:
+
+* declarative `@Client` interfaces and named HTTP client configuration entries;
+* the client id or bean name and Java type when available;
+* whether the target is a fixed URL, local target, service id, or unknown;
+* configured path, connect/read/request timeouts, redirect policy, HTTP version, ALPN/plaintext mode, proxy summary, TLS mode summary, and connection-pool summary where those values are available;
+* service instances from Micronaut `ServiceInstanceList` beans visible to the application, or an unavailable-state message when discovery/instances are not visible;
+* outbound filter metadata such as filter type, order, methods, and patterns when Micronaut can resolve it safely.
+
+Fixed URL clients show the configured URL with embedded user-info masked and query string or fragment values replaced with `Masked`. Service-id clients show discovery state only from Micronaut abstractions available inside the application; discovered instance URIs receive the same user-info, query, and fragment masking before display. The panel does not query external registries through a privileged side channel.
+
+== Masking and limitations
+
+The panel uses a safe-field approach. Values that commonly contain credentials or sensitive material are masked or omitted, including:
+
+* embedded URL credentials;
+* fixed URL and discovered service-instance URI query strings and fragments;
+* proxy usernames and passwords;
+* TLS key, key-store, trust-store, certificate, and password material;
+* authorization, cookie, token, and header values;
+* request bodies, response bodies, and captured traffic.
+
+If a value is not clearly safe to display, the panel renders a masked or unavailable summary instead of the raw value. Discovery details can also be unavailable when the application has no discovery client, no service instance list for a service id, or a discovery implementation hides instance details.
+
+== Verification
+
+A development application can verify the panel by adding both the Control Panel UI and HTTP Client module, then declaring a fixed-url or service-id client:
+
+[configuration]
+----
+micronaut:
+  http:
+    services:
+      orders:
+        url: https://orders.example.test
+      inventory:
+        path: /api
+----
+
+Open the Control Panel and select the HTTP Clients panel. The fixed URL client should render as a fixed target. A service-id client renders service-instance rows only when the application exposes matching Micronaut service-instance information; otherwise it renders an explanatory unavailable state.
