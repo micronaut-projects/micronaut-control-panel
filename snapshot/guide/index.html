@@ -3707,7 +3707,9 @@ to display a badge in the control panel header.</p>
 <h2 id="_configuration">Configuration</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>There are some values for the UI that can be configured:</p>
+<p>There are some values for the UI that can be configured. In this example, <code>title</code> is displayed in the control panel
+header, <code>icon</code> is the Font Awesome icon class for the control panel, and <code>order</code> controls where the panel appears in the
+UI.</p>
 </div>
 <div class="openblock">
 <div class="content">
@@ -3727,9 +3729,9 @@ micronaut.control-panel.panels.my-application.order=10</code></pre>
   control-panel:
     panels:
       my-application:
-        title: My Application Control Panel # <b class="conum">(1)</b>
-        icon: fa-plug # <b class="conum">(2)</b>
-        order: 10 # <b class="conum">(3)</b></code></pre>
+        title: My Application Control Panel
+        icon: fa-plug
+        order: 10</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
@@ -3803,22 +3805,6 @@ order = 10</code></pre>
 </div>
 </div>
 </div>
-<div class="colist arabic">
-<table>
-<tr>
-<td><i class="conum" data-value="1"></i><b>1</b></td>
-<td>Title to be displayed in the control panel header.</td>
-</tr>
-<tr>
-<td><i class="conum" data-value="2"></i><b>2</b></td>
-<td>Icon class (from Font Awesome) of the control panel.</td>
-</tr>
-<tr>
-<td><i class="conum" data-value="3"></i><b>3</b></td>
-<td>The order in which the control panel will be displayed in the UI.</td>
-</tr>
-</table>
-</div>
 </div>
 </div>
 <div class="sect1">
@@ -3848,11 +3834,11 @@ on the classpath, and named <code>body.hbs</code> and <code>detail.hbs</code>, r
 </div>
 </div>
 <div class="paragraph">
-<p>The <a href="../api/io/micronaut/controlpanel/core/ControlPanel.html">ControlPanel</a> instance (<code>MyApplicationControlPanel</code> in this case) is stored on the Handlebars
-context, so you can implicitly access its methods and properties. For example, to access the badge:</p>
+<p>The <a href="../api/io/micronaut/controlpanel/core/ControlPanel.html">ControlPanel</a> instance is stored on the Handlebars context, so templates can access its
+methods and properties. For example, the built-in Beans panel accesses its body data from the implicit context:</p>
 </div>
 <div class="listingblock">
-<div class="title"><code>src/main/resources/views/my-application/body.hbs</code>.</div>
+<div class="title"><code>control-panel-management/src/main/resources/views/beans/body.hbs</code>.</div>
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-html hljs" data-lang="html">{{#with controlPanel.body }}
     &lt;p class="card-text"&gt;
