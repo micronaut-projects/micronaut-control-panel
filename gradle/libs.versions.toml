@@ -58,6 +58,7 @@ micronaut-sql = { module = "io.micronaut.sql:micronaut-sql-bom", version.ref = "
 micronaut-data = { module = "io.micronaut.data:micronaut-data-bom", version.ref = "micronaut-data" }
 micronaut-testresources = { module = 'io.micronaut.testresources:micronaut-test-resources-bom', version.ref = "micronaut-testresources" }
 micronaut-kafka = { module = "io.micronaut.kafka:micronaut-kafka-bom", version.ref = "micronaut-kafka" }
+micronaut-jmx = { module = "io.micronaut.jmx:micronaut-jmx" }
 avro = { module = "org.apache.avro:avro", version.ref = "avro" }
 avro-serde = { module = "io.confluent:kafka-streams-avro-serde", version.ref = "avro-serde" }
 
