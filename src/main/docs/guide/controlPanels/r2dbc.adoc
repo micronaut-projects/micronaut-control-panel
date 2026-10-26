@@ -1,0 +1,81 @@
+The R2DBC control panel is provided by the `micronaut-control-panel-r2dbc` module. Add it to applications that use
+`r2dbc.datasources.*` and need read-only diagnostics for reactive connection factories.
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-r2dbc[scope=developmentOnly]
+
+When the module is on the classpath, Micronaut Control Panel creates one R2DBC panel for each available
+`io.r2dbc.spi.ConnectionFactory` bean. Multiple named R2DBC datasources are shown as separate panels.
+
+The panel displays safe connection metadata such as datasource name, driver, protocol, host, port, database, user,
+SSL setting, connect timeout, driver metadata name, and safe option names. Passwords, tokens, secret-like option values,
+and credential-bearing URLs are not rendered.
+
+=== Configuration
+
+All Control Panel panels can be disabled with the standard panel configuration property:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      r2dbc:
+        enabled: false
+----
+
+R2DBC health validation is bounded by a timeout:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      r2dbc:
+        health-timeout: 2s
+----
+
+You can also disable only the validation probe while keeping static diagnostics visible:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      r2dbc:
+        health-enabled: false
+----
+
+By default the panel shows safe option names and hides option values. To show allow-listed non-secret option values:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      r2dbc:
+        show-option-values: true
+----
+
+Secret-like keys remain hidden even when option values are enabled.
+
+=== Health
+
+The R2DBC panel uses Micronaut R2DBC health-query mappings from `endpoints.health.r2dbc.*`. If the Micronaut R2DBC
+health endpoint is disabled, the panel reports validation as disabled and does not open a connection. If no validation
+query is configured for the reported driver metadata name, the panel reports `No query` instead of treating the driver
+as an application error. Failed and timed-out probes are shown as unreachable validation states.
+
+=== Pool Diagnostics
+
+When the connection factory is backed by `io.r2dbc.pool.ConnectionPool`, the panel shows live pool counters if the pool
+exposes them. If pool metadata is not available, the panel shows partial support and keeps the rest of the diagnostics
+usable.
+
+=== Security Boundary
+
+The first version is read-only. It does not include arbitrary SQL execution, schema browsing, table previews, repository
+method execution, write operations, or administration actions.
+
+Use the JDBC datasource panel when you need JDBC schema metadata or the read-only SQL console. Use Micronaut Data
+repository metadata panels for repository method and generated-query introspection. The R2DBC panel is focused on
+reactive `ConnectionFactory` configuration, validation, and pool diagnostics.
