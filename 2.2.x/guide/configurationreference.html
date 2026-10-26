@@ -46,7 +46,7 @@
         <div class="docs-content">
             <div class="project">
                 <h1>Configuration Reference</h1>
-                <p><strong>Version:</strong>2.2.0</p>
+                <p><strong>Version:</strong>2.2.1</p>
                 <p></p>
             </div>
 <div class="sect2">
@@ -193,12 +193,87 @@
 </tbody>
 </table>
 <div style="page-break-after: always;"></div>
+<a id="io.micronaut.controlpanel.core.security.ControlPanelRequestConfiguration" href="#io.micronaut.controlpanel.core.security.ControlPanelRequestConfiguration">&#128279;</a>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 4. Configuration Properties for <a href="../api/io/micronaut/controlpanel/core/security/ControlPanelRequestConfiguration.html">ControlPanelRequestConfiguration</a></caption>
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Property</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Default value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.security.csrf-protection-enabled</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">boolean</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Whether same-origin protection (Fetch Metadata, {@code Origin} and the control panel request
+ header) is enforced for mutating control panel requests. Default: "true".</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.security.host-check-enabled</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">boolean</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Whether the host allowlist is enforced when the control panel is reachable without
+ authentication. Default: "true".</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.security.allowed-hosts</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">java.util.Set</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Additional host names (optionally with a port) that are accepted when the host check is
+ active, beyond the built-in loopback names. Each entry is matched case-insensitively and may
+ be a bare host or {@code host:port}.</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+</tbody>
+</table>
+<div style="page-break-after: always;"></div>
+</div>
+<div class="sect2">
+<h3 id="_micronaut_control_panel_datasource_config_properties">Micronaut Control Panel Datasource Config Properties</h3>
+<a id="io.micronaut.controlpanel.panels.datasource.DataSourceQueryConfiguration" href="#io.micronaut.controlpanel.panels.datasource.DataSourceQueryConfiguration">&#128279;</a>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 5. Configuration Properties for <a href="../api/io/micronaut/controlpanel/panels/datasource/DataSourceQueryConfiguration.html">DataSourceQueryConfiguration</a></caption>
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Property</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Default value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.datasource.allow-writes</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">boolean</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Whether the datasource SQL console may run data-modifying statements (anything that is not a
+ {@code SELECT}/{@code WITH} query). Disabled by default so the console is read-only; enable it
+ only in a trusted development environment. Default: "false".</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+</tr>
+</tbody>
+</table>
+<div style="page-break-after: always;"></div>
 </div>
 <div class="sect2">
 <h3 id="_micronaut_control_panel_kafka_config_properties">Micronaut Control Panel Kafka Config Properties</h3>
 <a id="io.micronaut.controlpanel.panels.kafka.KafkaIntegrationConfiguration" href="#io.micronaut.controlpanel.panels.kafka.KafkaIntegrationConfiguration">&#128279;</a>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 4. Configuration Properties for <a href="../api/io/micronaut/controlpanel/panels/kafka/KafkaIntegrationConfiguration.html">KafkaIntegrationConfiguration</a></caption>
+<caption class="title">Table 6. Configuration Properties for <a href="../api/io/micronaut/controlpanel/panels/kafka/KafkaIntegrationConfiguration.html">KafkaIntegrationConfiguration</a></caption>
 <colgroup>
 <col style="width: 25%;">
 <col style="width: 25%;">
@@ -237,7 +312,7 @@
 <div style="page-break-after: always;"></div>
 <a id="io.micronaut.controlpanel.panels.kafka.KafkaClusterWriteConfiguration" href="#io.micronaut.controlpanel.panels.kafka.KafkaClusterWriteConfiguration">&#128279;</a>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 5. Configuration Properties for <a href="../api/io/micronaut/controlpanel/panels/kafka/KafkaClusterWriteConfiguration.html">KafkaClusterWriteConfiguration</a></caption>
+<caption class="title">Table 7. Configuration Properties for <a href="../api/io/micronaut/controlpanel/panels/kafka/KafkaClusterWriteConfiguration.html">KafkaClusterWriteConfiguration</a></caption>
 <colgroup>
 <col style="width: 25%;">
 <col style="width: 25%;">

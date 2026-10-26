@@ -1,0 +1,386 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <title>Configuration Reference | Micronaut</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="../css/main.css" type="text/css" media="screen, print" title="Style" charset="utf-8" />
+    <link rel="stylesheet" href="../css/custom.css" type="text/css" media="screen, print" title="Style" charset="utf-8" />
+    <link rel="stylesheet" href="../css/pdf.css" type="text/css" media="print" title="PDF" charset="utf-8" />
+    <link rel="stylesheet" href="../css/highlight/agate.css">
+    <script src="../js/highlight.pack.js"></script>
+    <script src="../js/guide.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+    <script src="../js/docs.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.11/clipboard.min.js"></script>
+</head>
+<body class="body">
+    <div id="main">
+        <div id="navigation" class="no-print">
+            <div class="navTitle">
+                <span id="logo"><a href="http://micronaut.io" title="Go to Micronaut Website"><img src="../img/micronaut-logo-white.svg" alt="Micronaut"/></a></span>
+            </div>
+            <div class="navLinks">
+                <ul>
+                    <li id="table-of-content-nav-link-mobile" class="mobile">
+                        <a title="Scroll to Table of contents" href="javascript:scrollToTop();" class="button">Toc</a>
+                    </li>
+                    <li>
+                        <a title="Go to documentation" href="index.html" class="button">Docs</a>
+                    </li>
+                    <li class="desktop">
+                        <a title="Go to API documentation" href="../api/index.html" class="button">API Reference</a>
+                    </li>
+                    <li class="mobile">
+                        <a title="Go to API documentation" href="../api/index.html" class="button">API</a>
+                    </li>
+                    <li class="desktop">
+                        <a title="Go to Configuration Reference documentation" href="configurationreference.html" class="button">Configuration Reference</a>
+                    </li>
+                    <li class="mobile">
+                        <a title="Go to Configuration Reference documentation" href="configurationreference.html" class="button">Conf</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="docs-content">
+            <div class="project">
+                <h1>Configuration Reference</h1>
+                <p><strong>Version:</strong>2.2.1</p>
+                <p></p>
+            </div>
+<div class="sect2">
+<h3 id="_micronaut_control_panel_core_config_properties">Micronaut Control Panel Core Config Properties</h3>
+<a id="io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration" href="#io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration">&#128279;</a>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 1. Configuration Properties for <a href="../api/io/micronaut/controlpanel/core/config/ControlPanelModuleConfiguration.html">ControlPanelModuleConfiguration</a></caption>
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Property</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Default value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.enabled</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">boolean</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Enables/disables the control panel module. Default value: "true".</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.allowed-environments</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">java.util.Set</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Configures the environments where the control panel module is enabled. By default, it is
+ only enabled in the "dev" and "test" environments.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">dev,test</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.path</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">java.lang.String</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Configures the path where the control panel can be accessed. Default value: "/control-panel".</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/control-panel</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.log-url</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">boolean</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Whether to print the Control Panel URL in the logs on application startup. Default: StringUtils.TRUE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
+</tr>
+</tbody>
+</table>
+<div style="page-break-after: always;"></div>
+<a id="io.micronaut.controlpanel.core.config.ControlPanelConfiguration" href="#io.micronaut.controlpanel.core.config.ControlPanelConfiguration">&#128279;</a>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 2. Configuration Properties for <a href="../api/io/micronaut/controlpanel/core/config/ControlPanelConfiguration.html">ControlPanelConfiguration</a></caption>
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Property</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Default value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.panels.*.enabled</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">boolean</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Sets whether this control panel is enabled or not.</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.panels.*.order</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">int</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Sets the order of this control panel, since they will be displayed sorted by order.</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.panels.*.title</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">java.lang.String</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Sets the title of this control panel.</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.panels.*.icon</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">java.lang.String</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Sets the icon of this control panel.</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.panels.*.name</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">java.lang.String</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Sets the unique name of the control panel. Can be used in URLs.</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+</tbody>
+</table>
+<div style="page-break-after: always;"></div>
+<a id="io.micronaut.controlpanel.core.security.ControlPanelSecurityConfiguration" href="#io.micronaut.controlpanel.core.security.ControlPanelSecurityConfiguration">&#128279;</a>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 3. Configuration Properties for <a href="../api/io/micronaut/controlpanel/core/security/ControlPanelSecurityConfiguration.html">ControlPanelSecurityConfiguration</a></caption>
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Property</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Default value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.security.access</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="../api/io/micronaut/controlpanel/core/security/ControlPanelSecurityConfiguration.Access.html">ControlPanelSecurityConfiguration$Access</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">the configured read access mode</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AUTHORIZED</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.security.role</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">java.lang.String</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">role required when authorized read access is enabled</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ROLE_CONTROL_PANEL</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.security.write-access</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="../api/io/micronaut/controlpanel/core/security/ControlPanelSecurityConfiguration.WriteAccess.html">ControlPanelSecurityConfiguration$WriteAccess</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">the configured write access mode</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">INHERITED</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.security.write-role</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">java.lang.String</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">role required when authorized write access is enabled</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+</tbody>
+</table>
+<div style="page-break-after: always;"></div>
+<a id="io.micronaut.controlpanel.core.security.ControlPanelRequestConfiguration" href="#io.micronaut.controlpanel.core.security.ControlPanelRequestConfiguration">&#128279;</a>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 4. Configuration Properties for <a href="../api/io/micronaut/controlpanel/core/security/ControlPanelRequestConfiguration.html">ControlPanelRequestConfiguration</a></caption>
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Property</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Default value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.security.csrf-protection-enabled</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">boolean</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Whether same-origin protection (Fetch Metadata, {@code Origin} and the control panel request
+ header) is enforced for mutating control panel requests. Default: "true".</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.security.host-check-enabled</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">boolean</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Whether the host allowlist is enforced when the control panel is reachable without
+ authentication. Default: "true".</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.security.allowed-hosts</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">java.util.Set</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Additional host names (optionally with a port) that are accepted when the host check is
+ active, beyond the built-in loopback names. Each entry is matched case-insensitively and may
+ be a bare host or {@code host:port}.</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+</tbody>
+</table>
+<div style="page-break-after: always;"></div>
+</div>
+<div class="sect2">
+<h3 id="_micronaut_control_panel_datasource_config_properties">Micronaut Control Panel Datasource Config Properties</h3>
+<a id="io.micronaut.controlpanel.panels.datasource.DataSourceQueryConfiguration" href="#io.micronaut.controlpanel.panels.datasource.DataSourceQueryConfiguration">&#128279;</a>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 5. Configuration Properties for <a href="../api/io/micronaut/controlpanel/panels/datasource/DataSourceQueryConfiguration.html">DataSourceQueryConfiguration</a></caption>
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Property</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Default value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.datasource.allow-writes</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">boolean</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Whether the datasource SQL console may run data-modifying statements (anything that is not a
+ {@code SELECT}/{@code WITH} query). Disabled by default so the console is read-only; enable it
+ only in a trusted development environment. Default: "false".</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+</tr>
+</tbody>
+</table>
+<div style="page-break-after: always;"></div>
+</div>
+<div class="sect2">
+<h3 id="_micronaut_control_panel_kafka_config_properties">Micronaut Control Panel Kafka Config Properties</h3>
+<a id="io.micronaut.controlpanel.panels.kafka.KafkaIntegrationConfiguration" href="#io.micronaut.controlpanel.panels.kafka.KafkaIntegrationConfiguration">&#128279;</a>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 6. Configuration Properties for <a href="../api/io/micronaut/controlpanel/panels/kafka/KafkaIntegrationConfiguration.html">KafkaIntegrationConfiguration</a></caption>
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Property</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Default value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.panels.kafka.integrations.schema-registry</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="../api/io/micronaut/controlpanel/panels/kafka/KafkaIntegrationConfiguration.Endpoint.html">KafkaIntegrationConfiguration$Endpoint</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The optional Schema Registry endpoint.</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.panels.kafka.integrations.connect</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="../api/io/micronaut/controlpanel/panels/kafka/KafkaIntegrationConfiguration.Endpoint.html">KafkaIntegrationConfiguration$Endpoint</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The optional Kafka Connect endpoint.</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.panels.kafka.integrations.ksqldb</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="../api/io/micronaut/controlpanel/panels/kafka/KafkaIntegrationConfiguration.Endpoint.html">KafkaIntegrationConfiguration$Endpoint</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The optional ksqlDB endpoint.</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+</tbody>
+</table>
+<div style="page-break-after: always;"></div>
+<a id="io.micronaut.controlpanel.panels.kafka.KafkaClusterWriteConfiguration" href="#io.micronaut.controlpanel.panels.kafka.KafkaClusterWriteConfiguration">&#128279;</a>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 7. Configuration Properties for <a href="../api/io/micronaut/controlpanel/panels/kafka/KafkaClusterWriteConfiguration.html">KafkaClusterWriteConfiguration</a></caption>
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Property</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Default value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.panels.kafka.writes.enabled</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">boolean</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Enables non-destructive Kafka write actions such as producing records and updating mutable resources.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.panels.kafka.writes.destructive-enabled</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">boolean</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Enables destructive Kafka write actions such as deleting topics, consumer groups, connectors, or schemas.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.panels.kafka.writes.max-message-value-bytes</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">int</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Maximum number of bytes allowed for a produced record value.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1048576</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.panels.kafka.writes.max-message-key-bytes</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">int</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Maximum number of bytes allowed for a produced record key.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1024</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.panels.kafka.writes.max-message-headers</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">int</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Maximum number of headers allowed on a produced record.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">20</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.panels.kafka.writes.max-message-header-key-bytes</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">int</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Maximum number of bytes allowed for each produced record header key.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">256</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.panels.kafka.writes.max-message-header-value-bytes</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">int</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Maximum number of bytes allowed for each produced record header value.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4096</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>micronaut.control-panel.panels.kafka.writes.actions</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="../api/io/micronaut/controlpanel/panels/kafka/KafkaClusterWriteConfiguration.Actions.html">KafkaClusterWriteConfiguration$Actions</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Per-action Kafka write toggles that can disable individual write operations after the top-level write gate is enabled.</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+</tbody>
+</table>
+<div style="page-break-after: always;"></div>
+</div>
+        </div>
+    </div>
+</body>
+</html>
