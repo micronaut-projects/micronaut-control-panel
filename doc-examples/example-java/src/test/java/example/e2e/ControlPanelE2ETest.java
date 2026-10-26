@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.condition.DisabledInNativeImage;
 
+import java.time.Duration;
 import java.util.regex.Pattern;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -28,6 +29,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Property(name = "kafka.streams.default.state.dir", value = "build/tmp/kafka-streams-e2e")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ControlPanelE2ETest extends AbstractE2ETest {
+
+    /** The narrowest layout breakpoint the dashboard stylesheet defines is 640px; this is below it. */
+    private static final int MOBILE_VIEWPORT_WIDTH = 390;
+    private static final int MOBILE_VIEWPORT_HEIGHT = 844;
+    private static final int DESKTOP_VIEWPORT_WIDTH = 1440;
+    private static final int DESKTOP_VIEWPORT_HEIGHT = 900;
+    private static final String THREAD_DUMP_MARKER_THREAD = "cp-e2e-thread-dump-marker";
 
     @Test
     void testDashboard(Page page) {
@@ -197,6 +205,72 @@ class ControlPanelE2ETest extends AbstractE2ETest {
 
         page.getByLabel("outcome").selectOption("outcome:success:demo");
         assertThat(page.locator("#metricMeasurements")).containsText("COUNT");
+    }
+
+    @Test
+    @DisabledInNativeImage
+    void testThreadDumpSearch(Page page) {
+        // The thread table stacks its cells below 640px. That layout must not resurrect the rows the shared filter
+        // hides, so this test measures rendered visibility (Playwright's :visible) rather than the hidden property.
+        Thread marker = startThreadDumpMarkerThread();
+        try {
+            page.setViewportSize(MOBILE_VIEWPORT_WIDTH, MOBILE_VIEWPORT_HEIGHT);
+            page.navigate(baseUrl() + "/threaddump");
+
+            Locator search = page.getByLabel("Search thread dump");
+            Locator rows = page.locator(".cp-thread-table tr[data-filter-table-row]");
+            Locator visibleRows = page.locator(".cp-thread-table tr[data-filter-table-row]:visible");
+            Locator emptyRow = page.locator(".cp-thread-table tr[data-filter-table-empty]");
+            int totalRows = rows.count();
+            assertTrue(totalRows > 1, "the thread dump panel must list several threads to filter");
+
+            assertThat(visibleRows).hasCount(totalRows);
+            assertThat(emptyRow).isHidden();
+
+            search.fill(THREAD_DUMP_MARKER_THREAD);
+            assertThat(visibleRows).hasCount(1);
+            assertThat(visibleRows).containsText(THREAD_DUMP_MARKER_THREAD);
+            assertThat(emptyRow).isHidden();
+
+            search.fill("zzz-no-such-thread-zzz");
+            assertThat(visibleRows).hasCount(0);
+            assertThat(emptyRow).isVisible();
+
+            search.fill("");
+            assertThat(visibleRows).hasCount(totalRows);
+            assertThat(emptyRow).isHidden();
+
+            // Desktop control: the same page at a width that keeps the regular table layout.
+            page.setViewportSize(DESKTOP_VIEWPORT_WIDTH, DESKTOP_VIEWPORT_HEIGHT);
+            search.fill("zzz-no-such-thread-zzz");
+            assertThat(visibleRows).hasCount(0);
+            assertThat(emptyRow).isVisible();
+
+            search.fill(THREAD_DUMP_MARKER_THREAD);
+            assertThat(visibleRows).hasCount(1);
+            assertThat(emptyRow).isHidden();
+        } finally {
+            marker.interrupt();
+        }
+    }
+
+    /**
+     * Starts a parked daemon thread whose name appears in exactly one row of the thread dump, so that a search for it
+     * has a deterministic single match.
+     *
+     * @return the started thread, which the caller must interrupt
+     */
+    private static Thread startThreadDumpMarkerThread() {
+        Thread marker = new Thread(() -> {
+            try {
+                Thread.sleep(Duration.ofMinutes(5));
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }, THREAD_DUMP_MARKER_THREAD);
+        marker.setDaemon(true);
+        marker.start();
+        return marker;
     }
 
     @Test
