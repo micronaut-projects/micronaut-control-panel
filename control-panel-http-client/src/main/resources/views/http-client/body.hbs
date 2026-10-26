@@ -1,0 +1,36 @@
+<div class="cp-data-table">
+    <div class="cp-data-table-container">
+        <table class="table cp-data-table-table">
+            <thead>
+                <tr>
+                    <th scope="col">Client</th>
+                    <th scope="col">Target</th>
+                    <th scope="col">Source</th>
+                    <th scope="col">Discovery</th>
+                </tr>
+            </thead>
+            <tbody>
+            {{#if body.diagnostics.hasClients}}
+                {{#each body.diagnostics.clients as |client|}}
+                    <tr tabindex="0">
+                        <td data-label="Client"><code class="cp-table-code">{{client.id}}</code></td>
+                        <td data-label="Target"><span class="badge {{client.target.badgeClass}}">{{client.target.kind}}</span> {{client.target.value}}</td>
+                        <td data-label="Source">{{client.source}}</td>
+                        <td data-label="Discovery">
+                            {{#if client.discovery.available}}
+                                <span class="badge badge-success">{{client.discovery.instances.size}} instances</span>
+                            {{else}}
+                                <span class="badge badge-secondary">Unavailable</span>
+                            {{/if}}
+                        </td>
+                    </tr>
+                {{/each}}
+            {{else}}
+                <tr>
+                    <td colspan="4">No Micronaut HTTP clients are visible in this application context.</td>
+                </tr>
+            {{/if}}
+            </tbody>
+        </table>
+    </div>
+</div>
