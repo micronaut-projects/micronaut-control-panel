@@ -59,37 +59,37 @@ class DataSourceControllerTest {
     }
 
     @Test
-    void schemaJs_returnsNotFound_whenPanelNotFound() {
+    void schema_returnsNotFound_whenPanelNotFound() {
         // Given
         doReturn(Map.of()).when(beanLocator).mapOfType(any(Argument.class));
 
         // When
         DataSourceController controller = controller();
-        HttpResponse<String> response = controller.schemaJs("unknown");
+        HttpResponse<Map<String, Object>> response = controller.schema("unknown");
 
         // Then
         assertEquals(404, response.getStatus().getCode());
     }
 
     @Test
-    void schemaJs_returnsJavaScript_whenPanelExists() throws Exception {
+    void schema_returnsJson_whenPanelExists() {
         // Given
         var service = mock(DataSourceService.class);
         doReturn(Map.of(DATA_SOURCE, service)).when(beanLocator).mapOfType(SERVICE_ARGUMENT);
-        doReturn("{\"schema1\":{\"EMP\":{\"self\":{\"label\":\"EMP\",\"type\":\"table\"},\"children\":[\"EMPNO\"]}}").when(jsonMapper).writeValueAsString(any());
-        doReturn("\"schema1\"").when(jsonMapper).writeValueAsString("schema1");
         mockPanel();
 
         // When
         DataSourceController controller = controller();
-        HttpResponse<String> response = controller.schemaJs(DATA_SOURCE);
+        HttpResponse<Map<String, Object>> response = controller.schema(DATA_SOURCE);
 
-        // Then
+        // Then the controller returns the schema object (Micronaut serializes it once) rather than
+        // executable JavaScript.
         assertEquals(200, response.getStatus().getCode());
-        assertEquals("application/javascript", response.getHeaders().getContentType().get());
-        String js = response.body();
-        assertTrue(js.contains("window.codemirror.schema"));
-        assertTrue(js.contains("schema1"));
+        assertEquals("application/json", response.getHeaders().getContentType().get());
+        Map<String, Object> body = response.body();
+        assertNotNull(body);
+        assertTrue(body.containsKey("schema"));
+        assertTrue(body.containsKey("defaultSchema"));
     }
 
     @Test

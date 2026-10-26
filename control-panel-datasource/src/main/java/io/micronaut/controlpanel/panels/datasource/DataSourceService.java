@@ -57,9 +57,11 @@ public class DataSourceService {
     private static final String NON_UNIQUE = "NON_UNIQUE";
     private static final Pattern MULTI_LINE_COMMENT = Pattern.compile("/\\*.*?\\*/", Pattern.DOTALL);
     private static final Pattern SINGLE_LINE_COMMENT = Pattern.compile("--.*", Pattern.MULTILINE);
+    private static final Pattern READ_ONLY_PREFIX = Pattern.compile("^(select|with)\\s", Pattern.CASE_INSENSITIVE);
 
     private final DataSource dataSource;
     private final List<ConnectionPoolInspector> connectionPoolInspectors;
+    private final boolean allowWrites;
 
     /**
      * Unwraps the datasource when a {@link DataSourceUnwrapper} is available, so that
@@ -68,18 +70,39 @@ public class DataSourceService {
      * @param dataSource the datasource this service inspects
      * @param unwrapper optional unwrapper, absent when no unwrapping strategy is on the classpath
      * @param connectionPoolInspectors inspectors contributing connection pool metadata
+     * @param queryConfiguration the datasource SQL console configuration
      * @since 2.0.1
      */
     @Inject
     public DataSourceService(@Parameter DataSource dataSource,
                              @Nullable DataSourceUnwrapper unwrapper,
+                             List<ConnectionPoolInspector> connectionPoolInspectors,
+                             DataSourceQueryConfiguration queryConfiguration) {
+        this(unwrapper == null ? dataSource : unwrapper.unwrap(dataSource), connectionPoolInspectors,
+            queryConfiguration != null && queryConfiguration.isAllowWrites());
+    }
+
+    /**
+     * Retained for binary compatibility with 2.0.1. Defaults to a read-only SQL console.
+     *
+     * @param dataSource the datasource this service inspects
+     * @param unwrapper optional unwrapper, absent when no unwrapping strategy is on the classpath
+     * @param connectionPoolInspectors inspectors contributing connection pool metadata
+     */
+    public DataSourceService(@Parameter DataSource dataSource,
+                             @Nullable DataSourceUnwrapper unwrapper,
                              List<ConnectionPoolInspector> connectionPoolInspectors) {
-        this(unwrapper == null ? dataSource : unwrapper.unwrap(dataSource), connectionPoolInspectors);
+        this(unwrapper == null ? dataSource : unwrapper.unwrap(dataSource), connectionPoolInspectors, false);
     }
 
     public DataSourceService(@Parameter DataSource dataSource, List<ConnectionPoolInspector> connectionPoolInspectors) {
+        this(dataSource, connectionPoolInspectors, false);
+    }
+
+    public DataSourceService(@Parameter DataSource dataSource, List<ConnectionPoolInspector> connectionPoolInspectors, boolean allowWrites) {
         this.dataSource = dataSource;
         this.connectionPoolInspectors = connectionPoolInspectors;
+        this.allowWrites = allowWrites;
     }
 
     public DataSourceService(@Parameter DataSource dataSource) {
@@ -330,13 +353,39 @@ public class DataSourceService {
             length = 0;
         }
 
-        String lowered = safeSql.trim().toLowerCase();
-        boolean isSelect = lowered.startsWith("select ") || lowered.startsWith("with ");
+        String lowered = safeSql.trim().toLowerCase(java.util.Locale.ROOT);
+        // Match the leading keyword followed by any whitespace (including newlines) so multiline
+        // queries such as "SELECT\n* FROM users" are correctly recognised as read-only.
+        boolean isSelect = READ_ONLY_PREFIX.matcher(lowered).find();
         if (LOG.isDebugEnabled()) {
             LOG.debug("Sanitized SQL='{}' (select={})", safeSql, isSelect);
         }
+        if (!isSelect && !allowWrites) {
+            throw new IllegalArgumentException(
+                "Only read-only SELECT/WITH queries are allowed. Set "
+                    + DataSourceQueryConfiguration.PROPERTY_ALLOW_WRITES
+                    + "=true to permit data-modifying statements.");
+        }
 
         try (var connection = dataSource.getConnection()) {
+            if (!allowWrites) {
+                // The statement-level SELECT/WITH check blocks top-level writes; a read-only
+                // connection additionally makes the database itself reject writes that begin with an
+                // allowed prefix, such as data-modifying CTEs (e.g. WITH x AS (DELETE ... RETURNING
+                // ...) ...) on databases that support them. This is more robust than scanning the
+                // SQL text, which cannot reliably account for dialect-specific quoting.
+                try {
+                    connection.setReadOnly(true);
+                } catch (SQLException e) {
+                    // Best effort: some drivers (for example Xerial SQLite) only honour read-only
+                    // mode when selected at connection creation and throw here, so an ordinary read
+                    // must still proceed. For strong guarantees, back the console datasource with a
+                    // read-only database account (see the module documentation).
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Unable to mark connection read-only: {}", e.getMessage());
+                    }
+                }
+            }
             int total = 0;
             List<String> cols = new ArrayList<>();
             List<QueryColumn> columns = new ArrayList<>();

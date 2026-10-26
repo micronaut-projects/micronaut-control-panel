@@ -42,6 +42,7 @@ public class DataSourceControlPanel extends AbstractEachBeanControlPanel<Body> {
 
     public static final String NAME = "datasource";
     public static final String DEFAULT_ICON_CLASS = "fas fa-database";
+    private static final String PASSWORD_MASK = "********";
     private static final Logger LOG = LoggerFactory.getLogger(DataSourceControlPanel.class);
 
     private final String beanName;
@@ -69,7 +70,8 @@ public class DataSourceControlPanel extends AbstractEachBeanControlPanel<Body> {
     private DataSourceInfo createDataSourceInfo(Environment env, String beanName, DataSourceService dataSourceService) {
         var jdbUrl = env.getProperty("datasources.%s.url".formatted(beanName), String.class, "");
         var username = env.getProperty("datasources.%s.username".formatted(beanName), String.class, "");
-        var password = env.getProperty("datasources.%s.password".formatted(beanName), String.class, "");
+        var rawPassword = env.getProperty("datasources.%s.password".formatted(beanName), String.class, "");
+        var password = maskPassword(rawPassword);
         var dialect = env.getProperty("datasources.%s.dialect".formatted(beanName), String.class, "");
         var dbType = env.getProperty("datasources.%s.db-type".formatted(beanName), String.class, "");
         var jdbcInfo = dataSourceService.getJdbcInfo();
@@ -116,6 +118,16 @@ public class DataSourceControlPanel extends AbstractEachBeanControlPanel<Body> {
     @Override
     public View getDetailedView() {
         return new View("/controlpanelviews/datasource/detail");
+    }
+
+    /**
+     * Masks a datasource password for display so it is never rendered in clear text in the UI.
+     *
+     * @param password the configured password, possibly empty
+     * @return a fixed mask when a password is configured, otherwise an empty string
+     */
+    private static String maskPassword(String password) {
+        return (password == null || password.isEmpty()) ? EMPTY_STRING : PASSWORD_MASK;
     }
 
     private static String safeUrl(String url) {
