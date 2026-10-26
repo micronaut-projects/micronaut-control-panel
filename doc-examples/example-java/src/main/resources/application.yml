@@ -28,6 +28,10 @@ micronaut:
       initial-capacity: 2
   application:
     name: myApplication
+  opensearch:
+    rest-client:
+      http-hosts:
+        - http://localhost:9200
 
 info:
   demo:

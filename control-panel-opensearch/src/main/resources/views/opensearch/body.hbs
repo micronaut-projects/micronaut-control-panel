@@ -1,0 +1,51 @@
+{{#with controlPanel.body as |body|}}
+    <div class="cp-data-table-container cp-vertical-table">
+        <table class="table cp-data-table-table">
+            <tbody>
+            <tr>
+                <th scope="row">Status</th>
+                <td><span class="badge {{body.statusBadgeClass}}">{{body.statusLabel}}</span></td>
+            </tr>
+            <tr>
+                <th scope="row">Transport</th>
+                <td><code class="cp-table-code">{{body.connection.transport}}</code></td>
+            </tr>
+            {{#if body.connection.hasHosts}}
+                <tr>
+                    <th scope="row">Hosts</th>
+                    <td>
+                        {{#each body.connection.hosts as |host|}}
+                            <code class="cp-table-code">{{host}}</code>
+                        {{/each}}
+                    </td>
+                </tr>
+            {{/if}}
+            {{#if body.connection.hasAmazon}}
+                <tr>
+                    <th scope="row">Amazon endpoint</th>
+                    <td><code class="cp-table-code">{{body.connection.amazonEndpoint}}</code></td>
+                </tr>
+                <tr>
+                    <th scope="row">Signing region</th>
+                    <td><code class="cp-table-code">{{body.connection.signingRegion}}</code></td>
+                </tr>
+            {{/if}}
+            {{#if body.available}}
+                <tr>
+                    <th scope="row">Cluster</th>
+                    <td><code class="cp-table-code">{{body.clusterHealth.clusterName}}</code></td>
+                </tr>
+                <tr>
+                    <th scope="row">Indices</th>
+                    <td>{{body.indices.size}} visible</td>
+                </tr>
+            {{else}}
+                <tr>
+                    <th scope="row">Diagnostics</th>
+                    <td>{{body.message}}</td>
+                </tr>
+            {{/if}}
+            </tbody>
+        </table>
+    </div>
+{{/with}}

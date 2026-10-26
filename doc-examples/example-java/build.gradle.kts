@@ -53,6 +53,10 @@ dependencies {
     // @MessageListener, an index type since Micronaut 5.2
     testRuntimeOnly(mn.micronaut.messaging)
 
+    // OpenSearch
+    implementation(projects.micronautControlPanelOpensearch)
+    implementation(mnOpensearch.micronaut.opensearch)
+
     // OpenAPI + Swagger UI (views generated at compile-time)
     annotationProcessor(mnOpenapi.micronaut.openapi)
     testAnnotationProcessor(mnOpenapi.micronaut.openapi)
@@ -67,6 +71,8 @@ dependencies {
     testImplementation(libs.playwright)
     testResourcesImplementation(mn.micronaut.jackson.databind)
     testRuntimeOnly(mnTest.junit.platform.suite)
+    testResourcesImplementation(mn.micronaut.discovery.core)
+    testResourcesImplementation(mn.micronaut.management)
 }
 
 micronaut {
