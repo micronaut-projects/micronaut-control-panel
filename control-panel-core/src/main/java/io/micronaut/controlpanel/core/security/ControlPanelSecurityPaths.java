@@ -30,6 +30,20 @@ import java.util.List;
 public final class ControlPanelSecurityPaths {
 
     public static final String CONTROL_PANEL = "${" + ControlPanelModuleConfiguration.PROPERTY_PATH + ":" + ControlPanelModuleConfiguration.DEFAULT_PATH + "}";
+    /**
+     * Filter pattern for the control panel path, including the server context path. Filters using it
+     * set {@code appendContextPath = false}: the context path is part of the pattern, joined the way
+     * the router joins it, because Micronaut skips prepending it to a pattern that merely starts with
+     * the same characters (context {@code /app}, control panel path {@code /application}). The
+     * pattern is rooted with {@code /} so that a path configured without a leading slash also
+     * matches; the Ant matcher ignores the empty segments this leaves for the other configurations.
+     */
+    public static final String CONTROL_PANEL_FILTER_PATTERN = "/${micronaut.server.context-path:}/" + CONTROL_PANEL;
+    /**
+     * Filter pattern for every route nested under {@link #CONTROL_PANEL_FILTER_PATTERN}, which
+     * includes the helper controllers listed by {@link #helperPaths()}.
+     */
+    public static final String CONTROL_PANEL_SUBPATHS_FILTER_PATTERN = CONTROL_PANEL_FILTER_PATTERN + "/**";
     public static final String CACHE_PATH = "/cache-control-panel-controller";
     public static final String DATASOURCE_PATH = "/datasource-control-panel-controller";
     public static final String HIBERNATE_PATH = "/hibernate-control-panel-controller";
@@ -44,6 +58,18 @@ public final class ControlPanelSecurityPaths {
     public static final String LOGGERS = CONTROL_PANEL + LOGGERS_PATH;
     public static final String OBJECT_STORAGE = CONTROL_PANEL + OBJECT_STORAGE_PATH;
     public static final String APPLICATION = CONTROL_PANEL + APPLICATION_PATH;
+
+    /**
+     * Name of the custom request header the control panel UI sends with its own fetch/XHR calls.
+     * A cross-site form or navigation cannot set a custom header, so requiring it blocks
+     * cross-site write requests.
+     */
+    public static final String REQUESTED_WITH_HEADER = "X-Requested-With";
+
+    /**
+     * Expected value of {@link #REQUESTED_WITH_HEADER} for control panel UI requests.
+     */
+    public static final String REQUESTED_WITH_VALUE = "micronaut-control-panel";
 
     private static final List<String> HELPER_PATHS = List.of(CACHE_PATH, DATASOURCE_PATH, HIBERNATE_PATH, KAFKA_PATH, LOGGERS_PATH, OBJECT_STORAGE_PATH, APPLICATION_PATH);
 

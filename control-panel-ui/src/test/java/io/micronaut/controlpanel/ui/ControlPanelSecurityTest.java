@@ -438,7 +438,7 @@ class ControlPanelSecurityTest {
             HttpClient client = server.getApplicationContext().createBean(HttpClient.class, server.getURL());
 
             assertEquals(HttpStatus.NO_CONTENT, client.toBlocking().exchange(
-                HttpRequest.POST(helperPath(ControlPanelSecurityPaths.LOGGERS_PATH, "/io.micronaut.controlpanel"), "{\"configuredLevel\":\"DEBUG\"}")
+                csrf(HttpRequest.POST(helperPath(ControlPanelSecurityPaths.LOGGERS_PATH, "/io.micronaut.controlpanel"), "{\"configuredLevel\":\"DEBUG\"}"))
             ).status());
 
             client.close();
@@ -476,7 +476,7 @@ class ControlPanelSecurityTest {
                 authenticatedRequest(HttpRequest.DELETE(helperPath(ControlPanelSecurityPaths.CACHE_PATH, "/demo")))
             ).status());
             assertEquals(HttpStatus.OK, client.toBlocking().exchange(
-                authenticatedRequest(HttpRequest.GET(helperPath(ControlPanelSecurityPaths.DATASOURCE_PATH, "/default/schema.js")))
+                authenticatedRequest(HttpRequest.GET(helperPath(ControlPanelSecurityPaths.DATASOURCE_PATH, "/default/schema")))
             ).status());
             assertEquals(HttpStatus.OK, client.toBlocking().exchange(
                 authenticatedRequest(HttpRequest.GET(helperPath(ControlPanelSecurityPaths.OBJECT_STORAGE_PATH, "/default/hello.txt")))
@@ -570,7 +570,7 @@ class ControlPanelSecurityTest {
     private static List<String> routedHelperPaths() {
         return List.of(
             helperPath(ControlPanelSecurityPaths.CACHE_PATH, "/demo"),
-            helperPath(ControlPanelSecurityPaths.DATASOURCE_PATH, "/default/schema.js"),
+            helperPath(ControlPanelSecurityPaths.DATASOURCE_PATH, "/default/schema"),
             helperPath(ControlPanelSecurityPaths.OBJECT_STORAGE_PATH, "/default/hello.txt")
         );
     }
@@ -596,7 +596,15 @@ class ControlPanelSecurityTest {
     private static MutableHttpRequest<?> authenticatedRequest(MutableHttpRequest<?> request,
                                                              String username,
                                                              String password) {
-        return request.header("Authorization", basicAuthorization(username, password));
+        return csrf(request).header("Authorization", basicAuthorization(username, password));
+    }
+
+    /**
+     * Adds the control panel UI request header so mutating requests pass the cross-site request
+     * filter, mirroring the header the UI sends with every fetch/XHR call.
+     */
+    private static MutableHttpRequest<?> csrf(MutableHttpRequest<?> request) {
+        return request.header(ControlPanelSecurityPaths.REQUESTED_WITH_HEADER, ControlPanelSecurityPaths.REQUESTED_WITH_VALUE);
     }
 
     private static HttpClientResponseException assertExchangeRejected(HttpClient client, MutableHttpRequest<?> request) {

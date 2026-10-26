@@ -43,7 +43,6 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -102,13 +101,30 @@ public final class DataSourceController {
      * </pre>
      *
      * @param dataSource The name of the datasource
-     * @return HttpResponse containing the generated schema.js JavaScript
+     * @return HttpResponse containing the schema as JSON
      */
-    @Get(value = "/{dataSource}/schema.js", produces = "application/javascript")
-    public HttpResponse<String> schemaJs(String dataSource) {
+    @Get(value = "/{dataSource}/schema", produces = MediaType.APPLICATION_JSON)
+    public HttpResponse<Map<String, Object>> schema(String dataSource) {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("schemaJs requested for dataSource='{}'", dataSource);
+            LOG.debug("schema requested for dataSource='{}'", dataSource);
         }
+        return schemaJson(dataSource);
+    }
+
+    /**
+     * Compatibility route for the former {@code schema.js} endpoint. It now returns the same
+     * non-executable JSON payload as {@link #schema(String)} rather than executable JavaScript, so
+     * it can no longer be loaded cross-site via a {@code <script src>} include.
+     *
+     * @param dataSource The name of the datasource
+     * @return HttpResponse containing the schema as JSON
+     */
+    @Get(value = "/{dataSource}/schema.js", produces = MediaType.APPLICATION_JSON)
+    public HttpResponse<Map<String, Object>> schemaJs(String dataSource) {
+        return schemaJson(dataSource);
+    }
+
+    private HttpResponse<Map<String, Object>> schemaJson(String dataSource) {
         var cachedSchema = schemas.get(dataSource);
         if (cachedSchema == null) {
             if (LOG.isDebugEnabled()) {
@@ -120,24 +136,17 @@ public final class DataSourceController {
         var schema = cachedSchema.schema;
         var defaultSchema = cachedSchema.defaultSchema;
 
-        try {
-            var schemaJson = jsonMapper.writeValueAsString(schema);
-            var defaultSchemaJson = jsonMapper.writeValueAsString(defaultSchema);
-            var js = "window.codemirror=window.codemirror||{};" +
-                     "window.codemirror.schema=" + schemaJson + ';' +
-                     "window.codemirror.defaultSchema=" + defaultSchemaJson + ';';
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("schemaJs built for dataSource='{}' with defaultSchema='{}' and {} tables", dataSource, defaultSchema, schema.getOrDefault(defaultSchema == null ? "" : defaultSchema, Map.of()).size());
-            }
-            return HttpResponse.ok(js)
-                .contentType(MediaType.of("application/javascript"))
-                .cacheControl(CacheControl.builder().noCache().build());
-        } catch (IOException e) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Failed to serialize schema for dataSource='{}': {}", dataSource, e.getMessage());
-            }
-            return HttpResponse.serverError();
+        // Return the map and let Micronaut serialize it once; returning a pre-serialized String with
+        // a JSON content type would double-encode the payload.
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("schema", schema);
+        payload.put("defaultSchema", defaultSchema);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("schema built for dataSource='{}' with defaultSchema='{}' and {} tables", dataSource, defaultSchema, schema.getOrDefault(defaultSchema == null ? "" : defaultSchema, Map.of()).size());
         }
+        return HttpResponse.ok(payload)
+            .contentType(MediaType.APPLICATION_JSON_TYPE)
+            .cacheControl(CacheControl.builder().noCache().build());
     }
 
     /**
@@ -243,7 +252,7 @@ public final class DataSourceController {
      * @param body The query request containing SQL and pagination parameters
      * @return The query results as a {@link HttpResponse} containing {@link QueryResponse}, or an error response if the query fails
      */
-    @Post(value = "/{dataSource}/query", produces = MediaType.APPLICATION_JSON)
+    @Post(value = "/{dataSource}/query", consumes = MediaType.APPLICATION_JSON, produces = MediaType.APPLICATION_JSON)
     public HttpResponse<QueryResponse> query(String dataSource, @Body QueryRequest body) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("query requested for dataSource='{}' (start={}, length={}, draw={}) sql='{}'", dataSource, body.start(), body.length(), body.draw(), body.sql());

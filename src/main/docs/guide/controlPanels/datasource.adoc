@@ -54,6 +54,26 @@ check the following documentation:
 * https://guides.micronaut.io/latest/micronaut-data-jdbc-repository.html[Access a database with Micronaut Data JDBC repositories].
 * https://guides.micronaut.io/latest/micronaut-jpa-hibernate.html[Access a database with JPA and Hibernate using Micronaut Data]
 
+== SQL Console Write Access
+
+The SQL console is read-only by default: only `SELECT` and `WITH` queries are executed. Data-modifying
+statements (`INSERT`, `UPDATE`, `DELETE`, DDL, and similar) are rejected unless you explicitly opt in.
+Enable them only in a trusted development environment:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    datasource:
+      allow-writes: true
+----
+
+In read-only mode the console rejects non-`SELECT`/`WITH` statements and additionally runs the query on a read-only
+JDBC connection where the driver supports it, so data-modifying statements that begin with an allowed prefix (such as
+data-modifying CTEs) are rejected by the database. Because a `SELECT` can still invoke side-effecting database functions
+and some drivers do not enforce read-only mode, point the console at a datasource backed by a read-only database account
+when exposing it in a less trusted environment.
+
 == Configuration
 
 The datasource control panel is automatically enabled when you include the `micronaut-control-panel-datasource` module in your project.

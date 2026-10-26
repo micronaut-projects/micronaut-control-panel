@@ -97,7 +97,9 @@ class DataSourceControlPanelTest {
         assertEquals(BEAN_NAME, info.name());
         assertEquals(expectedUrl, info.jdbcUrl());
         assertEquals(expectedUsername, info.username());
-        assertEquals(expectedPassword, info.password());
+        // The password must be masked, never surfaced in clear text, when one is configured.
+        assertEquals("********", info.password());
+        org.junit.jupiter.api.Assertions.assertNotEquals(expectedPassword, info.password());
         assertEquals(DatabaseType.POSTGRES, info.type());
     }
 
