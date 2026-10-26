@@ -17,6 +17,7 @@ package io.micronaut.controlpanel.core.security;
 
 import io.micronaut.controlpanel.core.config.ControlPanelModuleConfiguration;
 import io.micronaut.core.annotation.Internal;
+import io.micronaut.core.util.StringUtils;
 import io.micronaut.http.HttpMethod;
 import io.micronaut.http.HttpRequest;
 
@@ -64,7 +65,7 @@ public final class ControlPanelSecurityPaths {
      * @return true if the request mutates application/runtime state
      */
     public static boolean isWriteRequest(String controlPanelPath, HttpRequest<?> request) {
-        String path = request.getPath();
+        String path = StringUtils.trimTrailingSlashExceptRoot(request.getPath());
         HttpMethod method = request.getMethod();
         if (method == HttpMethod.DELETE) {
             return isHelperPath(controlPanelPath, CACHE_PATH, path)
