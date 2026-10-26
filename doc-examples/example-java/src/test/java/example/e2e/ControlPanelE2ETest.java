@@ -17,10 +17,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.condition.DisabledInNativeImage;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.regex.Pattern;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @UsePlaywright(ControlPanelBrowserOptions.class)
@@ -109,6 +113,108 @@ class ControlPanelE2ETest extends AbstractE2ETest {
 //        String href = viewerLink.getAttribute("href");
 //        var resp = httpClient.toBlocking().exchange(io.micronaut.http.HttpRequest.GET(href));
 //        assertEquals(HttpStatus.OK, resp.getStatus());
+    }
+
+    @Test
+    void testReactorDiagnostics(Page page) throws IOException {
+        page.setViewportSize(1440, 900);
+        page.navigate(baseUrl());
+        categoryLink(page, "Reactor").click();
+        controlPanelDetails(page, "Reactor Diagnostics").click();
+
+        assertThat(body(page)).containsText("Reactive routes");
+        assertThat(body(page)).containsText("/demo/reactor/mono");
+        assertThat(body(page)).containsText("/demo/reactor/sse");
+        assertThat(body(page)).containsText("single");
+        assertThat(body(page)).containsText("sse");
+        assertThat(body(page)).containsText("Context propagation artifact");
+        assertThat(body(page)).containsText("Endpoint URLs, headers, credentials");
+
+        Path screenshotDir = Path.of("build/reports/dev490");
+        Files.createDirectories(screenshotDir);
+        page.screenshot(new Page.ScreenshotOptions()
+            .setPath(screenshotDir.resolve("reactor-desktop.png")));
+
+        page.setViewportSize(390, 844);
+        page.evaluate("() => document.body.classList.remove('cp-sidebar-open')");
+        page.waitForFunction("""
+            () => {
+                const sidebar = document.querySelector(".cp-sidebar");
+                return window.matchMedia("(max-width: 1000px)").matches
+                    && sidebar
+                    && sidebar.getBoundingClientRect().right <= 1;
+            }
+            """);
+
+        assertFalse((Boolean) page.evaluate("() => document.body.classList.contains('cp-sidebar-open')"));
+        assertFalse(isVisible(page, ".cp-reactor-routes-table"));
+        assertTrue(isVisible(page, ".cp-reactor-route-cards"));
+        String monoRoute = routeCardText(page, "/demo/reactor/mono");
+        assertTrue(monoRoute.contains("DemoController.mono()"));
+        assertTrue(monoRoute.contains("reactor.core.publisher.Mono<java.lang.String>"));
+        page.getByLabel("Search reactive routes").fill("mono");
+        assertTrue(isRouteCardVisible(page, "/demo/reactor/mono"));
+        assertFalse(isRouteCardVisible(page, "/demo/reactor/sse"));
+        page.getByLabel("Search reactive routes").fill("");
+        assertTrue(isRouteCardVisible(page, "/demo/reactor/sse"));
+        scrollRouteCardIntoView(page, "/demo/reactor/mono");
+        page.screenshot(new Page.ScreenshotOptions()
+            .setPath(screenshotDir.resolve("reactor-mobile.png")));
+    }
+
+    private static boolean isVisible(Page page, String selector) {
+        return (Boolean) page.evaluate("""
+            selector => {
+                const element = document.querySelector(selector);
+                if (!element) {
+                    return false;
+                }
+                const style = window.getComputedStyle(element);
+                return !element.hidden
+                    && style.display !== "none"
+                    && style.visibility !== "hidden"
+                    && element.getClientRects().length > 0;
+            }
+            """, selector);
+    }
+
+    private static String routeCardText(Page page, String route) {
+        return String.valueOf(page.evaluate("""
+            route => {
+                const cards = Array.from(document.querySelectorAll(".cp-reactor-route-card"));
+                const card = cards.find(card => card.textContent.includes(route));
+                return card ? card.textContent : "";
+            }
+            """, route));
+    }
+
+    private static boolean isRouteCardVisible(Page page, String route) {
+        return (Boolean) page.evaluate("""
+            route => {
+                const cards = Array.from(document.querySelectorAll(".cp-reactor-route-card"));
+                const card = cards.find(card => card.textContent.includes(route));
+                if (!card) {
+                    return false;
+                }
+                const style = window.getComputedStyle(card);
+                return !card.hidden
+                    && style.display !== "none"
+                    && style.visibility !== "hidden"
+                    && card.getClientRects().length > 0;
+            }
+            """, route);
+    }
+
+    private static void scrollRouteCardIntoView(Page page, String route) {
+        page.evaluate("""
+            route => {
+                const cards = Array.from(document.querySelectorAll(".cp-reactor-route-card"));
+                const card = cards.find(card => card.textContent.includes(route));
+                if (card) {
+                    card.scrollIntoView({ block: "nearest" });
+                }
+            }
+            """, route);
     }
 
     @Test
