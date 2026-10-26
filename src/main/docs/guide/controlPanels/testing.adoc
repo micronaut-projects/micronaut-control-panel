@@ -1,0 +1,66 @@
+The Testing category holds the Continuous Testing panel. Continuous testing runs the project's tests in a process of its own, beside an application started in development mode: it compiles every change and runs the tests the change can affect, and serves a live HTML report of the latest result of every test.
+
+To add the Testing category, add the following dependency:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-testing[scope=developmentOnly]
+
+The panel is only shown in development mode, when `micronaut.dev.enabled` is `true`, as it is for an application started with `./gradlew mnDev`, `mvn mn:dev` or Pyronaut's development mode.
+
+== Continuous Testing
+
+When continuous testing is not running, the panel tells how to start it in a separate terminal, in the project directory, with the command of the project's build tool first:
+
+[cols="1,2"]
+|===
+|Build tool |Command
+
+|Gradle
+|`./gradlew mnTest`
+
+|Maven
+|`mvn mn:test`
+
+|Pyronaut
+|`pyronaut test -t`
+|===
+
+When it runs, the panel links to its live report, and shows:
+
+* whether a test run is in progress;
+* the result of the last run: the tests that passed, failed, errored and were skipped;
+* a change that does not compile;
+* the failing tests, with the first line of their failure message;
+* the recent runs.
+
+When continuous testing has stopped, the panel shows the results of the last report it wrote.
+
+=== How the panel finds continuous testing
+
+Continuous testing writes its report, `index.html` and `state.json`, to its report directory whenever a run starts or finishes. The panel reads `state.json` from the first of these directories that holds one:
+
+. `micronaut.control-panel.panels.continuous-testing.report-directory`;
+. `micronaut.dev.test.html-report`, when the application has it;
+. the directory with the latest report among those the build plugins use: `build/reports/tests/mnTest` (Gradle), `target/micronaut-dev/test-report` (Maven), `+__pyronaut__/reports/tests+` (Pyronaut) and `build/micronaut-dev/test-report`.
+
+Relative directories resolve against the project directory, by default the working directory of the application.
+
+Continuous testing runs when its LiveReload server serves the report of the project, by default at `http://localhost:35729/tests/`, or at the path `micronaut.dev.test.html-report-path` names. A report that names the process that writes it, by its id, `pid`, and the instant it started, `pidStartedAt`, is running as long as that process is alive.
+
+A report written without a live server, as when the application's own LiveReload server holds the port, does not tell whether continuous testing still runs: the panel then says that it may be running, shows the results of that report, and still tells how to start it. Give continuous testing a LiveReload port of its own, and set `live-reload-port` or `report-url` to it, to follow it live.
+
+The panel only connects to and links to HTTP addresses of the loopback interface.
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      continuous-testing:
+        report-directory: build/reports/tests/mnTest
+        report-url: http://localhost:35730/tests/
+        live-reload-port: 35729
+        probe-timeout: 500ms
+        max-failures: 50
+----
+
+include::{includedir}configurationProperties/io.micronaut.controlpanel.panels.testing.ContinuousTestingConfiguration.adoc[]
