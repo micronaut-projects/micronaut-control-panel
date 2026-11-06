@@ -10,6 +10,7 @@ import io.micronaut.context.annotation.Bean;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Property;
 import io.micronaut.context.annotation.Requires;
+import io.micronaut.controlpanel.core.security.ControlPanelSecurityPaths;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.client.HttpClient;
 import io.micronaut.http.client.annotation.Client;
@@ -58,7 +59,8 @@ class LangChain4jControlPanelTest {
     @Test
     void chatsWithAChatModel() {
         Map<?, ?> reply = client.toBlocking().retrieve(
-            HttpRequest.POST("/control-panel/langchain4j-control-panel-controller/chat", Map.of("model", "pirate", "text", "Hello")),
+            HttpRequest.POST("/control-panel/langchain4j-control-panel-controller/chat", Map.of("model", "pirate", "text", "Hello"))
+                .header(ControlPanelSecurityPaths.REQUESTED_WITH_HEADER, ControlPanelSecurityPaths.REQUESTED_WITH_VALUE),
             Map.class);
         assertEquals("Arr, Hello", reply.get("answer"));
     }

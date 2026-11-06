@@ -79,7 +79,7 @@ public final class HibernateController {
      * @param request the HQL query request
      * @return paged query results
      */
-    @Post(value = "/{sessionFactory}/hql", produces = MediaType.APPLICATION_JSON)
+    @Post(value = "/{sessionFactory}/hql", consumes = MediaType.APPLICATION_JSON, produces = MediaType.APPLICATION_JSON)
     public HttpResponse<Map<String, Object>> executeHql(String sessionFactory, @Body HqlQueryRequest request) {
         Optional<HibernateRuntimeService> service = Optional.ofNullable(services.get(sessionFactory));
         if (service.isEmpty()) {

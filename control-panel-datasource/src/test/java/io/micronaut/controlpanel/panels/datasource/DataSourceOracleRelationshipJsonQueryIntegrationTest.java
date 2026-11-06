@@ -73,7 +73,7 @@ class DataSourceOracleRelationshipJsonQueryIntegrationTest {
 
     @BeforeEach
     void setUpDatabase() {
-        dataSourceService = new DataSourceService(dataSource);
+        dataSourceService = new DataSourceService(dataSource, java.util.List.of(), true);
         dropTable("EMP");
         dropTable("DEPT");
         dataSourceService.executeQuery("""
