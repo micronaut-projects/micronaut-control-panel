@@ -1,0 +1,11 @@
+{{#with controlPanel.body }}
+    {{#each clients as |client|}}
+        <p class="card-text">
+            <code>{{client.name}}</code>
+            {{#if client.connected}}<span class="badge badge-secondary">connected</span>{{else}}<span class="badge badge-destructive">not connected</span>{{/if}}
+            <span class="text-muted">{{client.driver}} · {{client.servers.size}} servers</span>
+        </p>
+    {{else}}
+        <p class="card-text text-muted">No MongoDB clients.</p>
+    {{/each}}
+{{/with}}

@@ -1,0 +1,39 @@
+import io.micronaut.testresources.buildtools.KnownModules
+
+plugins {
+    io.micronaut.build.internal.`control-panel-module`
+    io.micronaut.`test-resources`
+}
+
+micronaut {
+    version = libs.versions.micronaut.platform.get()
+    testResources {
+        enabled = true
+        clientTimeout = 300
+        version = libs.versions.micronaut.testresources.get()
+        additionalModules.add(KnownModules.MONGODB)
+    }
+}
+
+dependencies {
+    api(projects.micronautControlPanelCore)
+
+    // The panel only makes sense in applications that already use Micronaut MongoDB, so it does not bring it in.
+    // Either driver works: the sync and reactive clients are read through separate beans guarded by @Requires.
+    compileOnly(mnMongo.micronaut.mongo.sync)
+    compileOnly(mnMongo.micronaut.mongo.reactive)
+
+    testImplementation(mnTest.micronaut.test.junit5)
+    testImplementation(mnMongo.micronaut.mongo.sync)
+    testImplementation(mnMongo.micronaut.mongo.reactive)
+    testRuntimeOnly(mnTest.junit.jupiter.engine)
+    testAnnotationProcessor(mn.micronaut.inject.java)
+}
+
+tasks.named("internalStartTestResourcesService") {
+    setProperty("useClassDataSharing", false)
+}
+
+micronautBuild {
+    binaryCompatibility.enabledAfter("2.3.0")
+}
