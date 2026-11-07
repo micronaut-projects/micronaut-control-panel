@@ -1,0 +1,68 @@
+{{#with controlPanel.body }}
+<div class="cp-dashboard-stack">
+    <div class="card card-light">
+        <div class="card-header">
+            <h3 class="card-title">MBean server</h3>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">Implementation</dt>
+                <dd class="col-sm-9">{{server}}</dd>
+                <dt class="col-sm-3">Default domain</dt>
+                <dd class="col-sm-9"><code>{{defaultDomain}}</code></dd>
+                <dt class="col-sm-3">MBeans</dt>
+                <dd class="col-sm-9">{{mbeanCount}}</dd>
+                <dt class="col-sm-3">Endpoint domain</dt>
+                <dd class="col-sm-9">{{#if settings.domain}}<code>{{settings.domain}}</code>{{else}}<span class="text-muted">default</span>{{/if}}</dd>
+                <dt class="col-sm-3">Endpoint MBeans</dt>
+                <dd class="col-sm-9">{{#if settings.registerEndpoints}}registered{{else}}<span class="badge badge-destructive">not registered</span> <span class="text-muted">(<code>jmx.register-endpoints</code> is <code>false</code>)</span>{{/if}}</dd>
+            </dl>
+            <p class="card-text">
+                {{#each domains as |domain|}}<span class="badge badge-secondary">{{domain.name}} · {{domain.mbeans}}</span> {{/each}}
+            </p>
+        </div>
+    </div>
+
+    {{#each endpoints as |endpoint|}}
+    <div class="card card-light">
+        <div class="card-header">
+            <h3 class="card-title"><code>{{endpoint.endpoint}}</code> endpoint</h3>
+        </div>
+        <div class="card-body">
+            <p class="card-text"><code class="cp-table-code">{{endpoint.objectName}}</code>{{#unless endpoint.registered}} <span class="badge badge-destructive">not registered</span>{{/unless}}</p>
+            {{#if endpoint.operations}}
+            <div class="cp-data-table-container">
+                <table class="table cp-data-table-table">
+                    <thead>
+                    <tr>
+                        <th>Operation</th>
+                        <th>Impact</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {{#each endpoint.operations as |operation|}}
+                        <tr>
+                            <td><code class="cp-table-code">{{operation.name}}({{operation.parameters}})</code><div class="text-muted">returns <code>{{operation.returnType}}</code></div></td>
+                            <td><span class="badge badge-secondary">{{operation.impact}}</span></td>
+                        </tr>
+                    {{/each}}
+                    </tbody>
+                </table>
+            </div>
+            {{/if}}
+            {{#if endpoint.attributes}}
+                <p class="card-text">Attributes: {{#each endpoint.attributes as |attribute|}}<code>{{attribute.name}}</code> <span class="text-muted">{{attribute.type}}, {{attribute.access}}</span> {{/each}}</p>
+            {{/if}}
+        </div>
+    </div>
+    {{else}}
+    <div class="card card-light">
+        <div class="card-body">
+            <p class="card-text text-muted">There are no management endpoints. Add <code>micronaut-management</code> to register them as MBeans.</p>
+        </div>
+    </div>
+    {{/each}}
+
+    <p class="text-muted mb-0">The panel only reads MBean metadata: operations are never invoked and attribute values are never read.</p>
+</div>
+{{/with}}

@@ -1,0 +1,32 @@
+The JMX control panel shows the MBean server of an application that uses
+https://micronaut-projects.github.io/micronaut-jmx/latest/guide/[Micronaut JMX], and the management endpoints that
+Micronaut JMX registers as MBeans.
+
+To add it, add the following dependency to an application that already uses Micronaut JMX:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-jmx[scope=developmentOnly]
+
+The panel shows:
+
+* The MBean server implementation and default domain, the number of MBeans, and the domains with their MBean counts.
+* The Micronaut JMX settings: the endpoint domain and whether endpoints are registered (`jmx.register-endpoints`).
+* For each management endpoint, its object name, whether it is registered, its operations with their parameter types,
+  return type and impact, and its attributes with their type and access.
+
+The panel only reads MBean metadata: it never invokes operations, never reads or writes attribute values, and never
+registers or unregisters MBeans. The metadata still describes the application, so like every panel it is meant for
+development and test environments behind the Control Panel's access controls.
+
+== Configuration
+
+The JMX control panel is enabled when you include the `micronaut-control-panel-jmx` module in a project that uses
+Micronaut JMX. You can disable it by setting:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      jmx:
+        enabled: false
+----

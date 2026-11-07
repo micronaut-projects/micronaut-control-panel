@@ -1,0 +1,4 @@
+{{#with controlPanel.body }}
+    <p class="card-text">{{mbeanCount}} MBeans in {{domains.size}} domains.</p>
+    <p class="card-text">{{registeredEndpoints}} of {{endpoints.size}} management endpoints registered as MBeans{{#unless settings.registerEndpoints}} <span class="badge badge-destructive">disabled</span>{{/unless}}.</p>
+{{/with}}
