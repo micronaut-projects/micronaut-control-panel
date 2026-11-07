@@ -4165,3 +4165,11 @@ body.cp-table-browser-resizing .cp-table-browser-splitter::before {
         font-weight: 650;
     }
 }
+
+/* Flyway panel */
+@media (max-width: 640px) {
+    .cp-flyway-table .cp-flyway-installed,
+    .cp-flyway-table .cp-flyway-time {
+        display: none;
+    }
+}

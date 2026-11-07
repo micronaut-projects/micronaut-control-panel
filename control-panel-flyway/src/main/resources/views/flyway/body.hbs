@@ -1,0 +1,11 @@
+{{#with controlPanel.body }}
+    {{#each schemas as |schema|}}
+        <p class="card-text">
+            <code>{{schema.name}}</code>
+            <span class="badge {{schema.badgeClass}}">{{schema.summary}}</span>
+            {{#if schema.currentVersion}}<span class="text-muted">version {{schema.currentVersion}}</span>{{/if}}
+        </p>
+    {{else}}
+        <p class="card-text text-muted">No Flyway configurations.</p>
+    {{/each}}
+{{/with}}
