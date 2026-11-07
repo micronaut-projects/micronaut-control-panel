@@ -4165,3 +4165,13 @@ body.cp-table-browser-resizing .cp-table-browser-splitter::before {
         font-weight: 650;
     }
 }
+
+/* R2DBC panel */
+.cp-r2dbc-pool-title {
+    font-size: 1rem;
+    margin: 1rem 0 0.5rem;
+}
+
+.cp-r2dbc-pool {
+    margin-top: 0.75rem;
+}

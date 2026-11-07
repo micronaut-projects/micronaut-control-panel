@@ -1,0 +1,64 @@
+{{#with controlPanel.body }}
+<div class="cp-dashboard-stack">
+    {{#each factories as |factory|}}
+    <div class="card card-light">
+        <div class="card-header">
+            <h3 class="card-title"><code>{{factory.name}}</code></h3>
+            <div class="card-tools">
+                {{#if factory.product}}<span class="badge badge-secondary">{{factory.product}}</span>{{/if}}
+            </div>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">Driver</dt>
+                <dd class="col-sm-9">{{#if factory.driver}}<code>{{factory.driver}}</code>{{else}}<span class="text-muted">—</span>{{/if}}</dd>
+                {{#if factory.protocol}}
+                    <dt class="col-sm-3">Protocol</dt>
+                    <dd class="col-sm-9"><code>{{factory.protocol}}</code></dd>
+                {{/if}}
+                {{#if factory.host}}
+                    <dt class="col-sm-3">Host</dt>
+                    <dd class="col-sm-9"><code>{{factory.host}}{{#if factory.port}}:{{factory.port}}{{/if}}</code></dd>
+                {{/if}}
+                <dt class="col-sm-3">Database</dt>
+                <dd class="col-sm-9">{{#if factory.database}}<code>{{factory.database}}</code>{{else}}<span class="text-muted">—</span>{{/if}}</dd>
+                <dt class="col-sm-3">User</dt>
+                <dd class="col-sm-9">{{#if factory.user}}<code>{{factory.user}}</code>{{else}}<span class="text-muted">—</span>{{/if}}</dd>
+                {{#if factory.ssl}}
+                    <dt class="col-sm-3">SSL</dt>
+                    <dd class="col-sm-9">{{factory.ssl}}</dd>
+                {{/if}}
+                {{#if factory.connectTimeout}}
+                    <dt class="col-sm-3">Connect timeout</dt>
+                    <dd class="col-sm-9">{{factory.connectTimeout}}</dd>
+                {{/if}}
+            </dl>
+            {{#if factory.pool}}
+                <h4 class="cp-r2dbc-pool-title">Pool</h4>
+                <div class="progress" role="progressbar" aria-label="Connections in use" aria-valuenow="{{factory.pool.usagePercent}}" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-bar bg-success" style="width: {{factory.pool.usagePercent}}%"></div>
+                </div>
+                <dl class="row cp-r2dbc-pool">
+                    <dt class="col-sm-3">In use</dt>
+                    <dd class="col-sm-9">{{factory.pool.acquired}} of {{factory.pool.maxAllocated}}</dd>
+                    <dt class="col-sm-3">Idle</dt>
+                    <dd class="col-sm-9">{{factory.pool.idle}}</dd>
+                    <dt class="col-sm-3">Open</dt>
+                    <dd class="col-sm-9">{{factory.pool.allocated}}</dd>
+                    <dt class="col-sm-3">Waiting</dt>
+                    <dd class="col-sm-9">{{factory.pool.pending}}{{#if factory.pool.maxPendingLimited}} of {{factory.pool.maxPending}}{{/if}}</dd>
+                </dl>
+            {{else}}
+                <p class="card-text text-muted">This connection factory is not an R2DBC pool, or its pool does not report metrics.</p>
+            {{/if}}
+        </div>
+    </div>
+    {{else}}
+    <div class="card card-light">
+        <div class="card-body">
+            <p class="card-text text-muted">There are no R2DBC connection factories. Configure one under <code>r2dbc.datasources</code>.</p>
+        </div>
+    </div>
+    {{/each}}
+</div>
+{{/with}}

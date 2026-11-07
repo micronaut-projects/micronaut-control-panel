@@ -1,0 +1,30 @@
+The R2DBC control panel shows the connection factories that https://micronaut-projects.github.io/micronaut-r2dbc/latest/guide/[Micronaut R2DBC] creates, and the state of their connection pools. It is listed in the Data Sources category.
+
+To add it, add the following dependency to an application that already uses Micronaut R2DBC:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-r2dbc[scope=developmentOnly]
+
+The panel shows one card for each entry under `r2dbc.datasources`, with:
+
+* The database product the driver reports.
+* The driver, protocol, host, port, database, user, SSL and connect timeout options.
+* For pooled connection factories (`r2dbc:pool:` URLs, backed by `r2dbc-pool`), the connections in use, idle and open,
+  and the subscribers waiting for a connection.
+
+The panel does not open connections, and it only reads the options listed above, so the password and driver-specific
+options, which can carry secrets, are never shown. To check that the database is reachable, use the `/health`
+endpoint, which runs the R2DBC health check.
+
+== Configuration
+
+The R2DBC control panel is enabled when you include the `micronaut-control-panel-r2dbc` module in a project that uses
+Micronaut R2DBC. You can disable it by setting:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      r2dbc:
+        enabled: false
+----
