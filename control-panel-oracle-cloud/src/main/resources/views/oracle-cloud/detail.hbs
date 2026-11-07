@@ -1,0 +1,89 @@
+{{#with controlPanel.body }}
+<div class="cp-dashboard-stack">
+    {{#unless authentication}}
+        {{#if candidates}}
+            <div class="alert alert-warning mb-0">More than one authentication provider is available and none of them is primary, so the SDK clients cannot be created. Configure only one of them.</div>
+        {{else}}
+            <div class="alert alert-warning mb-0">No authentication provider is available. Add an OCI configuration file, or configure an API key, instance principal or resource principal.</div>
+        {{/if}}
+    {{/unless}}
+
+    <div class="card card-light">
+        <div class="card-header">
+            <h3 class="card-title">Authentication</h3>
+        </div>
+        <div class="card-body">
+            {{#if authentication}}
+                <p class="card-text">{{authentication.label}} {{#if authentication.created}}<span class="badge badge-success">created</span>{{else}}<span class="badge badge-secondary">not created yet</span>{{/if}}</p>
+                <p class="card-text"><code class="cp-table-code">{{authentication.type}}</code></p>
+            {{/if}}
+            {{#if profile}}<p class="card-text"><span class="text-muted">Profile</span> <code>{{profile}}</code>{{#if customConfigPath}} <span class="text-muted">from a custom configuration file</span>{{/if}}</p>{{/if}}
+            <p class="card-text"><span class="text-muted">Region</span> {{#if region}}<code>{{region}}</code>{{else}}<span class="text-muted">read when the provider is created</span>{{/if}}</p>
+            <p class="card-text"><span class="text-muted">HTTP client</span> {{httpProvider}}</p>
+            {{#if candidates}}
+                <p class="card-text text-muted">Available providers:</p>
+                {{#each candidates as |candidate|}}
+                    <p class="card-text">{{candidate.label}} <code class="cp-table-code">{{candidate.type}}</code></p>
+                {{/each}}
+            {{/if}}
+        </div>
+    </div>
+
+    <div class="card card-light">
+        <div class="card-header">
+            <h3 class="card-title">SDK clients</h3>
+        </div>
+        <div class="card-body">
+            {{#if clients}}
+            <div class="cp-data-table" data-filter-table data-filter-table-label="client" data-filter-table-label-plural="clients">
+                <div class="cp-data-table-toolbar">
+                    <div class="cp-data-table-summary" data-filter-table-summary>{{clients.size}} clients</div>
+                    <div class="cp-data-table-search">
+                        <input type="search" class="form-control" data-filter-table-search placeholder="Search services or endpoints" aria-label="Search SDK clients">
+                    </div>
+                </div>
+                <div class="cp-data-table-container">
+                    <table class="table cp-data-table-table">
+                        <thead>
+                        <tr>
+                            <th>Service and endpoint</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {{#each clients as |client|}}
+                            <tr data-filter-table-row>
+                                <td>
+                                    <div><span title="{{client.type}}">{{client.service}}</span>{{#if client.async}} <span class="badge badge-secondary">async</span>{{/if}}</div>
+                                    <div>{{#if client.created}}<code class="cp-table-code">{{client.endpoint}}</code>{{else}}<span class="text-muted">not created yet</span>{{/if}}</div>
+                                </td>
+                            </tr>
+                        {{/each}}
+                        <tr data-filter-table-empty hidden>
+                            <td class="cp-data-table-empty-cell" colspan="1">No clients match your search.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {{else}}
+                <p class="card-text text-muted">There are no OCI SDK clients. Add a module such as <code>micronaut-oraclecloud-bmc-objectstorage</code>.</p>
+            {{/if}}
+        </div>
+    </div>
+
+    {{#if clientConfigurations}}
+    <div class="card card-light">
+        <div class="card-header">
+            <h3 class="card-title">Client configuration</h3>
+        </div>
+        <div class="card-body">
+            {{#each clientConfigurations as |configuration|}}
+                <p class="card-text"><code>{{configuration.name}}</code>{{#if configuration.connectTimeout}} <span class="text-muted">connect timeout</span> {{configuration.connectTimeout}}{{/if}}{{#if configuration.readTimeout}} <span class="text-muted">read timeout</span> {{configuration.readTimeout}}{{/if}}</p>
+            {{/each}}
+        </div>
+    </div>
+    {{/if}}
+
+    <p class="text-muted mb-0">The panel never creates an authentication provider or a client, and it does not send requests to Oracle Cloud. Keys, passphrases, fingerprints, OCIDs and the path of the OCI configuration file are not shown.</p>
+</div>
+{{/with}}
