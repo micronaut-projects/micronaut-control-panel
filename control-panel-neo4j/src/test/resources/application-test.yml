@@ -1,0 +1,15 @@
+neo4j:
+  uri: 'bolt://${neo4j.host}:${neo4j.port}'
+test-resources:
+  containers:
+    neo4j:
+      image-name: neo4j:5.26-community
+      hostnames:
+        - neo4j.host
+      exposed-ports:
+        - neo4j.port: 7687
+      env:
+        - NEO4J_AUTH: none
+      wait-strategy:
+        log:
+          regex: '.*Started\..*'

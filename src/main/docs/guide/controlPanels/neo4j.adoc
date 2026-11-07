@@ -1,0 +1,37 @@
+The Neo4j control panel shows the Neo4j server of an application that uses
+https://micronaut-projects.github.io/micronaut-neo4j/latest/guide/[Micronaut Neo4j]. It is listed in the Data Sources
+category.
+
+To add it, add the following dependency to an application that already uses Micronaut Neo4j:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-neo4j[scope=developmentOnly]
+
+The dashboard card shows the configured URI and whether the application has created a driver. It only reads the
+configuration, so rendering the dashboard does not query Neo4j.
+
+The detail view shows:
+
+* The URI, whether credentials are configured, and the server name, version and edition.
+* The databases and their status, and which one is the default.
+* The number of nodes and relationships in the default database, and its labels and relationship types (up to 50 of
+  each).
+
+To build the detail view, the panel runs a few read-only queries in parallel, in read sessions with a 3 second
+transaction timeout, and gives up after 3 seconds. The node and relationship counts are answered from Neo4j's count
+store, so they do not scan the graph. If the server cannot be read, the panel shows the type of error or the Neo4j
+status code, and logs the details at `DEBUG` level under `io.micronaut.controlpanel.panels.neo4j`. Credentials are never
+shown, and the URI is shown without user info or query string.
+
+== Configuration
+
+The Neo4j control panel is enabled when you include the `micronaut-control-panel-neo4j` module in a project that uses
+Micronaut Neo4j. You can disable it by setting:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      neo4j:
+        enabled: false
+----

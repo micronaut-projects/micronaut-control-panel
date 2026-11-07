@@ -10,6 +10,7 @@ controlPanels:
   datasource: Datasource
   hibernate: Hibernate
   kafka: Kafka
+  neo4j: Neo4j
 
 custom: Creating Custom Control Panels
 repository: Repository
