@@ -1,0 +1,11 @@
+{{#with controlPanel.body }}
+    {{#if client}}
+        <p class="card-text"><code>{{client.serviceUrl}}</code></p>
+    {{else}}
+        <p class="card-text text-muted">Pulsar is not configured.</p>
+    {{/if}}
+    <p class="card-text">
+        {{consumers.size}} consumers{{#if disconnectedConsumers}} <span class="badge badge-destructive">{{disconnectedConsumers}} disconnected</span>{{/if}},
+        {{producers.size}} producers, {{readers.size}} readers.
+    </p>
+{{/with}}
