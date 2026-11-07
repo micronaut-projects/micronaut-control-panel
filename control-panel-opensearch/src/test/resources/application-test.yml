@@ -1,0 +1,21 @@
+micronaut:
+  opensearch:
+    httpclient5:
+      http-hosts: 'http://${opensearch.host}:${opensearch.port}'
+test-resources:
+  containers:
+    opensearch:
+      image-name: opensearchproject/opensearch:2.19.2
+      hostnames:
+        - opensearch.host
+      exposed-ports:
+        - opensearch.port: 9200
+      env:
+        - discovery.type: single-node
+        - DISABLE_SECURITY_PLUGIN: 'true'
+        - DISABLE_INSTALL_DEMO_CONFIG: 'true'
+        - OPENSEARCH_JAVA_OPTS: '-Xms512m -Xmx512m'
+        - cluster.routing.allocation.disk.threshold_enabled: 'false'
+      wait-strategy:
+        log:
+          regex: '.*\] started.*'

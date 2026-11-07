@@ -1,0 +1,38 @@
+The OpenSearch control panel shows the OpenSearch cluster of an application that uses
+https://micronaut-projects.github.io/micronaut-opensearch/latest/guide/[Micronaut OpenSearch]. It is listed in the
+Data Sources category.
+
+To add it, add the following dependency to an application that already uses Micronaut OpenSearch:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-opensearch[scope=developmentOnly]
+
+The panel works with both transports of Micronaut OpenSearch, Apache HttpClient 5 and the REST client.
+
+The dashboard card shows the configured hosts and whether the application has created a client. It only reads the
+configuration, so rendering the dashboard does not send requests to OpenSearch.
+
+The detail view shows:
+
+* The cluster name, OpenSearch version and health, the number of nodes, and the active and unassigned shards.
+* The open indices, apart from hidden and system ones, with their health, document count, size, and primary and replica
+  shards. Up to 100 indices are listed.
+
+To build the detail view, the panel sends three read-only requests (cluster info, cluster health and the index list) in
+parallel and gives up after 3 seconds. If the cluster cannot be read, the panel shows the type of error, such as
+`ConnectException` or the HTTP status, and logs the details at `DEBUG` level under
+`io.micronaut.controlpanel.panels.opensearch`. Hosts are shown without user info, and the server's error messages are
+never rendered.
+
+== Configuration
+
+The OpenSearch control panel is enabled when you include the `micronaut-control-panel-opensearch` module in a
+project that uses Micronaut OpenSearch. You can disable it by setting:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      opensearch:
+        enabled: false
+----
