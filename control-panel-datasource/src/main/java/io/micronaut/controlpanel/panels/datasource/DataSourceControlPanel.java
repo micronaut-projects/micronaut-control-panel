@@ -36,16 +36,27 @@ import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
 
 /**
  * Control panel for DataSource metadata, displaying tables, columns, keys, etc.
+ *
+ * <p>An individual datasource can be hidden with
+ * {@code micronaut.control-panel.panels.datasource.datasources.<name>.enabled=false}. A hidden datasource is never
+ * inspected: no metadata query is run against it, and its connection settings are not exposed.</p>
  */
 @EachBean(DataSource.class)
 public class DataSourceControlPanel extends AbstractEachBeanControlPanel<Body> {
 
     public static final String NAME = "datasource";
+    /**
+     * Prefix of the per-datasource settings, for example {@code <prefix>.<name>.enabled}.
+     *
+     * @since 2.3.0
+     */
+    public static final String DATASOURCES_PREFIX = ControlPanelConfiguration.PREFIX + "." + NAME + ".datasources";
     public static final String DEFAULT_ICON_CLASS = "fas fa-database";
     private static final String PASSWORD_MASK = "********";
     private static final Logger LOG = LoggerFactory.getLogger(DataSourceControlPanel.class);
 
     private final String beanName;
+    private final boolean dataSourceEnabled;
     private final List<Table> tables;
     private final Body body;
     private final DataSourceInfo dataSourceInfo;
@@ -58,6 +69,14 @@ public class DataSourceControlPanel extends AbstractEachBeanControlPanel<Body> {
         this.beanName = beanName;
         if (LOG.isDebugEnabled()) {
             LOG.debug("Initializing DataSourceControlPanel for bean='{}'", beanName);
+        }
+        this.dataSourceEnabled = environment.getProperty(enabledProperty(beanName), Boolean.class).orElse(Boolean.TRUE);
+        if (!dataSourceEnabled) {
+            LOG.debug("DataSourceControlPanel disabled for bean='{}'", beanName);
+            this.tables = List.of();
+            this.dataSourceInfo = new DataSourceInfo(beanName, EMPTY_STRING, EMPTY_STRING, EMPTY_STRING, DatabaseType.GENERIC);
+            this.body = new Body(dataSourceInfo, tables, EMPTY_STRING);
+            return;
         }
         this.tables = dataSourceService.getTables();
         this.dataSourceInfo = createDataSourceInfo(environment, beanName, dataSourceService);
@@ -80,6 +99,27 @@ public class DataSourceControlPanel extends AbstractEachBeanControlPanel<Body> {
             LOG.debug("Resolved datasource props for bean='{}': url='{}', user='{}', dialect='{}', dbType='{}'", beanName, safeUrl(jdbUrl), safeUser(username), dialect, dbType);
         }
         return new DataSourceInfo(beanName, jdbUrl, username, password, DatabaseType.of(dialect, dbType), jdbcInfo);
+    }
+
+    /**
+     * Returns the property that hides an individual datasource from the control panel.
+     *
+     * @param dataSourceName the datasource bean name
+     * @return the property name
+     * @since 2.3.0
+     */
+    public static String enabledProperty(String dataSourceName) {
+        return DATASOURCES_PREFIX + "." + dataSourceName + ".enabled";
+    }
+
+    /**
+     * Whether this panel is shown: the datasource panel must be enabled, and so must this individual datasource.
+     *
+     * @return whether this panel is enabled
+     */
+    @Override
+    public boolean isEnabled() {
+        return dataSourceEnabled && super.isEnabled();
     }
 
     @Override

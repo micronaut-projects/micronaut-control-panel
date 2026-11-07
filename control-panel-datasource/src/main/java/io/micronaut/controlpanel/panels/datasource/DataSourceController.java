@@ -51,6 +51,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * REST controller to execute SQL queries against a specific DataSource for the Control Panel.
@@ -82,9 +83,15 @@ public final class DataSourceController {
     private final ControlPanelRenderer renderer;
 
     public DataSourceController(BeanLocator locator, JsonMapper jsonMapper, ControlPanelRenderer renderer) {
-        // Map keyed by bean name (datasource name)
-        this.services = locator.mapOfType(SERVICE_ARGUMENT);
-        this.panels = locator.mapOfType(PANEL_ARGUMENT);
+        // Maps keyed by bean name (datasource name). Hidden datasources are left out, so their schema, tables, pool
+        // and query routes answer 404 like an unknown datasource.
+        Map<String, DataSourceControlPanel> allPanels = locator.mapOfType(PANEL_ARGUMENT);
+        this.panels = allPanels.entrySet().stream()
+            .filter(entry -> entry.getValue().isEnabled())
+            .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
+        this.services = locator.mapOfType(SERVICE_ARGUMENT).entrySet().stream()
+            .filter(entry -> !allPanels.containsKey(entry.getKey()) || panels.containsKey(entry.getKey()))
+            .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
         this.schemas = computeSchemas();
         this.jsonMapper = jsonMapper;
         this.renderer = renderer;

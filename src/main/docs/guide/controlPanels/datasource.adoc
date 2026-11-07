@@ -87,3 +87,20 @@ micronaut:
       datasource:
         enabled: false
 ----
+
+To hide a single datasource while keeping the others visible, disable it by name. This is useful when a datasource
+points at a database whose schema should not be inspected, or whose account must not run ad hoc queries:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      datasource:
+        datasources:
+          reporting:
+            enabled: false
+----
+
+A hidden datasource is never inspected: the control panel runs no metadata queries against it, does not show its
+connection settings, and its table, schema, pool, and query routes respond with `404 Not Found`.

@@ -23,6 +23,7 @@ import io.micronaut.controlpanel.panels.datasource.model.DataSourceInfo;
 import io.micronaut.controlpanel.panels.datasource.model.DatabaseType;
 import io.micronaut.controlpanel.panels.datasource.model.PoolInfo;
 import io.micronaut.controlpanel.panels.datasource.model.Table;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -51,6 +52,11 @@ class DataSourceControlPanelTest {
     private static final String BEAN_NAME = "testDataSource";
     private static final List<Table> EMPTY_TABLE_LIST = List.of();
     private static final String MERMAID_ER = "erDiagram\n  TABLE1 ||--o{ TABLE2 : \"has\"";
+
+    @BeforeEach
+    void dataSourceEnabledByDefault() {
+        lenient().when(environment.getProperty(anyString(), eq(Boolean.class))).thenReturn(Optional.empty());
+    }
 
     @Test
     void constructorInitializesFieldsCorrectly() {
@@ -178,6 +184,41 @@ class DataSourceControlPanelTest {
         when(environment.getProperty("datasources." + BEAN_NAME + ".db-type", String.class, "")).thenReturn("");
         DataSourceControlPanel defaultPanel = new DataSourceControlPanel(BEAN_NAME, dataSourceService, environment, configuration);
         assertEquals(DataSourceControlPanel.DEFAULT_ICON_CLASS, defaultPanel.getIcon());
+    }
+
+    @Test
+    void hiddenDataSourceIsNeitherInspectedNorExposed() {
+        // Given
+        when(environment.getProperty(DataSourceControlPanel.enabledProperty(BEAN_NAME), Boolean.class)).thenReturn(Optional.of(false));
+
+        // When
+        DataSourceControlPanel panel = new DataSourceControlPanel(BEAN_NAME, dataSourceService, environment, configuration);
+
+        // Then
+        assertFalse(panel.isEnabled());
+        DataSourceInfo info = panel.getBody().dataSourceInfo();
+        assertEquals(BEAN_NAME, info.name());
+        assertEquals("", info.jdbcUrl());
+        assertEquals("", info.username());
+        assertEquals("", info.password());
+        assertTrue(panel.getBody().tables().isEmpty());
+        verifyNoInteractions(dataSourceService);
+        verify(environment, never()).getProperty("datasources." + BEAN_NAME + ".url", String.class, "");
+    }
+
+    @Test
+    void dataSourceIsEnabledByDefault() {
+        // Given
+        when(environment.getProperty(DataSourceControlPanel.enabledProperty(BEAN_NAME), Boolean.class)).thenReturn(Optional.empty());
+        when(environment.getProperty(anyString(), eq(String.class), eq(""))).thenReturn("");
+        when(configuration.isEnabled()).thenReturn(true);
+
+        // When
+        DataSourceControlPanel panel = new DataSourceControlPanel(BEAN_NAME, dataSourceService, environment, configuration);
+
+        // Then
+        assertTrue(panel.isEnabled());
+        assertEquals("micronaut.control-panel.panels.datasource.datasources." + BEAN_NAME + ".enabled", DataSourceControlPanel.enabledProperty(BEAN_NAME));
     }
 
     @Test
