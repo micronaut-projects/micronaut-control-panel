@@ -1,0 +1,34 @@
+The Views control panel shows how https://micronaut-projects.github.io/micronaut-views/latest/guide/[Micronaut Views]
+renders server-side views in an application.
+
+To add it, add the following dependency to an application that already uses Micronaut Views:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-views[scope=developmentOnly]
+
+The dashboard card lists the views renderers, the number of routes that render a view, and the templates folder. The
+detail view shows:
+
+* Each route that renders a view: routes annotated with `@View`, and routes that return a `ModelAndView`, which pick
+  the view themselves. For each `@View` route, the panel asks the renderers whether the template exists, and warns
+  when it is missing.
+* The configuration: the templates folder (`micronaut.views.folder`), whether the views filter is enabled, and the
+  Content Security Policy settings when the CSP filter is enabled.
+* The views renderers, with the media types they produce.
+* The beans that change the model before it is rendered, such as `ViewModelProcessor` and `ViewsModelDecorator` beans.
+
+The panel does not call controllers or render templates, and it does not read requests, sessions or models. Looking up
+a template only asks each renderer whether it exists, and this is done in the detail view only.
+
+== Configuration
+
+The Views control panel is enabled when you include the `micronaut-control-panel-views` module in a project that uses
+Micronaut Views. You can disable it by setting:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      views:
+        enabled: false
+----
