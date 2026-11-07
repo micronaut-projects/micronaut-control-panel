@@ -17,7 +17,6 @@ package io.micronaut.controlpanel.panels.langchain4j;
 
 import dev.langchain4j.model.chat.ChatModel;
 import io.micronaut.context.BeanContext;
-import io.micronaut.context.BeanRegistration;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.controlpanel.core.security.ControlPanelSecurityPaths;
 import io.micronaut.controlpanel.core.security.ControlPanelWriteAccess;
@@ -32,23 +31,26 @@ import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.scheduling.TaskExecutors;
 import io.micronaut.scheduling.annotation.ExecuteOn;
+import io.micronaut.inject.BeanDefinition;
 import io.micronaut.serde.annotation.Serdeable;
 
 import java.util.Optional;
 
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Sends the messages of the chat of the control panel to a chat model.
  */
-@Controller(ControlPanelSecurityPaths.CONTROL_PANEL + LangChain4jControlPanelController.PATH)
+@Controller(ControlPanelSecurityPaths.LANGCHAIN4J)
 @ExecuteOn(TaskExecutors.BLOCKING)
 @Internal
 @Requires(classes = ChatModel.class)
 @Requires(property = LangChain4jControlPanel.ENABLED_PROPERTY, value = StringUtils.TRUE, defaultValue = StringUtils.TRUE)
 final class LangChain4jControlPanelController {
 
-    static final String PATH = "/langchain4j-control-panel-controller";
+    private static final Logger LOG = LoggerFactory.getLogger(LangChain4jControlPanelController.class);
 
     private final BeanContext beanContext;
     private final ControlPanelWriteAccessEvaluator writeAccessEvaluator;
@@ -72,17 +74,22 @@ final class LangChain4jControlPanelController {
         if (!writeAccess.allowed()) {
             return HttpResponse.<ChatReply>status(HttpStatus.FORBIDDEN).body(new ChatReply(null, writeAccess.reason()));
         }
-        Optional<ChatModel> model = beanContext.getBeanRegistrations(ChatModel.class).stream()
-            .filter(registration -> LangChain4jControlPanel.name(registration).equals(message.model()))
-            .map(BeanRegistration::getBean)
+        String text = message.text();
+        if (text == null || text.isBlank()) {
+            return HttpResponse.badRequest(new ChatReply(null, "The message is empty"));
+        }
+        Optional<BeanDefinition<ChatModel>> definition = beanContext.getBeanDefinitions(ChatModel.class).stream()
+            .filter(candidate -> LangChain4jControlPanel.name(candidate).equals(message.model()))
             .findFirst();
-        if (model.isEmpty()) {
+        if (definition.isEmpty()) {
             return HttpResponse.notFound(new ChatReply(null, "No chat model named " + message.model()));
         }
         try {
-            return HttpResponse.ok(new ChatReply(model.get().chat(message.text()), null));
+            return HttpResponse.ok(new ChatReply(beanContext.getBean(definition.get()).chat(text), null));
         } catch (RuntimeException e) {
-            return HttpResponse.<ChatReply>serverError().body(new ChatReply(null, e.getMessage()));
+            // what a provider fails with can hold the endpoint, the deployment or the headers of the request
+            LOG.error("The chat model {} failed", message.model(), e);
+            return HttpResponse.<ChatReply>serverError().body(new ChatReply(null, "The chat model failed with " + e.getClass().getSimpleName() + ", see the application log"));
         }
     }
 
@@ -93,7 +100,7 @@ final class LangChain4jControlPanelController {
      * @param text The message
      */
     @Serdeable
-    record ChatMessage(String model, String text) {
+    record ChatMessage(String model, @Nullable String text) {
     }
 
     /**

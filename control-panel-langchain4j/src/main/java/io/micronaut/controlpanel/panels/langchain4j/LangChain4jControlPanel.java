@@ -23,13 +23,13 @@ import dev.langchain4j.model.image.ImageModel;
 import dev.langchain4j.model.scoring.ScoringModel;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 import io.micronaut.context.BeanContext;
-import io.micronaut.context.BeanRegistration;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.controlpanel.core.AbstractControlPanel;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.core.annotation.Internal;
 import io.micronaut.core.annotation.ReflectiveAccess;
 import io.micronaut.core.util.StringUtils;
+import io.micronaut.inject.BeanDefinition;
 import io.micronaut.inject.qualifiers.Qualifiers;
 import io.micronaut.langchain4j.annotation.AiService;
 import io.micronaut.langchain4j.tools.ToolRegistry;
@@ -113,8 +113,9 @@ public final class LangChain4jControlPanel extends AbstractControlPanel<LangChai
     }
 
     private <T> List<Model> models(Class<T> type) {
-        return beanContext.getBeanRegistrations(type).stream()
-            .map(registration -> new Model(name(registration), registration.getBean().getClass().getName()))
+        // the definitions only: rendering the panel must not create the beans, which can connect to a store
+        return beanContext.getBeanDefinitions(type).stream()
+            .map(definition -> new Model(name(definition), definition.getBeanType().getName()))
             .sorted(Comparator.comparing(Model::name))
             .toList();
     }
@@ -132,8 +133,10 @@ public final class LangChain4jControlPanel extends AbstractControlPanel<LangChai
             .orElse(beanType);
     }
 
-    static String name(BeanRegistration<?> registration) {
-        return registration.getBeanDefinition().stringValue(Named.class).orElse("default");
+    static String name(BeanDefinition<?> definition) {
+        return definition.getDeclaredQualifier() instanceof io.micronaut.core.naming.Named named
+            ? named.getName()
+            : definition.stringValue(Named.class).orElse("default");
     }
 
     private static String description(ToolSpecification specification) {
@@ -165,7 +168,7 @@ public final class LangChain4jControlPanel extends AbstractControlPanel<LangChai
      * A model or embedding store bean.
      *
      * @param name The bean name
-     * @param type The implementation type
+     * @param type The declared bean type
      */
     @ReflectiveAccess
     public record Model(String name, String type) {
