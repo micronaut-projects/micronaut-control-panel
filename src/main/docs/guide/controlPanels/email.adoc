@@ -1,0 +1,32 @@
+The Email control panel shows the email senders of an application that uses
+https://micronaut-projects.github.io/micronaut-email/latest/guide/[Micronaut Email], and their configuration.
+
+To add it, add the following dependency to an application that already uses Micronaut Email:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-email[scope=developmentOnly]
+
+The panel shows:
+
+* The default sender (`micronaut.email.from`), and whether email templates are available.
+* Each transactional email sender, synchronous or asynchronous, with its provider (JavaMail, Amazon SES, SendGrid,
+  Mailjet, Postmark, Mailtrap or Mailpit) and class.
+* For JavaMail, the `javamail.properties` settings and whether a username and password are configured.
+
+The panel is read-only. It reads the senders from their bean definitions, so it does not create senders or provider
+clients, and it never sends email. Passwords, API keys and tokens are never shown: a JavaMail property shows its value
+only when it is a setting known to be safe, such as `mail.smtp.host` or `mail.smtp.port`, and credentials are reported
+only as configured or not.
+
+== Configuration
+
+The Email control panel is enabled when you include the `micronaut-control-panel-email` module in a project that uses
+Micronaut Email. You can disable it by setting:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      email:
+        enabled: false
+----
