@@ -187,7 +187,7 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         assertThat(page.locator("#logger")).hasAttribute("aria-invalid", "true");
 
         // Pressing Enter submits through the dialog instead of reloading the page
-        page.locator("#logger").fill("example.<b>markup</b>");
+        page.locator("#logger").fill("markup.<b>logger</b>");
         page.locator("#actionsModal").getByLabel("Level:").selectOption("WARN");
         page.waitForResponse(
             response -> response.url().contains("/loggers-control-panel-controller/") && response.status() == HttpStatus.NO_CONTENT.getCode(),
@@ -197,14 +197,15 @@ class ControlPanelE2ETest extends AbstractE2ETest {
 
         // Closing the dialog refreshes the list, and the new name is rendered as text, not markup
         page.locator("#actionsModal .modal-footer [data-dismiss='modal']").click();
-        var row = page.locator("tbody tr").filter(new Locator.FilterOptions().setHasText("example.<b>markup</b>"));
+        var row = page.locator("tbody tr").filter(new Locator.FilterOptions().setHasText("markup.<b>logger</b>"));
         assertThat(row).containsText("WARN");
         assertThat(page.locator("tbody b")).hasCount(0);
 
         row.getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName("Reconfigure")).click();
-        assertThat(page.locator("#modalLabel code")).hasText("example.<b>markup</b>");
+        assertThat(page.locator("#modalLabel code")).hasText("markup.<b>logger</b>");
         assertThat(page.locator("#modalLabel b")).hasCount(0);
-        page.locator("#actionsModal").getByLabel("Level:").selectOption("INFO");
+        // Clear the level, so the logger is no longer listed and other tests see the original list
+        page.locator("#actionsModal").getByLabel("Level:").selectOption("NOT_SPECIFIED");
         page.waitForResponse(
             response -> response.url().contains("/loggers-control-panel-controller/") && response.status() == HttpStatus.NO_CONTENT.getCode(),
             () -> id(page, "submit").click()

@@ -161,8 +161,9 @@
             return;
         }
         var loggerInput = $('#logger');
-        var logger = loggerInput.val().trim();
-        if (!logger) {
+        // Only blank names are rejected: the name is sent as typed, since a logger name can contain spaces
+        var logger = loggerInput.val();
+        if (!logger.trim()) {
             loggerInput.addClass('is-invalid').attr('aria-invalid', 'true').focus();
             showLoggerResult('danger', 'Enter a logger name.');
             return;
@@ -178,6 +179,11 @@
             contentType: "application/json; charset=utf-8",
         }).done(function () {
             loggerChanged = true;
+            if (!$('#actionsModal').hasClass('show')) {
+                // The dialog was closed before the request completed, so the close handler did not reload the list
+                location.reload();
+                return;
+            }
             showLoggerResult('success', 'Logger configured. The list refreshes when you close this dialog.');
             $('#submit').hide();
         }).fail(function (xhr) {
