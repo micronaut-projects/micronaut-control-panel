@@ -4165,3 +4165,12 @@ body.cp-table-browser-resizing .cp-table-browser-splitter::before {
         font-weight: 650;
     }
 }
+
+/* Liquibase panel */
+@media (max-width: 640px) {
+    .cp-liquibase-table .cp-liquibase-order,
+    .cp-liquibase-table .cp-liquibase-description,
+    .cp-liquibase-table .cp-liquibase-executed {
+        display: none;
+    }
+}

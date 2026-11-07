@@ -1,0 +1,85 @@
+{{#with controlPanel.body }}
+<div class="cp-dashboard-stack">
+    {{#each histories as |history|}}
+    <div class="card card-light">
+        <div class="card-header">
+            <h3 class="card-title"><code>{{history.name}}</code></h3>
+            <div class="card-tools">
+                <span class="badge {{history.badgeClass}}">{{history.summary}}</span>
+            </div>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-2">Change log</dt>
+                <dd class="col-sm-10">{{#if history.changeLog}}<code>{{history.changeLog}}</code>{{else}}<span class="text-muted">not set</span>{{/if}}</dd>
+                {{#if history.lastTag}}
+                    <dt class="col-sm-2">Last tag</dt>
+                    <dd class="col-sm-10"><code>{{history.lastTag}}</code></dd>
+                {{/if}}
+            </dl>
+            {{#if history.statusMessage}}
+                <p class="card-text text-muted">{{history.statusMessage}}</p>
+            {{else}}
+                {{#if history.changeSets}}
+                <div class="cp-data-table" data-filter-table data-filter-table-label="change set" data-filter-table-label-plural="change sets">
+                    <div class="cp-data-table-toolbar">
+                        <div class="cp-data-table-summary" data-filter-table-summary>{{history.changeSets.size}} change sets</div>
+                        <div class="cp-data-table-search">
+                            <input type="search" class="form-control" data-filter-table-search placeholder="Search ids, authors, descriptions or tags" aria-label="Search change sets of {{history.name}}">
+                        </div>
+                    </div>
+                    <div class="cp-data-table-container">
+                        <table class="table cp-data-table-table cp-liquibase-table">
+                            <thead>
+                            <tr>
+                                <th class="cp-liquibase-order">#</th>
+                                <th>Change set</th>
+                                <th class="cp-liquibase-description">Description</th>
+                                <th>Result</th>
+                                <th class="cp-liquibase-executed">Executed</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {{#each history.changeSets as |changeSet|}}
+                                <tr data-filter-table-row>
+                                    <td class="cp-liquibase-order">{{changeSet.orderExecuted}}</td>
+                                    <td>
+                                        <code class="cp-table-code">{{changeSet.id}}</code>
+                                        <div class="text-muted">by {{changeSet.author}}</div>
+                                        <div class="text-muted"><code class="cp-table-code">{{changeSet.changeLog}}</code></div>
+                                    </td>
+                                    <td class="cp-liquibase-description">
+                                        {{changeSet.description}}
+                                        {{#if changeSet.comments}}<div class="text-muted">{{changeSet.comments}}</div>{{/if}}
+                                        {{#each changeSet.contexts as |context|}}<span class="badge badge-outline">context: {{context}}</span> {{/each}}
+                                        {{#each changeSet.labels as |label|}}<span class="badge badge-outline">label: {{label}}</span> {{/each}}
+                                    </td>
+                                    <td><span class="badge {{changeSet.badgeClass}}">{{changeSet.execType}}</span></td>
+                                    <td class="cp-liquibase-executed">
+                                        {{changeSet.dateExecuted}}
+                                        {{#if changeSet.tag}}<div><span class="badge badge-primary">tag {{changeSet.tag}}</span></div>{{/if}}
+                                    </td>
+                                </tr>
+                            {{/each}}
+                            <tr data-filter-table-empty hidden>
+                                <td class="cp-data-table-empty-cell" colspan="5">No change sets match your search.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {{else}}
+                    <p class="card-text text-muted">No change sets have run against this datasource yet.</p>
+                {{/if}}
+            {{/if}}
+        </div>
+    </div>
+    {{else}}
+    <div class="card card-light">
+        <div class="card-body">
+            <p class="card-text text-muted">There are no Liquibase configurations. Add one under <code>liquibase.datasources</code>.</p>
+        </div>
+    </div>
+    {{/each}}
+</div>
+{{/with}}
