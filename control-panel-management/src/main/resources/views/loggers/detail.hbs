@@ -115,51 +115,77 @@
 </div>
 
 <script>
+    var loggerChanged = false;
+
+    function showLoggerResult(type, message) {
+        $('#result').empty().append($('<div>', {class: 'alert alert-' + type, role: 'alert'}).text(message));
+    }
+
     $('#actionsModal').on('show.bs.modal', function (event) {
-        var button = $(event.relatedTarget)
-        var logger = button.data('logger')
-        var currentlevel = button.data('currentlevel')
-
-        var modal = $(this)
+        var button = $(event.relatedTarget);
+        var logger = button.attr('data-logger');
+        var modal = $(this);
+        var title = modal.find('.modal-title').empty();
         if (logger) {
-            modal.find('.modal-title').html('Reconfigure logger <code>' + logger + '</code>')
-            modal.find('.modal-body input').val(logger)
-            modal.find('.modal-body select').val(currentlevel)
+            title.append(document.createTextNode('Reconfigure logger ')).append($('<code>').text(logger));
+            $('#logger').val(logger);
+            $('#configuredLevel').val(button.attr('data-currentlevel'));
         } else {
-            modal.find('.modal-title').html('Configure new logger')
-            modal.find('.modal-body input').val('')
-            modal.find('.modal-body select').val('')
+            title.text('Configure new logger');
+            $('#logger').val('');
+            $('#configuredLevel').val('');
         }
-        $('#submit').show()
-    })
+        $('#logger').removeClass('is-invalid').removeAttr('aria-invalid');
+        $('#result').empty();
+        $('#submit').show();
+    });
 
-    $('#actionsModal').on('hidden.bs.modal', function (e) {
-        $('#result').html("");
-        location.reload();
-    })
+    $('#actionsModal').on('hidden.bs.modal', function () {
+        $('#result').empty();
+        if (loggerChanged) {
+            location.reload();
+        }
+    });
 
-    $('#submit').click(function(e){
+    $('#configureLogger').on('submit', function (e) {
+        e.preventDefault();
         submitForm();
-    })
+    });
 
-    function submitForm(){
+    $('#submit').click(function () {
+        submitForm();
+    });
+
+    function submitForm() {
         if (!{{ ext.writeAccess.allowed }} || $('#submit').prop('disabled')) {
             return;
         }
-        var logger = $('#logger').val();
-        var payload = {
-            configuredLevel: $("#configuredLevel").val()
+        var loggerInput = $('#logger');
+        var logger = loggerInput.val().trim();
+        if (!logger) {
+            loggerInput.addClass('is-invalid').attr('aria-invalid', 'true').focus();
+            showLoggerResult('danger', 'Enter a logger name.');
+            return;
         }
+        loggerInput.removeClass('is-invalid').removeAttr('aria-invalid');
+        var payload = {
+            configuredLevel: $('#configuredLevel').val()
+        };
         $.ajax({
             type: "POST",
             url: "{{ ext.controlPanelPath }}/loggers-control-panel-controller/" + encodeURIComponent(logger),
             data: JSON.stringify(payload),
             contentType: "application/json; charset=utf-8",
-        }).done(function (data) {
-            $('#result').html('<div class="alert alert-success" role="alert">Logger configured</div>');
-            $('#submit').hide()
-        }).fail(function (data) {
-            $('#result').html('<div class="alert alert-danger" role="alert">Error: ' + data.responseJSON.message + '</div>');
+        }).done(function () {
+            loggerChanged = true;
+            showLoggerResult('success', 'Logger configured. The list refreshes when you close this dialog.');
+            $('#submit').hide();
+        }).fail(function (xhr) {
+            var message = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'The logger could not be configured.';
+            if (xhr.status === 401 || xhr.status === 403) {
+                message = 'You are not allowed to reconfigure loggers.';
+            }
+            showLoggerResult('danger', 'Error: ' + message);
         });
     }
 </script>
