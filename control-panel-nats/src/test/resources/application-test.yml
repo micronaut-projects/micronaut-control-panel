@@ -1,0 +1,12 @@
+nats:
+  default:
+    addresses:
+      - 'nats://${nats.host}:${nats.port}'
+test-resources:
+  containers:
+    nats:
+      image-name: nats:2.11-alpine
+      hostnames:
+        - nats.host
+      exposed-ports:
+        - nats.port: 4222

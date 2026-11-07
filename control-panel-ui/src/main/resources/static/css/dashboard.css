@@ -4165,3 +4165,9 @@ body.cp-table-browser-resizing .cp-table-browser-splitter::before {
         font-weight: 650;
     }
 }
+
+/* NATS panel */
+.cp-nats-connection + .cp-nats-connection {
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+}
