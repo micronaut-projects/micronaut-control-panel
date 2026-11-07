@@ -10,6 +10,7 @@ controlPanels:
   datasource: Datasource
   hibernate: Hibernate
   kafka: Kafka
+  langchain4j: LangChain4j
 
 custom: Creating Custom Control Panels
 repository: Repository

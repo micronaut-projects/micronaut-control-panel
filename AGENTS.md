@@ -18,6 +18,7 @@ This repository builds the Micronaut Control Panel libraries and example applica
 - `control-panel-object-storage/`: object storage listing, upload, download, and delete panels.
 - `control-panel-ui/`: HTTP UI controller, Handlebars helpers/templates, CSS, and bundled JavaScript assets.
 - `control-panel-kafka/`: Kafka Streams topology panel.
+- `control-panel-langchain4j/`: LangChain4j models, AI services, tools, and chat panel.
 - `doc-examples/example-java/`: runnable example app and browser-oriented tests.
 - `src/main/docs/guide/`: AsciiDoc user guide and navigation.
 - `buildSrc/`: Gradle convention plugins; put shared build logic here rather than in module builds.

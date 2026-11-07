@@ -262,6 +262,7 @@ class ControlPanelSecurityRuleTest {
             HttpRequest.DELETE(controlPanelPath + ControlPanelSecurityPaths.HIBERNATE_PATH + "/default/cache/region?region=books"),
             HttpRequest.POST(controlPanelPath + ControlPanelSecurityPaths.LOGGERS_PATH + "/ROOT", "{}"),
             HttpRequest.POST(controlPanelPath + ControlPanelSecurityPaths.KAFKA_PATH + "/messages", "{}"),
+            HttpRequest.POST(controlPanelPath + ControlPanelSecurityPaths.LANGCHAIN4J_PATH + "/chat", "{}"),
             HttpRequest.POST(controlPanelPath + ControlPanelSecurityPaths.KAFKA_PATH + "/topics", "{}"),
             HttpRequest.POST(controlPanelPath + ControlPanelSecurityPaths.APPLICATION_PATH + "/refresh", "{}"),
             HttpRequest.POST(controlPanelPath + ControlPanelSecurityPaths.APPLICATION_PATH + "/stop", ""),
