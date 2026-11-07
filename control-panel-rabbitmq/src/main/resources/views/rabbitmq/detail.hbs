@@ -1,0 +1,93 @@
+{{#with controlPanel.body }}
+<div class="cp-dashboard-stack">
+    <div class="card card-light">
+        <div class="card-header">
+            <h3 class="card-title">Connections</h3>
+        </div>
+        <div class="card-body">
+            {{#each connections as |connection|}}
+                <dl class="row cp-rabbitmq-connection">
+                    <dt class="col-sm-3">Name</dt>
+                    <dd class="col-sm-9"><code>{{connection.name}}</code> <span class="badge {{connection.badgeClass}}">{{connection.stateLabel}}</span></dd>
+                    <dt class="col-sm-3">Broker</dt>
+                    <dd class="col-sm-9">
+                        {{#each connection.addresses as |address|}}<code>{{address}}</code> {{/each}}
+                        {{#if connection.broker}}<div class="text-muted">{{connection.broker}}</div>{{/if}}
+                    </dd>
+                    <dt class="col-sm-3">Virtual host</dt>
+                    <dd class="col-sm-9"><code>{{connection.virtualHost}}</code></dd>
+                    <dt class="col-sm-3">User</dt>
+                    <dd class="col-sm-9"><code>{{connection.username}}</code>{{#if connection.ssl}} <span class="badge badge-secondary">TLS</span>{{/if}}</dd>
+                    {{#if connection.consumerExecutor}}
+                        <dt class="col-sm-3">Consumer executor</dt>
+                        <dd class="col-sm-9"><code>{{connection.consumerExecutor}}</code></dd>
+                    {{/if}}
+                    {{#if connection.channelPoolMaxIdle}}
+                        <dt class="col-sm-3">Idle channels</dt>
+                        <dd class="col-sm-9">up to {{connection.channelPoolMaxIdle}}</dd>
+                    {{/if}}
+                </dl>
+            {{else}}
+                <p class="card-text text-muted">There are no RabbitMQ connections. Configure one with <code>rabbitmq.uri</code> or under <code>rabbitmq.servers</code>.</p>
+            {{/each}}
+        </div>
+    </div>
+
+    <div class="card card-light">
+        <div class="card-header">
+            <h3 class="card-title">Queue consumers</h3>
+        </div>
+        <div class="card-body">
+            {{#if consumers}}
+            <div class="cp-data-table" data-filter-table data-filter-table-label="consumer" data-filter-table-label-plural="consumers">
+                <div class="cp-data-table-toolbar">
+                    <div class="cp-data-table-summary" data-filter-table-summary>{{consumers.size}} consumers</div>
+                    <div class="cp-data-table-search">
+                        <input type="search" class="form-control" data-filter-table-search placeholder="Search queues, listeners or connections" aria-label="Search consumers">
+                    </div>
+                </div>
+                <div class="cp-data-table-container">
+                    <table class="table cp-data-table-table cp-rabbitmq-table">
+                        <thead>
+                        <tr>
+                            <th>Queue</th>
+                            <th>Listener</th>
+                            <th class="cp-rabbitmq-settings">Settings</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {{#each consumers as |consumer|}}
+                            <tr data-filter-table-row>
+                                <td>
+                                    <code class="cp-table-code">{{consumer.queue}}</code>
+                                    <div class="text-muted">on {{consumer.connection}}</div>
+                                </td>
+                                <td>
+                                    <code class="cp-table-code">{{consumer.listener}}</code>
+                                    <div class="text-muted">{{consumer.method}}()</div>
+                                </td>
+                                <td class="cp-rabbitmq-settings">
+                                    <div>{{consumer.consumersLabel}}, prefetch {{#if consumer.prefetch}}{{consumer.prefetch}}{{else}}unlimited{{/if}}</div>
+                                    <div>
+                                        {{#if consumer.autoAcknowledgment}}<span class="badge badge-outline">auto ack</span>{{else}}<span class="badge badge-outline">manual ack</span>{{/if}}
+                                        {{#if consumer.reQueue}}<span class="badge badge-outline">requeue</span>{{/if}}
+                                        {{#if consumer.exclusive}}<span class="badge badge-outline">exclusive</span>{{/if}}
+                                    </div>
+                                    {{#if consumer.executor}}<div class="text-muted">executor <code>{{consumer.executor}}</code></div>{{/if}}
+                                </td>
+                            </tr>
+                        {{/each}}
+                        <tr data-filter-table-empty hidden>
+                            <td class="cp-data-table-empty-cell" colspan="3">No consumers match your search.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {{else}}
+                <p class="card-text text-muted">There are no <code>@Queue</code> consumers in <code>@RabbitListener</code> beans.</p>
+            {{/if}}
+        </div>
+    </div>
+</div>
+{{/with}}

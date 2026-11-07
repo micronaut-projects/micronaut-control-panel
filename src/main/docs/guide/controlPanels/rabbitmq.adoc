@@ -1,0 +1,32 @@
+The RabbitMQ control panel shows the RabbitMQ connections and consumers of an application that uses https://micronaut-projects.github.io/micronaut-rabbitmq/latest/guide/[Micronaut RabbitMQ]. It is listed in the Messaging category.
+
+To add it, add the following dependency to an application that already uses Micronaut RabbitMQ:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-rabbitmq[scope=developmentOnly]
+
+The panel shows:
+
+* Each connection, configured with `rabbitmq.uri` or under `rabbitmq.servers`: whether it is open, the broker product and
+  version, the broker addresses, the virtual host, the user, whether TLS is enabled, the consumer executor, and the
+  channel pool size.
+* Each `@Queue` method of the `@RabbitListener` beans: the queue, the listener class and method, the connection, the
+  number of consumers, the prefetch count, the acknowledgement and requeue modes, and the executor.
+
+The panel does not send anything to the broker, so rendering it never waits on the broker. The connection state and
+broker version come from what the RabbitMQ client already knows, and a connection that nothing has used yet is shown as
+not opened rather than being opened by the panel. Passwords are never read, and messages are never read, published, or
+acknowledged. To check that the broker is reachable, use the `/health` endpoint.
+
+== Configuration
+
+The RabbitMQ control panel is enabled when you include the `micronaut-control-panel-rabbitmq` module in a project that
+uses Micronaut RabbitMQ. You can disable it by setting:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      rabbitmq:
+        enabled: false
+----

@@ -1,0 +1,10 @@
+{{#with controlPanel.body }}
+    {{#each connections as |connection|}}
+        <p class="card-text">
+            <code>{{connection.name}}</code>
+            <span class="badge {{connection.badgeClass}}">{{connection.stateLabel}}</span>
+            {{#if connection.broker}}<span class="text-muted">{{connection.broker}}</span>{{/if}}
+        </p>
+    {{/each}}
+    <p class="card-text">{{consumers.size}} queue consumers.</p>
+{{/with}}
