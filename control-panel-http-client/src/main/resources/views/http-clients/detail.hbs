@@ -1,0 +1,96 @@
+{{#with controlPanel.body }}
+<div class="cp-dashboard-stack">
+    <div class="card card-light">
+        <div class="card-header">
+            <h3 class="card-title">HTTP clients</h3>
+        </div>
+        <div class="card-body">
+            {{#if clients}}
+            <p class="card-text text-muted">
+                URLs are shown without user info or query strings. Nothing is sent over the network to build this page.
+            </p>
+            <div class="cp-data-table" data-filter-table data-filter-table-label="client" data-filter-table-label-plural="clients">
+                <div class="cp-data-table-toolbar">
+                    <div class="cp-data-table-summary" data-filter-table-summary>{{clients.size}} clients</div>
+                    <div class="cp-data-table-search">
+                        <input type="search" class="form-control" data-filter-table-search placeholder="Search clients, URLs, interfaces or filters" aria-label="Search clients">
+                    </div>
+                </div>
+                <div class="cp-data-table-container">
+                    <table class="table cp-data-table-table cp-http-client-table">
+                        <thead>
+                        <tr>
+                            <th>Client</th>
+                            <th>Targets</th>
+                            <th class="cp-http-client-settings">Settings</th>
+                            <th class="cp-http-client-filters">Filters</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {{#each clients as |client|}}
+                            <tr data-filter-table-row>
+                                <td>
+                                    <code class="cp-table-code">{{client.id}}</code>
+                                    <div>
+                                        {{#if client.configured}}<span class="badge badge-secondary">configured</span>{{/if}}
+                                        {{#if client.discovered}}<span class="badge badge-secondary">service discovery</span>{{/if}}
+                                        {{#if client.unresolved}}<span class="badge badge-destructive">no URL</span>{{/if}}
+                                    </div>
+                                    {{#each client.declarativeTypes as |type|}}
+                                        <div class="text-muted"><code class="cp-table-code">{{type}}</code></div>
+                                    {{/each}}
+                                </td>
+                                <td>
+                                    {{#each client.urls as |url|}}
+                                        <div><code class="cp-table-code">{{url}}</code></div>
+                                    {{/each}}
+                                    {{#if client.discovered}}
+                                        {{#each client.instances as |instance|}}
+                                            <div>
+                                                <span class="badge {{#if instance.up}}badge-primary{{else}}badge-secondary{{/if}}">{{instance.health}}</span>
+                                                <code class="cp-table-code">{{instance.uri}}</code>
+                                            </div>
+                                        {{/each}}
+                                    {{/if}}
+                                    {{#if client.unresolved}}
+                                        <span class="text-muted">Set <code>micronaut.http.services.{{client.id}}.url</code> or register the service with a discovery server.</span>
+                                    {{/if}}
+                                    {{#if client.path}}
+                                        <div class="text-muted">path <code class="cp-table-code">{{client.path}}</code></div>
+                                    {{/if}}
+                                </td>
+                                <td class="cp-http-client-settings">
+                                    {{#if client.configured}}
+                                        <div>connect timeout: {{#if client.connectTimeout}}{{client.connectTimeout}}{{else}}<span class="text-muted">default</span>{{/if}}</div>
+                                        <div>read timeout: {{#if client.readTimeout}}{{client.readTimeout}}{{else}}<span class="text-muted">default</span>{{/if}}</div>
+                                        <div>health check: {{#if client.healthCheck}}on{{else}}off{{/if}}</div>
+                                    {{else}}
+                                        <span class="text-muted">defaults</span>
+                                    {{/if}}
+                                </td>
+                                <td class="cp-http-client-filters">
+                                    {{#each client.filters as |filter|}}
+                                        <div><code class="cp-table-code">{{filter}}</code></div>
+                                    {{else}}
+                                        <span class="text-muted">—</span>
+                                    {{/each}}
+                                </td>
+                            </tr>
+                        {{/each}}
+                        <tr data-filter-table-empty hidden>
+                            <td class="cp-data-table-empty-cell" colspan="4">No clients match your search.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {{else}}
+                <p class="card-text text-muted">
+                    The application has no declarative <code>@Client</code> interfaces and no services configured under
+                    <code>micronaut.http.services</code>.
+                </p>
+            {{/if}}
+        </div>
+    </div>
+</div>
+{{/with}}

@@ -1,0 +1,40 @@
+The HTTP Clients control panel lists the HTTP clients of the application, so you can check where each one sends its
+requests without reading the configuration files.
+
+To add it, add the following dependency:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-http-client[scope=developmentOnly]
+
+The panel shows one row for each client id. A client id comes from any of these sources:
+
+* A declarative `@Client` interface. Interfaces that share an id are grouped together, and interfaces that call the same
+  server (`@Client("/")`) are grouped under "same server".
+* A service configured under `micronaut.http.services`.
+* A service instance list, as provided by service discovery.
+
+For each client, the panel shows:
+
+* The `@Client` interfaces that use it.
+* The configured URLs, or the instances that service discovery reports, with their health status.
+* The base path, the connect and read timeouts, and whether health checks are enabled.
+* The client filters that apply to it.
+
+A client that has no URL and no instance list is flagged with a "no URL" badge, since calls made through it fail at
+runtime. The panel card also shows how many such clients exist.
+
+The panel does not send any request. URLs are shown without user info, query strings, or fragments, because those can
+carry credentials.
+
+== Configuration
+
+The HTTP Clients control panel is enabled when you include the `micronaut-control-panel-http-client` module in your
+project. You can disable it by setting:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      http-clients:
+        enabled: false
+----
