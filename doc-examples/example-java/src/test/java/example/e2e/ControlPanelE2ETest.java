@@ -182,6 +182,23 @@ class ControlPanelE2ETest extends AbstractE2ETest {
     }
 
     @Test
+    void testThreadDump(Page page) {
+        page.navigate(baseUrl());
+        controlPanelDetails(page, "Thread Dump").click();
+
+        assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Thread states"))).isVisible();
+        assertThat(body(page)).containsText("RUNNABLE");
+
+        page.getByLabel("Search threads").fill("no-such-thread-name");
+        assertThat(page.locator("tr[data-filter-table-empty]")).isVisible();
+
+        page.getByLabel("Search threads").fill("");
+        var firstStack = page.locator("details.cp-thread-stack").first();
+        firstStack.locator("summary").click();
+        assertThat(firstStack.locator("pre")).isVisible();
+    }
+
+    @Test
     void testMetrics(Page page) {
         page.navigate(baseUrl());
         controlPanelDetails(page, "Metrics").click();

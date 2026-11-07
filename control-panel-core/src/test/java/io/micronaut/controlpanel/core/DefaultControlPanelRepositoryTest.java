@@ -49,14 +49,14 @@ class DefaultControlPanelRepositoryTest {
     void itCanFindAll() {
         ControlPanelRepository repository = ctx.getBean(ControlPanelRepository.class);
         var panels = repository.findAll();
-        assertEquals(8, panels.size());
+        assertEquals(9, panels.size());
     }
 
     @Test
     void itCanFindAllByCategoryMain() {
         ControlPanelRepository repository = ctx.getBean(ControlPanelRepository.class);
         var panels = repository.findAllByCategory(ControlPanel.Category.MAIN.id());
-        assertEquals(5, panels.size());
+        assertEquals(6, panels.size());
     }
 
     @Test
@@ -67,7 +67,7 @@ class DefaultControlPanelRepositoryTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"routes", "beans", "env", "info", "loggers", "health", "test"})
+    @ValueSource(strings = {"routes", "beans", "env", "info", "loggers", "health", "threaddump", "test"})
     void itCanFindOneByNamePresent(String controlPanelName) {
         ControlPanelRepository repository = ctx.getBean(ControlPanelRepository.class);
         assertTrue(repository.findByName(controlPanelName).isPresent());
@@ -111,7 +111,7 @@ class DefaultControlPanelRepositoryTest {
     void itCanCountByCategoryIdMain() {
         ControlPanelRepository repository = ctx.getBean(ControlPanelRepository.class);
         long count = repository.countByCategoryId(ControlPanel.Category.MAIN.id());
-        assertEquals(5L, count);
+        assertEquals(6L, count);
     }
 
     @Test

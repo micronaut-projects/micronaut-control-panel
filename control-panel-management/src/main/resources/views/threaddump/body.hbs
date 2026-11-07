@@ -1,0 +1,12 @@
+{{#with controlPanel.body }}
+    <p class="card-text">
+        {{total}} threads.
+    </p>
+    {{#if stateCounts}}
+        <p class="card-text">
+            {{#each stateCounts}}
+                <span class="badge {{badgeClass}}">{{state}}: {{count}}</span>
+            {{/each}}
+        </p>
+    {{/if}}
+{{/with}}
