@@ -15,6 +15,14 @@ import io.micronaut.http.client.annotation.Client;
 import jakarta.inject.Singleton;
 import org.junit.jupiter.api.Test;
 
+import io.micronaut.http.annotation.FilterMatcher;
+import io.micronaut.http.filter.ClientFilterChain;
+import io.micronaut.http.filter.HttpClientFilter;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
@@ -72,6 +80,9 @@ class HttpClientInspectorTest {
             HttpClientInfo unknown = find(clients, "unknown");
             assertTrue(unknown.unresolved());
             assertNull(unknown.instances());
+            assertEquals(List.of(UnknownAdminClient.class.getName(), UnknownClient.class.getName()), unknown.declarativeTypes());
+            assertEquals("/admin, /public", unknown.path());
+            assertEquals(List.of(AuditFilter.class.getName()), unknown.filters());
         }
     }
 
@@ -80,6 +91,10 @@ class HttpClientInspectorTest {
         assertEquals("https://example.com/a", HttpClientInspector.sanitize("https://u:p@example.com/a?x=y#z"));
         assertEquals("http://example.com:8080", HttpClientInspector.sanitize("http://example.com:8080"));
         assertEquals("(hidden)", HttpClientInspector.sanitize("not a uri with spaces"));
+        assertEquals("http://my_service:8080/api", HttpClientInspector.sanitize("http://user:secret@my_service:8080/api"));
+        assertEquals("http://my_service:8080/api", HttpClientInspector.sanitize("http://my_service:8080/api?token=x"));
+        assertEquals("https://host:9200", HttpClientInspector.sanitize("https://user:p@ss@host:9200"));
+        assertEquals("https://host:9200/a@b", HttpClientInspector.sanitize("https://host:9200/a@b?k=v"));
     }
 
     private static HttpClientInfo find(List<HttpClientInfo> clients, String id) {
@@ -101,10 +116,34 @@ class HttpClientInspectorTest {
     }
 
     @Requires(property = "spec.name", value = SPEC)
-    @Client("unknown")
+    @Client(value = "unknown", path = "/public")
     interface UnknownClient {
         @Get
         String get();
+    }
+
+    @Requires(property = "spec.name", value = SPEC)
+    @Client(value = "unknown", path = "/admin")
+    @Audited
+    interface UnknownAdminClient {
+        @Get
+        String get();
+    }
+
+    @FilterMatcher
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.TYPE, ElementType.METHOD})
+    @interface Audited {
+    }
+
+    @Requires(property = "spec.name", value = SPEC)
+    @Audited
+    @Singleton
+    static class AuditFilter implements HttpClientFilter {
+        @Override
+        public org.reactivestreams.Publisher<? extends io.micronaut.http.HttpResponse<?>> doFilter(MutableHttpRequest<?> request, ClientFilterChain chain) {
+            return chain.proceed(request);
+        }
     }
 
     @Requires(property = "spec.name", value = SPEC)

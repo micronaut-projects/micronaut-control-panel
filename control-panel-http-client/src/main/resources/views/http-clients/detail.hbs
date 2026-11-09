@@ -6,7 +6,7 @@
         </div>
         <div class="card-body">
             {{#if clients}}
-            <p class="card-text text-muted">
+            <p class="card-text card-description">
                 URLs are shown without user info or query strings. Nothing is sent over the network to build this page.
             </p>
             <div class="cp-data-table" data-filter-table data-filter-table-label="client" data-filter-table-label-plural="clients">
@@ -37,7 +37,7 @@
                                         {{#if client.unresolved}}<span class="badge badge-destructive">no URL</span>{{/if}}
                                     </div>
                                     {{#each client.declarativeTypes as |type|}}
-                                        <div class="text-muted"><code class="cp-table-code">{{type}}</code></div>
+                                        <div class="card-description"><code class="cp-table-code">{{type}}</code></div>
                                     {{/each}}
                                 </td>
                                 <td>
@@ -53,26 +53,26 @@
                                         {{/each}}
                                     {{/if}}
                                     {{#if client.unresolved}}
-                                        <span class="text-muted">Set <code>micronaut.http.services.{{client.id}}.url</code> or register the service with a discovery server.</span>
+                                        <span class="card-description">Set <code>micronaut.http.services.{{client.id}}.url</code> or register the service with a discovery server.</span>
                                     {{/if}}
                                     {{#if client.path}}
-                                        <div class="text-muted">path <code class="cp-table-code">{{client.path}}</code></div>
+                                        <div class="card-description">path <code class="cp-table-code">{{client.path}}</code></div>
                                     {{/if}}
                                 </td>
                                 <td class="cp-http-client-settings">
                                     {{#if client.configured}}
-                                        <div>connect timeout: {{#if client.connectTimeout}}{{client.connectTimeout}}{{else}}<span class="text-muted">default</span>{{/if}}</div>
-                                        <div>read timeout: {{#if client.readTimeout}}{{client.readTimeout}}{{else}}<span class="text-muted">default</span>{{/if}}</div>
+                                        <div>connect timeout: {{#if client.connectTimeout}}{{client.connectTimeout}}{{else}}<span class="card-description">default</span>{{/if}}</div>
+                                        <div>read timeout: {{#if client.readTimeout}}{{client.readTimeout}}{{else}}<span class="card-description">default</span>{{/if}}</div>
                                         <div>health check: {{#if client.healthCheck}}on{{else}}off{{/if}}</div>
                                     {{else}}
-                                        <span class="text-muted">defaults</span>
+                                        <span class="card-description">defaults</span>
                                     {{/if}}
                                 </td>
                                 <td class="cp-http-client-filters">
                                     {{#each client.filters as |filter|}}
                                         <div><code class="cp-table-code">{{filter}}</code></div>
                                     {{else}}
-                                        <span class="text-muted">—</span>
+                                        <span class="card-description">—</span>
                                     {{/each}}
                                 </td>
                             </tr>
@@ -83,9 +83,25 @@
                         </tbody>
                     </table>
                 </div>
+                <div class="cp-data-table-footer">
+                    <label class="cp-data-table-page-size">
+                        Rows per page
+                        <select class="form-control" data-filter-table-page-size-select aria-label="Clients per page">
+                            <option value="10" selected>10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </label>
+                    <div class="cp-data-table-pagination">
+                        <span class="cp-data-table-page" data-filter-table-page>Page 1 of 1</span>
+                        <button type="button" class="btn btn-secondary btn-sm" data-filter-table-prev>Previous</button>
+                        <button type="button" class="btn btn-secondary btn-sm" data-filter-table-next>Next</button>
+                    </div>
+                </div>
             </div>
             {{else}}
-                <p class="card-text text-muted">
+                <p class="card-text card-description">
                     The application has no declarative <code>@Client</code> interfaces and no services configured under
                     <code>micronaut.http.services</code>.
                 </p>
