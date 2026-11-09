@@ -103,8 +103,23 @@ class ThreadDumpControlPanelTest {
             assertEquals("cp-blocked-thread", first.name());
             assertEquals("badge-destructive", first.badgeClass());
             assertEquals(Thread.currentThread().getName(), first.lockOwnerName());
+            var owner = body.threads().stream().filter(thread -> thread.id() == Thread.currentThread().threadId()).findFirst().orElseThrow();
+            assertTrue(owner.stackTrace().stream().anyMatch(line -> line.startsWith("- locked java.lang.Object@")));
         }
         blocked.join();
+    }
+
+    @Test
+    void heldSynchronizersAreListed() {
+        var lock = new java.util.concurrent.locks.ReentrantLock();
+        lock.lock();
+        try {
+            var body = new ThreadDumpControlPanel(CONFIGURATION, new DefaultThreadInfoMapper()).getBody();
+            var current = body.threads().stream().filter(thread -> thread.id() == Thread.currentThread().threadId()).findFirst().orElseThrow();
+            assertTrue(current.lockedSynchronizers().stream().anyMatch(name -> name.contains("ReentrantLock")));
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Test

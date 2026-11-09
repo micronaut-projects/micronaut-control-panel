@@ -26,7 +26,7 @@
                         {{#each stateCounts}}
                             <span class="badge {{badgeClass}}">{{state}}: {{count}}</span>
                         {{else}}
-                            <span class="text-muted">No threads were reported. GraalVM native images do not report thread dumps.</span>
+                            <span class="card-description">No threads were reported. GraalVM native images do not report thread dumps.</span>
                         {{/each}}
                     </dd>
                 </dl>
@@ -53,7 +53,7 @@
                         <tr>
                             <th class="cp-thread-state">State</th>
                             <th>Thread</th>
-                            <th class="cp-thread-lock">Waiting on</th>
+                            <th class="cp-thread-lock">Locks</th>
                             <th class="cp-thread-counts">Blocked / waited</th>
                         </tr>
                         </thead>
@@ -63,10 +63,10 @@
                                 <td class="cp-thread-state"><span class="badge {{thread.badgeClass}}">{{thread.state}}</span></td>
                                 <td>
                                     <code class="cp-table-code">{{thread.name}}</code>
-                                    <span class="text-muted">#{{thread.id}}{{#if thread.daemon}} · daemon{{/if}}</span>
+                                    <span class="card-description">#{{thread.id}}{{#if thread.daemon}} · daemon{{/if}}</span>
                                     {{#if thread.stackTrace}}
                                         <details class="cp-thread-stack">
-                                            <summary>Stack trace ({{thread.stackTrace.size}} frames)</summary>
+                                            <summary>Stack trace</summary>
                                             <pre><code class="nohighlight">{{#each thread.stackTrace as |frame|}}{{frame}}
 {{/each}}</code></pre>
                                         </details>
@@ -76,11 +76,14 @@
                                     {{#if thread.lockName}}
                                         <code class="cp-table-code">{{thread.lockName}}</code>
                                         {{#if thread.lockOwnerName}}
-                                            <div class="text-muted">held by <code class="cp-table-code">{{thread.lockOwnerName}}</code></div>
+                                            <div class="card-description">held by <code class="cp-table-code">{{thread.lockOwnerName}}</code></div>
                                         {{/if}}
                                     {{else}}
-                                        <span class="text-muted">—</span>
+                                        {{#unless thread.lockedSynchronizers}}<span class="card-description">—</span>{{/unless}}
                                     {{/if}}
+                                    {{#each thread.lockedSynchronizers as |synchronizer|}}
+                                        <div class="card-description">holds <code class="cp-table-code">{{synchronizer}}</code></div>
+                                    {{/each}}
                                 </td>
                                 <td class="cp-thread-counts">{{thread.blockedCount}} / {{thread.waitedCount}}</td>
                             </tr>
@@ -90,6 +93,22 @@
                         </tr>
                         </tbody>
                     </table>
+                </div>
+                <div class="cp-data-table-footer">
+                    <label class="cp-data-table-page-size">
+                        Rows per page
+                        <select class="form-control" data-filter-table-page-size-select aria-label="Threads per page">
+                            <option value="10" selected>10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </label>
+                    <div class="cp-data-table-pagination">
+                        <span class="cp-data-table-page" data-filter-table-page>Page 1 of 1</span>
+                        <button type="button" class="btn btn-secondary btn-sm" data-filter-table-prev>Previous</button>
+                        <button type="button" class="btn btn-secondary btn-sm" data-filter-table-next>Next</button>
+                    </div>
                 </div>
             </div>
         </div>

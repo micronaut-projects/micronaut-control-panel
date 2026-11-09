@@ -28,8 +28,11 @@ import jakarta.inject.Singleton;
 import org.jspecify.annotations.Nullable;
 import reactor.core.publisher.Flux;
 
+import java.lang.management.LockInfo;
 import java.lang.management.ManagementFactory;
+import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.EnumMap;
@@ -168,7 +171,8 @@ public class ThreadDumpControlPanel extends AbstractControlPanel<ThreadDumpContr
      * @param lockOwnerName the name of the thread that owns that lock, if any
      * @param blockedCount how many times the thread has blocked
      * @param waitedCount how many times the thread has waited
-     * @param stackTrace the stack frames
+     * @param stackTrace the stack frames, each followed by the monitors locked in it, as in a {@code jstack} dump
+     * @param lockedSynchronizers the ownable synchronizers, such as {@code ReentrantLock}s, the thread holds
      */
     @ReflectiveAccess
     public record ThreadRow(
@@ -180,7 +184,8 @@ public class ThreadDumpControlPanel extends AbstractControlPanel<ThreadDumpContr
         @Nullable String lockOwnerName,
         long blockedCount,
         long waitedCount,
-        List<String> stackTrace
+        List<String> stackTrace,
+        List<String> lockedSynchronizers
     ) {
 
         static ThreadRow of(ThreadInfo info) {
@@ -193,8 +198,24 @@ public class ThreadDumpControlPanel extends AbstractControlPanel<ThreadDumpContr
                 info.getLockOwnerName(),
                 info.getBlockedCount(),
                 info.getWaitedCount(),
-                Arrays.stream(info.getStackTrace()).map(StackTraceElement::toString).toList()
+                stackTrace(info),
+                Arrays.stream(info.getLockedSynchronizers()).map(LockInfo::toString).toList()
             );
+        }
+
+        private static List<String> stackTrace(ThreadInfo info) {
+            StackTraceElement[] frames = info.getStackTrace();
+            MonitorInfo[] monitors = info.getLockedMonitors();
+            List<String> lines = new ArrayList<>(frames.length + monitors.length);
+            for (int depth = 0; depth < frames.length; depth++) {
+                lines.add(frames[depth].toString());
+                for (MonitorInfo monitor : monitors) {
+                    if (monitor.getLockedStackDepth() == depth) {
+                        lines.add("- locked " + monitor);
+                    }
+                }
+            }
+            return lines;
         }
 
         /**
