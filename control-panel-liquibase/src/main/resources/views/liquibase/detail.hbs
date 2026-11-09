@@ -11,14 +11,14 @@
         <div class="card-body">
             <dl class="row">
                 <dt class="col-sm-2">Change log</dt>
-                <dd class="col-sm-10">{{#if history.changeLog}}<code>{{history.changeLog}}</code>{{else}}<span class="text-muted">not set</span>{{/if}}</dd>
+                <dd class="col-sm-10">{{#if history.changeLog}}<code>{{history.changeLog}}</code>{{else}}<span class="card-description">not set</span>{{/if}}</dd>
                 {{#if history.lastTag}}
                     <dt class="col-sm-2">Last tag</dt>
                     <dd class="col-sm-10"><code>{{history.lastTag}}</code></dd>
                 {{/if}}
             </dl>
             {{#if history.statusMessage}}
-                <p class="card-text text-muted">{{history.statusMessage}}</p>
+                <p class="card-text card-description">{{history.statusMessage}}</p>
             {{else}}
                 {{#if history.changeSets}}
                 <div class="cp-data-table" data-filter-table data-filter-table-label="change set" data-filter-table-label-plural="change sets">
@@ -45,12 +45,12 @@
                                     <td class="cp-liquibase-order">{{changeSet.orderExecuted}}</td>
                                     <td>
                                         <code class="cp-table-code">{{changeSet.id}}</code>
-                                        <div class="text-muted">by {{changeSet.author}}</div>
-                                        <div class="text-muted"><code class="cp-table-code">{{changeSet.changeLog}}</code></div>
+                                        <div class="card-description">by {{changeSet.author}}</div>
+                                        <div class="card-description"><code class="cp-table-code">{{changeSet.changeLog}}</code></div>
                                     </td>
                                     <td class="cp-liquibase-description">
                                         {{changeSet.description}}
-                                        {{#if changeSet.comments}}<div class="text-muted">{{changeSet.comments}}</div>{{/if}}
+                                        {{#if changeSet.comments}}<div class="card-description">{{changeSet.comments}}</div>{{/if}}
                                         {{#each changeSet.contexts as |context|}}<span class="badge badge-outline">context: {{context}}</span> {{/each}}
                                         {{#each changeSet.labels as |label|}}<span class="badge badge-outline">label: {{label}}</span> {{/each}}
                                     </td>
@@ -67,9 +67,25 @@
                             </tbody>
                         </table>
                     </div>
+                    <div class="cp-data-table-footer">
+                        <label class="cp-data-table-page-size">
+                            Rows per page
+                            <select class="form-control" data-filter-table-page-size-select aria-label="Change sets per page">
+                                <option value="10" selected>10</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
+                        </label>
+                        <div class="cp-data-table-pagination">
+                            <span class="cp-data-table-page" data-filter-table-page>Page 1 of 1</span>
+                            <button type="button" class="btn btn-secondary btn-sm" data-filter-table-prev>Previous</button>
+                            <button type="button" class="btn btn-secondary btn-sm" data-filter-table-next>Next</button>
+                        </div>
+                    </div>
                 </div>
                 {{else}}
-                    <p class="card-text text-muted">No change sets have run against this datasource yet.</p>
+                    <p class="card-text card-description">No change sets have run against this datasource yet.</p>
                 {{/if}}
             {{/if}}
         </div>
@@ -77,7 +93,7 @@
     {{else}}
     <div class="card card-light">
         <div class="card-body">
-            <p class="card-text text-muted">There are no Liquibase configurations. Add one under <code>liquibase.datasources</code>.</p>
+            <p class="card-text card-description">There are no Liquibase configurations. Add one under <code>liquibase.datasources</code>.</p>
         </div>
     </div>
     {{/each}}
