@@ -177,8 +177,12 @@
             var modal = $(this)
             var button = $(event.relatedTarget)
             var key = button.attr('data-key')
-            var body = "Are you sure you want to delete the file <code>" + key + "</code>?"
-            modal.find('.modal-body').html('<p class="card-text">' + body + '</p>')
+            // The key is built as text nodes: object keys can contain markup
+            var body = $('<p>', {class: 'card-text'})
+                .append(document.createTextNode('Are you sure you want to delete the file '))
+                .append($('<code>').text(key))
+                .append(document.createTextNode('?'))
+            modal.find('.modal-body').empty().append(body)
             $('#deleteConfirm').attr('data-key', key)
         })
 

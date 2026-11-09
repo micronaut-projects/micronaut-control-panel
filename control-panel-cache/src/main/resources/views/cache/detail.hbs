@@ -131,7 +131,7 @@
             </div>
         </div>
 
-        <div class="modal fade cp-dialog" id="invalidateConfirmModal" tabindex="-1" role="dialog" aria-labelledby="invalidateConfirmModalLabel" aria-describedby="invalidateConfirmModalDescription" aria-hidden="true">
+        <div class="modal fade cp-dialog" id="invalidateConfirmModal" data-cache-name="{{ cache.name }}" tabindex="-1" role="dialog" aria-labelledby="invalidateConfirmModalLabel" aria-describedby="invalidateConfirmModalDescription" aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content cp-dialog-content">
                     <div class="modal-header cp-dialog-header">
@@ -165,8 +165,14 @@
             var modal = $(this)
             var button = $(event.relatedTarget) // Button that triggered the modal
             var key = button.attr('data-key') // Extract info from data-* attributes
-            var body = "Are you sure you want to evict object with key <code>" + key + "</code> from the <code>{{ cache.name }}</code> cache?"
-            modal.find('.modal-body').html('<p class="card-text">' + body + '</p>')
+            // The key and cache name are built as text nodes: cache keys can contain markup
+            var body = $('<p>', {class: 'card-text'})
+                .append(document.createTextNode('Are you sure you want to evict object with key '))
+                .append($('<code>').text(key))
+                .append(document.createTextNode(' from the '))
+                .append($('<code>').text(modal.attr('data-cache-name')))
+                .append(document.createTextNode(' cache?'))
+            modal.find('.modal-body').empty().append(body)
             $('#invalidateConfirm').attr('data-key', key)
         })
 
