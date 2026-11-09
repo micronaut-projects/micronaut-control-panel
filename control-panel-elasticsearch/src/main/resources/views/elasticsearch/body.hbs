@@ -2,7 +2,7 @@
     {{#each hosts as |host|}}
         <p class="card-text"><code>{{host}}</code></p>
     {{else}}
-        <p class="card-text text-muted">No Elasticsearch hosts are configured.</p>
+        <p class="card-text card-description">No Elasticsearch hosts are configured.</p>
     {{/each}}
-    <p class="card-text text-muted">{{#if clientOpen}}The application has an open client.{{else}}No client has been created yet.{{/if}}</p>
+    <p class="card-text card-description">{{#if clientOpen}}The application has an open client.{{else}}No client has been created yet.{{/if}}</p>
 {{/with}}
