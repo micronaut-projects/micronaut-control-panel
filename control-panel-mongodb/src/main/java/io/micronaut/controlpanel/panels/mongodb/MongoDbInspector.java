@@ -35,8 +35,8 @@ import java.util.concurrent.TimeUnit;
 /**
  * Collects the MongoDB clients of the application, the servers they see, and their databases and collections.
  *
- * <p>Connection strings are never read, since they can carry credentials. Every query stops after {@link #TIMEOUT}
- * and the number of databases and collections is capped. Nothing is queried when the driver has no connected server.
+ * <p>Connection strings are never read, since they can carry credentials. Every query stops after {@link #TIMEOUT},
+ * the whole scan after {@link #SCAN_DEADLINE}, and the number of databases and collections is capped. Nothing is queried when the driver has no connected server.
  * Errors are shown by type only, since driver messages can include credentials or data; the full error is logged at
  * {@code DEBUG} level.</p>
  *
@@ -48,6 +48,7 @@ import java.util.concurrent.TimeUnit;
 public class MongoDbInspector {
 
     static final Duration TIMEOUT = Duration.ofSeconds(2);
+    static final Duration SCAN_DEADLINE = Duration.ofSeconds(10);
     static final int MAX_DATABASES = 50;
     static final int MAX_COLLECTIONS = 100;
 
@@ -96,12 +97,18 @@ public class MongoDbInspector {
                 "The driver is not connected to any server, so databases are not listed.");
         }
         try {
+            // Each query is bounded by TIMEOUT, and the whole scan by SCAN_DEADLINE: the databases and collections left
+            // when it passes are listed without being queried
+            long deadline = System.nanoTime() + SCAN_DEADLINE.toNanos();
             List<Document> databases = client.listDatabases(MAX_DATABASES + 1);
             List<MongoClientInfo.Database> result = new ArrayList<>();
             for (Document database : databases.subList(0, Math.min(databases.size(), MAX_DATABASES))) {
-                result.add(database(client, database));
+                result.add(database(client, database, deadline));
             }
-            return new MongoClientInfo(client.name(), client.driver(), clusterType, servers, result, databases.size() > MAX_DATABASES, null);
+            String error = System.nanoTime() - deadline > 0
+                ? "The scan stopped after " + SCAN_DEADLINE.toSeconds() + " seconds, so some collections are not listed or counted."
+                : null;
+            return new MongoClientInfo(client.name(), client.driver(), clusterType, servers, result, databases.size() > MAX_DATABASES, error);
         } catch (RuntimeException e) {
             LOG.debug("Unable to list the databases of MongoDB client '{}'", client.name(), e);
             return new MongoClientInfo(client.name(), client.driver(), clusterType, servers, null, false,
@@ -130,13 +137,16 @@ public class MongoDbInspector {
         return false;
     }
 
-    private static MongoClientInfo.Database database(MongoClientSource.Client client, Document database) {
+    private static MongoClientInfo.Database database(MongoClientSource.Client client, Document database, long deadline) {
         String name = database.getString("name");
         String size = formatSize(database.get("sizeOnDisk") instanceof Number number ? number.longValue() : null);
+        if (System.nanoTime() - deadline > 0) {
+            return new MongoClientInfo.Database(name, size, null, false);
+        }
         try {
             List<Document> collections = client.listCollections(name, MAX_COLLECTIONS + 1);
             List<MongoClientInfo.Collection> result = collections.subList(0, Math.min(collections.size(), MAX_COLLECTIONS)).stream()
-                .map(collection -> collection(client, name, collection))
+                .map(collection -> collection(client, name, collection, deadline))
                 .sorted(Comparator.comparing(MongoClientInfo.Collection::name))
                 .toList();
             return new MongoClientInfo.Database(name, size, result, collections.size() > MAX_COLLECTIONS);
@@ -146,11 +156,11 @@ public class MongoDbInspector {
         }
     }
 
-    private static MongoClientInfo.Collection collection(MongoClientSource.Client client, String database, Document collection) {
+    private static MongoClientInfo.Collection collection(MongoClientSource.Client client, String database, Document collection, long deadline) {
         String name = collection.getString("name");
         String type = collection.get("type") instanceof String value ? value : "collection";
         Long documents = null;
-        if (!"view".equals(type)) {
+        if (!"view".equals(type) && System.nanoTime() - deadline <= 0) {
             try {
                 documents = client.estimatedDocumentCount(database, name);
             } catch (RuntimeException e) {

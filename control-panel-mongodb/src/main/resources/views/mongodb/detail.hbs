@@ -3,7 +3,7 @@
     {{#each clients as |client|}}
     <div class="card card-light">
         <div class="card-header">
-            <h3 class="card-title"><code>{{client.name}}</code> <span class="text-muted">{{client.driver}} driver</span></h3>
+            <h3 class="card-title"><code>{{client.name}}</code> <span class="card-description">{{client.driver}} driver</span></h3>
             <div class="card-tools">
                 {{#if client.connected}}<span class="badge badge-secondary">connected</span>{{else}}<span class="badge badge-destructive">not connected</span>{{/if}}
             </div>
@@ -18,16 +18,16 @@
                         <div>
                             <code>{{server.address}}</code>
                             <span class="badge {{#if server.connected}}badge-secondary{{else}}badge-destructive{{/if}}">{{server.type}}</span>
-                            {{#if server.replicaSet}}<span class="text-muted">replica set {{server.replicaSet}}</span>{{/if}}
-                            {{#if server.roundTripMillis}}<span class="text-muted">{{server.roundTripMillis}} ms</span>{{/if}}
+                            {{#if server.replicaSet}}<span class="card-description">replica set {{server.replicaSet}}</span>{{/if}}
+                            {{#if server.roundTripMillis}}<span class="card-description">{{server.roundTripMillis}} ms</span>{{/if}}
                         </div>
                     {{else}}
-                        <span class="text-muted">none</span>
+                        <span class="card-description">none</span>
                     {{/each}}
                 </dd>
             </dl>
             {{#if client.error}}
-                <p class="card-text text-muted">{{client.error}}</p>
+                <p class="card-text card-description">{{client.error}}</p>
             {{/if}}
             {{#if client.databases}}
             <div class="cp-data-table" data-filter-table data-filter-table-label="database" data-filter-table-label-plural="databases">
@@ -56,13 +56,13 @@
                                         {{#each database.collections as |collection|}}
                                             <div>
                                                 <code class="cp-table-code">{{collection.name}}</code>
-                                                {{#if collection.documentsLabel}}<span class="text-muted">{{collection.documentsLabel}}</span>{{/if}}
+                                                {{#if collection.documentsLabel}}<span class="card-description">{{collection.documentsLabel}}</span>{{/if}}
                                                 {{#if (eq collection.type 'collection')}}{{else}}<span class="badge badge-outline">{{collection.type}}</span>{{/if}}
                                             </div>
                                         {{/each}}
-                                        {{#if database.collectionsTruncated}}<div class="text-muted">Only the first 100 are listed.</div>{{/if}}
+                                        {{#if database.collectionsTruncated}}<div class="card-description">Only the first 100 are listed.</div>{{/if}}
                                     {{else}}
-                                        <span class="text-muted">none</span>
+                                        <span class="card-description">none</span>
                                     {{/if}}
                                 </td>
                             </tr>
@@ -73,15 +73,31 @@
                         </tbody>
                     </table>
                 </div>
+                <div class="cp-data-table-footer">
+                    <label class="cp-data-table-page-size">
+                        Rows per page
+                        <select class="form-control" data-filter-table-page-size-select aria-label="Databases per page">
+                            <option value="10" selected>10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </label>
+                    <div class="cp-data-table-pagination">
+                        <span class="cp-data-table-page" data-filter-table-page>Page 1 of 1</span>
+                        <button type="button" class="btn btn-secondary btn-sm" data-filter-table-prev>Previous</button>
+                        <button type="button" class="btn btn-secondary btn-sm" data-filter-table-next>Next</button>
+                    </div>
+                </div>
             </div>
-            {{#if client.databasesTruncated}}<p class="card-text text-muted">Only the first 50 databases are listed.</p>{{/if}}
+            {{#if client.databasesTruncated}}<p class="card-text card-description">Only the first 50 databases are listed.</p>{{/if}}
             {{/if}}
         </div>
     </div>
     {{else}}
     <div class="card card-light">
         <div class="card-body">
-            <p class="card-text text-muted">There are no MongoDB clients. Configure one with <code>mongodb.uri</code> or under <code>mongodb.servers</code>.</p>
+            <p class="card-text card-description">There are no MongoDB clients. Configure one with <code>mongodb.uri</code> or under <code>mongodb.servers</code>.</p>
         </div>
     </div>
     {{/each}}
