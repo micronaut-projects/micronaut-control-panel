@@ -9,7 +9,7 @@ dependency:io.micronaut.controlpanel:micronaut-control-panel-jmx[scope=developme
 The panel shows:
 
 * The MBean server implementation and default domain, the number of MBeans, and the domains with their MBean counts.
-* The Micronaut JMX settings: the endpoint domain and whether endpoints are registered (`jmx.register-endpoints`).
+* The Micronaut JMX settings: whether endpoints are registered (`jmx.register-endpoints`), and `jmx.domain`, which is only the default domain of the MBean server Micronaut JMX creates when the platform MBean server is not available. Endpoint MBean names do not depend on it.
 * For each management endpoint, its object name, whether it is registered, its operations with their parameter types,
   return type and impact, and its attributes with their type and access.
 
