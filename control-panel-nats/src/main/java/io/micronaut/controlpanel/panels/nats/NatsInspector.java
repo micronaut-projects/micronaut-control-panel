@@ -23,6 +23,7 @@ import io.micronaut.core.annotation.Internal;
 import io.micronaut.inject.BeanDefinition;
 import io.micronaut.inject.ExecutableMethod;
 import io.micronaut.inject.qualifiers.Qualifiers;
+import io.micronaut.nats.annotation.NatsConnection;
 import io.micronaut.nats.annotation.NatsListener;
 import io.micronaut.nats.annotation.Subject;
 import io.micronaut.nats.connect.NatsConnectionFactoryConfig;
@@ -164,7 +165,9 @@ public class NatsInspector {
                 if (!method.hasDeclaredAnnotation(Subject.class)) {
                     continue;
                 }
-                String connection = firstNonBlank(method.stringValue(Subject.class, "connection").orElse(""), listenerConnection);
+                // @NatsConnection can also name the connection directly, which is how NatsConsumerAdvice resolves it
+                String connection = firstNonBlank(method.stringValue(NatsConnection.class, "connection").orElse(""),
+                    firstNonBlank(method.stringValue(Subject.class, "connection").orElse(""), listenerConnection));
                 String queue = firstNonBlank(method.stringValue(Subject.class, "queue").orElse(""), listenerQueue);
                 subscriptions.add(new NatsSubscriptionInfo(
                     method.stringValue(Subject.class).orElse(""),

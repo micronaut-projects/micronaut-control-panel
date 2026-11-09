@@ -3,7 +3,7 @@
         <p class="card-text">
             <code>{{connection.name}}</code>
             <span class="badge {{connection.badgeClass}}">{{connection.statusLabel}}</span>
-            {{#if connection.server}}<span class="text-muted">{{connection.server}}</span>{{/if}}
+            {{#if connection.server}}<span class="card-description">{{connection.server}}</span>{{/if}}
         </p>
     {{/each}}
     <p class="card-text">{{subscriptions.size}} subscriptions.</p>
