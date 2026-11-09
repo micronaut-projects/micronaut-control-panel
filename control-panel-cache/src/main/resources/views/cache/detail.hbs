@@ -165,14 +165,13 @@
             var modal = $(this)
             var button = $(event.relatedTarget) // Button that triggered the modal
             var key = button.attr('data-key') // Extract info from data-* attributes
-            // The key and cache name are built as text nodes: cache keys can contain markup
-            var body = $('<p>', {class: 'card-text'})
-                .append(document.createTextNode('Are you sure you want to evict object with key '))
-                .append($('<code>').text(key))
-                .append(document.createTextNode(' from the '))
-                .append($('<code>').text(modal.attr('data-cache-name')))
-                .append(document.createTextNode(' cache?'))
-            modal.find('.modal-body').empty().append(body)
+            // The key comes back decoded from the attribute and can hold markup, so it is added as text
+            modal.find('.modal-body').empty().append(
+                $('<p class="card-text">').append(
+                    'Are you sure you want to evict object with key ', $('<code>').text(key),
+                    ' from the ', $('<code>').text(modal.attr('data-cache-name')), ' cache?'
+                )
+            )
             $('#invalidateConfirm').attr('data-key', key)
         })
 

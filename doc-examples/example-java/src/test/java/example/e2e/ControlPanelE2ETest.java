@@ -184,6 +184,45 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         waitForLoggerUpdate(page, loggerName, () -> id(page, "submit").click());
     }
 
+    @Test
+    void testLoggerDialogValidatesAndRendersNamesAsText(Page page) {
+        page.navigate(baseUrl() + "/loggers");
+
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Add new logger")).click();
+        assertThat(page.locator("#modalLabel")).hasText("Configure new logger");
+
+        // A blank name is rejected without calling the server
+        page.locator("#logger").fill("   ");
+        id(page, "submit").click();
+        assertThat(page.locator("#result").getByRole(AriaRole.ALERT)).hasText("Enter a logger name.");
+        assertThat(page.locator("#logger")).hasAttribute("aria-invalid", "true");
+
+        // Pressing Enter submits through the dialog instead of reloading the page
+        page.locator("#logger").fill("markup.<b>logger</b>");
+        page.locator("#actionsModal").getByLabel("Level:").selectOption("WARN");
+        page.waitForResponse(
+            response -> response.url().contains("/loggers-control-panel-controller/") && response.status() == HttpStatus.NO_CONTENT.getCode(),
+            () -> page.locator("#logger").press("Enter")
+        );
+        assertThat(page.locator("#result").getByRole(AriaRole.ALERT)).containsText("Logger configured");
+
+        // Closing the dialog refreshes the list, and the new name is rendered as text, not markup
+        page.locator("#actionsModal .modal-footer [data-dismiss='modal']").click();
+        var row = page.locator("tbody tr").filter(new Locator.FilterOptions().setHasText("markup.<b>logger</b>"));
+        assertThat(row).containsText("WARN");
+        assertThat(page.locator("tbody b")).hasCount(0);
+
+        row.getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName("Reconfigure")).click();
+        assertThat(page.locator("#modalLabel code")).hasText("markup.<b>logger</b>");
+        assertThat(page.locator("#modalLabel b")).hasCount(0);
+        // Clear the level, so the logger is no longer listed and other tests see the original list
+        page.locator("#actionsModal").getByLabel("Level:").selectOption("NOT_SPECIFIED");
+        page.waitForResponse(
+            response -> response.url().contains("/loggers-control-panel-controller/") && response.status() == HttpStatus.NO_CONTENT.getCode(),
+            () -> id(page, "submit").click()
+        );
+    }
+
     private static void waitForLoggerUpdate(Page page, String loggerName, Runnable action) {
         page.waitForResponse(
             response -> response.url().contains("/loggers-control-panel-controller/" + loggerName)
