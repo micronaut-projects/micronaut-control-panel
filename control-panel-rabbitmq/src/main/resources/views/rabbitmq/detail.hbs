@@ -7,28 +7,28 @@
         <div class="card-body">
             {{#each connections as |connection|}}
                 <dl class="row cp-rabbitmq-connection">
-                    <dt class="col-sm-3">Name</dt>
-                    <dd class="col-sm-9"><code>{{connection.name}}</code> <span class="badge {{connection.badgeClass}}">{{connection.stateLabel}}</span></dd>
-                    <dt class="col-sm-3">Broker</dt>
-                    <dd class="col-sm-9">
+                    <dt>Name</dt>
+                    <dd><code>{{connection.name}}</code> <span class="badge {{connection.badgeClass}}">{{connection.stateLabel}}</span></dd>
+                    <dt>Broker</dt>
+                    <dd>
                         {{#each connection.addresses as |address|}}<code>{{address}}</code> {{/each}}
-                        {{#if connection.broker}}<div class="text-muted">{{connection.broker}}</div>{{/if}}
+                        {{#if connection.broker}}<div class="card-description">{{connection.broker}}</div>{{/if}}
                     </dd>
-                    <dt class="col-sm-3">Virtual host</dt>
-                    <dd class="col-sm-9"><code>{{connection.virtualHost}}</code></dd>
-                    <dt class="col-sm-3">User</dt>
-                    <dd class="col-sm-9"><code>{{connection.username}}</code>{{#if connection.ssl}} <span class="badge badge-secondary">TLS</span>{{/if}}</dd>
+                    <dt>Virtual host</dt>
+                    <dd><code>{{connection.virtualHost}}</code></dd>
+                    <dt>User</dt>
+                    <dd><code>{{connection.username}}</code>{{#if connection.ssl}} <span class="badge badge-secondary">TLS</span>{{/if}}</dd>
                     {{#if connection.consumerExecutor}}
-                        <dt class="col-sm-3">Consumer executor</dt>
-                        <dd class="col-sm-9"><code>{{connection.consumerExecutor}}</code></dd>
+                        <dt>Consumer executor</dt>
+                        <dd><code>{{connection.consumerExecutor}}</code></dd>
                     {{/if}}
                     {{#if connection.channelPoolMaxIdle}}
-                        <dt class="col-sm-3">Idle channels</dt>
-                        <dd class="col-sm-9">up to {{connection.channelPoolMaxIdle}}</dd>
+                        <dt>Idle channels</dt>
+                        <dd>up to {{connection.channelPoolMaxIdle}}</dd>
                     {{/if}}
                 </dl>
             {{else}}
-                <p class="card-text text-muted">There are no RabbitMQ connections. Configure one with <code>rabbitmq.uri</code> or under <code>rabbitmq.servers</code>.</p>
+                <p class="card-text card-description">There are no RabbitMQ connections. Configure one with <code>rabbitmq.uri</code> or under <code>rabbitmq.servers</code>.</p>
             {{/each}}
         </div>
     </div>
@@ -60,11 +60,11 @@
                             <tr data-filter-table-row>
                                 <td>
                                     <code class="cp-table-code">{{consumer.queue}}</code>
-                                    <div class="text-muted">on {{consumer.connection}}</div>
+                                    <div class="card-description">on {{consumer.connection}}</div>
                                 </td>
                                 <td>
                                     <code class="cp-table-code">{{consumer.listener}}</code>
-                                    <div class="text-muted">{{consumer.method}}()</div>
+                                    <div class="card-description">{{consumer.method}}()</div>
                                 </td>
                                 <td class="cp-rabbitmq-settings">
                                     <div>{{consumer.consumersLabel}}, prefetch {{#if consumer.prefetch}}{{consumer.prefetch}}{{else}}unlimited{{/if}}</div>
@@ -73,7 +73,7 @@
                                         {{#if consumer.reQueue}}<span class="badge badge-outline">requeue</span>{{/if}}
                                         {{#if consumer.exclusive}}<span class="badge badge-outline">exclusive</span>{{/if}}
                                     </div>
-                                    {{#if consumer.executor}}<div class="text-muted">executor <code>{{consumer.executor}}</code></div>{{/if}}
+                                    {{#if consumer.executor}}<div class="card-description">executor <code>{{consumer.executor}}</code></div>{{/if}}
                                 </td>
                             </tr>
                         {{/each}}
@@ -83,9 +83,25 @@
                         </tbody>
                     </table>
                 </div>
+                <div class="cp-data-table-footer">
+                    <label class="cp-data-table-page-size">
+                        Rows per page
+                        <select class="form-control" data-filter-table-page-size-select aria-label="Consumers per page">
+                            <option value="10" selected>10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </label>
+                    <div class="cp-data-table-pagination">
+                        <span class="cp-data-table-page" data-filter-table-page>Page 1 of 1</span>
+                        <button type="button" class="btn btn-secondary btn-sm" data-filter-table-prev>Previous</button>
+                        <button type="button" class="btn btn-secondary btn-sm" data-filter-table-next>Next</button>
+                    </div>
+                </div>
             </div>
             {{else}}
-                <p class="card-text text-muted">There are no <code>@Queue</code> consumers in <code>@RabbitListener</code> beans.</p>
+                <p class="card-text card-description">There are no <code>@Queue</code> consumers in <code>@RabbitListener</code> beans.</p>
             {{/if}}
         </div>
     </div>

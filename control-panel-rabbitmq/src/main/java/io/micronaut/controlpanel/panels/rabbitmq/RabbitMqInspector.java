@@ -20,12 +20,12 @@ import com.rabbitmq.client.Connection;
 import io.micronaut.context.BeanContext;
 import io.micronaut.context.BeanRegistration;
 import io.micronaut.context.annotation.Requires;
-import io.micronaut.core.annotation.AnnotationValue;
 import io.micronaut.core.annotation.Internal;
 import io.micronaut.inject.BeanDefinition;
 import io.micronaut.inject.ExecutableMethod;
 import io.micronaut.inject.qualifiers.Qualifiers;
 import io.micronaut.rabbitmq.annotation.Queue;
+import io.micronaut.rabbitmq.annotation.RabbitConnection;
 import io.micronaut.rabbitmq.annotation.RabbitListener;
 import io.micronaut.rabbitmq.connect.RabbitConnectionFactoryConfig;
 import jakarta.inject.Singleton;
@@ -117,9 +117,6 @@ public class RabbitMqInspector {
     public List<RabbitMqConsumerInfo> consumers() {
         List<RabbitMqConsumerInfo> consumers = new ArrayList<>();
         for (BeanDefinition<?> definition : beanContext.getBeanDefinitions(Qualifiers.byStereotype(RabbitListener.class))) {
-            AnnotationValue<RabbitListener> listener = definition.getAnnotation(RabbitListener.class);
-            String listenerConnection = listener == null ? "" : listener.stringValue("connection").orElse("");
-            String listenerExecutor = listener == null ? "" : listener.stringValue("executor").orElse("");
             for (ExecutableMethod<?, ?> method : definition.getExecutableMethods()) {
                 if (!method.hasDeclaredAnnotation(Queue.class)) {
                     continue;
@@ -128,8 +125,10 @@ public class RabbitMqInspector {
                     method.stringValue(Queue.class).orElse(""),
                     definition.getBeanType().getName(),
                     method.getMethodName(),
-                    orDefault(method.stringValue(Queue.class, "connection").orElse(""), listenerConnection, DEFAULT_CONNECTION),
-                    orDefault(method.stringValue(Queue.class, "executor").orElse(""), listenerExecutor, null),
+                    // @Queue(connection) and @RabbitListener(connection) are aliases of @RabbitConnection, which can also be
+                    // used directly; this is the lookup RabbitMQConsumerAdvice uses
+                    method.stringValue(RabbitConnection.class, "connection").filter(value -> !value.isBlank()).orElse(DEFAULT_CONNECTION),
+                    method.stringValue(RabbitConnection.class, "executor").filter(value -> !value.isBlank()).orElse(null),
                     method.stringValue(Queue.class, "numberOfConsumers").orElse("1"),
                     method.intValue(Queue.class, "prefetch").orElse(0),
                     method.booleanValue(Queue.class, "autoAcknowledgment").orElse(false),
@@ -140,12 +139,5 @@ public class RabbitMqInspector {
         }
         consumers.sort(Comparator.comparing(RabbitMqConsumerInfo::queue).thenComparing(RabbitMqConsumerInfo::listener));
         return consumers;
-    }
-
-    private static @Nullable String orDefault(String value, String fallback, @Nullable String defaultValue) {
-        if (!value.isBlank()) {
-            return value;
-        }
-        return fallback.isBlank() ? defaultValue : fallback;
     }
 }
