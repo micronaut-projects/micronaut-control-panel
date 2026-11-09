@@ -70,7 +70,8 @@ public class CracInspector {
      * @return the CRaC state
      */
     public CracInfo inspect() {
-        Optional<CracConfiguration> configuration = beanContext.findBean(CracConfiguration.class);
+        // Micronaut CRaC only creates its configuration, and registers resources, when crac.enabled is true
+        Optional<CracConfiguration> configuration = beanContext.findBean(CracConfiguration.class).filter(CracConfiguration::isEnabled);
         long restoreTime = -1;
         long uptimeSinceRestore = -1;
         try {
@@ -88,7 +89,7 @@ public class CracInspector {
             checkpointConfigured(),
             restoreTime >= 0 ? Instant.ofEpochMilli(restoreTime).toString() : null,
             uptimeSinceRestore >= 0 ? format(Duration.ofMillis(uptimeSinceRestore)) : null,
-            resources(),
+            configuration.isPresent() ? resources() : List.of(),
             redis(),
             recorder.events()
         );
@@ -115,7 +116,7 @@ public class CracInspector {
                 Object bean = registration.getBean();
                 int order = bean instanceof Ordered ordered ? ordered.getOrder() : Ordered.LOWEST_PRECEDENCE;
                 // Beans without a name, such as the HTTP server resource, report "Primary"
-            String name = registration.getIdentifier().getName();
+                String name = registration.getIdentifier().getName();
                 result.add(new CracInfo.Resource(
                     registration.getBeanDefinition().getBeanType().getName(),
                     name == null || name.isBlank() || name.equals("Primary") ? null : name,
