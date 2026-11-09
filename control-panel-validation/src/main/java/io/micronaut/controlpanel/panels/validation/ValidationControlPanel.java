@@ -19,9 +19,12 @@ import io.micronaut.context.annotation.Requires;
 import io.micronaut.controlpanel.core.AbstractControlPanel;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.core.util.StringUtils;
+import io.micronaut.core.util.SupplierUtil;
 import io.micronaut.validation.validator.Validator;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
+
+import java.util.function.Supplier;
 
 /**
  * Read-only view of what Micronaut Validation validates in the application: custom constraint validators, beans with
@@ -38,7 +41,7 @@ public class ValidationControlPanel extends AbstractControlPanel<ValidationInfo>
     public static final String NAME = "validation";
     public static final String ENABLED_PROPERTY = ControlPanelConfiguration.PREFIX + "." + NAME + ".enabled";
 
-    private final ValidationInspector inspector;
+    private final Supplier<ValidationInfo> info;
 
     /**
      * @param inspector the validation inspector
@@ -46,12 +49,13 @@ public class ValidationControlPanel extends AbstractControlPanel<ValidationInfo>
      */
     public ValidationControlPanel(ValidationInspector inspector, @Named(NAME) ControlPanelConfiguration configuration) {
         super(NAME, configuration);
-        this.inspector = inspector;
+        // Bean definitions and their annotation metadata do not change after startup, so they are inspected once
+        this.info = SupplierUtil.memoized(inspector::inspect);
     }
 
     @Override
     public ValidationInfo getBody() {
-        return inspector.inspect();
+        return info.get();
     }
 
     @Override
