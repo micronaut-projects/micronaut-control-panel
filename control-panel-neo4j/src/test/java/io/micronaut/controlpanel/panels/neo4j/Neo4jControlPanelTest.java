@@ -81,6 +81,8 @@ class Neo4jControlPanelTest {
     @Test
     void uriIsShownWithoutCredentials() {
         assertEquals("neo4j://cluster:7687", Neo4jInspector.sanitize(URI.create("neo4j://user:pass@cluster:7687?policy=eu")));
+        assertEquals("(hidden)", Neo4jInspector.sanitize(URI.create("bolt://neo4j:p@ssw0rd@localhost:7687")));
+        assertEquals("(hidden)", Neo4jInspector.sanitize(URI.create("bolt://user:secret@my_host:7687")));
     }
 
     @Test

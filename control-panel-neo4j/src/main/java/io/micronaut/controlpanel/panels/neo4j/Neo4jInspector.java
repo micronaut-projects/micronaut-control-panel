@@ -195,7 +195,10 @@ public class Neo4jInspector {
             return "(not configured)";
         }
         if (uri.getHost() == null) {
-            return uri.getUserInfo() == null && uri.getQuery() == null ? uri.toString() : "(hidden)";
+            // java.net.URI falls back to a registry-based authority, with no user info, when it cannot parse the
+            // host, for example for a password with an unencoded '@', so the raw value is checked instead
+            String raw = uri.toString();
+            return raw.contains("@") || raw.contains("?") ? "(hidden)" : raw;
         }
         try {
             return new URI(uri.getScheme(), null, uri.getHost(), uri.getPort(), uri.getPath(), null, null).toString();
