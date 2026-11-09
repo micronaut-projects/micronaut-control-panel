@@ -10,27 +10,27 @@
         </div>
         <div class="card-body">
             <dl class="row">
-                <dt class="col-sm-3">Driver</dt>
-                <dd class="col-sm-9">{{#if factory.driver}}<code>{{factory.driver}}</code>{{else}}<span class="text-muted">—</span>{{/if}}</dd>
+                <dt>Driver</dt>
+                <dd>{{#if factory.driver}}<code>{{factory.driver}}</code>{{else}}<span class="card-description">—</span>{{/if}}</dd>
                 {{#if factory.protocol}}
-                    <dt class="col-sm-3">Protocol</dt>
-                    <dd class="col-sm-9"><code>{{factory.protocol}}</code></dd>
+                    <dt>Protocol</dt>
+                    <dd><code>{{factory.protocol}}</code></dd>
                 {{/if}}
                 {{#if factory.host}}
-                    <dt class="col-sm-3">Host</dt>
-                    <dd class="col-sm-9"><code>{{factory.host}}{{#if factory.port}}:{{factory.port}}{{/if}}</code></dd>
+                    <dt>Host</dt>
+                    <dd><code>{{factory.host}}{{#if factory.port}}:{{factory.port}}{{/if}}</code></dd>
                 {{/if}}
-                <dt class="col-sm-3">Database</dt>
-                <dd class="col-sm-9">{{#if factory.database}}<code>{{factory.database}}</code>{{else}}<span class="text-muted">—</span>{{/if}}</dd>
-                <dt class="col-sm-3">User</dt>
-                <dd class="col-sm-9">{{#if factory.user}}<code>{{factory.user}}</code>{{else}}<span class="text-muted">—</span>{{/if}}</dd>
+                <dt>Database</dt>
+                <dd>{{#if factory.database}}<code>{{factory.database}}</code>{{else}}<span class="card-description">—</span>{{/if}}</dd>
+                <dt>User</dt>
+                <dd>{{#if factory.user}}<code>{{factory.user}}</code>{{else}}<span class="card-description">—</span>{{/if}}</dd>
                 {{#if factory.ssl}}
-                    <dt class="col-sm-3">SSL</dt>
-                    <dd class="col-sm-9">{{factory.ssl}}</dd>
+                    <dt>SSL</dt>
+                    <dd>{{factory.ssl}}</dd>
                 {{/if}}
                 {{#if factory.connectTimeout}}
-                    <dt class="col-sm-3">Connect timeout</dt>
-                    <dd class="col-sm-9">{{factory.connectTimeout}}</dd>
+                    <dt>Connect timeout</dt>
+                    <dd>{{factory.connectTimeout}}</dd>
                 {{/if}}
             </dl>
             {{#if factory.pool}}
@@ -39,24 +39,24 @@
                     <div class="progress-bar bg-success" style="width: {{factory.pool.usagePercent}}%"></div>
                 </div>
                 <dl class="row cp-r2dbc-pool">
-                    <dt class="col-sm-3">In use</dt>
-                    <dd class="col-sm-9">{{factory.pool.acquired}} of {{factory.pool.maxAllocated}}</dd>
-                    <dt class="col-sm-3">Idle</dt>
-                    <dd class="col-sm-9">{{factory.pool.idle}}</dd>
-                    <dt class="col-sm-3">Open</dt>
-                    <dd class="col-sm-9">{{factory.pool.allocated}}</dd>
-                    <dt class="col-sm-3">Waiting</dt>
-                    <dd class="col-sm-9">{{factory.pool.pending}}{{#if factory.pool.maxPendingLimited}} of {{factory.pool.maxPending}}{{/if}}</dd>
+                    <dt>In use</dt>
+                    <dd>{{factory.pool.acquired}} of {{factory.pool.maxAllocated}}</dd>
+                    <dt>Idle</dt>
+                    <dd>{{factory.pool.idle}}</dd>
+                    <dt>Open</dt>
+                    <dd>{{factory.pool.allocated}}</dd>
+                    <dt>Waiting</dt>
+                    <dd>{{factory.pool.pending}}{{#if factory.pool.maxPendingLimited}} of {{factory.pool.maxPending}}{{/if}}</dd>
                 </dl>
             {{else}}
-                <p class="card-text text-muted">This connection factory is not an R2DBC pool, or its pool does not report metrics.</p>
+                <p class="card-text card-description">This connection factory is not an R2DBC pool, or its pool does not report metrics.</p>
             {{/if}}
         </div>
     </div>
     {{else}}
     <div class="card card-light">
         <div class="card-body">
-            <p class="card-text text-muted">There are no R2DBC connection factories. Configure one under <code>r2dbc.datasources</code>.</p>
+            <p class="card-text card-description">There are no R2DBC connection factories. Configure one under <code>r2dbc.datasources</code>.</p>
         </div>
     </div>
     {{/each}}
