@@ -15,6 +15,7 @@
  */
 package io.micronaut.controlpanel.panels.testing;
 
+import io.micronaut.core.annotation.Internal;
 import io.micronaut.core.annotation.ReflectiveAccess;
 import org.jspecify.annotations.Nullable;
 
@@ -26,7 +27,7 @@ import java.util.List;
  * @param running Whether a continuous testing process of the project is known to run
  * @param mayBeRunning Whether the process may run without the panel being able to tell: its last report was written
  *                     without a live server, as when the application's LiveReload server holds the port, and does not
- *                     name its process
+ *                     name its process, or the live report does not name its project
  * @param reportUrl The address of the live report, when a running process serves it
  * @param reportFile The report page in the file system, when there is one
  * @param project The project the report belongs to
@@ -41,6 +42,7 @@ import java.util.List;
  * @param commands The commands that start continuous testing, the one of the project's build tool first
  * @since 2.3.0
  */
+@Internal
 @ReflectiveAccess
 public record ContinuousTestingStatus(
     boolean running,

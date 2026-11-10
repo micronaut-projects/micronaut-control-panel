@@ -46,7 +46,7 @@ Relative directories resolve against the project directory, by default the worki
 
 Continuous testing runs when its LiveReload server serves the report of the project, by default at `http://localhost:35729/tests/`, or at the path `micronaut.dev.test.html-report-path` names. A report that names the process that writes it, by its id, `pid`, and the instant it started, `pidStartedAt`, is running as long as that process is alive.
 
-A report written without a live server, as when the application's own LiveReload server holds the port, does not tell whether continuous testing still runs: the panel then says that it may be running, shows the results of that report, and still tells how to start it. Give continuous testing a LiveReload port of its own, and set `live-reload-port` or `report-url` to it, to follow it live.
+A report written without a live server, as when the application's own LiveReload server holds the port, does not tell whether continuous testing still runs: the panel then says that it may be running, shows the results of that report, and still tells how to start it. Give continuous testing a LiveReload port of its own, and set `live-reload-port` or `report-url` to it, to follow it live. The panel says the same of a live report that does not name its project, as an older one does, since it may be the report of another project on the same port.
 
 The panel only connects to and links to HTTP addresses of the loopback interface.
 

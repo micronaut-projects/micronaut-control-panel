@@ -16,19 +16,21 @@
 package io.micronaut.controlpanel.panels.testing;
 
 import io.micronaut.context.env.Environment;
+import io.micronaut.core.annotation.Internal;
+import io.micronaut.json.JsonMapper;
+import io.micronaut.json.tree.JsonNode;
 import jakarta.inject.Singleton;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -39,11 +41,8 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Finds the continuous testing process of the project and the latest state of its report.
@@ -58,26 +57,29 @@ import java.util.regex.Pattern;
  * report. The process runs when the report names a live process, by its id, {@code pid}, and the instant it started,
  * {@code pidStartedAt}, or else when its LiveReload server serves the report of the project.</p>
  *
+ * <p>An implementation detail of the panel, which follows the report of the development runtime as it evolves.</p>
+ *
  * @since 2.3.0
  */
+@Internal
 @Singleton
-public class ContinuousTestingStatusResolver {
+final class ContinuousTestingStatusResolver {
 
     /**
      * The property naming the report directory of continuous testing.
      */
-    public static final String HTML_REPORT_PROPERTY = "micronaut.dev.test.html-report";
+    static final String HTML_REPORT_PROPERTY = "micronaut.dev.test.html-report";
 
     /**
      * The property naming the path the LiveReload server serves the report at.
      */
-    public static final String HTML_REPORT_PATH_PROPERTY = "micronaut.dev.test.html-report-path";
+    static final String HTML_REPORT_PATH_PROPERTY = "micronaut.dev.test.html-report-path";
 
     /**
      * The report directories of the build plugins and of the development runtime, relative to the project directory,
      * in the order they are looked for.
      */
-    public static final List<String> DEFAULT_REPORT_DIRECTORIES = List.of(
+    static final List<String> DEFAULT_REPORT_DIRECTORIES = List.of(
         // ./gradlew mnTest
         "build/reports/tests/mnTest",
         // mvn mn:test
@@ -94,10 +96,8 @@ public class ContinuousTestingStatusResolver {
 
     private static final Logger LOG = LoggerFactory.getLogger(ContinuousTestingStatusResolver.class);
     private static final Set<String> LOOPBACK_HOSTS = Set.of("localhost", "127.0.0.1", "[::1]", "::1");
-    private static final Pattern PROJECT = Pattern.compile("\"project\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"");
-    private static final Pattern VERSION = Pattern.compile("\"version\"\\s*:\\s*\\d+");
-    private static final int PROBE_BYTES = 1024;
-    private static final long MAX_STATE_BYTES = 64L * 1024 * 1024;
+    // the report of a very large suite holds a few hundred bytes a test
+    private static final long MAX_STATE_BYTES = 4L * 1024 * 1024;
     private static final int MAX_HISTORY = 10;
     private static final String FAILED = "failed";
     private static final String ERRORED = "errored";
@@ -107,17 +107,21 @@ public class ContinuousTestingStatusResolver {
 
     private final ContinuousTestingConfiguration configuration;
     private final Environment properties;
+    private final JsonMapper jsonMapper;
     private volatile @Nullable CachedState cached;
     private volatile @Nullable CachedProbe lastProbe;
 
     /**
      * @param configuration The panel's configuration
      * @param properties The environment of the application
+     * @param jsonMapper Reads the reports
      */
-    public ContinuousTestingStatusResolver(ContinuousTestingConfiguration configuration,
-                                           Environment properties) {
+    ContinuousTestingStatusResolver(ContinuousTestingConfiguration configuration,
+                                    Environment properties,
+                                    JsonMapper jsonMapper) {
         this.configuration = configuration;
         this.properties = properties;
+        this.jsonMapper = jsonMapper;
     }
 
     /**
@@ -125,11 +129,11 @@ public class ContinuousTestingStatusResolver {
      *
      * @return The status
      */
-    public ContinuousTestingStatus resolve() {
+    ContinuousTestingStatus resolve() {
         Path projectDirectory = projectDirectory();
         Path reportDirectory = reportDirectory(projectDirectory);
         Path stateFile = reportDirectory == null ? null : reportDirectory.resolve(STATE_FILE);
-        Map<?, ?> state = stateFile == null ? null : readState(stateFile);
+        JsonNode state = stateFile == null ? null : readState(stateFile);
         // the report names its project after the project directory: the live report of another project is not this one's
         Path directoryName = projectDirectory.getFileName();
         String expectedProject = directoryName == null ? null : directoryName.toString();
@@ -150,22 +154,24 @@ public class ContinuousTestingStatusResolver {
             if (running && url == null && bool(state, "live")) {
                 // a report served live that does not name its address: the default one, when it serves it
                 String fallback = reportUrl(state);
-                url = fallback != null && serves(fallback, expectedProject) ? fallback : null;
+                url = fallback != null && serves(fallback, expectedProject).project() == Served.THIS_PROJECT ? fallback : null;
             }
             if (running) {
                 liveUrl = url;
             }
         } else {
             String url = reportUrl(state);
-            if (url != null && serves(url, expectedProject)) {
+            Probe probe = url == null ? Probe.NONE : serves(url, expectedProject);
+            if (probe.project() == Served.THIS_PROJECT) {
                 running = true;
                 liveUrl = url;
                 if (state == null) {
-                    state = fetchState(url);
+                    state = probe.state();
                 }
-            } else if (state != null && !bool(state, "live")) {
-                // a process whose LiveReload server could not start, or that runs without one, is only seen by its
-                // report: that report does not tell whether it still runs
+            } else if (probe.project() == Served.UNKNOWN_PROJECT || state != null && !bool(state, "live")) {
+                // a live report that does not name its project may be another project's, and a process whose
+                // LiveReload server could not start, or that runs without one, is only seen by its report: neither
+                // tells whether continuous testing of this project runs
                 mayBeRunning = true;
             }
         }
@@ -180,9 +186,9 @@ public class ContinuousTestingStatusResolver {
         List<ContinuousTestingStatus.Failure> failures = new ArrayList<>();
         int failureCount = failures(state, failures);
         List<ContinuousTestingStatus.Run> history = new ArrayList<>();
-        List<?> historyNode = array(state, "history");
+        JsonNode historyNode = array(state, "history");
         if (historyNode != null) {
-            for (Object run : historyNode) {
+            for (JsonNode run : historyNode.values()) {
                 if (history.size() == MAX_HISTORY) {
                     break;
                 }
@@ -192,7 +198,7 @@ public class ContinuousTestingStatusResolver {
                 }
             }
         }
-        boolean runInProgress = running && state.get("running") instanceof Map;
+        boolean runInProgress = running && object(state, "running") != null;
         Integer finished = intValue(state, "finished");
         return new ContinuousTestingStatus(
             running,
@@ -203,11 +209,11 @@ public class ContinuousTestingStatusResolver {
             text(state, "generatedAt"),
             runInProgress,
             finished == null ? 0 : finished,
-            run(state.get("last")),
+            run(object(state, "last")),
             List.copyOf(history),
             List.copyOf(failures),
             failureCount,
-            compileFailure(state.get("compileFailure")),
+            compileFailure(object(state, "compileFailure")),
             commands
         );
     }
@@ -260,7 +266,7 @@ public class ContinuousTestingStatusResolver {
      * @param state The state of the report, when there is one
      * @return The address, ending with a slash, or null when it is not a loopback HTTP address
      */
-    @Nullable String reportUrl(@Nullable Map<?, ?> state) {
+    @Nullable String reportUrl(@Nullable JsonNode state) {
         String configured = configuration.reportUrl();
         if (configured != null && !configured.isBlank()) {
             return loopbackUrl(configured);
@@ -280,47 +286,40 @@ public class ContinuousTestingStatusResolver {
      * Whether a LiveReload server serves the report of the project at an address.
      *
      * @param url The address of the report
-     * @param project The project the report must belong to, or null to accept any
-     * @return True when it does
+     * @param project The project the report must belong to, or null when it is not known
+     * @return Whose report the address serves, and that report
      */
-    boolean serves(String url, @Nullable String project) {
+    Probe serves(String url, @Nullable String project) {
         long now = System.nanoTime();
         CachedProbe last = lastProbe;
         if (last != null && last.url.equals(url) && Objects.equals(last.project, project) && now - last.probedAt < PROBE_TTL_NANOS) {
-            return last.serves;
+            return last.probe;
         }
-        boolean serves = probe(url, project);
-        lastProbe = new CachedProbe(url, project, serves, now);
-        return serves;
+        Probe probe = probe(url, project);
+        lastProbe = new CachedProbe(url, project, probe, now);
+        return probe;
     }
 
-    private boolean probe(String url, @Nullable String project) {
-        byte[] head = get(url + STATE_FILE, PROBE_BYTES);
-        if (head == null) {
-            return false;
+    private Probe probe(String url, @Nullable String project) {
+        JsonNode state = fetchState(url + STATE_FILE);
+        if (state == null) {
+            return Probe.NONE;
         }
-        String text = new String(head, StandardCharsets.UTF_8);
-        // a report starts with its version and its project: anything else is not one
-        Matcher matcher = PROJECT.matcher(text);
-        if (!text.stripLeading().startsWith("{") || !VERSION.matcher(text).find() || !matcher.find()) {
-            return false;
+        // a report names its version: anything else is not one
+        JsonNode version = state.get("version");
+        if (version == null || !version.isNumber()) {
+            return Probe.NONE;
         }
-        String served;
-        try {
-            served = ReportJson.parse("\"" + matcher.group(1) + "\"") instanceof String name ? name : "";
-        } catch (IllegalArgumentException e) {
-            return false;
+        String served = text(state, "project");
+        if (served == null || served.isBlank() || project == null || project.isBlank()) {
+            // a report that does not name its project, as older ones do, may be of any project on the same port
+            return new Probe(Served.UNKNOWN_PROJECT, null);
         }
         // the report of another project on the same port is not this project's
-        return sameProject(served, project);
+        return served.equals(project) ? new Probe(Served.THIS_PROJECT, state) : Probe.NONE;
     }
 
-    private @Nullable Map<?, ?> fetchState(String url) {
-        byte[] body = get(url + STATE_FILE, MAX_STATE_BYTES);
-        return body == null ? null : parse(body, url + STATE_FILE);
-    }
-
-    private @Nullable Map<?, ?> readState(Path stateFile) {
+    private @Nullable JsonNode readState(Path stateFile) {
         BasicFileAttributes attributes;
         try {
             attributes = Files.readAttributes(stateFile, BasicFileAttributes.class);
@@ -340,31 +339,21 @@ public class ContinuousTestingStatusResolver {
             LOG.debug("The continuous testing report {} is too large to read: {} bytes", stateFile, size);
             return null;
         }
-        byte[] bytes;
-        try {
-            bytes = Files.readAllBytes(stateFile);
+        JsonNode state;
+        try (InputStream in = Files.newInputStream(stateFile)) {
+            state = parse(in);
         } catch (IOException e) {
+            // a report being replaced, or one of another version
             LOG.debug("Cannot read the continuous testing report {}: {}", stateFile, e.getMessage());
             return null;
         }
-        Map<?, ?> state = parse(bytes, stateFile.toString());
         if (state != null) {
             cached = new CachedState(stateFile, key, modified, size, state);
         }
         return state;
     }
 
-    private static @Nullable Map<?, ?> parse(byte[] bytes, String source) {
-        try {
-            return ReportJson.parse(new String(bytes, StandardCharsets.UTF_8)) instanceof Map<?, ?> map ? map : null;
-        } catch (IllegalArgumentException e) {
-            // a report being replaced, or one of another version
-            LOG.debug("Cannot read the continuous testing report {}: {}", source, e.getMessage());
-            return null;
-        }
-    }
-
-    private byte @Nullable [] get(String url, long limit) {
+    private @Nullable JsonNode fetchState(String url) {
         HttpURLConnection connection = null;
         try {
             int timeout = (int) Math.max(1, Math.min(Integer.MAX_VALUE, configuration.probeTimeout().toMillis()));
@@ -373,11 +362,11 @@ public class ContinuousTestingStatusResolver {
             connection.setReadTimeout(timeout);
             connection.setInstanceFollowRedirects(false);
             connection.setRequestProperty("Accept", "application/json");
-            if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
+            if (connection.getResponseCode() != HttpURLConnection.HTTP_OK || connection.getContentLengthLong() > MAX_STATE_BYTES) {
                 return null;
             }
             try (InputStream in = connection.getInputStream()) {
-                return read(in, limit);
+                return parse(in);
             }
         } catch (IOException | URISyntaxException | IllegalArgumentException e) {
             LOG.trace("No continuous testing report at {}: {}", url, e.getMessage());
@@ -389,16 +378,22 @@ public class ContinuousTestingStatusResolver {
         }
     }
 
-    private static byte[] read(InputStream in, long limit) throws IOException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        byte[] buffer = new byte[8192];
-        long total = 0;
-        int read;
-        while (total < limit && (read = in.read(buffer, 0, (int) Math.min(buffer.length, limit - total))) != -1) {
-            out.write(buffer, 0, read);
-            total += read;
+    /**
+     * Reads a report, as it streams in: one larger than {@link #MAX_STATE_BYTES} is not read to its end.
+     *
+     * @param in The report
+     * @return The report, or null when it is not a JSON object
+     * @throws IOException When it cannot be read, is not JSON, or is too large
+     */
+    private @Nullable JsonNode parse(InputStream in) throws IOException {
+        JsonNode state;
+        try {
+            state = jsonMapper.readValue(new LimitedInputStream(in, MAX_STATE_BYTES), JsonNode.class);
+        } catch (RuntimeException e) {
+            // Jackson 3 reports a failure to read or parse with an unchecked exception
+            throw new IOException(e.getMessage(), e);
         }
-        return out.toByteArray();
+        return state != null && state.isObject() ? state : null;
     }
 
     /**
@@ -426,26 +421,20 @@ public class ContinuousTestingStatusResolver {
         }
     }
 
-    private int failures(Map<?, ?> state, List<ContinuousTestingStatus.Failure> failures) {
-        List<?> classes = array(state, "classes");
+    private int failures(JsonNode state, List<ContinuousTestingStatus.Failure> failures) {
+        JsonNode classes = array(state, "classes");
         if (classes == null) {
             return 0;
         }
         int count = 0;
         int max = Math.max(0, configuration.maxFailures());
-        for (Object element : classes) {
-            if (!(element instanceof Map<?, ?> testClass)) {
-                continue;
-            }
+        for (JsonNode testClass : classes.values()) {
             String className = text(testClass, "name");
-            List<?> tests = array(testClass, "tests");
+            JsonNode tests = array(testClass, "tests");
             if (tests == null) {
                 continue;
             }
-            for (Object testElement : tests) {
-                if (!(testElement instanceof Map<?, ?> test)) {
-                    continue;
-                }
+            for (JsonNode test : tests.values()) {
                 String status = text(test, "status");
                 if (!FAILED.equals(status) && !ERRORED.equals(status)) {
                     continue;
@@ -465,8 +454,8 @@ public class ContinuousTestingStatusResolver {
         return count;
     }
 
-    private static ContinuousTestingStatus.@Nullable Run run(@Nullable Object value) {
-        if (!(value instanceof Map<?, ?> run)) {
+    private static ContinuousTestingStatus.@Nullable Run run(@Nullable JsonNode run) {
+        if (run == null || !run.isObject()) {
             return null;
         }
         Long duration = longValue(run, "durationMillis");
@@ -482,17 +471,14 @@ public class ContinuousTestingStatusResolver {
         );
     }
 
-    private static @Nullable List<String> compileFailure(@Nullable Object value) {
-        if (!(value instanceof Map<?, ?> failure)) {
+    private static @Nullable List<String> compileFailure(@Nullable JsonNode failure) {
+        if (failure == null) {
             return null;
         }
         List<String> diagnostics = new ArrayList<>();
-        List<?> nodes = array(failure, "diagnostics");
+        JsonNode nodes = array(failure, "diagnostics");
         if (nodes != null) {
-            for (Object element : nodes) {
-                if (!(element instanceof Map<?, ?> diagnostic)) {
-                    continue;
-                }
+            for (JsonNode diagnostic : nodes.values()) {
                 String file = text(diagnostic, "file");
                 Integer line = intValue(diagnostic, "line");
                 String message = firstLine(text(diagnostic, "message"));
@@ -558,24 +544,32 @@ public class ContinuousTestingStatusResolver {
         return newline < 0 ? stripped : stripped.substring(0, newline).strip();
     }
 
-    private static @Nullable String text(Map<?, ?> node, String name) {
-        return node.get(name) instanceof String value ? value : null;
+    private static @Nullable JsonNode field(JsonNode node, String name) {
+        return node.isObject() ? node.get(name) : null;
     }
 
-    private static @Nullable Long longValue(Map<?, ?> node, String name) {
-        return node.get(name) instanceof Number value ? value.longValue() : null;
+    private static @Nullable String text(JsonNode node, String name) {
+        JsonNode value = field(node, name);
+        return value != null && value.isString() ? value.getStringValue() : null;
     }
 
-    private static @Nullable Integer intValue(Map<?, ?> node, String name) {
-        return node.get(name) instanceof Number value ? value.intValue() : null;
+    private static @Nullable Long longValue(JsonNode node, String name) {
+        JsonNode value = field(node, name);
+        return value != null && value.isNumber() ? value.getLongValue() : null;
     }
 
-    private static int intOrZero(Map<?, ?> node, String name) {
+    private static @Nullable Integer intValue(JsonNode node, String name) {
+        JsonNode value = field(node, name);
+        return value != null && value.isNumber() ? value.getIntValue() : null;
+    }
+
+    private static int intOrZero(JsonNode node, String name) {
         Integer value = intValue(node, name);
         return value == null ? 0 : value;
     }
 
     private static boolean sameProject(@Nullable String reported, @Nullable String expected) {
+        // the report in this project's own directory: one that does not name its project is taken to be this project's
         return reported == null || reported.isBlank() || expected == null || expected.isBlank() || reported.equals(expected);
     }
 
@@ -608,12 +602,19 @@ public class ContinuousTestingStatusResolver {
         }
     }
 
-    private static boolean bool(Map<?, ?> node, String name) {
-        return Boolean.TRUE.equals(node.get(name));
+    private static boolean bool(JsonNode node, String name) {
+        JsonNode value = field(node, name);
+        return value != null && value.isBoolean() && value.getBooleanValue();
     }
 
-    private static @Nullable List<?> array(Map<?, ?> node, String name) {
-        return node.get(name) instanceof List<?> value ? value : null;
+    private static @Nullable JsonNode array(JsonNode node, String name) {
+        JsonNode value = field(node, name);
+        return value != null && value.isArray() ? value : null;
+    }
+
+    private static @Nullable JsonNode object(JsonNode node, String name) {
+        JsonNode value = field(node, name);
+        return value != null && value.isObject() ? value : null;
     }
 
     /**
@@ -625,7 +626,7 @@ public class ContinuousTestingStatusResolver {
      * @param size Its size
      * @param state What it holds
      */
-    private record CachedState(Path file, @Nullable Object key, FileTime modified, long size, Map<?, ?> state) {
+    private record CachedState(Path file, @Nullable Object key, FileTime modified, long size, JsonNode state) {
     }
 
     /**
@@ -633,9 +634,85 @@ public class ContinuousTestingStatusResolver {
      *
      * @param url The address of the report
      * @param project The project the report had to belong to
-     * @param serves Whether the address served it
+     * @param probe What the address served
      * @param probedAt When, from {@link System#nanoTime()}
      */
-    private record CachedProbe(String url, @Nullable String project, boolean serves, long probedAt) {
+    private record CachedProbe(String url, @Nullable String project, Probe probe, long probedAt) {
+    }
+
+    /**
+     * Whose report an address serves.
+     */
+    enum Served {
+        /**
+         * No report, or the report of another project.
+         */
+        NONE,
+        /**
+         * A report that does not name its project.
+         */
+        UNKNOWN_PROJECT,
+        /**
+         * The report of the project.
+         */
+        THIS_PROJECT
+    }
+
+    /**
+     * What a probe of the live report found.
+     *
+     * @param project Whose report the address serves
+     * @param state The report, when it is the project's
+     */
+    record Probe(Served project, @Nullable JsonNode state) {
+        static final Probe NONE = new Probe(Served.NONE, null);
+    }
+
+    /**
+     * Fails a read that goes beyond a limit, rather than reading a report of any size.
+     */
+    private static final class LimitedInputStream extends FilterInputStream {
+        private long remaining;
+
+        LimitedInputStream(InputStream in, long limit) {
+            super(in);
+            this.remaining = limit;
+        }
+
+        @Override
+        public int read() throws IOException {
+            int read = super.read();
+            if (read != -1) {
+                consumed(1);
+            }
+            return read;
+        }
+
+        @Override
+        public int read(byte[] buffer, int offset, int length) throws IOException {
+            if (length == 0) {
+                return 0;
+            }
+            // one byte beyond the limit tells a report that ends there from a larger one
+            int read = super.read(buffer, offset, (int) Math.min(length, remaining + 1));
+            if (read > 0) {
+                consumed(read);
+            }
+            return read;
+        }
+
+        @Override
+        public long skip(long n) throws IOException {
+            long skipped = super.skip(Math.min(n, remaining + 1));
+            consumed(skipped);
+            return skipped;
+        }
+
+        private void consumed(long bytes) throws IOException {
+            remaining -= bytes;
+            if (remaining < 0) {
+                throw new IOException("The continuous testing report is larger than " + MAX_STATE_BYTES + " bytes");
+            }
+        }
     }
 }

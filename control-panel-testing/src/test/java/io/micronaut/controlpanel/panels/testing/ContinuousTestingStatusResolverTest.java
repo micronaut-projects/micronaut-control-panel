@@ -282,6 +282,82 @@ class ContinuousTestingStatusResolverTest {
     }
 
     @Test
+    void aLiveReportThatDoesNotNameItsProjectMayBeAnotherProjects() throws IOException {
+        // an older report on the default port, of this project or another one
+        int port = serve("/tests/state.json", failingState("").replace("\"project\":\"" + project.getFileName() + "\",", ""));
+
+        ContinuousTestingStatus status = resolver(Map.of(ContinuousTestingConfiguration.PREFIX + ".live-reload-port", port)).resolve();
+
+        assertFalse(status.running());
+        assertTrue(status.mayBeRunning());
+        assertNull(status.reportUrl(), "the report of another project is not linked to");
+        assertNull(status.lastRun(), "nor are its results shown");
+        assertEquals("Unknown", status.badge());
+    }
+
+    @Test
+    void aLiveReportThatDoesNotNameItsProjectBesideTheReportOfThisProject() throws IOException {
+        writeReport(project.resolve("build/reports/tests/mnTest"), failingState(""));
+        int port = serve("/tests/state.json", "{\"version\":1,\"live\":true}");
+
+        ContinuousTestingStatus status = resolver(Map.of(ContinuousTestingConfiguration.PREFIX + ".live-reload-port", port)).resolve();
+
+        assertFalse(status.running());
+        assertTrue(status.mayBeRunning());
+        assertNull(status.reportUrl());
+        assertEquals(2, status.failureCount(), "the results of the report in the project directory");
+    }
+
+    @Test
+    void aLiveProcessIsNotLinkedToALiveReportThatDoesNotNameItsProject() throws IOException {
+        ProcessHandle current = ProcessHandle.current();
+        writeReport(project.resolve("build/reports/tests/mnTest"), failingState("\"pid\":" + current.pid() + ",\"pidStartedAt\":\"" + current.info().startInstant().orElseThrow() + "\","));
+        int port = serve("/tests/state.json", "{\"version\":1,\"live\":true}");
+
+        ContinuousTestingStatus status = resolver(Map.of(ContinuousTestingConfiguration.PREFIX + ".live-reload-port", port)).resolve();
+
+        assertTrue(status.running());
+        assertNull(status.reportUrl());
+    }
+
+    @Test
+    void theReportInTheProjectDirectoryThatDoesNotNameItsProjectIsThisProjects() throws IOException {
+        ProcessHandle current = ProcessHandle.current();
+        writeReport(project.resolve("build/reports/tests/mnTest"), failingState("\"pid\":" + current.pid() + ",\"pidStartedAt\":\"" + current.info().startInstant().orElseThrow() + "\",")
+            .replace("\"project\":\"" + project.getFileName() + "\",", ""));
+
+        ContinuousTestingStatus status = resolver(Map.of()).resolve();
+
+        assertTrue(status.running());
+        assertEquals(2, status.failureCount());
+    }
+
+    @Test
+    void aReportLargerThanTheLimitIsNotRead() throws IOException {
+        String large = failingState("\"padding\":\"" + "x".repeat(5 * 1024 * 1024) + "\",");
+        writeReport(project.resolve("build/reports/tests/mnTest"), large);
+        int port = serve("/tests/state.json", large);
+
+        ContinuousTestingStatus status = resolver(Map.of(ContinuousTestingConfiguration.PREFIX + ".live-reload-port", port)).resolve();
+
+        assertFalse(status.running(), "the live report is too large to tell whose it is");
+        assertTrue(status.reportFound());
+        assertNull(status.lastRun());
+    }
+
+    @Test
+    void aLiveReportStreamedWithoutALengthIsReadUpToTheLimit() throws IOException {
+        int port = serveChunked("/tests/state.json", failingState("\"padding\":\"" + "x".repeat(5 * 1024 * 1024) + "\","));
+
+        assertFalse(resolver(Map.of(ContinuousTestingConfiguration.PREFIX + ".live-reload-port", port)).resolve().running());
+
+        context.close();
+        server.stop(0);
+        port = serveChunked("/tests/state.json", failingState(""));
+        assertTrue(resolver(Map.of(ContinuousTestingConfiguration.PREFIX + ".live-reload-port", port)).resolve().running());
+    }
+
+    @Test
     void jsonThatIsNotAReportIsNotALiveReport() throws IOException {
         int port = serve("/tests/state.json", "{}");
 
@@ -383,11 +459,19 @@ class ContinuousTestingStatusResolverTest {
     }
 
     private int serve(String path, String body) throws IOException {
+        return serve(path, body, false);
+    }
+
+    private int serveChunked(String path, String body) throws IOException {
+        return serve(path, body, true);
+    }
+
+    private int serve(String path, String body, boolean chunked) throws IOException {
         server = HttpServer.create(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), 0);
         server.createContext("/", exchange -> {
             byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
             if (exchange.getRequestURI().getPath().equals(path)) {
-                exchange.sendResponseHeaders(200, bytes.length);
+                exchange.sendResponseHeaders(200, chunked ? 0 : bytes.length);
                 try (OutputStream out = exchange.getResponseBody()) {
                     out.write(bytes);
                 }

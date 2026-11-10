@@ -28,8 +28,9 @@
                 <div class="card-body">
                     {{#if mayBeRunning}}
                         <p class="card-text">
-                            Its last report was written without a live server, as happens when the application's LiveReload server holds the port,
-                            so the panel cannot tell whether it still runs. Give continuous testing a LiveReload port of its own to follow it live.
+                            Its report does not tell whether it still runs: it was written without a live server, as happens when the
+                            application's LiveReload server holds the port, or the live report does not name its project.
+                            Give continuous testing a LiveReload port of its own to follow it live.
                         </p>
                     {{/if}}
                     <p class="card-text">

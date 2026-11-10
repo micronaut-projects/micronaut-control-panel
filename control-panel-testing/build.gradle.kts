@@ -4,6 +4,7 @@ plugins {
 
 dependencies {
     api(projects.micronautControlPanelCore)
+    implementation(mn.micronaut.json.core)
 
     testAnnotationProcessor(mn.micronaut.inject.java)
     testImplementation(projects.micronautControlPanelUi)

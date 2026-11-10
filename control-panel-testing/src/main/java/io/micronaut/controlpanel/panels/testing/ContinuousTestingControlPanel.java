@@ -63,8 +63,8 @@ public class ContinuousTestingControlPanel extends AbstractControlPanel<Continuo
      * @param configuration The panel's configuration
      * @param resolver Finds the status of continuous testing
      */
-    public ContinuousTestingControlPanel(@Named(NAME) ControlPanelConfiguration configuration,
-                                         ContinuousTestingStatusResolver resolver) {
+    ContinuousTestingControlPanel(@Named(NAME) ControlPanelConfiguration configuration,
+                                  ContinuousTestingStatusResolver resolver) {
         super(NAME, configuration);
         this.resolver = resolver;
     }
