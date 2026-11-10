@@ -23,9 +23,11 @@ import io.micronaut.controlpanel.core.security.ControlPanelSecurityConfiguration
 import io.micronaut.controlpanel.core.security.ControlPanelSecurityPaths;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpStatus;
+import io.micronaut.http.MediaType;
 import io.micronaut.http.MutableHttpRequest;
 import io.micronaut.http.client.HttpClient;
 import io.micronaut.http.client.exceptions.HttpClientResponseException;
+import io.micronaut.http.client.multipart.MultipartBody;
 import io.micronaut.runtime.server.EmbeddedServer;
 import io.micronaut.security.authentication.AuthenticationRequest;
 import io.micronaut.security.authentication.AuthenticationResponse;
@@ -43,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -361,6 +364,69 @@ class ControlPanelSecurityTest {
     }
 
     @Test
+    void separateWriteRoleProtectsWriteRoutesWithATrailingSlash(@TempDir Path tempDir) {
+        try (EmbeddedServer server = ApplicationContext.run(EmbeddedServer.class, Map.ofEntries(
+            Map.entry("spec.name", "ControlPanelSecurityTest"),
+            Map.entry("micronaut.security.enabled", true),
+            Map.entry("micronaut.security.basic-auth.enabled", true),
+            Map.entry(ControlPanelSecurityConfiguration.PROPERTY_ACCESS, "AUTHORIZED"),
+            Map.entry(ControlPanelSecurityConfiguration.PROPERTY_WRITE_ACCESS, "AUTHORIZED"),
+            Map.entry(ControlPanelSecurityConfiguration.PROPERTY_WRITE_ROLE, "ROLE_CONTROL_PANEL_WRITE"),
+            Map.entry("micronaut.caches.demo.initial-capacity", 1),
+            Map.entry("micronaut.control-panel.datasource.allow-writes", true),
+            Map.entry("datasources.default.db-type", "h2"),
+            Map.entry("datasources.default.dialect", "H2"),
+            Map.entry("datasources.default.url", "jdbc:h2:mem:control-panel-trailing-slash;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE"),
+            Map.entry("datasources.default.driver-class-name", "org.h2.Driver"),
+            Map.entry("datasources.default.username", "sa"),
+            Map.entry("datasources.default.password", ""),
+            Map.entry("micronaut.object-storage.local.default.path", tempDir.toString())
+        ))) {
+            CacheManager<?> cacheManager = server.getApplicationContext().getBean(CacheManager.class);
+            cacheManager.getCache("demo").put("hello", "world");
+            HttpClient client = server.getApplicationContext().createBean(HttpClient.class, server.getURL());
+            String queryPath = helperPath(ControlPanelSecurityPaths.DATASOURCE_PATH, "/default/query/");
+            String uploadPath = helperPath(ControlPanelSecurityPaths.OBJECT_STORAGE_PATH, "/default/");
+            String cachePath = helperPath(ControlPanelSecurityPaths.CACHE_PATH, "/demo/");
+
+            HttpClientResponseException readerQuery = assertExchangeRejected(
+                client,
+                authenticatedRequest(HttpRequest.POST(queryPath, Map.of("sql", "CREATE TABLE reader_table(id INT)")), "controlpanel", "password")
+            );
+            assertEquals(HttpStatus.FORBIDDEN, readerQuery.getStatus());
+
+            HttpClientResponseException readerUpload = assertExchangeRejected(
+                client,
+                authenticatedRequest(HttpRequest.POST(uploadPath, uploadBody("reader.txt"))
+                    .contentType(MediaType.MULTIPART_FORM_DATA_TYPE), "controlpanel", "password")
+            );
+            assertEquals(HttpStatus.FORBIDDEN, readerUpload.getStatus());
+            assertFalse(Files.exists(tempDir.resolve("reader.txt")));
+
+            HttpClientResponseException readerCache = assertExchangeRejected(
+                client,
+                authenticatedRequest(HttpRequest.DELETE(cachePath), "controlpanel", "password")
+            );
+            assertEquals(HttpStatus.FORBIDDEN, readerCache.getStatus());
+
+            // The same trailing-slash paths reach the write routes for a user with write access.
+            assertEquals(HttpStatus.OK, client.toBlocking().exchange(
+                authenticatedRequest(HttpRequest.POST(queryPath, Map.of("sql", "CREATE TABLE writer_table(id INT)")), "writer", "password")
+            ).status());
+            assertEquals(HttpStatus.CREATED, client.toBlocking().exchange(
+                authenticatedRequest(HttpRequest.POST(uploadPath, uploadBody("writer.txt"))
+                    .contentType(MediaType.MULTIPART_FORM_DATA_TYPE), "writer", "password")
+            ).status());
+            assertTrue(Files.exists(tempDir.resolve("writer.txt")));
+            assertEquals(HttpStatus.NO_CONTENT, client.toBlocking().exchange(
+                authenticatedRequest(HttpRequest.DELETE(cachePath), "writer", "password")
+            ).status());
+
+            client.close();
+        }
+    }
+
+    @Test
     void anonymousAccessCanUseLoggersHelperWhenConfigured() {
         try (EmbeddedServer server = ApplicationContext.run(EmbeddedServer.class, Map.of(
             "spec.name", "ControlPanelSecurityTest",
@@ -373,7 +439,7 @@ class ControlPanelSecurityTest {
             HttpClient client = server.getApplicationContext().createBean(HttpClient.class, server.getURL());
 
             assertEquals(HttpStatus.NO_CONTENT, client.toBlocking().exchange(
-                HttpRequest.POST(helperPath(ControlPanelSecurityPaths.LOGGERS_PATH, "/io.micronaut.controlpanel"), "{\"configuredLevel\":\"DEBUG\"}")
+                csrf(HttpRequest.POST(helperPath(ControlPanelSecurityPaths.LOGGERS_PATH, "/io.micronaut.controlpanel"), "{\"configuredLevel\":\"DEBUG\"}"))
             ).status());
 
             client.close();
@@ -411,7 +477,7 @@ class ControlPanelSecurityTest {
                 authenticatedRequest(HttpRequest.DELETE(helperPath(ControlPanelSecurityPaths.CACHE_PATH, "/demo")))
             ).status());
             assertEquals(HttpStatus.OK, client.toBlocking().exchange(
-                authenticatedRequest(HttpRequest.GET(helperPath(ControlPanelSecurityPaths.DATASOURCE_PATH, "/default/schema.js")))
+                authenticatedRequest(HttpRequest.GET(helperPath(ControlPanelSecurityPaths.DATASOURCE_PATH, "/default/schema")))
             ).status());
             assertEquals(HttpStatus.OK, client.toBlocking().exchange(
                 authenticatedRequest(HttpRequest.GET(helperPath(ControlPanelSecurityPaths.OBJECT_STORAGE_PATH, "/default/hello.txt")))
@@ -505,7 +571,7 @@ class ControlPanelSecurityTest {
     private static List<String> routedHelperPaths() {
         return List.of(
             helperPath(ControlPanelSecurityPaths.CACHE_PATH, "/demo"),
-            helperPath(ControlPanelSecurityPaths.DATASOURCE_PATH, "/default/schema.js"),
+            helperPath(ControlPanelSecurityPaths.DATASOURCE_PATH, "/default/schema"),
             helperPath(ControlPanelSecurityPaths.OBJECT_STORAGE_PATH, "/default/hello.txt")
         );
     }
@@ -518,6 +584,12 @@ class ControlPanelSecurityTest {
         return controlPanelPath + helperPath + route;
     }
 
+    private static MultipartBody uploadBody(String filename) {
+        return MultipartBody.builder()
+            .addPart("fileUpload", filename, MediaType.TEXT_PLAIN_TYPE, "hello".getBytes(StandardCharsets.UTF_8))
+            .build();
+    }
+
     private static MutableHttpRequest<?> authenticatedRequest(MutableHttpRequest<?> request) {
         return authenticatedRequest(request, "user", "password");
     }
@@ -525,7 +597,15 @@ class ControlPanelSecurityTest {
     private static MutableHttpRequest<?> authenticatedRequest(MutableHttpRequest<?> request,
                                                              String username,
                                                              String password) {
-        return request.header("Authorization", basicAuthorization(username, password));
+        return csrf(request).header("Authorization", basicAuthorization(username, password));
+    }
+
+    /**
+     * Adds the control panel UI request header so mutating requests pass the cross-site request
+     * filter, mirroring the header the UI sends with every fetch/XHR call.
+     */
+    private static MutableHttpRequest<?> csrf(MutableHttpRequest<?> request) {
+        return request.header(ControlPanelSecurityPaths.REQUESTED_WITH_HEADER, ControlPanelSecurityPaths.REQUESTED_WITH_VALUE);
     }
 
     private static HttpClientResponseException assertExchangeRejected(HttpClient client, MutableHttpRequest<?> request) {

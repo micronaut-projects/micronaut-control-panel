@@ -8,13 +8,13 @@
         const tableBrowserState = cpDatasourceDetail.tableBrowserState;
         const escapeHtml = cpDatasourceDetail.escapeHtml;
         const type = "{{ dataSourceInfo.type }}";
-        const schemaUrl = datasourceBaseUrl + "/schema.js";
+        const schemaUrl = datasourceBaseUrl + "/schema";
         const cm = window.codemirror;
         const writeAllowed = {{#if ext.writeAccess.allowed}}true{{else}}false{{/if}};
         const writeDisabledReason = "{{ ext.writeAccess.reason }}";
 
         function initEditor() {
-            if (!cm) {
+            if (!cm || cm.view !== undefined) {
                 return;
             }
             if (cm.schema !== undefined && cm.defaultSchema !== undefined) {
@@ -42,12 +42,10 @@
             }
         }
 
-        const script = document.createElement('script');
-        script.src = schemaUrl;
-        script.onload = function() {
-            initEditor();
-        };
-        script.onerror = function() {
+        function initEditorWithoutSchema() {
+            if (!cm || cm.view !== undefined) {
+                return;
+            }
             const schemaConfig = {};
             const extensions = cm.getSQLExtensions(type, schemaConfig, {
                 executeQuery: function (view) {
@@ -69,14 +67,26 @@
             });
             cm.view = view;
             cpDatasourceDetail.setPendingEditorSql(null);
-        };
-        document.head.appendChild(script);
+        }
 
-        setTimeout(() => {
-            if (cm && cm.schema === undefined) {
-                initEditor();
+        // Load the autocomplete schema as JSON (same-origin). The schema is data, not executable
+        // script, so it is never exposed as a cross-site <script src> include.
+        $.ajax({
+            url: schemaUrl,
+            type: 'GET',
+            dataType: 'json'
+        }).done(function(data) {
+            if (cm && data) {
+                cm.schema = data.schema;
+                cm.defaultSchema = data.defaultSchema;
             }
-        }, 2000);
+            // Initialise with schema on success. jQuery always invokes exactly one of done/fail, so
+            // the editor is created once; no timeout fallback is needed (a timeout could otherwise
+            // create a schema-less editor that a later success could not replace).
+            initEditor();
+        }).fail(function() {
+            initEditorWithoutSchema();
+        });
 
         $(document).on('keydown', function(e) {
             if (isQueryExecuteShortcut(e) && $(e.target).closest('.cm-editor').length === 0) {

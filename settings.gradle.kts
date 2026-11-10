@@ -8,7 +8,7 @@ pluginManagement {
 }
 
 plugins {
-    id("io.micronaut.build.shared.settings") version "8.1.3"
+    id("io.micronaut.build.shared.settings") version "8.1.5"
 }
 
 rootProject.name = "control-panel-parent"
@@ -22,6 +22,7 @@ include("control-panel-datasource")
 include("control-panel-hibernate")
 include("control-panel-ui")
 include("control-panel-kafka")
+include("control-panel-pulsar")
 include("control-panel-testing")
 
 include("doc-examples:example-java")
@@ -47,4 +48,5 @@ configure<MicronautBuildSettingsExtension> {
     importMicronautCatalog("micronaut-testresources")
     importMicronautCatalog("micronaut-openapi")
     importMicronautCatalog("micronaut-kafka")
+    importMicronautCatalog("micronaut-pulsar")
 }

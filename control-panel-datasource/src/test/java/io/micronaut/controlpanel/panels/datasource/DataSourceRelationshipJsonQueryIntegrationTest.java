@@ -72,7 +72,7 @@ class DataSourceRelationshipJsonQueryIntegrationTest {
 
     @BeforeEach
     void setUpDatabase() {
-        dataSourceService = new DataSourceService(dataSource);
+        dataSourceService = new DataSourceService(dataSource, java.util.List.of(), true);
         dataSourceService.executeQuery("DROP TABLE IF EXISTS employee", 0, 0);
         dataSourceService.executeQuery("DROP TABLE IF EXISTS department", 0, 0);
         dataSourceService.executeQuery("""

@@ -100,6 +100,38 @@ micronaut:
 Host `intercept-url-map` rules run before the control-panel fallback rule, so host rules can still be stricter than the
 configured control panel access mode.
 
+=== Cross-Site Request Protection
+
+Mutating control panel requests (anything other than `GET`/`HEAD`) are additionally protected against cross-site
+requests. A request must look like it came from the control panel UI itself: the `Sec-Fetch-Site` header (when the
+browser sends it) must be `same-origin` or `none`, any `Origin` header must match the request's own origin, and the
+request must carry the control panel request header `X-Requested-With: micronaut-control-panel` that the UI sends with
+every call. Only the control panel path and the routes under it are checked; the application's other routes are not
+affected. This can be disabled if required:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    security:
+      csrf-protection-enabled: false
+----
+
+When the control panel is reachable without authentication (Micronaut Security is not active, or
+`micronaut.control-panel.security.access=ANONYMOUS`), requests are accepted only from a loopback address and when the
+`Host` header is on an allowlist (`localhost`, any `*.localhost` name, `127.0.0.1`, `[::1]`, plus any configured hosts).
+This guards against DNS-rebinding attacks. Configure additional hosts, or disable the check, with:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    security:
+      host-check-enabled: true
+      allowed-hosts:
+        - my-dev-host.example
+----
+
 == Application Health
 
 This panel displays the health information of your application, and relies on the

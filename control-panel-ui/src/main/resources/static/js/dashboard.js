@@ -1,6 +1,17 @@
 (function ($) {
     "use strict";
 
+    // Identify control panel UI requests with a custom header. A cross-site page cannot set a
+    // custom request header without a CORS preflight, so the server uses this to reject cross-site
+    // write requests. jQuery sends every AJAX call with this value.
+    if ($ && $.ajaxSetup) {
+        $.ajaxSetup({
+            headers: {
+                "X-Requested-With": "micronaut-control-panel"
+            }
+        });
+    }
+
     var modalBackdropClass = "modal-backdrop";
     var themeStorageKey = "control-panel-theme";
     var sidebarStorageKey = "control-panel-sidebar";

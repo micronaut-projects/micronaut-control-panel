@@ -301,16 +301,46 @@ class DataSourceServiceTest {
     }
 
     @Test
-    @DisplayName("executeQuery update query returns affected rows")
+    @DisplayName("executeQuery marks the connection read-only when writes are not allowed")
+    void testReadOnlyConnectionWhenWritesDisallowed() throws SQLException {
+        // Given a read-only (default) service running a SELECT
+        String sql = "SELECT * FROM users";
+        mockSelectQuery(sql, List.of("id"), List.of(List.of("1")));
+
+        // When
+        dataSourceService.executeQuery(sql, 0, 1);
+
+        // Then the database connection is forced read-only, blocking data-modifying CTEs at the DB level
+        verify(connection).setReadOnly(true);
+    }
+
+    @Test
+    @DisplayName("executeQuery does not force read-only when writes are allowed")
+    void testWritableConnectionWhenWritesAllowed() throws SQLException {
+        // Given a writes-enabled service running a SELECT
+        DataSourceService writable = new DataSourceService(dataSource, List.of(), true);
+        String sql = "SELECT * FROM users";
+        mockSelectQuery(sql, List.of("id"), List.of(List.of("1")));
+
+        // When
+        writable.executeQuery(sql, 0, 1);
+
+        // Then the connection is not forced read-only
+        verify(connection, never()).setReadOnly(true);
+    }
+
+    @Test
+    @DisplayName("executeQuery update query returns affected rows when writes are allowed")
     void testExecuteQueryUpdate() throws SQLException {
         // Given
+        DataSourceService writable = new DataSourceService(dataSource, List.of(), true);
         String sql = "UPDATE users SET name = 'Jane' WHERE id = 1";
         try (PreparedStatement ps = mock(PreparedStatement.class)) {
             when(ps.executeUpdate()).thenReturn(1);
             when(connection.prepareStatement(sql)).thenReturn(ps);
 
             // When
-            DataSourceService.QueryResult result = dataSourceService.executeQuery(sql, 0, 10);
+            DataSourceService.QueryResult result = writable.executeQuery(sql, 0, 10);
 
             // Then
             assertEquals(1, result.total());
@@ -318,6 +348,16 @@ class DataSourceServiceTest {
             assertEquals("INTEGER", result.columns().getFirst().typeName());
             assertEquals(List.of("1 rows affected"), result.rows().getFirst());
         }
+    }
+
+    @Test
+    @DisplayName("executeQuery rejects write statements by default")
+    void testExecuteQueryRejectsWriteByDefault() {
+        // Given a read-only (default) service
+        String sql = "UPDATE users SET name = 'Jane' WHERE id = 1";
+
+        // When / Then
+        assertThrows(IllegalArgumentException.class, () -> dataSourceService.executeQuery(sql, 0, 10));
     }
 
     @Test
