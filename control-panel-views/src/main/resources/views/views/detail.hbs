@@ -1,0 +1,118 @@
+{{#with controlPanel.detailedBody }}
+<div class="cp-dashboard-stack">
+    {{#unless enabled}}
+        <div class="alert alert-warning">Micronaut Views is disabled (<code>micronaut.views.enabled</code> is <code>false</code>). The routes below do not render their views.</div>
+    {{/unless}}
+    {{#unless renderers}}
+        <div class="alert alert-warning">No views renderer is available, so no view can be rendered. Add a renderer module, such as <code>micronaut-views-thymeleaf</code>.</div>
+    {{/unless}}
+    {{#if missingCount}}
+        <div class="alert alert-warning">The template of {{missingCount}} of the routes below was not found.</div>
+    {{/if}}
+
+    <div class="card card-light">
+        <div class="card-header">
+            <h3 class="card-title">View routes</h3>
+        </div>
+        <div class="card-body">
+            {{#if routes}}
+            <div class="cp-data-table" data-filter-table data-filter-table-label="route" data-filter-table-label-plural="routes">
+                <div class="cp-data-table-toolbar">
+                    <div class="cp-data-table-summary" data-filter-table-summary>{{routes.size}} routes</div>
+                    <div class="cp-data-table-search">
+                        <input type="search" class="form-control" data-filter-table-search placeholder="Search routes, views or controllers" aria-label="Search view routes">
+                    </div>
+                </div>
+                <div class="cp-data-table-container">
+                    <table class="table cp-data-table-table">
+                        <thead>
+                        <tr>
+                            <th>Route and view</th>
+                            <th>Template</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {{#each routes as |route|}}
+                            <tr data-filter-table-row>
+                                <td>
+                                    <div><code class="cp-table-code">{{route.method}} {{route.uri}}</code></div>
+                                    <div>{{#if route.view}}<span class="card-description">view</span> <code class="cp-table-code">{{route.view}}</code>{{else}}<span class="card-description">view chosen by the controller</span>{{/if}}</div>
+                                    <div class="card-description">{{route.handler}}</div>
+                                </td>
+                                <td>{{#if route.missing}}<span class="badge badge-destructive">missing</span>{{else}}{{#if route.failed}}<span class="badge badge-outline">check failed</span>{{else}}{{#if route.template}}<span class="badge badge-primary" title="Found by {{route.template}}">found</span>{{else}}<span class="card-description">-</span>{{/if}}{{/if}}{{/if}}</td>
+                            </tr>
+                        {{/each}}
+                        <tr data-filter-table-empty hidden>
+                            <td class="cp-data-table-empty-cell" colspan="2">No routes match your search.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="cp-data-table-footer">
+                    <label class="cp-data-table-page-size">
+                        Rows per page
+                        <select class="form-control" data-filter-table-page-size-select aria-label="Routes per page">
+                            <option value="10" selected>10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </label>
+                    <div class="cp-data-table-pagination">
+                        <span class="cp-data-table-page" data-filter-table-page>Page 1 of 1</span>
+                        <button type="button" class="btn btn-secondary btn-sm" data-filter-table-prev>Previous</button>
+                        <button type="button" class="btn btn-secondary btn-sm" data-filter-table-next>Next</button>
+                    </div>
+                </div>
+            </div>
+            {{else}}
+                <p class="card-text card-description">No route has a <code>@View</code> annotation or returns a <code>ModelAndView</code>.</p>
+            {{/if}}
+        </div>
+    </div>
+
+    <div class="card card-light">
+        <div class="card-header">
+            <h3 class="card-title">Configuration</h3>
+        </div>
+        <div class="card-body">
+            <p class="card-text"><span class="card-description">Templates folder</span> <code>{{folder}}</code></p>
+            <p class="card-text"><span class="card-description">Views filter</span> {{#if filterEnabled}}enabled{{else}}disabled{{/if}}</p>
+            {{#if csp}}
+                <p class="card-text"><span class="card-description">Content Security Policy</span> {{#if csp.reportOnly}}report only{{else}}enforced{{/if}} on <code>{{csp.filterPath}}</code>{{#if csp.nonce}}, with a nonce{{/if}}</p>
+                {{#if csp.policyDirectives}}<p class="card-text"><code class="cp-table-code">{{csp.policyDirectives}}</code></p>{{/if}}
+            {{else}}
+                <p class="card-text"><span class="card-description">Content Security Policy</span> disabled</p>
+            {{/if}}
+        </div>
+    </div>
+
+    <div class="card card-light">
+        <div class="card-header">
+            <h3 class="card-title">Renderers</h3>
+        </div>
+        <div class="card-body">
+            {{#each renderers as |renderer|}}
+                <p class="card-text"><code class="cp-table-code">{{renderer.type}}</code>{{#each renderer.mediaTypes as |mediaType|}} <span class="badge badge-secondary">{{mediaType}}</span>{{/each}}</p>
+            {{else}}
+                <p class="card-text card-description">No views renderer is available.</p>
+            {{/each}}
+        </div>
+    </div>
+
+    <div class="card card-light">
+        <div class="card-header">
+            <h3 class="card-title">Model processors</h3>
+        </div>
+        <div class="card-body">
+            {{#each modelProcessors as |processor|}}
+                <p class="card-text"><code class="cp-table-code">{{processor}}</code></p>
+            {{else}}
+                <p class="card-text card-description">No bean changes the model before it is rendered.</p>
+            {{/each}}
+        </div>
+    </div>
+
+    <p class="card-description">The panel does not call controllers or render templates. It only asks each renderer whether a template exists, and it does not read requests, sessions or models.</p>
+</div>
+{{/with}}
