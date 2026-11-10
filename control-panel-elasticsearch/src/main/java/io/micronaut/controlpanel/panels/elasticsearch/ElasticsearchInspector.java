@@ -153,8 +153,8 @@ public class ElasticsearchInspector {
     private static ElasticsearchInfo.Cluster cluster(InfoResponse info, HealthResponse health) {
         return new ElasticsearchInfo.Cluster(
             info.clusterName(),
-            info.version() == null ? "unknown" : info.version().number(),
-            health.status() == null ? "unknown" : health.status().jsonValue(),
+            info.version().number(),
+            health.status().jsonValue(),
             health.numberOfNodes(),
             health.activeShards(),
             health.unassignedShards()

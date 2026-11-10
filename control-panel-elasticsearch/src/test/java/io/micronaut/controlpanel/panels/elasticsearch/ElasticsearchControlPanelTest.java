@@ -16,13 +16,19 @@
 package io.micronaut.controlpanel.panels.elasticsearch;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.ElasticsearchException;
+import co.elastic.clients.elasticsearch._types.ErrorResponse;
 import co.elastic.clients.elasticsearch._types.Refresh;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.controlpanel.core.ControlPanelRepository;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.net.ConnectException;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -38,6 +44,7 @@ class ElasticsearchControlPanelTest {
         try (ApplicationContext context = ApplicationContext.run()) {
             ElasticsearchControlPanel panel = context.getBean(ElasticsearchControlPanel.class);
             assertEquals("Elasticsearch", panel.getTitle());
+            assertEquals("", panel.getBadge());
             assertEquals("datasource", panel.getCategory().id());
 
             ElasticsearchInfo body = panel.getBody();
@@ -77,6 +84,30 @@ class ElasticsearchControlPanelTest {
             assertFalse(detailed.error().contains("127.0.0.1"), detailed.error());
             assertEquals("http://127.0.0.1:1", detailed.hosts().getFirst());
         }
+    }
+
+    @Test
+    void errorsAreDescribedWithoutTheirMessage() {
+        assertEquals("ConnectException", ElasticsearchInspector.describe(
+            new ExecutionException(new CompletionException(new IOException("wrapper", new ConnectException("http://secret@host"))))));
+        assertEquals("IllegalStateException", ElasticsearchInspector.describe(new IllegalStateException("secret")));
+        ElasticsearchException refused = new ElasticsearchException("/_cluster/health", ErrorResponse.of(response -> response
+            .status(403)
+            .error(error -> error.type("security_exception").reason("secret"))));
+        assertEquals("request refused (HTTP 403)", ElasticsearchInspector.describe(new ExecutionException(refused)));
+    }
+
+    @Test
+    void healthIsShownAsBadges() {
+        ElasticsearchInfo.Cluster red = new ElasticsearchInfo.Cluster("c", "9.0.0", "RED", 1, 1, 1);
+        assertEquals("badge-destructive", red.badgeClass());
+        assertEquals("badge-secondary", new ElasticsearchInfo.Cluster("c", "9.0.0", "green", 1, 1, 0).badgeClass());
+        ElasticsearchInfo.Index index = new ElasticsearchInfo.Index("i", "red", "open", "1", "1kb", "1", "0");
+        assertEquals("badge-destructive", index.badgeClass());
+        assertEquals("badge-secondary", new ElasticsearchInfo.Index("i", null, "open", "1", "1kb", "1", "0").badgeClass());
+
+        assertTrue(new ElasticsearchInfo(List.of(), true, red, List.of(index), 2, null).truncated());
+        assertFalse(new ElasticsearchInfo(List.of(), true, red, List.of(index), 1, null).truncated());
     }
 
     @Test

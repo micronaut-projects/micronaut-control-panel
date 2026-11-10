@@ -51,6 +51,10 @@ public record ElasticsearchInfo(
         return totalIndices > indices.size();
     }
 
+    private static String healthBadge(@Nullable String health) {
+        return health != null && "red".equals(health.toLowerCase(Locale.ROOT)) ? "badge-destructive" : "badge-secondary";
+    }
+
     /**
      * The cluster name, version and health.
      *
@@ -92,9 +96,5 @@ public record ElasticsearchInfo(
         public String badgeClass() {
             return healthBadge(health);
         }
-    }
-
-    private static String healthBadge(@Nullable String health) {
-        return health != null && "red".equals(health.toLowerCase(Locale.ROOT)) ? "badge-destructive" : "badge-secondary";
     }
 }
