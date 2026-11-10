@@ -1,0 +1,62 @@
+{{#with controlPanel.body }}
+<div class="cp-dashboard-stack">
+    <div class="card card-light">
+        <div class="card-header">
+            <h3 class="card-title">Senders</h3>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt>Default sender</dt>
+                <dd>{{#if from}}<code>{{from}}</code>{{else}}<span class="card-description">not configured (<code>micronaut.email.from.email</code>)</span>{{/if}}</dd>
+                <dt>Templates</dt>
+                <dd>{{#if templates}}available{{else}}<span class="card-description">not available (<code>micronaut-email-template</code>)</span>{{/if}}</dd>
+            </dl>
+            {{#if senders}}
+            <div class="cp-data-table-container">
+                <table class="table cp-data-table-table">
+                    <thead>
+                    <tr>
+                        <th>Sender</th>
+                        <th>Provider</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {{#each senders as |sender|}}
+                        <tr>
+                            <td><code class="cp-table-code">{{sender.name}}</code><div class="card-description"><code class="cp-table-code">{{sender.type}}</code></div></td>
+                            <td>{{sender.provider}}<div class="card-description">{{sender.modes}}</div></td>
+                        </tr>
+                    {{/each}}
+                    </tbody>
+                </table>
+            </div>
+            {{else}}
+                <p class="card-text card-description">There are no email senders. Add a Micronaut Email provider, such as <code>micronaut-email-javamail</code>.</p>
+            {{/if}}
+        </div>
+    </div>
+
+    {{#if javaMail}}
+    <div class="card card-light">
+        <div class="card-header">
+            <h3 class="card-title">JavaMail</h3>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt>Authentication</dt>
+                <dd>{{javaMail.authentication}}</dd>
+                {{#each javaMail.properties as |property|}}
+                    <dt><code>{{property.name}}</code>{{#if property.ignored}} <span class="badge badge-destructive" title="JavaMail only reads properties whose name starts with mail.">ignored by JavaMail</span>{{/if}}</dt>
+                    <dd>{{#if property.value}}<code>{{property.value}}</code>{{else}}<span class="card-description">(hidden)</span>{{/if}}</dd>
+                {{else}}
+                    <dt>Properties</dt>
+                    <dd><span class="card-description">none configured under <code>javamail.properties</code></span></dd>
+                {{/each}}
+            </dl>
+        </div>
+    </div>
+    {{/if}}
+
+    <p class="card-description">The panel is read-only: it does not create senders or send email. Passwords, API keys and tokens are never shown.</p>
+</div>
+{{/with}}
