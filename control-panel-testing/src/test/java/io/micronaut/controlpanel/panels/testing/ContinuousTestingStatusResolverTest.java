@@ -2,7 +2,11 @@ package io.micronaut.controlpanel.panels.testing;
 
 import com.sun.net.httpserver.HttpServer;
 import io.micronaut.context.ApplicationContext;
+import io.micronaut.context.BeanProvider;
+import io.micronaut.context.Qualifier;
+import io.micronaut.context.exceptions.NoSuchBeanException;
 import io.micronaut.context.env.Environment;
+import io.micronaut.json.JsonMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -22,6 +26,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -355,6 +360,31 @@ class ContinuousTestingStatusResolverTest {
         server.stop(0);
         port = serveChunked("/tests/state.json", failingState(""));
         assertTrue(resolver(Map.of(ContinuousTestingConfiguration.PREFIX + ".live-reload-port", port)).resolve().running());
+    }
+
+    @Test
+    void withoutAJsonMapperThePanelStillTellsHowToStartContinuousTesting() throws IOException {
+        writeReport(project.resolve("build/reports/tests/mnTest"), failingState(""));
+        resolver(Map.of());
+        BeanProvider<JsonMapper> none = new BeanProvider<>() {
+            @Override
+            public JsonMapper get() {
+                throw new NoSuchBeanException(JsonMapper.class);
+            }
+
+            @Override
+            public Optional<JsonMapper> find(Qualifier<JsonMapper> qualifier) {
+                return Optional.empty();
+            }
+        };
+
+        ContinuousTestingStatus status = new ContinuousTestingStatusResolver(context.getBean(ContinuousTestingConfiguration.class),
+            context.getEnvironment(), none).resolve();
+
+        assertFalse(status.running());
+        assertTrue(status.reportFound());
+        assertNull(status.lastRun());
+        assertEquals("Gradle", status.commands().get(0).tool());
     }
 
     @Test

@@ -15,6 +15,7 @@
  */
 package io.micronaut.controlpanel.panels.testing;
 
+import io.micronaut.context.BeanProvider;
 import io.micronaut.context.env.Environment;
 import io.micronaut.core.annotation.Internal;
 import io.micronaut.json.JsonMapper;
@@ -107,18 +108,18 @@ final class ContinuousTestingStatusResolver {
 
     private final ContinuousTestingConfiguration configuration;
     private final Environment properties;
-    private final JsonMapper jsonMapper;
+    private final BeanProvider<JsonMapper> jsonMapper;
     private volatile @Nullable CachedState cached;
     private volatile @Nullable CachedProbe lastProbe;
 
     /**
      * @param configuration The panel's configuration
      * @param properties The environment of the application
-     * @param jsonMapper Reads the reports
+     * @param jsonMapper Reads the reports, when the application has a JSON implementation
      */
     ContinuousTestingStatusResolver(ContinuousTestingConfiguration configuration,
                                     Environment properties,
-                                    JsonMapper jsonMapper) {
+                                    BeanProvider<JsonMapper> jsonMapper) {
         this.configuration = configuration;
         this.properties = properties;
         this.jsonMapper = jsonMapper;
@@ -386,9 +387,11 @@ final class ContinuousTestingStatusResolver {
      * @throws IOException When it cannot be read, is not JSON, or is too large
      */
     private @Nullable JsonNode parse(InputStream in) throws IOException {
+        // without a JSON implementation, the panel still tells how to start continuous testing
+        JsonMapper mapper = jsonMapper.find(null).orElseThrow(() -> new IOException("The application has no JsonMapper"));
         JsonNode state;
         try {
-            state = jsonMapper.readValue(new LimitedInputStream(in, MAX_STATE_BYTES), JsonNode.class);
+            state = mapper.readValue(new LimitedInputStream(in, MAX_STATE_BYTES), JsonNode.class);
         } catch (RuntimeException e) {
             // Jackson 3 reports a failure to read or parse with an unchecked exception
             throw new IOException(e.getMessage(), e);
