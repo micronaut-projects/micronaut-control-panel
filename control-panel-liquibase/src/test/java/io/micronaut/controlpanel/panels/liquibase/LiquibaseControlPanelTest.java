@@ -2,9 +2,12 @@ package io.micronaut.controlpanel.panels.liquibase;
 
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.controlpanel.core.ControlPanelRepository;
+import liquibase.Scope;
 import liquibase.changelog.ChangeSet;
+import liquibase.executor.ExecutorService;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 
@@ -132,6 +135,32 @@ class LiquibaseControlPanelTest {
             assertEquals(1, resolver.connections.size());
             assertTrue(resolver.connections.getFirst().isClosed(), "the connection goes back to the pool");
         }
+    }
+
+    @Test
+    void readingTheHistoryDoesNotKeepLiquibaseExecutors() throws Exception {
+        Map<String, Object> properties = Map.of(
+            "datasources.default.url", "jdbc:h2:mem:liquibasePanelExecutors;DB_CLOSE_DELAY=-1",
+            "datasources.default.driver-class-name", "org.h2.Driver",
+            "datasources.default.username", "sa",
+            "datasources.default.password", "",
+            "liquibase.datasources.default.change-log", "classpath:db/changelog.xml"
+        );
+        try (ApplicationContext context = ApplicationContext.run(properties)) {
+            LiquibaseInspector inspector = context.getBean(LiquibaseInspector.class);
+            assertEquals(LiquibaseHistory.Status.READ, inspector.inspect().getFirst().status());
+            int executors = executorCount();
+            assertEquals(LiquibaseHistory.Status.READ, inspector.inspect().getFirst().status());
+            assertEquals(LiquibaseHistory.Status.READ, inspector.inspect().getFirst().status());
+            assertEquals(executors, executorCount(), "each read clears the executor it created");
+        }
+    }
+
+    private static int executorCount() throws ReflectiveOperationException {
+        ExecutorService executorService = Scope.getCurrentScope().getSingleton(ExecutorService.class);
+        Field field = ExecutorService.class.getDeclaredField("executors");
+        field.setAccessible(true);
+        return ((Map<?, ?>) field.get(executorService)).size();
     }
 
     @Test

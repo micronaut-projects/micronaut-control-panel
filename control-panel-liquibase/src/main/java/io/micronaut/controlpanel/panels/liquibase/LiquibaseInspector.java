@@ -105,17 +105,19 @@ public class LiquibaseInspector {
 
     private static List<RanChangeSet> readRanChangeSets(DataSource dataSource, LiquibaseConfigurationProperties configuration) throws Exception {
         try (JdbcConnection connection = new JdbcConnection(dataSource.getConnection())) {
-            // Liquibase can turn auto-commit off when it attaches to the connection, so it is restored before the
-            // connection goes back to the pool, even when probing the database fails
-            boolean autoCommit = connection.getAutoCommit();
+            Database database = null;
             try {
-                Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(connection);
+                database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(connection);
                 configure(database, configuration);
                 StandardChangeLogHistoryService history = new StandardChangeLogHistoryService();
                 history.setDatabase(database);
                 return history.getRanChangeSets();
             } finally {
-                connection.setAutoCommit(autoCommit);
+                if (database != null) {
+                    // Restores the auto-commit mode, and removes the executor Liquibase caches for this database, which
+                    // would otherwise be kept for every page view. Closing the already closed connection again is a no-op.
+                    database.close();
+                }
             }
         }
     }
