@@ -4165,3 +4165,15 @@ body.cp-table-browser-resizing .cp-table-browser-splitter::before {
         font-weight: 650;
     }
 }
+
+/* HTTP Clients panel */
+.cp-http-client-table td > div + div {
+    margin-top: 0.125rem;
+}
+
+@media (max-width: 640px) {
+    .cp-http-client-table .cp-http-client-settings,
+    .cp-http-client-table .cp-http-client-filters {
+        display: none;
+    }
+}

@@ -1,0 +1,10 @@
+{{#with controlPanel.body }}
+    <p class="card-text">
+        {{clients.size}} clients, {{declarativeCount}} declarative <code>@Client</code> interfaces.
+    </p>
+    {{#if unresolvedCount}}
+        <p class="card-text">
+            <span class="badge badge-destructive">{{unresolvedCount}} without a URL</span>
+        </p>
+    {{/if}}
+{{/with}}
