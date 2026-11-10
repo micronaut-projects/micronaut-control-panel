@@ -34,6 +34,7 @@ micronaut-openapi = "7.3.0"
 micronaut-kafka = "6.2.0"
 micronaut-pulsar = "3.2.0"
 micronaut-rabbitmq = "5.1.0"
+micronaut-flyway = "8.1.1"
 micronaut-nats = "5.1.0"
 kotlin-gradle-plugin = "2.4.21"
 micronaut-shared-settings = "8.1.5"
@@ -63,6 +64,7 @@ micronaut-testresources = { module = 'io.micronaut.testresources:micronaut-test-
 micronaut-kafka = { module = "io.micronaut.kafka:micronaut-kafka-bom", version.ref = "micronaut-kafka" }
 micronaut-pulsar = { module = "io.micronaut.pulsar:micronaut-pulsar-bom", version.ref = "micronaut-pulsar" }
 micronaut-rabbitmq = { module = "io.micronaut.rabbitmq:micronaut-rabbitmq-bom", version.ref = "micronaut-rabbitmq" }
+micronaut-flyway = { module = "io.micronaut.flyway:micronaut-flyway-bom", version.ref = "micronaut-flyway" }
 micronaut-nats = { module = "io.micronaut.nats:micronaut-nats-bom", version.ref = "micronaut-nats" }
 avro = { module = "org.apache.avro:avro", version.ref = "avro" }
 avro-serde = { module = "io.confluent:kafka-streams-avro-serde", version.ref = "avro-serde" }

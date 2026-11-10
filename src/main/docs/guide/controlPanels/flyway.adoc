@@ -1,0 +1,32 @@
+The Flyway control panel shows the migration history of each datasource that https://micronaut-projects.github.io/micronaut-flyway/latest/guide/[Micronaut Flyway] manages. It is listed in the Data Sources category.
+
+To add it, add the following dependency to an application that already uses Micronaut Flyway:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-flyway[scope=developmentOnly]
+
+The panel shows one card for each configuration under `flyway.datasources`, with:
+
+* The current schema version and the number of applied, pending and failed migrations.
+* A searchable table of the migrations, with their version, description, script, type, state, installation time,
+  installing user and execution time.
+
+Failed migrations are highlighted, and so are migrations that the database has applied but that the application no
+longer has, or does not know about yet.
+
+The panel reads the same `Flyway` beans as the `/flyway` management endpoint, so that endpoint does not need to be
+enabled. It only calls `Flyway.info()`: it does not migrate, clean, or repair the database. A configuration that is
+disabled, or that has not run yet because it runs asynchronously, is listed with its status and no migrations.
+
+== Configuration
+
+The Flyway control panel is enabled when you include the `micronaut-control-panel-flyway` module in a project that uses
+Micronaut Flyway. You can disable it by setting:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      flyway:
+        enabled: false
+----

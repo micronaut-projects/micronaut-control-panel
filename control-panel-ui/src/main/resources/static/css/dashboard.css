@@ -4177,6 +4177,15 @@ body.cp-table-browser-resizing .cp-table-browser-splitter::before {
         display: none;
     }
 }
+
+/* Flyway panel */
+@media (max-width: 640px) {
+    .cp-flyway-table .cp-flyway-installed,
+    .cp-flyway-table .cp-flyway-time {
+        display: none;
+    }
+}
+
 /* NATS panel */
 .cp-nats-connection + .cp-nats-connection {
     border-top: 1px solid var(--border);
