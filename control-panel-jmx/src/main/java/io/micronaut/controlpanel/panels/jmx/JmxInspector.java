@@ -61,6 +61,8 @@ public class JmxInspector {
 
     private static final Logger LOG = LoggerFactory.getLogger(JmxInspector.class);
     private static final String ENDPOINT_NAME_GENERATOR = "endpoint";
+    private static final String JAVA_LANG = "java.lang.";
+    private static final String JAVA_UTIL = "java.util.";
 
     private final BeanContext beanContext;
 
@@ -175,7 +177,7 @@ public class JmxInspector {
         );
     }
 
-    private static JmxInfo.Attribute attribute(MBeanAttributeInfo attribute) {
+    static JmxInfo.Attribute attribute(MBeanAttributeInfo attribute) {
         String access;
         if (attribute.isReadable() && attribute.isWritable()) {
             access = "read-write";
@@ -187,7 +189,7 @@ public class JmxInspector {
         return new JmxInfo.Attribute(attribute.getName(), shortType(attribute.getType()), access);
     }
 
-    private static String impact(int impact) {
+    static String impact(int impact) {
         return switch (impact) {
             case MBeanOperationInfo.INFO -> "INFO";
             case MBeanOperationInfo.ACTION -> "ACTION";
@@ -208,11 +210,10 @@ public class JmxInspector {
         if (type.startsWith("[L") && type.endsWith(";")) {
             return shortType(type.substring(2, type.length() - 1)) + "[]";
         }
-        if (type.startsWith("java.lang.") && type.indexOf('.', "java.lang.".length()) < 0) {
-            return type.substring("java.lang.".length());
-        }
-        if (type.startsWith("java.util.") && type.indexOf('.', "java.util.".length()) < 0) {
-            return type.substring("java.util.".length());
+        for (String prefix : List.of(JAVA_LANG, JAVA_UTIL)) {
+            if (type.startsWith(prefix) && type.indexOf('.', prefix.length()) < 0) {
+                return type.substring(prefix.length());
+            }
         }
         return type;
     }

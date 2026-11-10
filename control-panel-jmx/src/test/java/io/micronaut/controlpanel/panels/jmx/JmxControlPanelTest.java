@@ -26,6 +26,9 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Map;
 
+import javax.management.MBeanAttributeInfo;
+import javax.management.MBeanOperationInfo;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -39,6 +42,7 @@ class JmxControlPanelTest {
         try (ApplicationContext context = ApplicationContext.run(Map.of("spec.name", SPEC))) {
             JmxControlPanel panel = context.getBean(JmxControlPanel.class);
             assertEquals("JMX", panel.getTitle());
+            assertEquals("", panel.getBadge());
 
             JmxInfo body = panel.getBody();
             assertTrue(body.mbeanCount() > 0);
@@ -53,6 +57,8 @@ class JmxControlPanelTest {
             assertEquals(List.of("reset", "status"), orders.operations().stream().map(JmxInfo.Operation::name).toList());
             JmxInfo.Operation reset = orders.operations().getFirst();
             assertEquals(List.of("String"), reset.signature());
+            assertEquals("String", reset.parameters());
+            assertTrue(body.registeredEndpoints() > 0);
             assertEquals("ACTION", reset.impact());
             assertEquals("INFO", orders.operations().get(1).impact());
             assertEquals(0, context.getBean(OrdersEndpoint.class).calls, "operations are never invoked");
@@ -67,6 +73,7 @@ class JmxControlPanelTest {
             JmxInfo body = context.getBean(JmxControlPanel.class).getBody();
             assertFalse(body.settings().registerEndpoints());
             assertTrue(body.endpoints().stream().noneMatch(JmxInfo.Endpoint::registered), body.endpoints().toString());
+            assertEquals(0, body.registeredEndpoints());
         }
     }
 
@@ -76,6 +83,18 @@ class JmxControlPanelTest {
         assertEquals("Map", JmxInspector.shortType("java.util.Map"));
         assertEquals("String[]", JmxInspector.shortType("[Ljava.lang.String;"));
         assertEquals("java.util.concurrent.Future", JmxInspector.shortType("java.util.concurrent.Future"));
+    }
+
+    @Test
+    void attributesAndImpactsAreDescribed() {
+        assertEquals("read-write", JmxInspector.attribute(new MBeanAttributeInfo("a", "java.lang.String", "", true, true, false)).access());
+        assertEquals("write-only", JmxInspector.attribute(new MBeanAttributeInfo("a", "int", "", false, true, false)).access());
+        JmxInfo.Attribute readOnly = JmxInspector.attribute(new MBeanAttributeInfo("a", "java.util.List", "", true, false, false));
+        assertEquals("read-only", readOnly.access());
+        assertEquals("List", readOnly.type());
+        assertEquals("ACTION_INFO", JmxInspector.impact(MBeanOperationInfo.ACTION_INFO));
+        assertEquals("UNKNOWN", JmxInspector.impact(MBeanOperationInfo.UNKNOWN));
+        assertEquals("void", JmxInspector.shortType(null));
     }
 
     @Test
