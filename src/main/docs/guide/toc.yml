@@ -11,6 +11,7 @@ controlPanels:
   hibernate: Hibernate
   kafka: Kafka
   pulsar: Pulsar
+  rabbitmq: RabbitMQ
   oracleCloud: Oracle Cloud
 
 custom: Creating Custom Control Panels
