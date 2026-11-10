@@ -13,6 +13,7 @@ controlPanels:
   kafka: Kafka
   pulsar: Pulsar
   rabbitmq: RabbitMQ
+  oracleCloud: Oracle Cloud
   nats: NATS
 
 custom: Creating Custom Control Panels
