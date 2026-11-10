@@ -35,6 +35,7 @@
                                         {{#if client.configured}}<span class="badge badge-secondary">configured</span>{{/if}}
                                         {{#if client.discovered}}<span class="badge badge-secondary">service discovery</span>{{/if}}
                                         {{#if client.unresolved}}<span class="badge badge-destructive">no URL</span>{{/if}}
+                                        {{#if client.resolvedByDiscoveryClient}}<span class="badge badge-secondary">service discovery (not resolved here)</span>{{/if}}
                                     </div>
                                     {{#each client.declarativeTypes as |type|}}
                                         <div class="card-description"><code class="cp-table-code">{{type}}</code></div>
@@ -51,6 +52,9 @@
                                                 <code class="cp-table-code">{{instance.uri}}</code>
                                             </div>
                                         {{/each}}
+                                    {{/if}}
+                                    {{#if client.resolvedByDiscoveryClient}}
+                                        <span class="card-description">Resolved by the discovery client when the client is used.</span>
                                     {{/if}}
                                     {{#if client.unresolved}}
                                         <span class="card-description">Set <code>micronaut.http.services.{{client.id}}.url</code> or register the service with a discovery server.</span>

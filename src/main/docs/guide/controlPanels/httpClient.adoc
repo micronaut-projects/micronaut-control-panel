@@ -19,8 +19,13 @@ For each client, the panel shows:
 * The base path, the connect and read timeouts, and whether health checks are enabled.
 * The client filters that apply to it.
 
-A client that has no URL and no instance list is flagged with a "no URL" badge, since calls made through it fail at
-runtime. The panel card also shows how many such clients exist.
+A client that has no URL and no instance list is flagged with a "no URL" badge, since Micronaut cannot resolve it unless
+a discovery client does, and the panel card shows how many such clients exist. When a discovery client such as Consul,
+Eureka or Kubernetes is present, those clients are shown with a "service discovery (not resolved here)" badge instead,
+because the discovery client resolves them when they are used, and the panel does not contact the discovery server.
+
+A `@Client` id that is not a URL is hyphenated before it is resolved, as Micronaut does, so `@Client("ordersService")`
+is shown in the same row as the `micronaut.http.services.orders-service` configuration.
 
 The panel does not send any request. URLs are shown without user info, query strings, or fragments, because those can
 carry credentials.

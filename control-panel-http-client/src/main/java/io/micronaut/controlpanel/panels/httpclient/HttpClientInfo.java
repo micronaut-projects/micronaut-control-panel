@@ -32,6 +32,7 @@ import java.util.List;
  * @param readTimeout the read timeout, if configured
  * @param healthCheck whether the configured URLs are health checked
  * @param instances the instances service discovery reports, or {@code null} when no instance list exists for the id
+ * @param discoveryClient whether a discovery client, such as Consul, Eureka or Kubernetes, is available to resolve service ids
  * @param filters the client filters that apply to this client
  * @author Álvaro Sánchez-Mariscal
  * @since 2.3.0
@@ -47,6 +48,7 @@ public record HttpClientInfo(
     @Nullable String readTimeout,
     boolean healthCheck,
     @Nullable List<Instance> instances,
+    boolean discoveryClient,
     List<String> filters
 ) {
 
@@ -58,10 +60,22 @@ public record HttpClientInfo(
     }
 
     /**
-     * @return whether this client has no URL, no instance list, and is not a same-server client
+     * @return whether this client has no URL and no instance list, is not a same-server client, and no discovery client
+     * can resolve it
      */
     public boolean unresolved() {
-        return urls.isEmpty() && instances == null && !id.equals(HttpClientInspector.SAME_SERVER);
+        return !hasTarget() && !discoveryClient;
+    }
+
+    /**
+     * @return whether this client has no URL and no instance list, but a discovery client can resolve it when it is used
+     */
+    public boolean resolvedByDiscoveryClient() {
+        return !hasTarget() && discoveryClient;
+    }
+
+    private boolean hasTarget() {
+        return !urls.isEmpty() || instances != null || id.equals(HttpClientInspector.SAME_SERVER);
     }
 
     /**

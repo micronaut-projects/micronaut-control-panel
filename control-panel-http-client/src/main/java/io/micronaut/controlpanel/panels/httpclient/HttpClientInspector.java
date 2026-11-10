@@ -19,6 +19,9 @@ import io.micronaut.context.BeanContext;
 import io.micronaut.core.annotation.AnnotationMetadata;
 import io.micronaut.core.annotation.AnnotationValue;
 import io.micronaut.core.annotation.Internal;
+import io.micronaut.core.naming.NameUtils;
+import io.micronaut.discovery.CompositeDiscoveryClient;
+import io.micronaut.discovery.DiscoveryClient;
 import io.micronaut.discovery.ServiceInstance;
 import io.micronaut.discovery.ServiceInstanceList;
 import io.micronaut.http.client.ServiceHttpClientConfiguration;
@@ -86,9 +89,20 @@ public class HttpClientInspector {
         for (ServiceInstanceList instanceList : beanContext.getBeansOfType(ServiceInstanceList.class)) {
             clients.computeIfAbsent(instanceList.getID(), Builder::new).instanceList = instanceList;
         }
+        boolean discoveryClient = hasDiscoveryClient();
         List<HttpClientInfo> result = new ArrayList<>(clients.size());
-        clients.values().forEach(builder -> result.add(builder.build(filters(builder))));
+        clients.values().forEach(builder -> result.add(builder.build(filters(builder), discoveryClient)));
         return result;
+    }
+
+    /**
+     * Whether a discovery client, such as Consul, Eureka or Kubernetes, can resolve service ids that have no URL and no
+     * instance list. The composite client that is always present only delegates to those, so it is not counted. Only the
+     * bean definitions are read, so no discovery client is created.
+     */
+    private boolean hasDiscoveryClient() {
+        return beanContext.getBeanDefinitions(DiscoveryClient.class).stream()
+            .anyMatch(definition -> !CompositeDiscoveryClient.class.isAssignableFrom(definition.getBeanType()));
     }
 
     private static void addDeclarativeClient(Map<String, Builder> clients, BeanDefinition<?> definition, AnnotationValue<Client> client) {
@@ -103,7 +117,9 @@ public class HttpClientInspector {
             builder = clients.computeIfAbsent(url, Builder::new);
             builder.annotationUrl = url;
         } else {
-            builder = clients.computeIfAbsent(id, Builder::new);
+            // Service ids are hyphenated before they are resolved, so @Client("ordersService") uses the orders-service
+            // service configuration and instance list
+            builder = clients.computeIfAbsent(NameUtils.hyphenate(id), Builder::new);
         }
         Class<?> type = definition instanceof AdvisedBeanType<?> advised ? advised.getInterceptedType() : definition.getBeanType();
         if (!builder.declarativeTypes.contains(type.getName())) {
@@ -198,7 +214,7 @@ public class HttpClientInspector {
             this.id = id;
         }
 
-        private HttpClientInfo build(List<String> filters) {
+        private HttpClientInfo build(List<String> filters, boolean discoveryClient) {
             List<String> urls = new ArrayList<>();
             if (configuration != null) {
                 configuration.getUrls().forEach(url -> urls.add(sanitize(url.toString())));
@@ -218,6 +234,7 @@ public class HttpClientInspector {
                 configuration == null ? null : format(configuration.getReadTimeout().orElse(null)),
                 configuration != null && configuration.isHealthCheck(),
                 instances(),
+                discoveryClient,
                 filters
             );
         }
