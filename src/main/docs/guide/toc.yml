@@ -10,6 +10,7 @@ controlPanels:
   datasource: Datasource
   hibernate: Hibernate
   kafka: Kafka
+  pulsar: Pulsar
   oracleCloud: Oracle Cloud
 
 custom: Creating Custom Control Panels
