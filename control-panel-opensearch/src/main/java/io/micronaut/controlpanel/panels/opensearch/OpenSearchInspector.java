@@ -175,8 +175,8 @@ public class OpenSearchInspector {
     private static OpenSearchInfo.Cluster cluster(InfoResponse info, HealthResponse health) {
         return new OpenSearchInfo.Cluster(
             info.clusterName(),
-            info.version() == null ? "unknown" : info.version().number(),
-            health.status() == null ? "unknown" : health.status().jsonValue(),
+            info.version().number(),
+            health.status().jsonValue(),
             health.numberOfNodes(),
             health.activeShards(),
             health.unassignedShards()

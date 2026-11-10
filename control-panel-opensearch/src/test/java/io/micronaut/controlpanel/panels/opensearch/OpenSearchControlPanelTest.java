@@ -18,11 +18,17 @@ package io.micronaut.controlpanel.panels.opensearch;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.controlpanel.core.ControlPanelRepository;
 import org.junit.jupiter.api.Test;
+import org.opensearch.client.opensearch._types.ErrorResponse;
+import org.opensearch.client.opensearch._types.OpenSearchException;
 import org.opensearch.client.opensearch.OpenSearchClient;
 import org.opensearch.client.opensearch._types.Refresh;
 
 import java.io.IOException;
+import java.net.ConnectException;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -38,6 +44,7 @@ class OpenSearchControlPanelTest {
         try (ApplicationContext context = ApplicationContext.run()) {
             OpenSearchControlPanel panel = context.getBean(OpenSearchControlPanel.class);
             assertEquals("OpenSearch", panel.getTitle());
+            assertEquals("", panel.getBadge());
             assertEquals("datasource", panel.getCategory().id());
 
             OpenSearchInfo body = panel.getBody();
@@ -77,6 +84,30 @@ class OpenSearchControlPanelTest {
             assertFalse(detailed.error().contains("127.0.0.1"), detailed.error());
             assertEquals("http://127.0.0.1:1", detailed.hosts().getFirst());
         }
+    }
+
+    @Test
+    void errorsAreDescribedWithoutTheirMessage() {
+        assertEquals("ConnectException", OpenSearchInspector.describe(
+            new ExecutionException(new CompletionException(new IOException("wrapper", new ConnectException("http://secret@host"))))));
+        assertEquals("IllegalStateException", OpenSearchInspector.describe(new IllegalStateException("secret")));
+        OpenSearchException refused = new OpenSearchException(ErrorResponse.of(response -> response
+            .status(403)
+            .error(error -> error.type("security_exception").reason("secret"))));
+        assertEquals("request refused (HTTP 403)", OpenSearchInspector.describe(new ExecutionException(refused)));
+    }
+
+    @Test
+    void healthIsShownAsBadges() {
+        OpenSearchInfo.Cluster red = new OpenSearchInfo.Cluster("c", "2.19.2", "RED", 1, 1, 1);
+        assertEquals("badge-destructive", red.badgeClass());
+        assertEquals("badge-secondary", new OpenSearchInfo.Cluster("c", "2.19.2", "green", 1, 1, 0).badgeClass());
+        OpenSearchInfo.Index index = new OpenSearchInfo.Index("i", "red", "open", "1", "1kb", "1", "0");
+        assertEquals("badge-destructive", index.badgeClass());
+        assertEquals("badge-secondary", new OpenSearchInfo.Index("i", null, "open", "1", "1kb", "1", "0").badgeClass());
+
+        assertTrue(new OpenSearchInfo(List.of(), true, red, List.of(index), 2, null).truncated());
+        assertFalse(new OpenSearchInfo(List.of(), true, red, List.of(index), 1, null).truncated());
     }
 
     @Test
