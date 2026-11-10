@@ -62,7 +62,8 @@ public record JmxInfo(
     /**
      * The Micronaut JMX settings.
      *
-     * @param domain the domain of the endpoint MBeans, or {@code null} for the default
+     * @param domain the default domain of the MBean server Micronaut JMX creates when the platform MBean server is not
+     *               available ({@code jmx.domain}), or {@code null} if not set. It does not change the endpoint MBean names
      * @param agentId the agent id used to find the MBean server, if any
      * @param registerEndpoints whether management endpoints are registered as MBeans
      * @param addToFactory whether the MBean server is added to the {@code MBeanServerFactory}
