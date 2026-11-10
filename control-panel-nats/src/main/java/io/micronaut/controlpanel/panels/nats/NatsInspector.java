@@ -20,6 +20,7 @@ import io.micronaut.context.BeanRegistration;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.core.annotation.AnnotationValue;
 import io.micronaut.core.annotation.Internal;
+import io.micronaut.core.util.StringUtils;
 import io.micronaut.inject.BeanDefinition;
 import io.micronaut.inject.ExecutableMethod;
 import io.micronaut.inject.qualifiers.Qualifiers;
@@ -56,6 +57,8 @@ import java.util.Optional;
 public class NatsInspector {
 
     static final String DEFAULT_CONNECTION = "default";
+
+    private static final String CONNECTION_MEMBER = "connection";
 
     private final BeanContext beanContext;
 
@@ -97,7 +100,7 @@ public class NatsInspector {
         );
     }
 
-    private static String authentication(NatsConnectionFactoryConfig config) {
+    static String authentication(NatsConnectionFactoryConfig config) {
         if (config.getCredentials() != null) {
             return "credentials file";
         }
@@ -115,12 +118,12 @@ public class NatsInspector {
         return config.getAddresses().orElse(List.of()).stream().anyMatch(address -> address.startsWith("tls://"));
     }
 
-    private static @Nullable String server(@Nullable ServerInfo info) {
-        if (info == null || info.getVersion() == null) {
+    static @Nullable String server(@Nullable ServerInfo info) {
+        if (info == null) {
             return null;
         }
-        String name = info.getServerName() == null ? "NATS" : info.getServerName();
-        return name + " " + info.getVersion() + (info.getCluster() == null ? "" : ", cluster " + info.getCluster());
+        String cluster = info.getCluster();
+        return info.getServerName() + " " + info.getVersion() + (StringUtils.isEmpty(cluster) ? "" : ", cluster " + cluster);
     }
 
     private static NatsConnectionInfo.Statistics statistics(Statistics statistics) {
@@ -159,27 +162,30 @@ public class NatsInspector {
         List<NatsSubscriptionInfo> subscriptions = new ArrayList<>();
         for (BeanDefinition<?> definition : beanContext.getBeanDefinitions(Qualifiers.byStereotype(NatsListener.class))) {
             AnnotationValue<NatsListener> listener = definition.getAnnotation(NatsListener.class);
-            String listenerConnection = listener == null ? "" : listener.stringValue("connection").orElse("");
+            String listenerConnection = listener == null ? "" : listener.stringValue(CONNECTION_MEMBER).orElse("");
             String listenerQueue = listener == null ? "" : listener.stringValue("queue").orElse("");
             for (ExecutableMethod<?, ?> method : definition.getExecutableMethods()) {
-                if (!method.hasDeclaredAnnotation(Subject.class)) {
-                    continue;
+                if (method.hasDeclaredAnnotation(Subject.class)) {
+                    subscriptions.add(subscription(definition, method, listenerConnection, listenerQueue));
                 }
-                // @NatsConnection can also name the connection directly, which is how NatsConsumerAdvice resolves it
-                String connection = firstNonBlank(method.stringValue(NatsConnection.class, "connection").orElse(""),
-                    firstNonBlank(method.stringValue(Subject.class, "connection").orElse(""), listenerConnection));
-                String queue = firstNonBlank(method.stringValue(Subject.class, "queue").orElse(""), listenerQueue);
-                subscriptions.add(new NatsSubscriptionInfo(
-                    method.stringValue(Subject.class).orElse(""),
-                    queue.isEmpty() ? null : queue,
-                    definition.getBeanType().getName(),
-                    method.getMethodName(),
-                    connection.isEmpty() ? DEFAULT_CONNECTION : connection
-                ));
             }
         }
         subscriptions.sort(Comparator.comparing(NatsSubscriptionInfo::subject).thenComparing(NatsSubscriptionInfo::listener));
         return subscriptions;
+    }
+
+    private static NatsSubscriptionInfo subscription(BeanDefinition<?> definition, ExecutableMethod<?, ?> method, String listenerConnection, String listenerQueue) {
+        // @NatsConnection can also name the connection directly, which is how NatsConsumerAdvice resolves it
+        String connection = firstNonBlank(method.stringValue(NatsConnection.class, CONNECTION_MEMBER).orElse(""),
+            firstNonBlank(method.stringValue(Subject.class, CONNECTION_MEMBER).orElse(""), listenerConnection));
+        String queue = firstNonBlank(method.stringValue(Subject.class, "queue").orElse(""), listenerQueue);
+        return new NatsSubscriptionInfo(
+            method.stringValue(Subject.class).orElse(""),
+            queue.isEmpty() ? null : queue,
+            definition.getBeanType().getName(),
+            method.getMethodName(),
+            connection.isEmpty() ? DEFAULT_CONNECTION : connection
+        );
     }
 
     private static String firstNonBlank(String value, String fallback) {
