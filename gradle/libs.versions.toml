@@ -35,6 +35,7 @@ micronaut-kafka = "6.2.0"
 micronaut-pulsar = "3.2.0"
 micronaut-rabbitmq = "5.1.0"
 micronaut-flyway = "8.1.1"
+micronaut-oraclecloud = "6.1.2"
 kotlin-gradle-plugin = "2.4.21"
 micronaut-shared-settings = "8.1.5"
 playwright = "1.64.0"
@@ -64,6 +65,7 @@ micronaut-kafka = { module = "io.micronaut.kafka:micronaut-kafka-bom", version.r
 micronaut-pulsar = { module = "io.micronaut.pulsar:micronaut-pulsar-bom", version.ref = "micronaut-pulsar" }
 micronaut-rabbitmq = { module = "io.micronaut.rabbitmq:micronaut-rabbitmq-bom", version.ref = "micronaut-rabbitmq" }
 micronaut-flyway = { module = "io.micronaut.flyway:micronaut-flyway-bom", version.ref = "micronaut-flyway" }
+micronaut-oraclecloud = { module = "io.micronaut.oraclecloud:micronaut-oraclecloud-bom", version.ref = "micronaut-oraclecloud" }
 avro = { module = "org.apache.avro:avro", version.ref = "avro" }
 avro-serde = { module = "io.confluent:kafka-streams-avro-serde", version.ref = "avro-serde" }
 

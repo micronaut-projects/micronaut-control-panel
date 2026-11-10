@@ -1,0 +1,8 @@
+{{#with controlPanel.body }}
+    {{#if authentication}}
+        <p class="card-text">{{authentication.label}}{{#if region}} in <code>{{region}}</code>{{/if}}</p>
+    {{else}}
+        <p class="card-text"><span class="badge badge-outline">no authentication</span></p>
+    {{/if}}
+    <p class="card-text card-description">{{clients.size}} SDK clients, {{createdCount}} created.</p>
+{{/with}}

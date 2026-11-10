@@ -25,6 +25,7 @@ include("control-panel-ui")
 include("control-panel-kafka")
 include("control-panel-pulsar")
 include("control-panel-rabbitmq")
+include("control-panel-oracle-cloud")
 
 include("doc-examples:example-java")
 include("test-suite-thymeleaf")
@@ -52,4 +53,5 @@ configure<MicronautBuildSettingsExtension> {
     importMicronautCatalog("micronaut-pulsar")
     importMicronautCatalog("micronaut-rabbitmq")
     importMicronautCatalog("micronaut-flyway")
+    importMicronautCatalog("micronaut-oraclecloud")
 }

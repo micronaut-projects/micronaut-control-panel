@@ -1,0 +1,35 @@
+The Oracle Cloud control panel shows how an application that uses
+https://micronaut-projects.github.io/micronaut-oracle-cloud/latest/guide/[Micronaut Oracle Cloud] connects to Oracle
+Cloud Infrastructure (OCI).
+
+To add it, add the following dependency to an application that already uses Micronaut Oracle Cloud:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-oracle-cloud[scope=developmentOnly]
+
+The panel shows:
+
+* The authentication provider the SDK clients use: the OCI configuration file (with its profile), a session token, an
+  API key in the application configuration, an instance principal, a resource principal or OKE workload identity. When
+  more than one provider is available and none of them is primary, the panel lists them and warns, because the clients
+  cannot be created.
+* The region, and the HTTP client the SDK clients use.
+* Each OCI SDK client, such as `ObjectStorageClient`, whether it has been created, and its endpoint once it has.
+* The timeouts of the shared client configuration (`oci.client`) and of each service (`oci.clients.<service>`).
+
+The panel never creates an authentication provider, which can call the instance metadata service, or an SDK client,
+and it does not send requests to Oracle Cloud. It does not show keys, passphrases, fingerprints, OCIDs or the path of
+the OCI configuration file.
+
+== Configuration
+
+The Oracle Cloud control panel is enabled when you include the `micronaut-control-panel-oracle-cloud` module in a
+project that uses Micronaut Oracle Cloud. You can disable it by setting:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      oracle-cloud:
+        enabled: false
+----
