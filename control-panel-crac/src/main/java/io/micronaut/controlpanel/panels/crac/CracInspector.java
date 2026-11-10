@@ -134,21 +134,24 @@ public class CracInspector {
         if (!ClassUtils.isPresent("io.micronaut.configuration.lettuce.AbstractRedisConfiguration", CracInspector.class.getClassLoader())) {
             return null;
         }
-        return beanContext.findBean(CracRedisConfiguration.class).map(redis -> {
-            List<String> enabled = new ArrayList<>();
-            if (redis.isEnabled()) {
-                if (redis.isConnectionEnabled()) {
-                    enabled.add("connections");
-                }
-                if (redis.isClientEnabled()) {
-                    enabled.add("clients");
-                }
-                if (redis.isCacheEnabled()) {
-                    enabled.add("caches");
-                }
-            }
+        return beanContext.findBean(CracRedisConfiguration.class).map(CracInspector::redis).orElse(null);
+    }
+
+    static List<String> redis(CracRedisConfiguration redis) {
+        List<String> enabled = new ArrayList<>();
+        if (!redis.isEnabled()) {
             return enabled;
-        }).orElse(null);
+        }
+        if (redis.isConnectionEnabled()) {
+            enabled.add("connections");
+        }
+        if (redis.isClientEnabled()) {
+            enabled.add("clients");
+        }
+        if (redis.isCacheEnabled()) {
+            enabled.add("caches");
+        }
+        return enabled;
     }
 
     static String format(Duration duration) {

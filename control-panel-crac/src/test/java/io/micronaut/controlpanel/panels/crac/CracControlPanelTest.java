@@ -4,12 +4,16 @@ import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.controlpanel.core.ControlPanelRepository;
 import io.micronaut.crac.OrderedResource;
+import io.micronaut.crac.events.AfterRestoreEvent;
+import io.micronaut.crac.events.BeforeCheckpointEvent;
+import io.micronaut.crac.resources.redis.CracRedisConfiguration;
 import io.micronaut.crac.test.CheckpointSimulator;
 import jakarta.inject.Singleton;
 import org.crac.Context;
 import org.crac.Resource;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
@@ -66,6 +70,69 @@ class CracControlPanelTest {
         try (ApplicationContext context = ApplicationContext.run(Map.of(CracControlPanel.ENABLED_PROPERTY, "false"))) {
             assertFalse(context.containsBean(CracControlPanel.class));
         }
+    }
+
+    @Test
+    void durationsAreFormatted() {
+        assertEquals("500µs", CracInspector.format(Duration.ofNanos(500_000)));
+        assertEquals("250ms", CracInspector.format(Duration.ofMillis(250)));
+        assertEquals("5s", CracInspector.format(Duration.ofSeconds(5)));
+        assertEquals("1.5s", CracInspector.format(Duration.ofMillis(1500)));
+        assertEquals("2m 30s", CracInspector.format(Duration.ofSeconds(150)));
+    }
+
+    @Test
+    void onlyTheLatestEventsAreKept() {
+        CracEventRecorder recorder = new CracEventRecorder();
+        CacheWarmer resource = new CacheWarmer();
+        for (int i = 0; i < CracEventRecorder.MAX_EVENTS; i++) {
+            recorder.onBeforeCheckpoint(new BeforeCheckpointEvent(resource, 1_000));
+        }
+        recorder.onAfterRestore(new AfterRestoreEvent(resource, 2_000_000));
+
+        List<CracInfo.Event> events = recorder.events();
+        assertEquals(CracEventRecorder.MAX_EVENTS, events.size());
+        assertEquals("restore", events.getFirst().phase());
+        assertEquals("2ms", events.getFirst().duration());
+        assertEquals(CacheWarmer.class.getName(), events.getFirst().resource());
+    }
+
+    @Test
+    void redisResourcesAreDescribed() {
+        assertEquals(List.of("connections", "clients", "caches"), CracInspector.redis(redis(true, true, true, true)));
+        assertEquals(List.of(), CracInspector.redis(redis(true, false, false, false)));
+        assertEquals(List.of(), CracInspector.redis(redis(false, true, true, true)));
+    }
+
+    @Test
+    void hasNoBadge() {
+        try (ApplicationContext context = ApplicationContext.run(Map.of("spec.name", SPEC))) {
+            assertEquals("", context.getBean(CracControlPanel.class).getBadge());
+        }
+    }
+
+    private static CracRedisConfiguration redis(boolean enabled, boolean connection, boolean client, boolean cache) {
+        return new CracRedisConfiguration() {
+            @Override
+            public boolean isEnabled() {
+                return enabled;
+            }
+
+            @Override
+            public boolean isCacheEnabled() {
+                return cache;
+            }
+
+            @Override
+            public boolean isClientEnabled() {
+                return client;
+            }
+
+            @Override
+            public boolean isConnectionEnabled() {
+                return connection;
+            }
+        };
     }
 
     @Singleton
