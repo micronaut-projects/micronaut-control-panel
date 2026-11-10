@@ -1,0 +1,64 @@
+{{#with controlPanel.body }}
+<div class="cp-dashboard-stack">
+    {{#each factories as |factory|}}
+    <div class="card card-light">
+        <div class="card-header">
+            <h3 class="card-title"><code>{{factory.name}}</code></h3>
+            <div class="card-tools">
+                {{#if factory.product}}<span class="badge badge-secondary">{{factory.product}}</span>{{/if}}
+            </div>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt>Driver</dt>
+                <dd>{{#if factory.driver}}<code>{{factory.driver}}</code>{{else}}<span class="card-description">—</span>{{/if}}</dd>
+                {{#if factory.protocol}}
+                    <dt>Protocol</dt>
+                    <dd><code>{{factory.protocol}}</code></dd>
+                {{/if}}
+                {{#if factory.host}}
+                    <dt>Host</dt>
+                    <dd><code>{{factory.host}}{{#if factory.port}}:{{factory.port}}{{/if}}</code></dd>
+                {{/if}}
+                <dt>Database</dt>
+                <dd>{{#if factory.database}}<code>{{factory.database}}</code>{{else}}<span class="card-description">—</span>{{/if}}</dd>
+                <dt>User</dt>
+                <dd>{{#if factory.user}}<code>{{factory.user}}</code>{{else}}<span class="card-description">—</span>{{/if}}</dd>
+                {{#if factory.ssl}}
+                    <dt>SSL</dt>
+                    <dd>{{factory.ssl}}</dd>
+                {{/if}}
+                {{#if factory.connectTimeout}}
+                    <dt>Connect timeout</dt>
+                    <dd>{{factory.connectTimeout}}</dd>
+                {{/if}}
+            </dl>
+            {{#if factory.pool}}
+                <h4 class="cp-r2dbc-pool-title">Pool</h4>
+                <div class="progress" role="progressbar" aria-label="Connections in use" aria-valuenow="{{factory.pool.usagePercent}}" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-bar bg-success" style="width: {{factory.pool.usagePercent}}%"></div>
+                </div>
+                <dl class="row cp-r2dbc-pool">
+                    <dt>In use</dt>
+                    <dd>{{factory.pool.acquired}} of {{factory.pool.maxAllocated}}</dd>
+                    <dt>Idle</dt>
+                    <dd>{{factory.pool.idle}}</dd>
+                    <dt>Open</dt>
+                    <dd>{{factory.pool.allocated}}</dd>
+                    <dt>Waiting</dt>
+                    <dd>{{factory.pool.pending}}{{#if factory.pool.maxPendingLimited}} of {{factory.pool.maxPending}}{{/if}}</dd>
+                </dl>
+            {{else}}
+                <p class="card-text card-description">This connection factory is not an R2DBC pool, or its pool does not report metrics.</p>
+            {{/if}}
+        </div>
+    </div>
+    {{else}}
+    <div class="card card-light">
+        <div class="card-body">
+            <p class="card-text card-description">There are no R2DBC connection factories. Configure one under <code>r2dbc.datasources</code>.</p>
+        </div>
+    </div>
+    {{/each}}
+</div>
+{{/with}}
