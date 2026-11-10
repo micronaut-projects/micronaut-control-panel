@@ -20,6 +20,7 @@ dependencies {
     compileOnly(mnElasticsearch.elasticsearch.rest.client)
 
     testImplementation(mnTest.micronaut.test.junit5)
+    testImplementation(projects.micronautControlPanelUi)
     testImplementation(mnElasticsearch.micronaut.elasticsearch)
     testRuntimeOnly(mnTest.junit.jupiter.engine)
     testRuntimeOnly(mn.snakeyaml)
