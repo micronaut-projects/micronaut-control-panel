@@ -15,6 +15,7 @@ io.micronaut.controlpanel.panels.kafka
 io.micronaut.controlpanel.panels.management
 io.micronaut.controlpanel.panels.management.beans
 io.micronaut.controlpanel.panels.objectstorage
+io.micronaut.controlpanel.panels.oraclecloud
 io.micronaut.controlpanel.panels.pulsar
 io.micronaut.controlpanel.panels.rabbitmq
 io.micronaut.controlpanel.ui

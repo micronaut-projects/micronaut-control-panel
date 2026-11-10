@@ -115,6 +115,8 @@
         
         <div class="toc-item" style="margin-left:10px" id="toc-item-rabbitmq"><a href="#rabbitmq"><strong>4.10</strong><span>RabbitMQ</span></a></div>
         
+        <div class="toc-item" style="margin-left:10px" id="toc-item-oracleCloud"><a href="#oracleCloud"><strong>4.11</strong><span>Oracle Cloud</span></a></div>
+        
         <div class="toc-item" style="margin-left:0px" id="toc-item-custom"><a href="#custom"><strong>5</strong><span>Creating Custom Control Panels</span></a></div>
         
         <div class="toc-item" style="margin-left:0px" id="toc-item-repository"><a href="#repository"><strong>6</strong><span>Repository</span></a></div>
@@ -4148,6 +4150,154 @@ enabled = false</code></pre>
     "control-panel": {
       "panels": {
         "rabbitmq": {
+          "enabled": false
+        }
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<h2 id="oracleCloud"><a class="anchor" href="#oracleCloud"></a>4.11 Oracle Cloud</h2>
+
+<div class='contribute-btn'>
+    <button type='button' class='btn btn-default' onclick='window.location.href="https://github.com/micronaut-projects/micronaut-control-panel/edit/2.3.x/src/main/docs/guide/controlPanels/oracleCloud.adoc"'>
+        <i class='fa fa-pencil-square-o'></i> Improve this doc
+    </button>
+</div>
+
+
+<div class="paragraph">
+<p>The Oracle Cloud control panel shows how an application that uses
+<a href="https://micronaut-projects.github.io/micronaut-oracle-cloud/latest/guide/">Micronaut Oracle Cloud</a> connects to Oracle
+Cloud Infrastructure (OCI).</p>
+</div>
+<div class="paragraph">
+<p>To add it, add the following dependency to an application that already uses Micronaut Oracle Cloud:</p>
+</div>
+<div class="paragraph">
+<p>        <div class="listingblock multi-language-sample">
+<div class="title"></div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="gradle">developmentOnly(<span class="hljs-string">"io.micronaut.controlpanel:micronaut-control-panel-oracle-cloud")</span></code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="maven">&lt;dependency&gt;
+    &lt;groupId&gt;io.micronaut.controlpanel&lt;/groupId&gt;
+    &lt;artifactId&gt;micronaut-control-panel-oracle-cloud&lt;/artifactId&gt;
+    &lt;scope&gt;provided&lt;/scope&gt;
+&lt;/dependency&gt;</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="title"></div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="pyronaut">[tool.pyronaut.dependencies]
+build = [
+    <span class="hljs-string">"io.micronaut.controlpanel:micronaut-control-panel-oracle-cloud"</span>,
+]</code></pre>
+</div>
+</div>
+</p>
+</div>
+<div class="paragraph">
+<p>The panel shows:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The authentication provider the SDK clients use: the OCI configuration file (with its profile), a session token, an
+API key in the application configuration, an instance principal, a resource principal or OKE workload identity. When
+more than one provider is available and none of them is primary, the panel lists them and warns, because the clients
+cannot be created.</p>
+</li>
+<li>
+<p>The region, and the HTTP client the SDK clients use.</p>
+</li>
+<li>
+<p>Each OCI SDK client, such as <code>ObjectStorageClient</code>, whether it has been created, and its endpoint once it has.</p>
+</li>
+<li>
+<p>The timeouts of the shared client configuration (<code>oci.client</code>) and of each service (<code>oci.clients.&lt;service&gt;</code>).</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The panel never creates an authentication provider, which can call the instance metadata service, or an SDK client,
+and it does not send requests to Oracle Cloud. It does not show keys, passphrases, fingerprints, OCIDs or the path of
+the OCI configuration file.</p>
+</div>
+<div class="sect1">
+<h2 id="_configuration">Configuration</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The Oracle Cloud control panel is enabled when you include the <code>micronaut-control-panel-oracle-cloud</code> module in a
+project that uses Micronaut Oracle Cloud. You can disable it by setting:</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">micronaut.control-panel.panels.oracle-cloud.enabled=false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">micronaut:
+  control-panel:
+    panels:
+      oracle-cloud:
+        enabled: false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[micronaut.control-panel.panels.oracle-cloud]
+enabled = false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-groovy-config hljs" data-lang="groovy-config">micronaut {
+  controlPanel {
+    panels {
+      oracleCloud {
+        enabled = false
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-hocon hljs" data-lang="hocon">{
+  micronaut {
+    control-panel {
+      panels {
+        oracle-cloud {
+          enabled = false
+        }
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json-config hljs" data-lang="json-config">{
+  "micronaut": {
+    "control-panel": {
+      "panels": {
+        "oracle-cloud": {
           "enabled": false
         }
       }
