@@ -1,0 +1,139 @@
+{{#with controlPanel.body }}
+<div class="cp-dashboard-stack">
+    {{#unless enabled}}
+        <div class="alert alert-warning">Validation is disabled (<code>micronaut.validator.enabled</code> is <code>false</code>). The constraints below are not checked.</div>
+    {{/unless}}
+
+    <div class="card card-light">
+        <div class="card-header">
+            <h3 class="card-title">Validated methods</h3>
+        </div>
+        <div class="card-body">
+            {{#if beans}}
+            <div class="cp-data-table" data-filter-table data-filter-table-label="method" data-filter-table-label-plural="methods">
+                <div class="cp-data-table-toolbar">
+                    <div class="cp-data-table-summary" data-filter-table-summary>{{beans.size}} beans</div>
+                    <div class="cp-data-table-search">
+                        <input type="search" class="form-control" data-filter-table-search placeholder="Search beans, methods or constraints" aria-label="Search validated methods">
+                    </div>
+                </div>
+                <div class="cp-data-table-container">
+                    <table class="table cp-data-table-table">
+                        <thead>
+                        <tr>
+                            <th>Method</th>
+                            <th>Constraints</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {{#each beans as |bean|}}
+                            {{#each bean.methods as |method|}}
+                            <tr data-filter-table-row>
+                                <td><code class="cp-table-code">{{method.name}}</code><div class="card-description"><code class="cp-table-code">{{bean.type}}</code></div></td>
+                                <td>{{#each method.constraints as |constraint|}}<div><code class="cp-table-code">{{constraint}}</code></div>{{/each}}</td>
+                            </tr>
+                            {{/each}}
+                        {{/each}}
+                        <tr data-filter-table-empty hidden>
+                            <td class="cp-data-table-empty-cell" colspan="2">No methods match your search.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="cp-data-table-footer">
+                    <label class="cp-data-table-page-size">
+                        Rows per page
+                        <select class="form-control" data-filter-table-page-size-select aria-label="Methods per page">
+                            <option value="10" selected>10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </label>
+                    <div class="cp-data-table-pagination">
+                        <span class="cp-data-table-page" data-filter-table-page>Page 1 of 1</span>
+                        <button type="button" class="btn btn-secondary btn-sm" data-filter-table-prev>Previous</button>
+                        <button type="button" class="btn btn-secondary btn-sm" data-filter-table-next>Next</button>
+                    </div>
+                </div>
+            </div>
+            {{else}}
+                <p class="card-text card-description">No bean method has constrained arguments or return values.</p>
+            {{/if}}
+        </div>
+    </div>
+
+    <div class="card card-light">
+        <div class="card-header">
+            <h3 class="card-title">Constrained classes</h3>
+        </div>
+        <div class="card-body">
+            {{#if classes}}
+            <div class="cp-data-table" data-filter-table data-filter-table-label="class" data-filter-table-label-plural="classes">
+                <div class="cp-data-table-toolbar">
+                    <div class="cp-data-table-summary" data-filter-table-summary>{{classes.size}} classes</div>
+                    <div class="cp-data-table-search">
+                        <input type="search" class="form-control" data-filter-table-search placeholder="Search classes, properties or constraints" aria-label="Search constrained classes">
+                    </div>
+                </div>
+                <div class="cp-data-table-container">
+                    <table class="table cp-data-table-table">
+                        <thead>
+                        <tr>
+                            <th>Class</th>
+                            <th>Constrained properties</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {{#each classes as |class|}}
+                            <tr data-filter-table-row>
+                                <td><code class="cp-table-code">{{class.type}}</code>{{#if class.configuration}} <span class="badge badge-secondary">configuration</span>{{/if}}</td>
+                                <td>{{#each class.properties as |property|}}<div><code class="cp-table-code">{{property.name}}: {{property.constraintList}}</code></div>{{/each}}</td>
+                            </tr>
+                        {{/each}}
+                        <tr data-filter-table-empty hidden>
+                            <td class="cp-data-table-empty-cell" colspan="2">No classes match your search.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="cp-data-table-footer">
+                    <label class="cp-data-table-page-size">
+                        Rows per page
+                        <select class="form-control" data-filter-table-page-size-select aria-label="Classes per page">
+                            <option value="10" selected>10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </label>
+                    <div class="cp-data-table-pagination">
+                        <span class="cp-data-table-page" data-filter-table-page>Page 1 of 1</span>
+                        <button type="button" class="btn btn-secondary btn-sm" data-filter-table-prev>Previous</button>
+                        <button type="button" class="btn btn-secondary btn-sm" data-filter-table-next>Next</button>
+                    </div>
+                </div>
+            </div>
+            {{#if truncated}}<p class="card-text card-description">Showing the first {{classes.size}} of {{totalClasses}} classes.</p>{{/if}}
+            {{else}}
+                <p class="card-text card-description">No introspected class has constrained properties.</p>
+            {{/if}}
+        </div>
+    </div>
+
+    <div class="card card-light">
+        <div class="card-header">
+            <h3 class="card-title">Custom constraint validators</h3>
+        </div>
+        <div class="card-body">
+            {{#each validators as |validator|}}
+                <p class="card-text"><code>{{validator.constraint}}</code> <span class="card-description">validated by</span> <code class="cp-table-code">{{validator.type}}</code></p>
+            {{else}}
+                <p class="card-text card-description">There are no custom <code>ConstraintValidator</code> beans.</p>
+            {{/each}}
+        </div>
+    </div>
+
+    <p class="card-description">The panel reads bean definitions and introspection metadata only: it does not run validators or read any value, and it shows constraint names without their attributes. Classes in <code>io.micronaut</code> packages are left out.</p>
+</div>
+{{/with}}

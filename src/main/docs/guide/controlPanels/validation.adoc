@@ -1,0 +1,33 @@
+The Validation control panel shows what https://micronaut-projects.github.io/micronaut-validation/latest/guide/[Micronaut Validation]
+validates in an application.
+
+To add it, add the following dependency to an application that already uses Micronaut Validation:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-validation[scope=developmentOnly]
+
+The panel shows:
+
+* Whether validation is enabled (`micronaut.validator.enabled`).
+* Each bean method with constrained arguments or return value, such as a controller action, with the constraints of each
+  argument, `@Valid` for cascaded validation, and the constraints of the return value.
+* Each introspected class with constrained properties, such as a request body, and whether it is a
+  `@ConfigurationProperties` class, which is validated when the bean is created.
+* Each custom `ConstraintValidator` bean and the constraint it validates.
+
+The panel reads bean definitions and introspection metadata only: it does not run validators or read any value, and it
+shows the names of the constraints without their attributes, which can hold patterns or messages. Classes in the
+`io.micronaut` packages are left out, and up to 200 constrained classes are listed.
+
+== Configuration
+
+The Validation control panel is enabled when you include the `micronaut-control-panel-validation` module in a project
+that uses Micronaut Validation. You can disable it by setting:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      validation:
+        enabled: false
+----
