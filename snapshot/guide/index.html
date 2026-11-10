@@ -111,6 +111,8 @@
         
         <div class="toc-item" style="margin-left:10px" id="toc-item-pulsar"><a href="#pulsar"><strong>4.8</strong><span>Pulsar</span></a></div>
         
+        <div class="toc-item" style="margin-left:10px" id="toc-item-rabbitmq"><a href="#rabbitmq"><strong>4.9</strong><span>RabbitMQ</span></a></div>
+        
         <div class="toc-item" style="margin-left:0px" id="toc-item-custom"><a href="#custom"><strong>5</strong><span>Creating Custom Control Panels</span></a></div>
         
         <div class="toc-item" style="margin-left:0px" id="toc-item-repository"><a href="#repository"><strong>6</strong><span>Repository</span></a></div>
@@ -3861,6 +3863,147 @@ enabled = false</code></pre>
     "control-panel": {
       "panels": {
         "pulsar": {
+          "enabled": false
+        }
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<h2 id="rabbitmq"><a class="anchor" href="#rabbitmq"></a>4.9 RabbitMQ</h2>
+
+<div class='contribute-btn'>
+    <button type='button' class='btn btn-default' onclick='window.location.href="https://github.com/micronaut-projects/micronaut-control-panel/edit/2.3.x/src/main/docs/guide/controlPanels/rabbitmq.adoc"'>
+        <i class='fa fa-pencil-square-o'></i> Improve this doc
+    </button>
+</div>
+
+
+<div class="paragraph">
+<p>The RabbitMQ control panel shows the RabbitMQ connections and consumers of an application that uses <a href="https://micronaut-projects.github.io/micronaut-rabbitmq/latest/guide/">Micronaut RabbitMQ</a>. It is listed in the Messaging category.</p>
+</div>
+<div class="paragraph">
+<p>To add it, add the following dependency to an application that already uses Micronaut RabbitMQ:</p>
+</div>
+<div class="paragraph">
+<p>        <div class="listingblock multi-language-sample">
+<div class="title"></div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="gradle">developmentOnly(<span class="hljs-string">"io.micronaut.controlpanel:micronaut-control-panel-rabbitmq")</span></code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="maven">&lt;dependency&gt;
+    &lt;groupId&gt;io.micronaut.controlpanel&lt;/groupId&gt;
+    &lt;artifactId&gt;micronaut-control-panel-rabbitmq&lt;/artifactId&gt;
+    &lt;scope&gt;provided&lt;/scope&gt;
+&lt;/dependency&gt;</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="title"></div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="pyronaut">[tool.pyronaut.dependencies]
+build = [
+    <span class="hljs-string">"io.micronaut.controlpanel:micronaut-control-panel-rabbitmq"</span>,
+]</code></pre>
+</div>
+</div>
+</p>
+</div>
+<div class="paragraph">
+<p>The panel shows:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Each connection, configured with <code>rabbitmq.uri</code> or under <code>rabbitmq.servers</code>: whether it is open, the broker product and
+version, the broker addresses, the virtual host, the user, whether TLS is enabled, the consumer executor, and the
+channel pool size.</p>
+</li>
+<li>
+<p>Each <code>@Queue</code> method of the <code>@RabbitListener</code> beans: the queue, the listener class and method, the connection, the
+number of consumers, the prefetch count, the acknowledgement and requeue modes, and the executor.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The panel does not send anything to the broker, so rendering it never waits on the broker. The connection state and
+broker version come from what the RabbitMQ client already knows, and a connection that nothing has used yet is shown as
+not opened rather than being opened by the panel. Passwords are never read, and messages are never read, published, or
+acknowledged. To check that the broker is reachable, use the <code>/health</code> endpoint.</p>
+</div>
+<div class="sect1">
+<h2 id="_configuration">Configuration</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The RabbitMQ control panel is enabled when you include the <code>micronaut-control-panel-rabbitmq</code> module in a project that
+uses Micronaut RabbitMQ. You can disable it by setting:</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">micronaut.control-panel.panels.rabbitmq.enabled=false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">micronaut:
+  control-panel:
+    panels:
+      rabbitmq:
+        enabled: false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[micronaut.control-panel.panels.rabbitmq]
+enabled = false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-groovy-config hljs" data-lang="groovy-config">micronaut {
+  controlPanel {
+    panels {
+      rabbitmq {
+        enabled = false
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-hocon hljs" data-lang="hocon">{
+  micronaut {
+    control-panel {
+      panels {
+        rabbitmq {
+          enabled = false
+        }
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json-config hljs" data-lang="json-config">{
+  "micronaut": {
+    "control-panel": {
+      "panels": {
+        "rabbitmq": {
           "enabled": false
         }
       }
