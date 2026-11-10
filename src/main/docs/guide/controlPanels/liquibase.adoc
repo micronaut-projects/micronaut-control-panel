@@ -1,0 +1,29 @@
+The Liquibase control panel shows the change log history of each datasource that https://micronaut-projects.github.io/micronaut-liquibase/latest/guide/[Micronaut Liquibase] manages. It is listed in the Data Sources category.
+
+To add it, add the following dependency to an application that already uses Micronaut Liquibase:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-liquibase[scope=developmentOnly]
+
+The panel shows one card for each configuration under `liquibase.datasources`, with its change log file, the most
+recent tag, and a searchable table of the change sets that ran. Each row shows the execution order, id, author, change
+log file, description, comments, contexts, labels, execution result, execution time and tag. Failed change sets are
+highlighted, and so are change sets that were only marked as ran.
+
+Like the `/liquibase` management endpoint, the panel reads the `DATABASECHANGELOG` table, so that endpoint does not need
+to be enabled. It does not update, roll back, or tag the database, and it does not list change sets that have not run
+yet. A disabled configuration is listed with its status. If the history cannot be read, the card says so and the error
+is logged at `DEBUG` level, since it can include the JDBC URL.
+
+== Configuration
+
+The Liquibase control panel is enabled when you include the `micronaut-control-panel-liquibase` module in a project that
+uses Micronaut Liquibase. You can disable it by setting:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      liquibase:
+        enabled: false
+----

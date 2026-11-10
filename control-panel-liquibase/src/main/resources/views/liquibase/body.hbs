@@ -1,0 +1,11 @@
+{{#with controlPanel.body }}
+    {{#each histories as |history|}}
+        <p class="card-text">
+            <code>{{history.name}}</code>
+            <span class="badge {{history.badgeClass}}">{{history.summary}}</span>
+            {{#if history.lastTag}}<span class="card-description">tag {{history.lastTag}}</span>{{/if}}
+        </p>
+    {{else}}
+        <p class="card-text card-description">No Liquibase configurations.</p>
+    {{/each}}
+{{/with}}
