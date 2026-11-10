@@ -2,6 +2,7 @@ package io.micronaut.controlpanel.panels.r2dbc;
 
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.controlpanel.core.ControlPanelRepository;
+import io.micronaut.controlpanel.ui.ControlPanelRenderer;
 import io.micronaut.inject.qualifiers.Qualifiers;
 import io.r2dbc.spi.Connection;
 import io.r2dbc.spi.ConnectionFactory;
@@ -56,9 +57,32 @@ class R2dbcControlPanelTest {
                 assertFalse(factories.toString().contains("s3cret"));
 
                 assertTrue(context.getBean(ControlPanelRepository.class).findByName(R2dbcControlPanel.NAME).isPresent());
+
+                // The templates are rendered with the Control Panel Handlebars instance and the real panel
+                ControlPanelRenderer renderer = context.getBean(ControlPanelRenderer.class);
+                Map<String, Object> model = Map.of("controlPanel", panel);
+                String card = renderer.render("views/r2dbc/body", model);
+                assertTrue(card.contains("<code>default</code>"), card);
+                assertTrue(card.contains("1 / 4 connections in use"), card);
+                String detail = renderer.render("views/r2dbc/detail", model);
+                assertTrue(detail.contains("aria-valuenow=\"25\""), detail);
+                assertTrue(detail.contains("<dd>1 of 4</dd>"), detail);
+                assertTrue(detail.contains("<code>report_user</code>"), detail);
+                assertTrue(detail.contains("This connection factory is not an R2DBC pool"), detail);
+                assertFalse(detail.contains("s3cret"), detail);
             } finally {
                 Mono.from(connection.close()).block();
             }
+        }
+    }
+
+    @Test
+    void rendersAnApplicationWithoutConnectionFactories() {
+        try (ApplicationContext context = ApplicationContext.run()) {
+            ControlPanelRenderer renderer = context.getBean(ControlPanelRenderer.class);
+            Map<String, Object> model = Map.of("controlPanel", context.getBean(R2dbcControlPanel.class));
+            assertTrue(renderer.render("views/r2dbc/body", model).contains("No R2DBC connection factories."));
+            assertTrue(renderer.render("views/r2dbc/detail", model).contains("There are no R2DBC connection factories."));
         }
     }
 

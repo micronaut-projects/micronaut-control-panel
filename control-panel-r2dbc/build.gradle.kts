@@ -10,6 +10,9 @@ dependencies {
     compileOnly(mnR2dbc.r2dbc.pool)
 
     testImplementation(mnTest.micronaut.test.junit5)
+    testImplementation(projects.micronautControlPanelUi)
+    testRuntimeOnly(mn.micronaut.management)
+    testRuntimeOnly(mnSerde.micronaut.serde.jackson)
     testImplementation(mnR2dbc.micronaut.r2dbc.core)
     testImplementation(mnR2dbc.r2dbc.pool)
     testRuntimeOnly(mnR2dbc.r2dbc.h2)
