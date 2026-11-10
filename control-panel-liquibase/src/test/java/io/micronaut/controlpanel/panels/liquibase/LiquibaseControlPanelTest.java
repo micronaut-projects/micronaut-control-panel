@@ -115,6 +115,26 @@ class LiquibaseControlPanelTest {
     }
 
     @Test
+    void theConnectionIsReleasedWhenProbingTheDatabaseFails() throws Exception {
+        Map<String, Object> properties = Map.of(
+            "spec.name", "FailingDataSourceResolver",
+            "datasources.default.url", "jdbc:h2:mem:liquibasePanelProbe;DB_CLOSE_DELAY=-1",
+            "datasources.default.driver-class-name", "org.h2.Driver",
+            "datasources.default.username", "sa",
+            "datasources.default.password", "",
+            "liquibase.datasources.default.change-log", "classpath:db/changelog.xml"
+        );
+        try (ApplicationContext context = ApplicationContext.run(properties)) {
+            FailingDataSourceResolver resolver = context.getBean(FailingDataSourceResolver.class);
+            resolver.probeFailing = true;
+            LiquibaseHistory history = context.getBean(LiquibaseInspector.class).inspect().getFirst();
+            assertEquals(LiquibaseHistory.Status.UNREADABLE, history.status());
+            assertEquals(1, resolver.connections.size());
+            assertTrue(resolver.connections.getFirst().isClosed(), "the connection goes back to the pool");
+        }
+    }
+
+    @Test
     void panelCanBeDisabled() {
         try (ApplicationContext context = ApplicationContext.run(Map.of(LiquibaseControlPanel.ENABLED_PROPERTY, "false"))) {
             assertFalse(context.containsBean(LiquibaseControlPanel.class));
