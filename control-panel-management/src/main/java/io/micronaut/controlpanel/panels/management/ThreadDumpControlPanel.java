@@ -104,6 +104,7 @@ public class ThreadDumpControlPanel extends AbstractControlPanel<ThreadDumpContr
     /**
      * @return the full thread dump, with stack traces and lock information, for the detail view
      */
+    @ReflectiveAccess
     public Body getDetailedBody() {
         return body(threadDumper.get());
     }
