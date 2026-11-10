@@ -373,6 +373,7 @@ class ControlPanelSecurityTest {
             Map.entry(ControlPanelSecurityConfiguration.PROPERTY_WRITE_ACCESS, "AUTHORIZED"),
             Map.entry(ControlPanelSecurityConfiguration.PROPERTY_WRITE_ROLE, "ROLE_CONTROL_PANEL_WRITE"),
             Map.entry("micronaut.caches.demo.initial-capacity", 1),
+            Map.entry("micronaut.control-panel.datasource.allow-writes", true),
             Map.entry("datasources.default.db-type", "h2"),
             Map.entry("datasources.default.dialect", "H2"),
             Map.entry("micronaut.control-panel.datasource.allow-writes", true),
