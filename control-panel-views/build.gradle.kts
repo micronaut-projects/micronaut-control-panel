@@ -10,6 +10,8 @@ dependencies {
     compileOnly(mn.micronaut.router)
 
     testImplementation(mnTest.micronaut.test.junit5)
+    testImplementation(projects.micronautControlPanelUi)
+    testRuntimeOnly(mn.micronaut.management)
     testImplementation(mnViews.micronaut.views.thymeleaf)
     testImplementation(mn.micronaut.http.server)
     testImplementation(mnSerde.micronaut.serde.jackson)
