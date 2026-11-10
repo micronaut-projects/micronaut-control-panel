@@ -1,0 +1,33 @@
+The CRaC control panel shows the Coordinated Restore at Checkpoint (CRaC) state of an application that uses
+https://micronaut-projects.github.io/micronaut-crac/latest/guide/[Micronaut CRaC].
+
+To add it, add the following dependency to an application that already uses Micronaut CRaC:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-crac[scope=developmentOnly]
+
+The panel shows:
+
+* Whether the JVM supports CRaC, and whether it was started with `-XX:CRaCCheckpointTo`. The checkpoint path is not
+  shown.
+* When the application was restored from a checkpoint, and how long ago.
+* The Micronaut CRaC configuration: `crac.enabled`, `crac.refresh-beans`, `crac.datasource-pause-timeout`, and the
+  Redis resources that are enabled when Redis support is present.
+* The resources that take part in checkpoints, such as the HTTP server and each datasource, in the order they run.
+* The most recent checkpoints and restores of the resources Micronaut CRaC provides, with how long each one took.
+
+The panel never triggers a checkpoint or reads checkpoint files, and it shows the class and bean name of each resource,
+not its state, which can hold connection URLs or credentials.
+
+== Configuration
+
+The CRaC control panel is enabled when you include the `micronaut-control-panel-crac` module in a project that uses
+Micronaut CRaC. You can disable it by setting:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      crac:
+        enabled: false
+----

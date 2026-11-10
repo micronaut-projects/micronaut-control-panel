@@ -1,0 +1,5 @@
+{{#with controlPanel.body }}
+    {{#unless enabled}}<p class="card-text"><span class="badge badge-destructive">CRaC disabled</span></p>{{/unless}}
+    <p class="card-text">{{#if restoreTime}}Restored {{uptimeSinceRestore}} ago.{{else}}Not restored from a checkpoint.{{/if}}</p>
+    <p class="card-text card-description">{{resources.size}} resources{{#unless jvmSupport}}, the JVM does not support CRaC{{/unless}}.</p>
+{{/with}}

@@ -1,0 +1,73 @@
+{{#with controlPanel.body }}
+<div class="cp-dashboard-stack">
+    {{#unless enabled}}
+        <div class="alert alert-warning">Micronaut CRaC is disabled (<code>crac.enabled</code> is <code>false</code>), so no resource is registered and a checkpoint does not stop the server or datasources.</div>
+    {{/unless}}
+    {{#unless jvmSupport}}
+        <div class="alert alert-warning">This JVM does not support CRaC, so a checkpoint cannot be taken. Run the application on a CRaC-capable JDK to create a checkpoint.</div>
+    {{/unless}}
+
+    <div class="card card-light">
+        <div class="card-header">
+            <h3 class="card-title">Runtime</h3>
+        </div>
+        <div class="card-body">
+            <p class="card-text"><span class="card-description">JVM</span> {{#if jvmSupport}}supports CRaC{{else}}does not support CRaC{{/if}}{{#if checkpointConfigured}}, started with <code>-XX:CRaCCheckpointTo</code>{{/if}}</p>
+            <p class="card-text"><span class="card-description">Restored from a checkpoint</span> {{#if restoreTime}}at <code>{{restoreTime}}</code>, {{uptimeSinceRestore}} ago{{else}}no{{/if}}</p>
+            <p class="card-text"><span class="card-description">Refresh beans before a checkpoint</span> {{#if refreshBeans}}yes{{else}}no{{/if}}</p>
+            {{#if datasourcePauseTimeout}}<p class="card-text"><span class="card-description">Datasource pause timeout</span> {{datasourcePauseTimeout}}</p>{{/if}}
+            {{#if redis}}<p class="card-text"><span class="card-description">Redis</span> {{#each redis as |kind|}}<span class="badge badge-secondary">{{kind}}</span> {{/each}}</p>{{/if}}
+        </div>
+    </div>
+
+    <div class="card card-light">
+        <div class="card-header">
+            <h3 class="card-title">Resources</h3>
+        </div>
+        <div class="card-body">
+            {{#if resources}}
+                <p class="card-text card-description">Before a checkpoint, the resources run in this order. After a restore, they run in reverse order.</p>
+                {{#each resources as |resource|}}
+                    <p class="card-text"><span class="badge badge-secondary">{{resource.order}}</span> <code class="cp-table-code">{{resource.type}}</code>{{#if resource.name}} <span class="card-description">{{resource.name}}</span>{{/if}}</p>
+                {{/each}}
+            {{else}}
+                <p class="card-text card-description">No resource takes part in checkpoints.</p>
+            {{/if}}
+        </div>
+    </div>
+
+    <div class="card card-light">
+        <div class="card-header">
+            <h3 class="card-title">Recent checkpoints and restores</h3>
+        </div>
+        <div class="card-body">
+            {{#if events}}
+            <div class="cp-data-table">
+                <div class="cp-data-table-container">
+                    <table class="table cp-data-table-table">
+                        <thead>
+                        <tr>
+                            <th>Resource</th>
+                            <th>Took</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {{#each events as |event|}}
+                            <tr>
+                                <td>{{#eq event.phase "restore"}}<span class="badge badge-primary">restore</span>{{else}}<span class="badge badge-secondary">checkpoint</span>{{/eq}} <code class="cp-table-code">{{event.resource}}</code><div class="card-description">{{event.time}}</div></td>
+                                <td>{{event.duration}}</td>
+                            </tr>
+                        {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {{else}}
+                <p class="card-text card-description">No checkpoint or restore has run since the application started.</p>
+            {{/if}}
+        </div>
+    </div>
+
+    <p class="card-description">The panel never triggers a checkpoint or reads checkpoint files, and it shows the class of each resource, not its state.</p>
+</div>
+{{/with}}
