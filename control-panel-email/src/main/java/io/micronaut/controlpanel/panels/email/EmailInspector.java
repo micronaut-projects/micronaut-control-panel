@@ -198,9 +198,9 @@ public class EmailInspector {
         }
 
         private static EmailInfo.Property property(String key, @Nullable Object value) {
-            String name = key.startsWith("mail.") ? key : "mail." + key;
-            boolean safe = SAFE_PROPERTIES.contains(name.toLowerCase(Locale.ROOT));
-            return new EmailInfo.Property(name, safe && value != null ? String.valueOf(value) : null);
+            // Shown as bound: JavaMail ignores keys that do not start with "mail.", so they must stand out
+            boolean safe = SAFE_PROPERTIES.contains(key.toLowerCase(Locale.ROOT));
+            return new EmailInfo.Property(key, safe && value != null ? String.valueOf(value) : null);
         }
     }
 }

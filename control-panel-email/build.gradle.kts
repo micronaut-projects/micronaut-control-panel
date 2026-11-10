@@ -10,6 +10,9 @@ dependencies {
     compileOnly(mnEmail.micronaut.email.javamail)
 
     testImplementation(mnTest.micronaut.test.junit5)
+    testImplementation(projects.micronautControlPanelUi)
+    testRuntimeOnly(mn.micronaut.management)
+    testRuntimeOnly(mnSerde.micronaut.serde.jackson)
     testImplementation(mnEmail.micronaut.email.javamail)
     testRuntimeOnly(mnTest.junit.jupiter.engine)
     testAnnotationProcessor(mn.micronaut.inject.java)

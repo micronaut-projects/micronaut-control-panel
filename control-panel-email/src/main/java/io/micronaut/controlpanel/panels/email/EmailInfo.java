@@ -74,5 +74,12 @@ public record EmailInfo(@Nullable String from, List<Sender> senders, boolean tem
      */
     @ReflectiveAccess
     public record Property(String name, @Nullable String value) {
+
+        /**
+         * @return whether JavaMail ignores the property, because its name does not start with {@code mail.}
+         */
+        public boolean ignored() {
+            return !name.startsWith("mail.");
+        }
     }
 }

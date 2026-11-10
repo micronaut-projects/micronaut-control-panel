@@ -38,6 +38,7 @@ class EmailControlPanelTest {
             "javamail.properties.mail.smtp.host", "smtp.example.com",
             "javamail.properties.mail.smtp.port", "587",
             "javamail.properties.mail.smtp.password", "s3cret",
+            "javamail.properties.smtp.auth", "true",
             "javamail.authentication.username", "mailer",
             "javamail.authentication.password", "s3cret"
         );
@@ -63,6 +64,11 @@ class EmailControlPanelTest {
             assertEquals("587", values.get("mail.smtp.port"));
             assertTrue(values.containsKey("mail.smtp.password"));
             assertNull(values.get("mail.smtp.password"));
+            // A key JavaMail ignores is shown as bound, not rewritten to mail.smtp.auth
+            assertTrue(values.containsKey("smtp.auth"), values.toString());
+            assertFalse(values.containsKey("mail.smtp.auth"), values.toString());
+            assertTrue(javaMail.properties().stream().filter(property -> property.name().equals("smtp.auth")).allMatch(EmailInfo.Property::ignored));
+            assertTrue(javaMail.properties().stream().filter(property -> property.name().startsWith("mail.")).noneMatch(EmailInfo.Property::ignored));
             assertFalse(body.toString().contains("s3cret"));
             assertFalse(body.toString().contains("mailer"));
 

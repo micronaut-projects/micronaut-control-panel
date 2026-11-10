@@ -15,7 +15,8 @@ The panel shows:
 The panel is read-only. It reads the senders from their bean definitions, so it does not create senders or provider
 clients, and it never sends email. Passwords, API keys and tokens are never shown: a JavaMail property shows its value
 only when it is a setting known to be safe, such as `mail.smtp.host` or `mail.smtp.port`, and credentials are reported
-only as configured or not.
+only as configured or not. Properties are listed with the name they are bound with, and a property whose name does not
+start with `mail.` is flagged, because JavaMail ignores it.
 
 == Configuration
 

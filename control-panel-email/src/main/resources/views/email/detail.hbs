@@ -46,7 +46,7 @@
                 <dt>Authentication</dt>
                 <dd>{{javaMail.authentication}}</dd>
                 {{#each javaMail.properties as |property|}}
-                    <dt><code>{{property.name}}</code></dt>
+                    <dt><code>{{property.name}}</code>{{#if property.ignored}} <span class="badge badge-destructive" title="JavaMail only reads properties whose name starts with mail.">ignored by JavaMail</span>{{/if}}</dt>
                     <dd>{{#if property.value}}<code>{{property.value}}</code>{{else}}<span class="card-description">(hidden)</span>{{/if}}</dd>
                 {{else}}
                     <dt>Properties</dt>
