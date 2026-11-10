@@ -17,6 +17,7 @@ package io.micronaut.controlpanel.panels.email;
 
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.controlpanel.core.ControlPanelRepository;
+import io.micronaut.email.Contact;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -43,6 +44,7 @@ class EmailControlPanelTest {
         try (ApplicationContext context = ApplicationContext.run(properties)) {
             EmailControlPanel panel = context.getBean(EmailControlPanel.class);
             assertEquals("Email", panel.getTitle());
+            assertEquals("", panel.getBadge());
 
             EmailInfo body = panel.getBody();
             assertEquals("Example <noreply@example.com>", body.from());
@@ -73,6 +75,31 @@ class EmailControlPanelTest {
         assertEquals("Amazon SES", EmailInspector.provider("io.micronaut.email.ses.SesEmailSender"));
         assertEquals("SendGrid", EmailInspector.provider("io.micronaut.email.sendgrid.SendgridEmailSender"));
         assertEquals("custom", EmailInspector.provider("com.example.MySender"));
+        assertEquals("Amazon SES", EmailInspector.provider("com.example.AmazonSender"));
+        assertEquals("Mailjet", EmailInspector.provider("io.micronaut.email.mailjet.MailjetEmailSender"));
+        assertEquals("Postmark", EmailInspector.provider("io.micronaut.email.postmark.PostmarkEmailSender"));
+        assertEquals("Mailtrap", EmailInspector.provider("io.micronaut.email.mailtrap.MailtrapEmailSender"));
+        assertEquals("Mailpit", EmailInspector.provider("com.example.mailpit.MailpitSender"));
+    }
+
+    @Test
+    void sendersAndContactsAreDescribed() {
+        assertEquals("sync", new EmailInfo.Sender("a", "custom", "A", true, false).modes());
+        assertEquals("async", new EmailInfo.Sender("a", "custom", "A", false, true).modes());
+        assertNull(EmailInspector.format(null));
+        assertNull(EmailInspector.format(new Contact(null)));
+        assertEquals("noreply@example.com", EmailInspector.format(new Contact("noreply@example.com")));
+        assertEquals("Example <noreply@example.com>", EmailInspector.format(new Contact("noreply@example.com", "Example")));
+    }
+
+    @Test
+    void showsNoSenderOrAuthenticationWhenNoneIsConfigured() {
+        try (ApplicationContext context = ApplicationContext.run()) {
+            EmailInfo body = context.getBean(EmailControlPanel.class).getBody();
+            assertNull(body.from());
+            assertNotNull(body.javaMail());
+            assertEquals("none", body.javaMail().authentication());
+        }
     }
 
     @Test

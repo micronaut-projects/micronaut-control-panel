@@ -114,7 +114,7 @@ public class EmailInspector {
         }
     }
 
-    private static @Nullable String format(@Nullable Contact contact) {
+    static @Nullable String format(@Nullable Contact contact) {
         if (contact == null || contact.getEmail() == null) {
             return null;
         }
