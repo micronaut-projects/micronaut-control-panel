@@ -15,6 +15,7 @@
  */
 package io.micronaut.controlpanel.panels.datasource;
 
+import io.micronaut.context.BeanLocator;
 import io.micronaut.context.annotation.EachBean;
 import io.micronaut.context.annotation.Parameter;
 import io.micronaut.context.env.Environment;
@@ -25,6 +26,8 @@ import io.micronaut.controlpanel.panels.datasource.model.Body;
 import io.micronaut.controlpanel.panels.datasource.model.DataSourceInfo;
 import io.micronaut.controlpanel.panels.datasource.model.DatabaseType;
 import io.micronaut.controlpanel.panels.datasource.model.Table;
+import io.micronaut.inject.qualifiers.Qualifiers;
+import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +41,8 @@ import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
  * Control panel for DataSource metadata, displaying tables, columns, keys, etc.
  *
  * <p>An individual datasource can be hidden with
- * {@code micronaut.control-panel.panels.datasource.datasources.<name>.enabled=false}. A hidden datasource is never
+ * {@code micronaut.control-panel.panels.datasource.datasources.<name>.enabled=false}, see
+ * {@link DataSourcePanelConfiguration}. A hidden datasource is never
  * inspected: no metadata query is run against it, and its connection settings are not exposed.</p>
  */
 @EachBean(DataSource.class)
@@ -61,16 +65,53 @@ public class DataSourceControlPanel extends AbstractEachBeanControlPanel<Body> {
     private final Body body;
     private final DataSourceInfo dataSourceInfo;
 
+    /**
+     * @param beanName the datasource name
+     * @param dataSourceService the datasource service
+     * @param environment the environment
+     * @param configuration the panel configuration
+     * @param beanLocator the bean locator, used to find the {@link DataSourcePanelConfiguration} of the datasource
+     * @since 2.3.0
+     */
+    @Inject
     public DataSourceControlPanel(@Parameter String beanName,
                                   @Parameter DataSourceService dataSourceService,
                                   Environment environment,
-                                  @Named(NAME) ControlPanelConfiguration configuration) {
+                                  @Named(NAME) ControlPanelConfiguration configuration,
+                                  BeanLocator beanLocator) {
+        this(beanName, dataSourceService, environment, configuration,
+            beanLocator.findBean(DataSourcePanelConfiguration.class, Qualifiers.byName(beanName))
+                .map(DataSourcePanelConfiguration::isEnabled)
+                .orElse(DataSourcePanelConfiguration.DEFAULT_ENABLED));
+    }
+
+    /**
+     * @param beanName the datasource name
+     * @param dataSourceService the datasource service
+     * @param environment the environment
+     * @param configuration the panel configuration
+     * @deprecated use {@link #DataSourceControlPanel(String, DataSourceService, Environment, ControlPanelConfiguration, BeanLocator)},
+     * which honours the {@link DataSourcePanelConfiguration} of the datasource
+     */
+    @Deprecated(since = "2.3.0", forRemoval = true)
+    public DataSourceControlPanel(String beanName,
+                                  DataSourceService dataSourceService,
+                                  Environment environment,
+                                  ControlPanelConfiguration configuration) {
+        this(beanName, dataSourceService, environment, configuration, DataSourcePanelConfiguration.DEFAULT_ENABLED);
+    }
+
+    private DataSourceControlPanel(String beanName,
+                                   DataSourceService dataSourceService,
+                                   Environment environment,
+                                   ControlPanelConfiguration configuration,
+                                   boolean dataSourceEnabled) {
         super(NAME, configuration);
         this.beanName = beanName;
         if (LOG.isDebugEnabled()) {
             LOG.debug("Initializing DataSourceControlPanel for bean='{}'", beanName);
         }
-        this.dataSourceEnabled = environment.getProperty(enabledProperty(beanName), Boolean.class).orElse(Boolean.TRUE);
+        this.dataSourceEnabled = dataSourceEnabled;
         if (!dataSourceEnabled) {
             LOG.debug("DataSourceControlPanel disabled for bean='{}'", beanName);
             this.tables = List.of();
