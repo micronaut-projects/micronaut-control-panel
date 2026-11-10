@@ -1,0 +1,18 @@
+elasticsearch:
+  http-hosts: 'http://${elasticsearch.host}:${elasticsearch.port}'
+test-resources:
+  containers:
+    elasticsearch:
+      image-name: elasticsearch:9.1.5
+      hostnames:
+        - elasticsearch.host
+      exposed-ports:
+        - elasticsearch.port: 9200
+      env:
+        - discovery.type: single-node
+        - xpack.security.enabled: 'false'
+        - ES_JAVA_OPTS: '-Xms512m -Xmx512m'
+        - cluster.routing.allocation.disk.threshold_enabled: 'false'
+      wait-strategy:
+        log:
+          regex: '.*"started.*'

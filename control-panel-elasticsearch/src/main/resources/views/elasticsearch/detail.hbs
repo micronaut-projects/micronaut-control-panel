@@ -1,0 +1,96 @@
+{{#with controlPanel.detailedBody }}
+<div class="cp-dashboard-stack">
+    <div class="card card-light">
+        <div class="card-header">
+            <h3 class="card-title">Cluster</h3>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt>Hosts</dt>
+                <dd>{{#each hosts as |host|}}<code>{{host}}</code> {{else}}<span class="card-description">none</span>{{/each}}</dd>
+                {{#if cluster}}
+                    <dt>Name</dt>
+                    <dd><code>{{cluster.name}}</code> <span class="badge {{cluster.badgeClass}}">{{cluster.status}}</span></dd>
+                    <dt>Version</dt>
+                    <dd>Elasticsearch {{cluster.version}}</dd>
+                    <dt>Nodes</dt>
+                    <dd>{{cluster.nodes}}</dd>
+                    <dt>Shards</dt>
+                    <dd>{{cluster.activeShards}} active{{#if cluster.unassignedShards}}, <span class="badge badge-destructive">{{cluster.unassignedShards}} unassigned</span>{{/if}}</dd>
+                {{/if}}
+            </dl>
+            {{#if error}}
+                <div class="alert alert-warning">Unable to read the cluster: {{error}}. See the application log at DEBUG level for details.</div>
+            {{/if}}
+        </div>
+    </div>
+
+    {{#if cluster}}
+    <div class="card card-light">
+        <div class="card-header">
+            <h3 class="card-title">Indices</h3>
+        </div>
+        <div class="card-body">
+            {{#if indices}}
+            <div class="cp-data-table" data-filter-table data-filter-table-label="index" data-filter-table-label-plural="indices">
+                <div class="cp-data-table-toolbar">
+                    <div class="cp-data-table-summary" data-filter-table-summary>{{indices.size}} indices</div>
+                    <div class="cp-data-table-search">
+                        <input type="search" class="form-control" data-filter-table-search placeholder="Search indices" aria-label="Search indices">
+                    </div>
+                </div>
+                <div class="cp-data-table-container">
+                    <table class="table cp-data-table-table">
+                        <thead>
+                        <tr>
+                            <th>Index</th>
+                            <th>Health</th>
+                            <th>Documents</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {{#each indices as |index|}}
+                            <tr data-filter-table-row>
+                                <td>
+                                    <code class="cp-table-code">{{index.name}}</code>
+                                    <div class="card-description">shards: {{index.primaries}} primary, {{index.replicas}} replica</div>
+                                </td>
+                                <td><span class="badge {{index.badgeClass}}">{{index.health}}</span></td>
+                                <td>
+                                    {{index.documents}}
+                                    <div class="card-description">{{index.size}}</div>
+                                </td>
+                            </tr>
+                        {{/each}}
+                        <tr data-filter-table-empty hidden>
+                            <td class="cp-data-table-empty-cell" colspan="3">No indices match your search.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="cp-data-table-footer">
+                    <label class="cp-data-table-page-size">
+                        Rows per page
+                        <select class="form-control" data-filter-table-page-size-select aria-label="Indices per page">
+                            <option value="10" selected>10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </label>
+                    <div class="cp-data-table-pagination">
+                        <span class="cp-data-table-page" data-filter-table-page>Page 1 of 1</span>
+                        <button type="button" class="btn btn-secondary btn-sm" data-filter-table-prev>Previous</button>
+                        <button type="button" class="btn btn-secondary btn-sm" data-filter-table-next>Next</button>
+                    </div>
+                </div>
+            </div>
+            {{#if truncated}}<p class="card-text card-description">Showing the first {{indices.size}} of {{totalIndices}} indices.</p>{{/if}}
+            {{else}}
+                <p class="card-text card-description">There are no indices, apart from hidden and system ones.</p>
+            {{/if}}
+        </div>
+    </div>
+    {{/if}}
+</div>
+{{/with}}

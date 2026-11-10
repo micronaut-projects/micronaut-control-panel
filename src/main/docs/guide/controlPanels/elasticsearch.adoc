@@ -1,0 +1,36 @@
+The Elasticsearch control panel shows the Elasticsearch cluster of an application that uses
+https://micronaut-projects.github.io/micronaut-elasticsearch/latest/guide/[Micronaut Elasticsearch]. It is listed in the
+Data Sources category.
+
+To add it, add the following dependency to an application that already uses Micronaut Elasticsearch:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-elasticsearch[scope=developmentOnly]
+
+The dashboard card shows the configured hosts and whether the application has created a client. It only reads the
+configuration, so rendering the dashboard does not send requests to Elasticsearch.
+
+The detail view shows:
+
+* The cluster name, Elasticsearch version and health, the number of nodes, and the active and unassigned shards.
+* The open indices, apart from hidden and system ones, with their health, document count, size, and primary and replica
+  shards. Up to 100 indices are listed.
+
+To build the detail view, the panel sends three read-only requests (cluster info, cluster health and the index list) in
+parallel and gives up after 3 seconds. If the cluster cannot be read, the panel shows the type of error, such as
+`ConnectException` or the HTTP status, and logs the details at `DEBUG` level under
+`io.micronaut.controlpanel.panels.elasticsearch`. Hosts are shown without user info, and the server's error messages are
+never rendered.
+
+== Configuration
+
+The Elasticsearch control panel is enabled when you include the `micronaut-control-panel-elasticsearch` module in a
+project that uses Micronaut Elasticsearch. You can disable it by setting:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      elasticsearch:
+        enabled: false
+----
