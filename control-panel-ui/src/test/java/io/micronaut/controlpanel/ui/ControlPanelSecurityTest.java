@@ -376,7 +376,6 @@ class ControlPanelSecurityTest {
             Map.entry("micronaut.control-panel.datasource.allow-writes", true),
             Map.entry("datasources.default.db-type", "h2"),
             Map.entry("datasources.default.dialect", "H2"),
-            Map.entry("micronaut.control-panel.datasource.allow-writes", true),
             Map.entry("datasources.default.url", "jdbc:h2:mem:control-panel-trailing-slash;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE"),
             Map.entry("datasources.default.driver-class-name", "org.h2.Driver"),
             Map.entry("datasources.default.username", "sa"),
