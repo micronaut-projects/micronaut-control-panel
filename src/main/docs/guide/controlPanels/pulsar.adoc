@@ -1,0 +1,36 @@
+The Pulsar control panel shows the Pulsar client, consumers, producers and readers of an application that uses
+https://micronaut-projects.github.io/micronaut-pulsar/latest/guide/[Micronaut Pulsar]. It is listed in the Messaging
+category.
+
+To add it, add the following dependency to an application that already uses Micronaut Pulsar:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-pulsar[scope=developmentOnly]
+
+The panel shows:
+
+* The client configuration: the service URL, whether it uses TLS, how the client authenticates, the default tenant and
+  the proxy, if any.
+* Each `@PulsarConsumer`: its topic, subscription and consumer name, whether it is connected or paused, and the messages
+  it has received, acknowledged and failed to receive.
+* Each producer created for a `@PulsarProducer` method: its topic and producer name, whether it is connected, and the
+  messages it has sent and failed to send.
+* Each `@PulsarReader`, with its topic and whether it is connected.
+
+The panel is read-only and does not send anything to the broker: the connection state and counters come from what the
+Pulsar client already knows, and the client refreshes its counters once per statistics interval (one minute by default).
+Producers are created the first time they are used, so a producer appears once it has sent a message. Tokens, OAuth
+credentials and TLS passwords are never shown, and URLs are shown without user info or query strings.
+
+== Configuration
+
+The Pulsar control panel is enabled when you include the `micronaut-control-panel-pulsar` module in a project that uses
+Micronaut Pulsar. You can disable it by setting:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      pulsar:
+        enabled: false
+----

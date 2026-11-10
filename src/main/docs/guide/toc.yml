@@ -10,6 +10,7 @@ controlPanels:
   datasource: Datasource
   hibernate: Hibernate
   kafka: Kafka
+  pulsar: Pulsar
   rabbitmq: RabbitMQ
 
 custom: Creating Custom Control Panels
