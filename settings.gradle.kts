@@ -23,6 +23,7 @@ include("control-panel-hibernate")
 include("control-panel-ui")
 include("control-panel-kafka")
 include("control-panel-pulsar")
+include("control-panel-testing")
 
 include("doc-examples:example-java")
 include("test-suite-thymeleaf")
