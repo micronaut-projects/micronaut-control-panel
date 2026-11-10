@@ -28,6 +28,7 @@ class MongoDbControlPanelTest {
             MongoDbControlPanel panel = context.getBean(MongoDbControlPanel.class);
             assertEquals("MongoDB", panel.getTitle());
             assertEquals("datasource", panel.getCategory().id());
+            assertEquals("", panel.getBadge());
 
             List<MongoClientInfo> summary = panel.getBody().clients();
             assertTrue(summary.stream().allMatch(info -> info.databases() == null), "the dashboard must not query MongoDB");
@@ -81,5 +82,13 @@ class MongoDbControlPanelTest {
         assertEquals("512 B", MongoDbInspector.formatSize(512L));
         assertEquals("8.0 KB", MongoDbInspector.formatSize(8192L));
         assertEquals("1.5 MB", MongoDbInspector.formatSize(1572864L));
+        assertEquals("2048.0 TB", MongoDbInspector.formatSize(2L << 50));
+    }
+
+    @Test
+    void labelsDocumentCounts() {
+        assertNull(new MongoClientInfo.Collection("books", "collection", null).documentsLabel());
+        assertEquals("~1 document", new MongoClientInfo.Collection("books", "collection", 1L).documentsLabel());
+        assertEquals("~2 documents", new MongoClientInfo.Collection("books", "collection", 2L).documentsLabel());
     }
 }
