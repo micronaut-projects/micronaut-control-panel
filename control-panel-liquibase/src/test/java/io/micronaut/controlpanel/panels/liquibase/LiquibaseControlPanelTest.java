@@ -37,6 +37,8 @@ class LiquibaseControlPanelTest {
         try (ApplicationContext context = ApplicationContext.run(PROPERTIES)) {
             LiquibaseControlPanel panel = context.getBean(LiquibaseControlPanel.class);
             assertEquals("Liquibase", panel.getTitle());
+            assertEquals("", panel.getBadge());
+            assertEquals("Change sets", panel.getDetailLinkName());
             assertEquals("datasource", panel.getCategory().id());
 
             List<LiquibaseHistory> histories = panel.getBody().histories();
@@ -64,12 +66,51 @@ class LiquibaseControlPanelTest {
             LiquibaseHistory legacy = histories.get(1);
             assertEquals(LiquibaseHistory.Status.DISABLED, legacy.status());
             assertTrue(legacy.changeSets().isEmpty());
+            assertEquals("disabled", legacy.summary());
 
             LiquibaseHistory orphan = histories.get(2);
             assertEquals(LiquibaseHistory.Status.UNREADABLE, orphan.status());
             assertEquals("badge-destructive", orphan.badgeClass());
 
             assertTrue(context.getBean(ControlPanelRepository.class).findByName(LiquibaseControlPanel.NAME).isPresent());
+        }
+    }
+
+    @Test
+    void honoursTheConfiguredSchemasAndChangeLogTable() {
+        Map<String, Object> properties = Map.of(
+            "datasources.default.url", "jdbc:h2:mem:liquibasePanelSchemas;DB_CLOSE_DELAY=-1;INIT=CREATE SCHEMA IF NOT EXISTS APP\\;CREATE SCHEMA IF NOT EXISTS AUDIT",
+            "datasources.default.driver-class-name", "org.h2.Driver",
+            "datasources.default.username", "sa",
+            "datasources.default.password", "",
+            "liquibase.datasources.default.change-log", "classpath:db/changelog.xml",
+            "liquibase.datasources.default.default-schema", "APP",
+            "liquibase.datasources.default.liquibase-schema", "AUDIT",
+            "liquibase.datasources.default.database-change-log-table", "APP_CHANGELOG"
+        );
+        try (ApplicationContext context = ApplicationContext.run(properties)) {
+            LiquibaseHistory history = context.getBean(LiquibaseInspector.class).inspect().getFirst();
+            assertEquals(LiquibaseHistory.Status.READ, history.status());
+            assertEquals(3, history.changeSets().size());
+        }
+    }
+
+    @Test
+    void historyIsUnreadableWhenTheDatasourceFails() {
+        Map<String, Object> properties = Map.of(
+            "spec.name", "FailingDataSourceResolver",
+            "datasources.default.url", "jdbc:h2:mem:liquibasePanelFailing;DB_CLOSE_DELAY=-1",
+            "datasources.default.driver-class-name", "org.h2.Driver",
+            "datasources.default.username", "sa",
+            "datasources.default.password", "",
+            "liquibase.datasources.default.change-log", "classpath:db/changelog.xml"
+        );
+        try (ApplicationContext context = ApplicationContext.run(properties)) {
+            context.getBean(FailingDataSourceResolver.class).failing = true;
+            LiquibaseHistory history = context.getBean(LiquibaseInspector.class).inspect().getFirst();
+            assertEquals(LiquibaseHistory.Status.UNREADABLE, history.status());
+            assertTrue(history.changeSets().isEmpty());
+            assertEquals("classpath:db/changelog.xml", history.changeLog());
         }
     }
 
