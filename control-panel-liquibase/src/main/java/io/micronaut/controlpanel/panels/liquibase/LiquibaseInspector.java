@@ -104,25 +104,18 @@ public class LiquibaseInspector {
     }
 
     private static List<RanChangeSet> readRanChangeSets(DataSource dataSource, LiquibaseConfigurationProperties configuration) throws Exception {
-        // Kept in a local so the connection goes back to the pool even when probing the database fails
-        JdbcConnection connection = new JdbcConnection(dataSource.getConnection());
-        Database database = null;
-        try {
-            database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(connection);
-            configure(database, configuration);
-            StandardChangeLogHistoryService history = new StandardChangeLogHistoryService();
-            history.setDatabase(database);
-            return history.getRanChangeSets();
-        } finally {
+        try (JdbcConnection connection = new JdbcConnection(dataSource.getConnection())) {
+            // Liquibase can turn auto-commit off when it attaches to the connection, so it is restored before the
+            // connection goes back to the pool, even when probing the database fails
+            boolean autoCommit = connection.getAutoCommit();
             try {
-                if (database != null) {
-                    // Restores the auto-commit mode and closes the connection
-                    database.close();
-                }
+                Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(connection);
+                configure(database, configuration);
+                StandardChangeLogHistoryService history = new StandardChangeLogHistoryService();
+                history.setDatabase(database);
+                return history.getRanChangeSets();
             } finally {
-                if (!connection.isClosed()) {
-                    connection.close();
-                }
+                connection.setAutoCommit(autoCommit);
             }
         }
     }
