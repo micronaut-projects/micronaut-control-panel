@@ -14,6 +14,7 @@ io.micronaut.controlpanel.panels.kafka
 io.micronaut.controlpanel.panels.management
 io.micronaut.controlpanel.panels.management.beans
 io.micronaut.controlpanel.panels.objectstorage
+io.micronaut.controlpanel.panels.pulsar
 io.micronaut.controlpanel.ui
 io.micronaut.controlpanel.ui.util
 io.micronaut.controlpanel.util
