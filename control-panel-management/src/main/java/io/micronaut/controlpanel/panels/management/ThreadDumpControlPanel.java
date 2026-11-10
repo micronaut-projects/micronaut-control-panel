@@ -83,7 +83,7 @@ public class ThreadDumpControlPanel extends AbstractControlPanel<ThreadDumpContr
 
     @Inject
     public ThreadDumpControlPanel(@Named(NAME) ControlPanelConfiguration configuration, ThreadInfoMapper<?> threadInfoMapper) {
-        this(configuration, threadInfoMapper, ThreadDumpControlPanel::snapshot, () -> ManagementFactory.getThreadMXBean().dumpAllThreads(true, true));
+        this(configuration, threadInfoMapper, ThreadDumpControlPanel::snapshot, ThreadDumpControlPanel::fullDump);
     }
 
     ThreadDumpControlPanel(ControlPanelConfiguration configuration, ThreadInfoMapper<?> threadInfoMapper, Supplier<ThreadInfo[]> snapshot, Supplier<ThreadInfo[]> threadDumper) {
@@ -114,6 +114,12 @@ public class ThreadDumpControlPanel extends AbstractControlPanel<ThreadDumpContr
         return Arrays.stream(bean.getThreadInfo(bean.getAllThreadIds(), 0))
             .filter(Objects::nonNull)
             .toArray(ThreadInfo[]::new);
+    }
+
+    private static ThreadInfo[] fullDump() {
+        ThreadMXBean bean = ManagementFactory.getThreadMXBean();
+        // Asking for lock information that the runtime cannot provide, as in a GraalVM native image, throws
+        return bean.dumpAllThreads(bean.isObjectMonitorUsageSupported(), bean.isSynchronizerUsageSupported());
     }
 
     private Body body(ThreadInfo[] dump) {
