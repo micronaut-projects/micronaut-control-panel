@@ -16,6 +16,7 @@
 package io.micronaut.controlpanel.panels.validation;
 
 import io.micronaut.aop.Intercepted;
+import io.micronaut.aop.Introduced;
 import io.micronaut.context.BeanContext;
 import io.micronaut.context.annotation.ConfigurationReader;
 import io.micronaut.context.annotation.Requires;
@@ -190,12 +191,24 @@ public class ValidationInspector {
         return classes;
     }
 
-    private static Class<?> beanClass(BeanDefinition<?> definition) {
-        Class<?> type = definition.getBeanType();
-        if (Intercepted.class.isAssignableFrom(type) && type.getSuperclass() != null) {
-            return type.getSuperclass();
+    static Class<?> beanClass(BeanDefinition<?> definition) {
+        return beanClass(definition.getBeanType());
+    }
+
+    static Class<?> beanClass(Class<?> type) {
+        if (!Intercepted.class.isAssignableFrom(type)) {
+            return type;
         }
-        return type;
+        if (Introduced.class.isAssignableFrom(type)) {
+            // Introduction advice, such as Micronaut Data repositories and declarative clients: the proxy extends
+            // Object and implements the advised interface
+            for (Class<?> implemented : type.getInterfaces()) {
+                if (!Intercepted.class.isAssignableFrom(implemented)) {
+                    return implemented;
+                }
+            }
+        }
+        return type.getSuperclass() != null ? type.getSuperclass() : type;
     }
 
     private static List<String> constraints(AnnotationMetadata metadata) {

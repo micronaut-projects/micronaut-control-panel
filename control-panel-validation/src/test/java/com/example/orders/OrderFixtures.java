@@ -15,8 +15,12 @@
  */
 package com.example.orders;
 
+import io.micronaut.aop.Introduction;
+import io.micronaut.aop.MethodInterceptor;
+import io.micronaut.aop.MethodInvocationContext;
 import io.micronaut.context.annotation.ConfigurationProperties;
 import io.micronaut.context.annotation.Requires;
+import io.micronaut.context.annotation.Type;
 import io.micronaut.core.annotation.AnnotationValue;
 import io.micronaut.core.annotation.Introspected;
 import io.micronaut.validation.validator.constraints.ConstraintValidator;
@@ -83,5 +87,29 @@ public final class OrderFixtures {
         public void setPrefix(String prefix) {
             this.prefix = prefix;
         }
+    }
+
+    /**
+     * Introduction advice, as used by Micronaut Data repositories and declarative clients.
+     */
+    @Introduction
+    @Type(StubIntroducer.class)
+    @Retention(RetentionPolicy.RUNTIME)
+    public @interface Stub {
+    }
+
+    @Requires(property = "spec.name", value = OrderFixtures.SPEC)
+    @Singleton
+    public static class StubIntroducer implements MethodInterceptor<Object, Object> {
+        @Override
+        public Object intercept(MethodInvocationContext<Object, Object> context) {
+            return null;
+        }
+    }
+
+    @Requires(property = "spec.name", value = OrderFixtures.SPEC)
+    @Stub
+    public interface OrderRepository {
+        Order findBySku(@NotBlank String sku);
     }
 }

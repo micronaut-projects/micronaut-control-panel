@@ -46,6 +46,14 @@ class ValidationControlPanelTest {
             assertEquals("place(order, quantity)", place.name());
             assertEquals(List.of("order: @NotNull @Valid", "quantity: @Min", "returns: @NotBlank"), place.constraints());
 
+            // Introduction advice is reported under the advised interface, not under java.lang.Object
+            ValidationInfo.ValidatedBean repository = body.beans().stream()
+                .filter(bean -> bean.type().equals(OrderFixtures.OrderRepository.class.getName()))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError(body.beans().toString()));
+            assertEquals("findBySku(sku)", repository.methods().getFirst().name());
+            assertTrue(body.beans().stream().noneMatch(bean -> bean.type().equals(Object.class.getName())), body.beans().toString());
+
             ValidationInfo.ValidatedClass order = body.classes().stream()
                 .filter(c -> c.type().equals(OrderFixtures.Order.class.getName()))
                 .findFirst()
