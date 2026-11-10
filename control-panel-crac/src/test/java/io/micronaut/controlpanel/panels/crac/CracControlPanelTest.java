@@ -69,6 +69,8 @@ class CracControlPanelTest {
     void panelCanBeDisabled() {
         try (ApplicationContext context = ApplicationContext.run(Map.of(CracControlPanel.ENABLED_PROPERTY, "false"))) {
             assertFalse(context.containsBean(CracControlPanel.class));
+            assertFalse(context.containsBean(CracInspector.class));
+            assertFalse(context.containsBean(CracEventRecorder.class));
         }
     }
 

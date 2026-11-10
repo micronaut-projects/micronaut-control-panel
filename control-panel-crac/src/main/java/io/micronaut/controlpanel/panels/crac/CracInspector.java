@@ -17,9 +17,11 @@ package io.micronaut.controlpanel.panels.crac;
 
 import io.micronaut.context.BeanContext;
 import io.micronaut.context.BeanRegistration;
+import io.micronaut.context.annotation.Requires;
 import io.micronaut.core.annotation.Internal;
 import io.micronaut.core.order.Ordered;
 import io.micronaut.core.reflect.ClassUtils;
+import io.micronaut.core.util.StringUtils;
 import io.micronaut.crac.CracConfiguration;
 import io.micronaut.crac.OrderedResource;
 import io.micronaut.crac.resources.redis.CracRedisConfiguration;
@@ -50,6 +52,8 @@ import java.util.Optional;
  */
 @Singleton
 @Internal
+@Requires(classes = CracConfiguration.class)
+@Requires(property = CracControlPanel.ENABLED_PROPERTY, notEquals = StringUtils.FALSE)
 public class CracInspector {
 
     private static final Logger LOG = LoggerFactory.getLogger(CracInspector.class);
