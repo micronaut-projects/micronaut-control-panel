@@ -102,7 +102,7 @@ public class RabbitMqInspector {
         );
     }
 
-    private static @Nullable String broker(Connection connection) {
+    static @Nullable String broker(Connection connection) {
         Map<String, Object> properties = connection.getServerProperties();
         if (properties == null || properties.get("product") == null) {
             return null;
