@@ -137,7 +137,7 @@ public class PulsarInspector {
             .orElse(List.of());
     }
 
-    private static List<PulsarConsumerInfo> consumers(PulsarConsumerRegistry registry) {
+    static List<PulsarConsumerInfo> consumers(PulsarConsumerRegistry registry) {
         List<PulsarConsumerInfo> consumers = new ArrayList<>();
         for (Map.Entry<String, Consumer<?>> entry : registry.getConsumers().entrySet()) {
             Consumer<?> consumer = entry.getValue();
@@ -179,7 +179,7 @@ public class PulsarInspector {
             .orElse(List.of());
     }
 
-    private static List<PulsarProducerInfo> producers(PulsarProducerRegistry registry) {
+    static List<PulsarProducerInfo> producers(PulsarProducerRegistry registry) {
         List<PulsarProducerInfo> producers = new ArrayList<>();
         for (Map.Entry<String, Producer<?>> entry : registry.getProducers().entrySet()) {
             Producer<?> producer = entry.getValue();
@@ -213,7 +213,7 @@ public class PulsarInspector {
             .orElse(List.of());
     }
 
-    private static PulsarReaderInfo reader(Reader<?> reader) {
+    static PulsarReaderInfo reader(Reader<?> reader) {
         return new PulsarReaderInfo(String.valueOf(reader.getTopic()), reader.isConnected());
     }
 
