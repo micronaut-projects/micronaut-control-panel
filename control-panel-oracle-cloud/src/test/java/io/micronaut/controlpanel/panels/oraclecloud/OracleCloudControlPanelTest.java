@@ -4,7 +4,10 @@ import com.oracle.bmc.objectstorage.ObjectStorageClient;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.controlpanel.core.ControlPanelRepository;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
@@ -36,6 +39,7 @@ class OracleCloudControlPanelTest {
         ))) {
             OracleCloudControlPanel panel = context.getBean(OracleCloudControlPanel.class);
             assertEquals("Oracle Cloud", panel.getTitle());
+            assertEquals("", panel.getBadge());
 
             OracleCloudInfo before = panel.getBody();
             assertNotNull(before.authentication(), before.toString());
@@ -48,6 +52,7 @@ class OracleCloudControlPanelTest {
                 .orElseThrow(() -> new AssertionError(before.clients().toString()));
             assertEquals("ObjectStorage", objectStorage.service());
             assertFalse(objectStorage.created(), "the panel does not create clients");
+            assertEquals(0, before.createdCount());
             assertEquals(List.of(
                 new OracleCloudInfo.ClientConfiguration("oci.client", null, "10s"),
                 new OracleCloudInfo.ClientConfiguration("oci.clients.objectstorage", null, "45s")
@@ -60,6 +65,7 @@ class OracleCloudControlPanelTest {
                 .findFirst()
                 .orElseThrow();
             assertTrue(created.created());
+            assertEquals(1, after.createdCount());
             assertEquals("https://objectstorage.us-phoenix-1.oraclecloud.com", created.endpoint());
 
             String rendered = after.toString();
@@ -76,6 +82,42 @@ class OracleCloudControlPanelTest {
             OracleCloudInfo body = context.getBean(OracleCloudControlPanel.class).getBody();
             assertEquals(null, body.authentication(), body.toString());
         }
+    }
+
+    @Test
+    void showsTheProfileOfTheConfigurationFile(@TempDir Path directory) throws Exception {
+        Path key = Files.writeString(directory.resolve("oci-key.pem"), privateKey());
+        Path config = Files.writeString(directory.resolve("oci-config"), String.join("\n",
+            "[STAGING]",
+            "user=" + USER,
+            "fingerprint=" + FINGERPRINT,
+            "tenancy=" + TENANCY,
+            "region=us-ashburn-1",
+            "key_file=" + key,
+            ""));
+        try (ApplicationContext context = ApplicationContext.run(Map.of(
+            "oci.config.profile", "STAGING",
+            "oci.config.path", config.toString(),
+            "oci.client.connect-timeout", "1500ms"
+        ))) {
+            OracleCloudInfo body = context.getBean(OracleCloudControlPanel.class).getBody();
+            assertNotNull(body.authentication(), body.toString());
+            assertEquals("OCI configuration file", body.authentication().label());
+            assertEquals("us-ashburn-1", body.region());
+            assertEquals("STAGING", body.profile());
+            assertTrue(body.customConfigPath());
+            for (String secret : List.of(config.toString(), TENANCY, USER, FINGERPRINT)) {
+                assertFalse(body.toString().contains(secret), "secret shown: " + secret);
+            }
+            assertEquals("1500ms", body.clientConfigurations().getFirst().connectTimeout());
+        }
+    }
+
+    @Test
+    void endpointsAreSanitized() {
+        assertEquals("https://objectstorage.example.com:8443/n/ns", OracleCloudInspector.sanitize("https://user:secret@objectstorage.example.com:8443/n/ns?token=abc#frag"));
+        assertEquals("(hidden)", OracleCloudInspector.sanitize("mailto:someone@example.com"));
+        assertEquals("(hidden)", OracleCloudInspector.sanitize("https://bad host/ with spaces"));
     }
 
     @Test
