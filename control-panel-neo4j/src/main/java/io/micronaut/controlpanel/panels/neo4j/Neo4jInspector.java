@@ -152,7 +152,7 @@ public class Neo4jInspector {
         }
     }
 
-    private static String authentication(Neo4jBoltConfiguration configuration) {
+    static String authentication(Neo4jBoltConfiguration configuration) {
         if (configuration.getAuthToken().isPresent()) {
             return "configured";
         }

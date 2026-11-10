@@ -17,12 +17,18 @@ package io.micronaut.controlpanel.panels.neo4j;
 
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.controlpanel.core.ControlPanelRepository;
+import io.micronaut.neo4j.bolt.Neo4jBoltConfiguration;
 import org.junit.jupiter.api.Test;
+import org.neo4j.driver.AuthTokens;
 import org.neo4j.driver.Driver;
+import org.neo4j.driver.exceptions.ClientException;
 
+import java.net.ConnectException;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -38,6 +44,7 @@ class Neo4jControlPanelTest {
         try (ApplicationContext context = ApplicationContext.run()) {
             Neo4jControlPanel panel = context.getBean(Neo4jControlPanel.class);
             assertEquals("Neo4j", panel.getTitle());
+            assertEquals("", panel.getBadge());
             assertEquals("datasource", panel.getCategory().id());
 
             Neo4jInfo body = panel.getBody();
@@ -83,6 +90,34 @@ class Neo4jControlPanelTest {
         assertEquals("neo4j://cluster:7687", Neo4jInspector.sanitize(URI.create("neo4j://user:pass@cluster:7687?policy=eu")));
         assertEquals("(hidden)", Neo4jInspector.sanitize(URI.create("bolt://neo4j:p@ssw0rd@localhost:7687")));
         assertEquals("(hidden)", Neo4jInspector.sanitize(URI.create("bolt://user:secret@my_host:7687")));
+        assertEquals("bolt://my_host:7687", Neo4jInspector.sanitize(URI.create("bolt://my_host:7687")));
+        assertEquals("(not configured)", Neo4jInspector.sanitize(null));
+    }
+
+    @Test
+    void errorsAreDescribedWithoutTheirMessage() {
+        assertEquals("ClientException (Neo.ClientError.Security.Unauthorized)", Neo4jInspector.describe(
+            new ExecutionException(new ClientException("Neo.ClientError.Security.Unauthorized", "secret"))));
+        assertEquals("ConnectException", Neo4jInspector.describe(
+            new CompletionException(new IllegalStateException("wrapper", new ConnectException("secret")))));
+        assertEquals("IllegalStateException", Neo4jInspector.describe(new IllegalStateException("secret")));
+    }
+
+    @Test
+    void authenticationIsShownWithoutCredentials() {
+        Neo4jBoltConfiguration configuration = new Neo4jBoltConfiguration();
+        configuration.setUri(null);
+        assertEquals("none", Neo4jInspector.authentication(configuration));
+        configuration.setUri(URI.create("bolt://neo4j:secret@localhost:7687"));
+        assertEquals("configured in the URI", Neo4jInspector.authentication(configuration));
+        configuration.setAuthToken(AuthTokens.basic("neo4j", "secret"));
+        assertEquals("configured", Neo4jInspector.authentication(configuration));
+    }
+
+    @Test
+    void databaseStatusIsShownAsBadge() {
+        assertEquals("badge-secondary", new Neo4jInfo.Database("neo4j", "online", true).badgeClass());
+        assertEquals("badge-destructive", new Neo4jInfo.Database("neo4j", "offline", true).badgeClass());
     }
 
     @Test
