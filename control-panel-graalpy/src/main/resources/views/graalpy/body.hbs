@@ -1,0 +1,25 @@
+{{#with body}}
+    <p class="card-text">
+        <strong>{{pythonBeanCount}}</strong> Python-backed bean definitions detected.
+    </p>
+    <p class="card-text">
+        <strong>Context pool</strong>:
+        <span class="badge badge-secondary">{{pool.state}}</span>
+    </p>
+    <p class="card-text">
+        <strong>Idle contexts</strong>:
+        {{#if pool.available}}
+            <span>{{pool.statistics.idleContexts}}</span>
+        {{else}}
+            <span>Unavailable</span>
+        {{/if}}
+    </p>
+    <p class="card-text">
+        <strong>Python VFS</strong>:
+        {{#if vfs.hasEntries}}
+            <span class="badge badge-secondary">{{vfs.entryCount}} entries</span>
+        {{else}}
+            <span class="badge badge-secondary">Not found</span>
+        {{/if}}
+    </p>
+{{/with}}
