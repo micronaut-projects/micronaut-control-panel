@@ -8,6 +8,7 @@ io.micronaut.controlpanel.panels.cache.hazelcast
 io.micronaut.controlpanel.panels.cache.infinispan
 io.micronaut.controlpanel.panels.datasource
 io.micronaut.controlpanel.panels.datasource.model
+io.micronaut.controlpanel.panels.flyway
 io.micronaut.controlpanel.panels.hibernate
 io.micronaut.controlpanel.panels.hibernate.model
 io.micronaut.controlpanel.panels.kafka

@@ -105,13 +105,15 @@
         
         <div class="toc-item" style="margin-left:10px" id="toc-item-datasource"><a href="#datasource"><strong>4.5</strong><span>Datasource</span></a></div>
         
-        <div class="toc-item" style="margin-left:10px" id="toc-item-hibernate"><a href="#hibernate"><strong>4.6</strong><span>Hibernate</span></a></div>
+        <div class="toc-item" style="margin-left:10px" id="toc-item-flyway"><a href="#flyway"><strong>4.6</strong><span>Flyway</span></a></div>
         
-        <div class="toc-item" style="margin-left:10px" id="toc-item-kafka"><a href="#kafka"><strong>4.7</strong><span>Kafka</span></a></div>
+        <div class="toc-item" style="margin-left:10px" id="toc-item-hibernate"><a href="#hibernate"><strong>4.7</strong><span>Hibernate</span></a></div>
         
-        <div class="toc-item" style="margin-left:10px" id="toc-item-pulsar"><a href="#pulsar"><strong>4.8</strong><span>Pulsar</span></a></div>
+        <div class="toc-item" style="margin-left:10px" id="toc-item-kafka"><a href="#kafka"><strong>4.8</strong><span>Kafka</span></a></div>
         
-        <div class="toc-item" style="margin-left:10px" id="toc-item-rabbitmq"><a href="#rabbitmq"><strong>4.9</strong><span>RabbitMQ</span></a></div>
+        <div class="toc-item" style="margin-left:10px" id="toc-item-pulsar"><a href="#pulsar"><strong>4.9</strong><span>Pulsar</span></a></div>
+        
+        <div class="toc-item" style="margin-left:10px" id="toc-item-rabbitmq"><a href="#rabbitmq"><strong>4.10</strong><span>RabbitMQ</span></a></div>
         
         <div class="toc-item" style="margin-left:0px" id="toc-item-custom"><a href="#custom"><strong>5</strong><span>Creating Custom Control Panels</span></a></div>
         
@@ -2561,7 +2563,149 @@ enabled = false</code></pre>
 </div>
 </div>
 
-<h2 id="hibernate"><a class="anchor" href="#hibernate"></a>4.6 Hibernate</h2>
+<h2 id="flyway"><a class="anchor" href="#flyway"></a>4.6 Flyway</h2>
+
+<div class='contribute-btn'>
+    <button type='button' class='btn btn-default' onclick='window.location.href="https://github.com/micronaut-projects/micronaut-control-panel/edit/2.3.x/src/main/docs/guide/controlPanels/flyway.adoc"'>
+        <i class='fa fa-pencil-square-o'></i> Improve this doc
+    </button>
+</div>
+
+
+<div class="paragraph">
+<p>The Flyway control panel shows the migration history of each datasource that <a href="https://micronaut-projects.github.io/micronaut-flyway/latest/guide/">Micronaut Flyway</a> manages. It is listed in the Data Sources category.</p>
+</div>
+<div class="paragraph">
+<p>To add it, add the following dependency to an application that already uses Micronaut Flyway:</p>
+</div>
+<div class="paragraph">
+<p>        <div class="listingblock multi-language-sample">
+<div class="title"></div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="gradle">developmentOnly(<span class="hljs-string">"io.micronaut.controlpanel:micronaut-control-panel-flyway")</span></code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="maven">&lt;dependency&gt;
+    &lt;groupId&gt;io.micronaut.controlpanel&lt;/groupId&gt;
+    &lt;artifactId&gt;micronaut-control-panel-flyway&lt;/artifactId&gt;
+    &lt;scope&gt;provided&lt;/scope&gt;
+&lt;/dependency&gt;</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="title"></div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="pyronaut">[tool.pyronaut.dependencies]
+build = [
+    <span class="hljs-string">"io.micronaut.controlpanel:micronaut-control-panel-flyway"</span>,
+]</code></pre>
+</div>
+</div>
+</p>
+</div>
+<div class="paragraph">
+<p>The panel shows one card for each configuration under <code>flyway.datasources</code>, with:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The current schema version and the number of applied, pending and failed migrations.</p>
+</li>
+<li>
+<p>A searchable table of the migrations, with their version, description, script, type, state, installation time,
+installing user and execution time.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Failed migrations are highlighted, and so are migrations that the database has applied but that the application no
+longer has, or does not know about yet.</p>
+</div>
+<div class="paragraph">
+<p>The panel reads the same <code>Flyway</code> beans as the <code>/flyway</code> management endpoint, so that endpoint does not need to be
+enabled. It only calls <code>Flyway.info()</code>: it does not migrate, clean, or repair the database. A configuration that is
+disabled, or that has not run yet because it runs asynchronously, is listed with its status and no migrations.</p>
+</div>
+<div class="sect1">
+<h2 id="_configuration">Configuration</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The Flyway control panel is enabled when you include the <code>micronaut-control-panel-flyway</code> module in a project that uses
+Micronaut Flyway. You can disable it by setting:</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">micronaut.control-panel.panels.flyway.enabled=false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">micronaut:
+  control-panel:
+    panels:
+      flyway:
+        enabled: false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[micronaut.control-panel.panels.flyway]
+enabled = false</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-groovy-config hljs" data-lang="groovy-config">micronaut {
+  controlPanel {
+    panels {
+      flyway {
+        enabled = false
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-hocon hljs" data-lang="hocon">{
+  micronaut {
+    control-panel {
+      panels {
+        flyway {
+          enabled = false
+        }
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json-config hljs" data-lang="json-config">{
+  "micronaut": {
+    "control-panel": {
+      "panels": {
+        "flyway": {
+          "enabled": false
+        }
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<h2 id="hibernate"><a class="anchor" href="#hibernate"></a>4.7 Hibernate</h2>
 
 <div class='contribute-btn'>
     <button type='button' class='btn btn-default' onclick='window.location.href="https://github.com/micronaut-projects/micronaut-control-panel/edit/2.3.x/src/main/docs/guide/controlPanels/hibernate.adoc"'>
@@ -2911,7 +3055,7 @@ enabled = false</code></pre>
 </div>
 </div>
 
-<h2 id="kafka"><a class="anchor" href="#kafka"></a>4.7 Kafka</h2>
+<h2 id="kafka"><a class="anchor" href="#kafka"></a>4.8 Kafka</h2>
 
 <div class='contribute-btn'>
     <button type='button' class='btn btn-default' onclick='window.location.href="https://github.com/micronaut-projects/micronaut-control-panel/edit/2.3.x/src/main/docs/guide/controlPanels/kafka.adoc"'>
@@ -3727,7 +3871,7 @@ The runtime-state section is intended for quick development diagnostics and is n
 </div>
 </div>
 
-<h2 id="pulsar"><a class="anchor" href="#pulsar"></a>4.8 Pulsar</h2>
+<h2 id="pulsar"><a class="anchor" href="#pulsar"></a>4.9 Pulsar</h2>
 
 <div class='contribute-btn'>
     <button type='button' class='btn btn-default' onclick='window.location.href="https://github.com/micronaut-projects/micronaut-control-panel/edit/2.3.x/src/main/docs/guide/controlPanels/pulsar.adoc"'>
@@ -3876,7 +4020,7 @@ enabled = false</code></pre>
 </div>
 </div>
 
-<h2 id="rabbitmq"><a class="anchor" href="#rabbitmq"></a>4.9 RabbitMQ</h2>
+<h2 id="rabbitmq"><a class="anchor" href="#rabbitmq"></a>4.10 RabbitMQ</h2>
 
 <div class='contribute-btn'>
     <button type='button' class='btn btn-default' onclick='window.location.href="https://github.com/micronaut-projects/micronaut-control-panel/edit/2.3.x/src/main/docs/guide/controlPanels/rabbitmq.adoc"'>
