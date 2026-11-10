@@ -21,6 +21,8 @@ dependencies {
 
     testImplementation(mnTest.micronaut.test.junit5)
     testImplementation(projects.micronautControlPanelUi)
+    testRuntimeOnly(mn.micronaut.management)
+    testRuntimeOnly(mnSerde.micronaut.serde.jackson)
     testImplementation(mnElasticsearch.micronaut.elasticsearch)
     testRuntimeOnly(mnTest.junit.jupiter.engine)
     testRuntimeOnly(mn.snakeyaml)
