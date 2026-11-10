@@ -16,9 +16,9 @@
 package io.micronaut.controlpanel.panels.mongodb;
 
 import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoCluster;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoIterable;
-import com.mongodb.client.model.EstimatedDocumentCountOptions;
 import com.mongodb.connection.ClusterDescription;
 import io.micronaut.context.BeanContext;
 import io.micronaut.context.annotation.Requires;
@@ -66,14 +66,23 @@ final class SyncMongoClientSource implements MongoClientSource {
             return client.getClusterDescription();
         }
 
+        /**
+         * @return the client with a timeout that bounds server selection, socket I/O and the server-side time limit
+         * of each operation, so that a replica set without a primary does not hold the page for the server selection
+         * timeout
+         */
+        private MongoCluster bounded() {
+            return client.withTimeout(MongoDbInspector.TIMEOUT.toMillis(), TimeUnit.MILLISECONDS);
+        }
+
         @Override
         public List<Document> listDatabases(int limit) {
-            return take(client.listDatabases().maxTime(MongoDbInspector.TIMEOUT.toMillis(), TimeUnit.MILLISECONDS), limit);
+            return take(bounded().listDatabases(), limit);
         }
 
         @Override
         public List<Document> listCollections(String database, int limit) {
-            return take(client.getDatabase(database).listCollections().maxTime(MongoDbInspector.TIMEOUT.toMillis(), TimeUnit.MILLISECONDS), limit);
+            return take(bounded().getDatabase(database).listCollections(), limit);
         }
 
         private static List<Document> take(MongoIterable<Document> iterable, int limit) {
@@ -88,8 +97,7 @@ final class SyncMongoClientSource implements MongoClientSource {
 
         @Override
         public long estimatedDocumentCount(String database, String collection) {
-            return client.getDatabase(database).getCollection(collection)
-                .estimatedDocumentCount(new EstimatedDocumentCountOptions().maxTime(MongoDbInspector.TIMEOUT.toMillis(), TimeUnit.MILLISECONDS));
+            return bounded().getDatabase(database).getCollection(collection).estimatedDocumentCount();
         }
     }
 }
