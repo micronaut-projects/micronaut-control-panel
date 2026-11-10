@@ -22,6 +22,7 @@ dependencies {
     compileOnly(mnOpensearch.micronaut.opensearch.restclient)
 
     testImplementation(mnTest.micronaut.test.junit5)
+    testImplementation(projects.micronautControlPanelUi)
     testImplementation(mnOpensearch.micronaut.opensearch.httpclient5)
     testRuntimeOnly(mnTest.junit.jupiter.engine)
     testRuntimeOnly(mn.snakeyaml)

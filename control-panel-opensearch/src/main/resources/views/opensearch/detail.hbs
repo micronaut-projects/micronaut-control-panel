@@ -7,7 +7,7 @@
         <div class="card-body">
             <dl class="row">
                 <dt>Hosts</dt>
-                <dd>{{#each hosts as |host|}}<code>{{host}}</code> {{else}}<span class="card-description">none</span>{{/each}}</dd>
+                <dd>{{#each hosts as |host|}}<code>{{host}}</code> {{else}}<span class="card-description">not read for this transport</span>{{/each}}</dd>
                 {{#if cluster}}
                     <dt>Name</dt>
                     <dd><code>{{cluster.name}}</code> <span class="badge {{cluster.badgeClass}}">{{cluster.status}}</span></dd>

@@ -6,7 +6,9 @@ To add it, add the following dependency to an application that already uses Micr
 
 dependency:io.micronaut.controlpanel:micronaut-control-panel-opensearch[scope=developmentOnly]
 
-The panel works with both transports of Micronaut OpenSearch, Apache HttpClient 5 and the REST client.
+The detail view works with every transport of Micronaut OpenSearch, because it uses the `OpenSearchAsyncClient` bean.
+The configured hosts are only read for the Apache HttpClient 5 and REST client transports: with the Amazon transport
+(`micronaut-opensearch-amazon`) the hosts are not listed, even though the cluster is shown.
 
 The dashboard card shows the configured hosts and whether the application has created a client. It only reads the
 configuration, so rendering the dashboard does not send requests to OpenSearch.
