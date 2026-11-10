@@ -17,6 +17,14 @@
             </p>
         {{/if}}
     {{/if}}
+    {{#if reportUrl}}
+        <p class="card-text">
+            <a class="btn btn-primary btn-sm" href="{{ reportUrl }}" target="_blank" rel="noopener noreferrer" title="Open the live test report in a new window">
+                Open the live test report
+                <i class="fas fa-arrow-up-right-from-square"></i>
+            </a>
+        </p>
+    {{/if}}
     <div class="cp-data-table-container cp-vertical-table">
         <table class="table cp-data-table-table">
             <tbody>
@@ -52,12 +60,4 @@
             </tbody>
         </table>
     </div>
-    {{#if reportUrl}}
-        <p class="card-text">
-            <a class="btn btn-primary btn-sm" href="{{ reportUrl }}" target="_blank" rel="noopener noreferrer" title="Open the live test report in a new window">
-                Open the live test report
-                <i class="fas fa-arrow-up-right-from-square"></i>
-            </a>
-        </p>
-    {{/if}}
 {{/with}}

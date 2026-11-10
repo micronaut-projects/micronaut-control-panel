@@ -33,6 +33,9 @@
                             Give continuous testing a LiveReload port of its own to follow it live.
                         </p>
                     {{/if}}
+                    {{#if reportFound}}
+                        <p class="card-text">The results below are those of the last report it wrote.</p>
+                    {{/if}}
                     <p class="card-text">
                         Continuous testing runs in a process of its own, beside the application. Start it in a separate terminal,
                         in the project directory, with the command of the project's build tool. It compiles every change and runs the
@@ -53,9 +56,6 @@
                             </tbody>
                         </table>
                     </div>
-                    {{#if reportFound}}
-                        <p class="card-text">The results below are those of the last report it wrote.</p>
-                    {{/if}}
                 </div>
             </div>
         {{/if}}
