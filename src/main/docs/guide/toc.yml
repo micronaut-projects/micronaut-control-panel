@@ -11,6 +11,7 @@ controlPanels:
   flyway: Flyway
   hibernate: Hibernate
   kafka: Kafka
+  pulsar: Pulsar
 
 custom: Creating Custom Control Panels
 repository: Repository

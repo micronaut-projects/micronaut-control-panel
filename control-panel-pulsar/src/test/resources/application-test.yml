@@ -1,0 +1,18 @@
+pulsar:
+  service-url: 'pulsar://${pulsar.host}:${pulsar.port}'
+test-resources:
+  containers:
+    pulsar:
+      image-name: apachepulsar/pulsar:4.0.7
+      command:
+        - bin/pulsar
+        - standalone
+        - --no-functions-worker
+        - --no-stream-storage
+      hostnames:
+        - pulsar.host
+      exposed-ports:
+        - pulsar.port: 6650
+      wait-strategy:
+        log:
+          regex: '.*Created namespace public/default.*'
