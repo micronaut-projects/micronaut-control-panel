@@ -89,8 +89,12 @@ public final class DataSourceController {
         this.panels = allPanels.entrySet().stream()
             .filter(entry -> entry.getValue().isEnabled())
             .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
+        // A datasource without a panel is kept, so only the datasources whose panel is disabled are dropped
+        Set<String> hidden = allPanels.keySet().stream()
+            .filter(name -> !panels.containsKey(name))
+            .collect(Collectors.toUnmodifiableSet());
         this.services = locator.mapOfType(SERVICE_ARGUMENT).entrySet().stream()
-            .filter(entry -> !allPanels.containsKey(entry.getKey()) || panels.containsKey(entry.getKey()))
+            .filter(entry -> !hidden.contains(entry.getKey()))
             .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
         this.schemas = computeSchemas();
         this.jsonMapper = jsonMapper;

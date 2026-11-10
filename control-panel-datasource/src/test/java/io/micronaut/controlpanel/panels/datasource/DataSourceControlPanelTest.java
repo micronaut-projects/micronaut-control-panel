@@ -55,7 +55,7 @@ class DataSourceControlPanelTest {
 
     @BeforeEach
     void dataSourceEnabledByDefault() {
-        lenient().when(environment.getProperty(anyString(), eq(Boolean.class))).thenReturn(Optional.empty());
+        lenient().when(environment.getProperty(DataSourceControlPanel.enabledProperty(BEAN_NAME), Boolean.class)).thenReturn(Optional.empty());
     }
 
     @Test

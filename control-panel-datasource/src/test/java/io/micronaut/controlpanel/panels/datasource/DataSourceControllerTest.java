@@ -597,7 +597,7 @@ class DataSourceControllerTest {
         // When
         DataSourceController controller = controller();
 
-        // Then every route answers as if the datasource did not exist, and the datasource is never touched
+        // Then every route answers as if the datasource did not exist, and neither the panel body nor the service is used
         assertEquals(404, controller.schema(DATA_SOURCE).getStatus().getCode());
         assertEquals(404, controller.tables(DATA_SOURCE, 1, 10, null, null).getStatus().getCode());
         assertEquals(404, controller.poolStatus(DATA_SOURCE).getStatus().getCode());
