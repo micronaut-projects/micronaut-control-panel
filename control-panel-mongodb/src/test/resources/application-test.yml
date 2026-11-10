@@ -1,5 +1,0 @@
-test-resources:
-  containers:
-    mongodb:
-      # MongoDB 8.3 refuses to start on Linux 6.19+ (SERVER-121912), which the CI runners use
-      image-name: mongo:8.0.4
