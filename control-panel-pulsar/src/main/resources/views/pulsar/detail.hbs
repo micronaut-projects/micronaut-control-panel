@@ -1,0 +1,150 @@
+{{#with controlPanel.body }}
+<div class="cp-dashboard-stack">
+    <div class="card card-light">
+        <div class="card-header">
+            <h3 class="card-title">Client</h3>
+        </div>
+        <div class="card-body">
+            {{#if client}}
+                <dl class="row">
+                    <dt>Service URL</dt>
+                    <dd><code>{{client.serviceUrl}}</code>{{#if client.tls}} <span class="badge badge-secondary">TLS</span>{{/if}}</dd>
+                    <dt>Authentication</dt>
+                    <dd>{{client.authentication}}</dd>
+                    {{#if client.defaultTenant}}
+                        <dt>Default tenant</dt>
+                        <dd><code>{{client.defaultTenant}}</code></dd>
+                    {{/if}}
+                    {{#if client.proxyUrl}}
+                        <dt>Proxy</dt>
+                        <dd><code>{{client.proxyUrl}}</code></dd>
+                    {{/if}}
+                </dl>
+            {{else}}
+                <p class="card-text card-description">Pulsar is not configured. Set <code>pulsar.service-url</code> to connect to a broker.</p>
+            {{/if}}
+        </div>
+    </div>
+
+    <div class="card card-light">
+        <div class="card-header">
+            <h3 class="card-title">Consumers</h3>
+        </div>
+        <div class="card-body">
+            {{#if consumers}}
+            <div class="cp-data-table" data-filter-table data-filter-table-label="consumer" data-filter-table-label-plural="consumers">
+                <div class="cp-data-table-toolbar">
+                    <div class="cp-data-table-summary" data-filter-table-summary>{{consumers.size}} consumers</div>
+                    <div class="cp-data-table-search">
+                        <input type="search" class="form-control" data-filter-table-search placeholder="Search topics, subscriptions or consumers" aria-label="Search consumers">
+                    </div>
+                </div>
+                <div class="cp-data-table-container">
+                    <table class="table cp-data-table-table">
+                        <thead>
+                        <tr>
+                            <th>Topic</th>
+                            <th>Status</th>
+                            <th>Messages</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {{#each consumers as |consumer|}}
+                            <tr data-filter-table-row>
+                                <td>
+                                    <code class="cp-table-code">{{consumer.topic}}</code>
+                                    <div class="card-description">subscription <code>{{consumer.subscription}}</code>, consumer <code>{{consumer.consumerName}}</code></div>
+                                </td>
+                                <td><span class="badge {{consumer.badgeClass}}">{{consumer.statusLabel}}</span></td>
+                                <td>
+                                    {{consumer.received}} received
+                                    <div class="card-description">{{consumer.acknowledged}} acknowledged</div>
+                                    {{#if consumer.failed}}<span class="badge badge-destructive">{{consumer.failed}} failed</span>{{/if}}
+                                </td>
+                            </tr>
+                        {{/each}}
+                        <tr data-filter-table-empty hidden>
+                            <td class="cp-data-table-empty-cell" colspan="3">No consumers match your search.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="cp-data-table-footer">
+                    <label class="cp-data-table-page-size">
+                        Rows per page
+                        <select class="form-control" data-filter-table-page-size-select aria-label="Consumers per page">
+                            <option value="10" selected>10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </label>
+                    <div class="cp-data-table-pagination">
+                        <span class="cp-data-table-page" data-filter-table-page>Page 1 of 1</span>
+                        <button type="button" class="btn btn-secondary btn-sm" data-filter-table-prev>Previous</button>
+                        <button type="button" class="btn btn-secondary btn-sm" data-filter-table-next>Next</button>
+                    </div>
+                </div>
+            </div>
+            {{else}}
+                <p class="card-text card-description">There are no <code>@PulsarConsumer</code> consumers.</p>
+            {{/if}}
+        </div>
+    </div>
+
+    <div class="card card-light">
+        <div class="card-header">
+            <h3 class="card-title">Producers</h3>
+        </div>
+        <div class="card-body">
+            {{#if producers}}
+            <div class="cp-data-table-container">
+                <table class="table cp-data-table-table">
+                    <thead>
+                    <tr>
+                        <th>Topic</th>
+                        <th>Status</th>
+                        <th>Messages</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {{#each producers as |producer|}}
+                        <tr>
+                            <td>
+                                <code class="cp-table-code">{{producer.topic}}</code>
+                                <div class="card-description">producer <code>{{producer.producerName}}</code></div>
+                            </td>
+                            <td><span class="badge {{producer.badgeClass}}">{{#if producer.connected}}connected{{else}}disconnected{{/if}}</span></td>
+                            <td>
+                                {{producer.sent}} sent
+                                {{#if producer.failed}}<div><span class="badge badge-destructive">{{producer.failed}} failed</span></div>{{/if}}
+                            </td>
+                        </tr>
+                    {{/each}}
+                    </tbody>
+                </table>
+            </div>
+            {{else}}
+                <p class="card-text card-description">No <code>@PulsarProducer</code> has sent a message yet. Producers are created the first time they are used.</p>
+            {{/if}}
+        </div>
+    </div>
+
+    {{#if readers}}
+    <div class="card card-light">
+        <div class="card-header">
+            <h3 class="card-title">Readers</h3>
+        </div>
+        <div class="card-body">
+            <ul>
+                {{#each readers as |reader|}}
+                    <li><code>{{reader.topic}}</code> <span class="badge {{#if reader.connected}}badge-secondary{{else}}badge-destructive{{/if}}">{{#if reader.connected}}connected{{else}}disconnected{{/if}}</span></li>
+                {{/each}}
+            </ul>
+        </div>
+    </div>
+    {{/if}}
+
+    <p class="card-description">Counters come from the Pulsar client, which refreshes them once per statistics interval (one minute by default).</p>
+</div>
+{{/with}}
