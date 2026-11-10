@@ -110,6 +110,12 @@
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.LocatorImpl"},
+  "name":"com.microsoft.playwright.Frame$PressOptions",
+  "allDeclaredFields":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
   "condition":{"typeReachable":"com.microsoft.playwright.impl.FrameImpl"},
   "name":"com.microsoft.playwright.Frame$SelectOptionOptions",
   "allDeclaredFields":true,
@@ -147,6 +153,11 @@
   "name":"com.microsoft.playwright.Locator$LocatorOptions",
   "allDeclaredFields":true,
   "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "condition":{"typeReachable":"com.microsoft.playwright.impl.LocatorImpl"},
+  "name":"com.microsoft.playwright.Locator$PressOptions",
+  "allDeclaredFields":true
 },
 {
   "condition":{"typeReachable":"com.microsoft.playwright.impl.LocatorImpl"},
