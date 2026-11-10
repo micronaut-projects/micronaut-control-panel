@@ -4165,3 +4165,15 @@ body.cp-table-browser-resizing .cp-table-browser-splitter::before {
         font-weight: 650;
     }
 }
+
+/* RabbitMQ panel */
+.cp-rabbitmq-connection + .cp-rabbitmq-connection {
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+}
+
+@media (max-width: 640px) {
+    .cp-rabbitmq-table .cp-rabbitmq-settings {
+        display: none;
+    }
+}

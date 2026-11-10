@@ -23,6 +23,7 @@ include("control-panel-hibernate")
 include("control-panel-ui")
 include("control-panel-kafka")
 include("control-panel-pulsar")
+include("control-panel-rabbitmq")
 
 include("doc-examples:example-java")
 include("test-suite-thymeleaf")
@@ -48,4 +49,5 @@ configure<MicronautBuildSettingsExtension> {
     importMicronautCatalog("micronaut-openapi")
     importMicronautCatalog("micronaut-kafka")
     importMicronautCatalog("micronaut-pulsar")
+    importMicronautCatalog("micronaut-rabbitmq")
 }
