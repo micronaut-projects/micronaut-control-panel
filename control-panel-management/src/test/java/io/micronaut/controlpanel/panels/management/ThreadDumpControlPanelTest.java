@@ -67,7 +67,7 @@ class ThreadDumpControlPanelTest {
     void itListsTheCurrentThreadWithItsStackTrace() {
         var panel = new ThreadDumpControlPanel(CONFIGURATION, new DefaultThreadInfoMapper());
 
-        var body = panel.getBody();
+        var body = panel.getDetailedBody();
 
         assertFalse(body.unsupportedMapper());
         assertEquals(body.threads().size(), body.total());
@@ -78,6 +78,28 @@ class ThreadDumpControlPanelTest {
             .orElseThrow();
         assertEquals(Thread.State.RUNNABLE, current.state());
         assertTrue(current.stackTrace().stream().anyMatch(frame -> frame.contains("itListsTheCurrentThreadWithItsStackTrace")));
+    }
+
+    @Test
+    void theCardReadsTheStatesWithoutAFullDump() {
+        var panel = new ThreadDumpControlPanel(CONFIGURATION, new DefaultThreadInfoMapper(), () -> ManagementFactory.getThreadMXBean().getThreadInfo(new long[] {Thread.currentThread().threadId()}, 0), () -> {
+            throw new AssertionError("the card does not take a full dump");
+        });
+
+        var body = panel.getBody();
+
+        assertEquals(1, body.total());
+        assertEquals(Thread.State.RUNNABLE, body.threads().getFirst().state());
+        assertTrue(body.threads().getFirst().stackTrace().isEmpty());
+    }
+
+    @Test
+    void theDefaultSnapshotHasNoStackTraces() {
+        var body = new ThreadDumpControlPanel(CONFIGURATION, new DefaultThreadInfoMapper()).getBody();
+
+        assertEquals(body.threads().size(), body.total());
+        assertTrue(body.threads().stream().anyMatch(thread -> thread.id() == Thread.currentThread().threadId()));
+        assertTrue(body.threads().stream().allMatch(thread -> thread.stackTrace().isEmpty()));
     }
 
     @Test
@@ -96,7 +118,7 @@ class ThreadDumpControlPanelTest {
             while (blocked.getState() != Thread.State.BLOCKED) {
                 Thread.onSpinWait();
             }
-            var body = new ThreadDumpControlPanel(CONFIGURATION, new DefaultThreadInfoMapper()).getBody();
+            var body = new ThreadDumpControlPanel(CONFIGURATION, new DefaultThreadInfoMapper()).getDetailedBody();
 
             assertEquals(Thread.State.BLOCKED, body.stateCounts().getFirst().state());
             var first = body.threads().getFirst();
@@ -114,7 +136,7 @@ class ThreadDumpControlPanelTest {
         var lock = new java.util.concurrent.locks.ReentrantLock();
         lock.lock();
         try {
-            var body = new ThreadDumpControlPanel(CONFIGURATION, new DefaultThreadInfoMapper()).getBody();
+            var body = new ThreadDumpControlPanel(CONFIGURATION, new DefaultThreadInfoMapper()).getDetailedBody();
             var current = body.threads().stream().filter(thread -> thread.id() == Thread.currentThread().threadId()).findFirst().orElseThrow();
             assertTrue(current.lockedSynchronizers().stream().anyMatch(name -> name.contains("ReentrantLock")));
         } finally {
@@ -137,7 +159,9 @@ class ThreadDumpControlPanelTest {
     void aMapperWithAnotherShapeIsNotRendered() {
         ThreadInfoMapper<String> names = threads -> Flux.from(threads).map(ThreadInfo::getThreadName);
 
-        var body = new ThreadDumpControlPanel(CONFIGURATION, names, () -> ManagementFactory.getThreadMXBean().dumpAllThreads(false, false)).getBody();
+        var body = new ThreadDumpControlPanel(CONFIGURATION, names, () -> ManagementFactory.getThreadMXBean().dumpAllThreads(false, false), () -> {
+            throw new AssertionError("the card does not take a full dump");
+        }).getBody();
 
         assertTrue(body.unsupportedMapper());
         assertTrue(body.total() > 0);

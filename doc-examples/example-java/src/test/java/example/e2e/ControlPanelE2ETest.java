@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.condition.DisabledInNativeImage;
+import org.junit.jupiter.api.condition.EnabledInNativeImage;
 
 import java.util.regex.Pattern;
 
@@ -221,6 +222,7 @@ class ControlPanelE2ETest extends AbstractE2ETest {
     }
 
     @Test
+    @DisabledInNativeImage
     void testThreadDump(Page page) {
         page.navigate(baseUrl());
         controlPanelDetails(page, "Thread Dump").click();
@@ -235,6 +237,16 @@ class ControlPanelE2ETest extends AbstractE2ETest {
         var firstStack = page.locator("details.cp-thread-stack").first();
         firstStack.locator("summary").click();
         assertThat(firstStack.locator("pre")).isVisible();
+    }
+
+    @Test
+    @EnabledInNativeImage
+    void testThreadDumpInNativeImage(Page page) {
+        page.navigate(baseUrl());
+        controlPanelDetails(page, "Thread Dump").click();
+
+        // ThreadMXBean reports no threads in a native image, which the guide documents
+        assertThat(body(page)).containsText("No threads were reported. GraalVM native images do not report thread dumps.");
     }
 
     @Test

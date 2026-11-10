@@ -32,6 +32,7 @@ import java.lang.management.LockInfo;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -45,8 +46,9 @@ import java.util.function.Supplier;
  * Control panel that displays a JVM thread dump.
  *
  * <p>Threads are read through the application's {@link ThreadInfoMapper}, the extension point the Micronaut Management
- * {@code /threaddump} endpoint uses, so a mapper that filters threads out applies to this panel as well. The mapper
- * always receives a full dump, including stack traces and lock information.</p>
+ * {@code /threaddump} endpoint uses, so a mapper that filters threads out applies to this panel as well. The dashboard
+ * card only needs the thread states, so it reads a cheap snapshot without stack traces or lock information; the full
+ * dump is only taken for the detail view.</p>
  *
  * @author Álvaro Sánchez-Mariscal
  * @since 2.3.0
@@ -76,22 +78,46 @@ public class ThreadDumpControlPanel extends AbstractControlPanel<ThreadDumpContr
         .thenComparingLong(ThreadRow::id);
 
     private final ThreadInfoMapper<?> threadInfoMapper;
+    private final Supplier<ThreadInfo[]> snapshot;
     private final Supplier<ThreadInfo[]> threadDumper;
 
     @Inject
     public ThreadDumpControlPanel(@Named(NAME) ControlPanelConfiguration configuration, ThreadInfoMapper<?> threadInfoMapper) {
-        this(configuration, threadInfoMapper, () -> ManagementFactory.getThreadMXBean().dumpAllThreads(true, true));
+        this(configuration, threadInfoMapper, ThreadDumpControlPanel::snapshot, () -> ManagementFactory.getThreadMXBean().dumpAllThreads(true, true));
     }
 
-    ThreadDumpControlPanel(ControlPanelConfiguration configuration, ThreadInfoMapper<?> threadInfoMapper, Supplier<ThreadInfo[]> threadDumper) {
+    ThreadDumpControlPanel(ControlPanelConfiguration configuration, ThreadInfoMapper<?> threadInfoMapper, Supplier<ThreadInfo[]> snapshot, Supplier<ThreadInfo[]> threadDumper) {
         super(NAME, configuration);
         this.threadInfoMapper = threadInfoMapper;
+        this.snapshot = snapshot;
         this.threadDumper = threadDumper;
     }
 
+    /**
+     * @return the threads and their states, without stack traces or lock information, for the dashboard card
+     */
     @Override
     public Body getBody() {
-        List<?> mapped = Flux.from(threadInfoMapper.mapThreadInfo(Flux.fromArray(threadDumper.get())))
+        return body(snapshot.get());
+    }
+
+    /**
+     * @return the full thread dump, with stack traces and lock information, for the detail view
+     */
+    public Body getDetailedBody() {
+        return body(threadDumper.get());
+    }
+
+    private static ThreadInfo[] snapshot() {
+        ThreadMXBean bean = ManagementFactory.getThreadMXBean();
+        // A depth of 0 reads no stack frames, and threads that ended meanwhile are reported as null
+        return Arrays.stream(bean.getThreadInfo(bean.getAllThreadIds(), 0))
+            .filter(Objects::nonNull)
+            .toArray(ThreadInfo[]::new);
+    }
+
+    private Body body(ThreadInfo[] dump) {
+        List<?> mapped = Flux.from(threadInfoMapper.mapThreadInfo(Flux.fromArray(dump)))
             .filter(Objects::nonNull)
             .collectList()
             .blockOptional()
@@ -110,7 +136,7 @@ public class ThreadDumpControlPanel extends AbstractControlPanel<ThreadDumpContr
 
     @Override
     public String getBadge() {
-        // The card already shows the counts, and a badge would take a second dump on every dashboard render
+        // The card already shows the counts, and a badge would take a second snapshot on every dashboard render
         return StringUtils.EMPTY_STRING;
     }
 

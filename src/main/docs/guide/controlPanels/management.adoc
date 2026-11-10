@@ -309,4 +309,8 @@ https://docs.micronaut.io/latest/api/io/micronaut/management/endpoint/threads/Th
 like the `/threaddump` endpoint does, so a mapper that filters threads out also hides them from the panel. If the mapper
 returns something other than `java.lang.management.ThreadInfo`, the panel only reports how many entries it returned.
 
+The dashboard card only counts the threads per state, so it reads a snapshot without stack traces or lock information,
+which is cheap. The full dump, with stack traces, locked monitors and synchronizers, is only taken when the detail view
+is opened.
+
 NOTE: GraalVM native images do not report thread information through `ThreadMXBean`, so the panel is empty there.
