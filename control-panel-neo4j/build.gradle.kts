@@ -19,6 +19,9 @@ dependencies {
     compileOnly(mnNeo4j.micronaut.neo4j.bolt)
 
     testImplementation(mnTest.micronaut.test.junit5)
+    testImplementation(projects.micronautControlPanelUi)
+    testRuntimeOnly(mn.micronaut.management)
+    testRuntimeOnly(mnSerde.micronaut.serde.jackson)
     testImplementation(mnNeo4j.micronaut.neo4j.bolt)
     testRuntimeOnly(mnTest.junit.jupiter.engine)
     testRuntimeOnly(mn.snakeyaml)
