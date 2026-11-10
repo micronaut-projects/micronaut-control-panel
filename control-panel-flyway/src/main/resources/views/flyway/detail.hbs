@@ -1,0 +1,97 @@
+{{#with controlPanel.body }}
+<div class="cp-dashboard-stack">
+    {{#each schemas as |schema|}}
+    <div class="card card-light">
+        <div class="card-header">
+            <h3 class="card-title"><code>{{schema.name}}</code></h3>
+            <div class="card-tools">
+                <span class="badge {{schema.badgeClass}}">{{schema.summary}}</span>
+            </div>
+        </div>
+        <div class="card-body">
+            {{#if schema.statusMessage}}
+                <p class="card-text card-description">{{schema.statusMessage}}</p>
+            {{else}}
+                <dl class="row">
+                    <dt class="col-sm-2">Current version</dt>
+                    <dd class="col-sm-10">{{#if schema.currentVersion}}{{schema.currentVersion}}{{else}}<span class="card-description">none</span>{{/if}}</dd>
+                    <dt class="col-sm-2">Migrations</dt>
+                    <dd class="col-sm-10">{{schema.applied}} applied, {{schema.pending}} pending, {{schema.failed}} failed</dd>
+                </dl>
+                {{#if schema.migrations}}
+                <div class="cp-data-table" data-filter-table data-filter-table-label="migration" data-filter-table-label-plural="migrations">
+                    <div class="cp-data-table-toolbar">
+                        <div class="cp-data-table-summary" data-filter-table-summary>{{schema.migrations.size}} migrations</div>
+                        <div class="cp-data-table-search">
+                            <input type="search" class="form-control" data-filter-table-search placeholder="Search versions, descriptions, scripts or states" aria-label="Search migrations of {{schema.name}}">
+                        </div>
+                    </div>
+                    <div class="cp-data-table-container">
+                        <table class="table cp-data-table-table cp-flyway-table">
+                            <thead>
+                            <tr>
+                                <th>Version</th>
+                                <th>Description</th>
+                                <th>State</th>
+                                <th class="cp-flyway-installed">Installed</th>
+                                <th class="cp-flyway-time">Time</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {{#each schema.migrations as |migration|}}
+                                <tr data-filter-table-row>
+                                    <td>{{#if migration.version}}<code class="cp-table-code">{{migration.version}}</code>{{else}}<span class="card-description">repeatable</span>{{/if}}</td>
+                                    <td>
+                                        {{migration.description}}
+                                        <div class="card-description"><code class="cp-table-code">{{migration.script}}</code> · {{migration.type}}</div>
+                                    </td>
+                                    <td><span class="badge {{migration.badgeClass}}">{{migration.state}}</span></td>
+                                    <td class="cp-flyway-installed">
+                                        {{#if migration.installedOn}}
+                                            {{migration.installedOn}}
+                                            {{#if migration.installedBy}}<div class="card-description">by {{migration.installedBy}}</div>{{/if}}
+                                        {{else}}
+                                            <span class="card-description">—</span>
+                                        {{/if}}
+                                    </td>
+                                    <td class="cp-flyway-time">{{#if migration.installedOn}}{{migration.executionTime}} ms{{else}}<span class="card-description">—</span>{{/if}}</td>
+                                </tr>
+                            {{/each}}
+                            <tr data-filter-table-empty hidden>
+                                <td class="cp-data-table-empty-cell" colspan="5">No migrations match your search.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="cp-data-table-footer">
+                        <label class="cp-data-table-page-size">
+                            Rows per page
+                            <select class="form-control" data-filter-table-page-size-select aria-label="Migrations per page">
+                                <option value="10" selected>10</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
+                        </label>
+                        <div class="cp-data-table-pagination">
+                            <span class="cp-data-table-page" data-filter-table-page>Page 1 of 1</span>
+                            <button type="button" class="btn btn-secondary btn-sm" data-filter-table-prev>Previous</button>
+                            <button type="button" class="btn btn-secondary btn-sm" data-filter-table-next>Next</button>
+                        </div>
+                    </div>
+                </div>
+                {{else}}
+                    <p class="card-text card-description">Flyway found no migrations in the configured locations.</p>
+                {{/if}}
+            {{/if}}
+        </div>
+    </div>
+    {{else}}
+    <div class="card card-light">
+        <div class="card-body">
+            <p class="card-text card-description">There are no Flyway configurations. Add one under <code>flyway.datasources</code>.</p>
+        </div>
+    </div>
+    {{/each}}
+</div>
+{{/with}}

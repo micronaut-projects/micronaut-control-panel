@@ -19,6 +19,7 @@ include("control-panel-management")
 include("control-panel-object-storage")
 include("control-panel-cache")
 include("control-panel-datasource")
+include("control-panel-flyway")
 include("control-panel-hibernate")
 include("control-panel-ui")
 include("control-panel-kafka")
@@ -50,4 +51,5 @@ configure<MicronautBuildSettingsExtension> {
     importMicronautCatalog("micronaut-kafka")
     importMicronautCatalog("micronaut-pulsar")
     importMicronautCatalog("micronaut-rabbitmq")
+    importMicronautCatalog("micronaut-flyway")
 }
