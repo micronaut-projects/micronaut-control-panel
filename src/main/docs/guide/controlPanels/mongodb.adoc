@@ -1,0 +1,38 @@
+The MongoDB control panel shows the MongoDB clients that https://micronaut-projects.github.io/micronaut-mongodb/latest/guide/[Micronaut MongoDB] creates, for the sync driver, the reactive streams driver, or both. It is listed in the Data Sources category.
+
+To add it, add the following dependency to an application that already uses Micronaut MongoDB:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-mongodb[scope=developmentOnly]
+
+The dashboard card lists each client, whether it is connected, and how many servers it knows about. It only reads what
+the driver keeps in memory, so it does not query MongoDB.
+
+The detail page shows, for each client:
+
+* The cluster type and the servers the driver knows about, with their type, replica set and round trip time.
+* A searchable table of the databases, with their size on disk, and their collections and views, with the estimated
+  number of documents in each collection.
+
+The panel is read-only, and it limits how much it asks MongoDB for:
+
+* Every query stops after 2 seconds.
+* At most 50 databases, and 100 collections per database, are listed.
+* If the driver is not connected to any server after 2 seconds, databases are not listed.
+
+The panel never reads connection strings, which can carry credentials: servers are shown by host and port. If a query
+fails, the panel shows the type of the error, and the full error is logged at `DEBUG` level, since driver messages can
+include credentials or data.
+
+== Configuration
+
+The MongoDB control panel is enabled when you include the `micronaut-control-panel-mongodb` module in a project that uses
+Micronaut MongoDB. You can disable it by setting:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      mongodb:
+        enabled: false
+----

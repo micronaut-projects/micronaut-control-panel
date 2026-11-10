@@ -4165,3 +4165,10 @@ body.cp-table-browser-resizing .cp-table-browser-splitter::before {
         font-weight: 650;
     }
 }
+
+/* MongoDB panel */
+@media (max-width: 640px) {
+    .cp-mongodb-table .cp-mongodb-size {
+        display: none;
+    }
+}
