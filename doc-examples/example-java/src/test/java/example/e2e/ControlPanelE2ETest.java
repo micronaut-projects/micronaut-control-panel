@@ -6,17 +6,23 @@ import com.microsoft.playwright.Page.GetByRoleOptions;
 import com.microsoft.playwright.junit.UsePlaywright;
 import com.microsoft.playwright.options.AriaRole;
 import com.microsoft.playwright.options.WaitUntilState;
+import io.micronaut.cache.CacheManager;
+import io.micronaut.cache.SyncCache;
 import io.micronaut.context.annotation.Property;
 import io.micronaut.http.HttpStatus;
 import io.micronaut.http.client.HttpClient;
 import io.micronaut.http.client.annotation.Client;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
+import jakarta.inject.Inject;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.condition.DisabledInNativeImage;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.regex.Pattern;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -28,6 +34,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Property(name = "kafka.streams.default.state.dir", value = "build/tmp/kafka-streams-e2e")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ControlPanelE2ETest extends AbstractE2ETest {
+
+    private static final String MARKUP_KEY = "<img src=x onerror=alert(1)>";
+
+    @Inject
+    CacheManager<?> cacheManager;
 
     @Test
     void testDashboard(Page page) {
@@ -333,6 +344,55 @@ class ControlPanelE2ETest extends AbstractE2ETest {
             assertThat(page.locator("#globalAlertMessage")).containsText("emptied successfully");
             assertThat(body(page)).not().containsText("foo");
             assertThat(body(page)).not().containsText("counter");
+        }
+    }
+
+    @Test
+    void testObjectStorageDeleteDialogRendersKeyAsText(Page page) throws IOException {
+        // The name of a stored object is not trusted, so it must never be rendered as markup
+        Path file = Path.of("/tmp/foo", MARKUP_KEY + ".txt");
+        Files.writeString(file, "markup");
+        try {
+            page.navigate(baseUrl());
+            categoryLink(page, "Object Storage").click();
+            page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Details")).click();
+
+            var row = page.locator("tbody tr")
+                .filter(new Locator.FilterOptions().setHasText(MARKUP_KEY + ".txt"));
+            row.locator("[data-actions-menu] summary").click();
+            row.locator("[data-target='#deleteConfirmModal']").click();
+
+            var dialogBody = page.locator("#deleteConfirmModal .modal-body");
+            assertThat(page.locator("#deleteConfirmModal")).isVisible();
+            assertThat(dialogBody.locator("code")).hasText(MARKUP_KEY + ".txt");
+            assertThat(dialogBody.locator("img")).hasCount(0);
+        } finally {
+            Files.deleteIfExists(file);
+        }
+    }
+
+    @Test
+    void testCacheInvalidateDialogRendersKeyAsText(Page page) {
+        // A cache key is not trusted, so it must never be rendered as markup
+        SyncCache<?> cache = cacheManager.getCache("my-caffeine");
+        cache.put(MARKUP_KEY, "markup");
+        try {
+            page.navigate(baseUrl());
+            categoryLink(page, "Cache").click();
+            controlPanelDetails(page, "my-caffeine").click();
+
+            var row = page.locator("tbody tr")
+                .filter(new Locator.FilterOptions().setHasText(MARKUP_KEY));
+            row.locator("[data-actions-menu] summary").click();
+            row.locator("[data-target='#invalidateConfirmModal']").click();
+
+            var dialogBody = page.locator("#invalidateConfirmModal .modal-body");
+            assertThat(page.locator("#invalidateConfirmModal")).isVisible();
+            assertThat(dialogBody.locator("code").first()).hasText(MARKUP_KEY);
+            assertThat(dialogBody.locator("code").last()).hasText("my-caffeine");
+            assertThat(dialogBody.locator("img")).hasCount(0);
+        } finally {
+            cache.invalidate(MARKUP_KEY);
         }
     }
 
