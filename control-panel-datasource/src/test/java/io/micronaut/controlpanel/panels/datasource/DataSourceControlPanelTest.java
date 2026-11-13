@@ -16,6 +16,8 @@
 
 package io.micronaut.controlpanel.panels.datasource;
 
+import io.micronaut.context.ApplicationContext;
+import io.micronaut.context.BeanLocator;
 import io.micronaut.context.env.Environment;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import io.micronaut.controlpanel.panels.datasource.model.Body;
@@ -23,12 +25,14 @@ import io.micronaut.controlpanel.panels.datasource.model.DataSourceInfo;
 import io.micronaut.controlpanel.panels.datasource.model.DatabaseType;
 import io.micronaut.controlpanel.panels.datasource.model.PoolInfo;
 import io.micronaut.controlpanel.panels.datasource.model.Table;
+import io.micronaut.inject.qualifiers.Qualifiers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -48,6 +52,9 @@ class DataSourceControlPanelTest {
     @Mock
     private ControlPanelConfiguration configuration;
 
+    @Mock
+    private BeanLocator beanLocator;
+
     private static final String BEAN_NAME = "testDataSource";
     private static final List<Table> EMPTY_TABLE_LIST = List.of();
     private static final String MERMAID_ER = "erDiagram\n  TABLE1 ||--o{ TABLE2 : \"has\"";
@@ -64,7 +71,7 @@ class DataSourceControlPanelTest {
         when(environment.getProperty("datasources." + BEAN_NAME + ".db-type", String.class, "")).thenReturn("");
 
         // When
-        DataSourceControlPanel panel = new DataSourceControlPanel(BEAN_NAME, dataSourceService, environment, configuration);
+        DataSourceControlPanel panel = new DataSourceControlPanel(BEAN_NAME, dataSourceService, environment, configuration, beanLocator);
 
         // Then
         assertEquals(BEAN_NAME, panel.getBeanName());
@@ -90,7 +97,7 @@ class DataSourceControlPanelTest {
         when(environment.getProperty("datasources." + BEAN_NAME + ".db-type", String.class, "")).thenReturn(expectedDbType);
 
         // When
-        DataSourceControlPanel panel = new DataSourceControlPanel(BEAN_NAME, dataSourceService, environment, configuration);
+        DataSourceControlPanel panel = new DataSourceControlPanel(BEAN_NAME, dataSourceService, environment, configuration, beanLocator);
         DataSourceInfo info = panel.getBody().dataSourceInfo();
 
         // Then
@@ -111,7 +118,7 @@ class DataSourceControlPanelTest {
         when(environment.getProperty(anyString(), eq(String.class), eq(""))).thenReturn("");
 
         // When
-        DataSourceControlPanel panel = new DataSourceControlPanel(BEAN_NAME, dataSourceService, environment, configuration);
+        DataSourceControlPanel panel = new DataSourceControlPanel(BEAN_NAME, dataSourceService, environment, configuration, beanLocator);
         Body body = panel.getBody();
 
         // Then
@@ -137,7 +144,7 @@ class DataSourceControlPanelTest {
         when(environment.getProperty(anyString(), eq(String.class), eq(""))).thenReturn("");
 
         // When
-        DataSourceControlPanel panel = new DataSourceControlPanel(BEAN_NAME, dataSourceService, environment, configuration);
+        DataSourceControlPanel panel = new DataSourceControlPanel(BEAN_NAME, dataSourceService, environment, configuration, beanLocator);
 
         // Then
         assertSame(poolInfo, panel.getBody().poolInfo());
@@ -151,7 +158,7 @@ class DataSourceControlPanelTest {
         when(environment.getProperty(anyString(), eq(String.class), eq(""))).thenReturn("");
 
         // When
-        DataSourceControlPanel panel = new DataSourceControlPanel(BEAN_NAME, dataSourceService, environment, configuration);
+        DataSourceControlPanel panel = new DataSourceControlPanel(BEAN_NAME, dataSourceService, environment, configuration, beanLocator);
 
         // Then
         assertEquals("", panel.getBadge());
@@ -168,7 +175,7 @@ class DataSourceControlPanelTest {
         when(environment.getProperty("datasources." + BEAN_NAME + ".password", String.class, "")).thenReturn("pass");
 
         // When
-        DataSourceControlPanel panel = new DataSourceControlPanel(BEAN_NAME, dataSourceService, environment, configuration);
+        DataSourceControlPanel panel = new DataSourceControlPanel(BEAN_NAME, dataSourceService, environment, configuration, beanLocator);
 
         // Then
         assertEquals("si si-postgresql", panel.getIcon());
@@ -176,8 +183,69 @@ class DataSourceControlPanelTest {
         // Test default
         when(environment.getProperty("datasources." + BEAN_NAME + ".dialect", String.class, "")).thenReturn("UNKNOWN");
         when(environment.getProperty("datasources." + BEAN_NAME + ".db-type", String.class, "")).thenReturn("");
-        DataSourceControlPanel defaultPanel = new DataSourceControlPanel(BEAN_NAME, dataSourceService, environment, configuration);
+        DataSourceControlPanel defaultPanel = new DataSourceControlPanel(BEAN_NAME, dataSourceService, environment, configuration, beanLocator);
         assertEquals(DataSourceControlPanel.DEFAULT_ICON_CLASS, defaultPanel.getIcon());
+    }
+
+    @Test
+    void hiddenDataSourceIsNeitherInspectedNorExposed() {
+        // Given
+        var hidden = new DataSourcePanelConfiguration(BEAN_NAME);
+        hidden.setEnabled(false);
+        when(beanLocator.findBean(DataSourcePanelConfiguration.class, Qualifiers.byName(BEAN_NAME))).thenReturn(Optional.of(hidden));
+
+        // When
+        DataSourceControlPanel panel = new DataSourceControlPanel(BEAN_NAME, dataSourceService, environment, configuration, beanLocator);
+
+        // Then
+        assertFalse(panel.isEnabled());
+        DataSourceInfo info = panel.getBody().dataSourceInfo();
+        assertEquals(BEAN_NAME, info.name());
+        assertEquals("", info.jdbcUrl());
+        assertEquals("", info.username());
+        assertEquals("", info.password());
+        assertTrue(panel.getBody().tables().isEmpty());
+        verifyNoInteractions(dataSourceService);
+        verify(environment, never()).getProperty("datasources." + BEAN_NAME + ".url", String.class, "");
+    }
+
+    @Test
+    void dataSourceIsEnabledByDefault() {
+        // Given
+        when(environment.getProperty(anyString(), eq(String.class), eq(""))).thenReturn("");
+        when(configuration.isEnabled()).thenReturn(true);
+
+        // When
+        DataSourceControlPanel panel = new DataSourceControlPanel(BEAN_NAME, dataSourceService, environment, configuration, beanLocator);
+
+        // Then
+        assertTrue(panel.isEnabled());
+        assertEquals("micronaut.control-panel.panels.datasource.datasources." + BEAN_NAME + ".enabled", DataSourceControlPanel.enabledProperty(BEAN_NAME));
+    }
+
+    @Test
+    @SuppressWarnings("removal")
+    void deprecatedConstructorKeepsTheDataSourceVisible() {
+        when(environment.getProperty(anyString(), eq(String.class), eq(""))).thenReturn("");
+        when(configuration.isEnabled()).thenReturn(true);
+
+        DataSourceControlPanel panel = new DataSourceControlPanel(BEAN_NAME, dataSourceService, environment, configuration);
+
+        assertTrue(panel.isEnabled());
+    }
+
+    @Test
+    void perDataSourceSettingsAreBoundByName() {
+        try (ApplicationContext context = ApplicationContext.run(Map.of(
+            DataSourceControlPanel.enabledProperty("reporting"), "false",
+            DataSourceControlPanel.enabledProperty("orders"), "true"
+        ))) {
+            DataSourcePanelConfiguration reporting = context.getBean(DataSourcePanelConfiguration.class, Qualifiers.byName("reporting"));
+            assertEquals("reporting", reporting.getName());
+            assertFalse(reporting.isEnabled());
+            assertTrue(context.getBean(DataSourcePanelConfiguration.class, Qualifiers.byName("orders")).isEnabled());
+            assertTrue(context.findBean(DataSourcePanelConfiguration.class, Qualifiers.byName("other")).isEmpty());
+        }
     }
 
     @Test
@@ -188,7 +256,7 @@ class DataSourceControlPanelTest {
         when(environment.getProperty(anyString(), eq(String.class), eq(""))).thenReturn("");
 
         // When
-        DataSourceControlPanel panel = new DataSourceControlPanel(BEAN_NAME, dataSourceService, environment, configuration);
+        DataSourceControlPanel panel = new DataSourceControlPanel(BEAN_NAME, dataSourceService, environment, configuration, beanLocator);
         var category = panel.getCategory();
 
         // Then

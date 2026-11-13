@@ -87,3 +87,27 @@ micronaut:
       datasource:
         enabled: false
 ----
+
+To hide a single datasource while keeping the others visible, disable it by name with
+`micronaut.control-panel.panels.datasource.datasources.<name>.enabled`. This is useful when a datasource points at a
+database whose schema should not be inspected, or whose account must not run ad hoc queries:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      datasource:
+        datasources:
+          reporting:
+            enabled: false
+----
+
+include::{includedir}configurationProperties/io.micronaut.controlpanel.panels.datasource.DataSourcePanelConfiguration.adoc[]
+
+A hidden datasource is never inspected by the datasource panel: the panel runs no metadata queries against it, does not
+show its connection settings, and its table, schema, pool, and query routes respond with `404 Not Found`.
+
+NOTE: This setting applies to the datasource panel only. The Hibernate panel shows the connection settings of the
+datasource that a session factory uses, and offers a query console for it, so disable it as well with
+`micronaut.control-panel.panels.hibernate.enabled: false` when that datasource must stay hidden.

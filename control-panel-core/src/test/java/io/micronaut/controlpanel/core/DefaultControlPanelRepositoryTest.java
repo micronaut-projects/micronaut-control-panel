@@ -16,6 +16,7 @@
 package io.micronaut.controlpanel.core;
 
 import io.micronaut.context.ApplicationContext;
+import io.micronaut.context.annotation.Requires;
 import io.micronaut.controlpanel.core.config.ControlPanelConfiguration;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -23,8 +24,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -126,6 +129,62 @@ class DefaultControlPanelRepositoryTest {
         ControlPanelRepository repository = ctx.getBean(ControlPanelRepository.class);
         long count = repository.countByCategoryId("nonexistent");
         assertEquals(0L, count);
+    }
+
+    @Test
+    void itExcludesDisabledControlPanels() {
+        try (var context = ApplicationContext.run(Map.of(
+            "spec.name", SPEC_NAME,
+            ControlPanelConfiguration.PREFIX + ".visible-panel.enabled", true,
+            ControlPanelConfiguration.PREFIX + ".hidden-panel.enabled", false
+        ))) {
+            ControlPanelRepository repository = context.getBean(ControlPanelRepository.class);
+
+            assertTrue(repository.findByName("visible-panel").isPresent());
+            assertTrue(repository.findByName("hidden-panel").isEmpty());
+            assertEquals(List.of("visible-panel"), repository.findAllByCategory(SPEC_CATEGORY.id()).stream().map(ControlPanel::getName).toList());
+            assertEquals(1L, repository.countByCategoryId(SPEC_CATEGORY.id()));
+            assertTrue(repository.findAll().stream().noneMatch(panel -> panel.getName().equals("hidden-panel")));
+        }
+    }
+
+    private static final String SPEC_NAME = "DefaultControlPanelRepositoryTest.disabled";
+    private static final ControlPanel.Category SPEC_CATEGORY = new ControlPanel.Category("spec", "Spec", "fas fa-flask");
+
+    @Singleton
+    @Requires(property = "spec.name", value = SPEC_NAME)
+    static class VisiblePanel extends AbstractControlPanel<String> {
+        VisiblePanel(@Named("visible-panel") ControlPanelConfiguration configuration) {
+            super("visible-panel", configuration);
+        }
+
+        @Override
+        public String getBody() {
+            return "";
+        }
+
+        @Override
+        public Category getCategory() {
+            return SPEC_CATEGORY;
+        }
+    }
+
+    @Singleton
+    @Requires(property = "spec.name", value = SPEC_NAME)
+    static class HiddenPanel extends AbstractControlPanel<String> {
+        HiddenPanel(@Named("hidden-panel") ControlPanelConfiguration configuration) {
+            super("hidden-panel", configuration);
+        }
+
+        @Override
+        public String getBody() {
+            return "";
+        }
+
+        @Override
+        public Category getCategory() {
+            return SPEC_CATEGORY;
+        }
     }
 
     @Singleton
