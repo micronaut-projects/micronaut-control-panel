@@ -20,6 +20,7 @@ The following panels are available:
 * `beans`: Bean Definitions
 * `disabled-beans`: Disabled Beans
 * `loggers`: Logging Configuration
+* `threaddump`: Thread Dump
 
 == Protecting The Control Panel
 
@@ -281,3 +282,36 @@ configured control-panel role can re-configure loggers through the control panel
 `/loggers/{logger}` still follow Micronaut Management endpoint sensitivity rules. Set
 `endpoints.loggers.write-sensitive=false` only when you intentionally want to expose direct writable management endpoint
 access outside the control panel.
+
+== Thread Dump
+
+This panel shows a JVM thread dump: the number of threads in each state, and a searchable list of threads with the lock
+each one is waiting on, the thread that holds that lock, and an expandable stack trace. Blocked threads are listed first.
+Use **Take a new dump** to refresh it.
+
+The panel is available when the
+https://docs.micronaut.io/latest/guide/#threadDumpEndpoint[Thread Dump Endpoint] is enabled, which is the default for
+Micronaut Management endpoints. Disable the endpoint, or the panel, in environments where thread names and stack traces
+must not be shown:
+
+.Disabling the Thread Dump panel
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      threaddump:
+        enabled: false
+----
+
+The panel reads threads through the application's
+https://docs.micronaut.io/latest/api/io/micronaut/management/endpoint/threads/ThreadInfoMapper.html[`ThreadInfoMapper`],
+like the `/threaddump` endpoint does, so a mapper that filters threads out also hides them from the panel. If the mapper
+returns something other than `java.lang.management.ThreadInfo`, the panel only reports how many entries it returned.
+
+The dashboard card only counts the threads per state, so it reads a snapshot without stack traces or lock information,
+which is cheap. The full dump, with stack traces, locked monitors and synchronizers, is only taken when the detail view
+is opened.
+
+NOTE: GraalVM native images report less through `ThreadMXBean` than the JVM. Locked monitors and synchronizers are only
+included when the runtime supports them, and the panel shows no threads if the image reports none.

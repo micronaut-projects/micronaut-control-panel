@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.condition.DisabledInNativeImage;
+import org.junit.jupiter.api.condition.EnabledInNativeImage;
 
 import java.util.regex.Pattern;
 
@@ -218,6 +219,35 @@ class ControlPanelE2ETest extends AbstractE2ETest {
                 && response.status() == HttpStatus.NO_CONTENT.getCode(),
             action
         );
+    }
+
+    @Test
+    @DisabledInNativeImage
+    void testThreadDump(Page page) {
+        page.navigate(baseUrl());
+        controlPanelDetails(page, "Thread Dump").click();
+
+        assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Thread states"))).isVisible();
+        assertThat(body(page)).containsText("RUNNABLE");
+
+        page.getByLabel("Search threads").fill("no-such-thread-name");
+        assertThat(page.locator("tr[data-filter-table-empty]")).isVisible();
+
+        page.getByLabel("Search threads").fill("");
+        var firstStack = page.locator("details.cp-thread-stack").first();
+        firstStack.locator("summary").click();
+        assertThat(firstStack.locator("pre")).isVisible();
+    }
+
+    @Test
+    @EnabledInNativeImage
+    void testThreadDumpInNativeImage(Page page) {
+        page.navigate(baseUrl());
+        controlPanelDetails(page, "Thread Dump").click();
+
+        // A native image reports less through ThreadMXBean than the JVM, so only check that the dump renders
+        assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Thread states"))).isVisible();
+        assertThat(body(page)).containsText(Pattern.compile("RUNNABLE|No threads were reported"));
     }
 
     @Test

@@ -2136,6 +2136,40 @@ dl.row dt {
     text-align: right;
 }
 
+.cp-thread-state {
+    width: 9rem;
+}
+
+.cp-thread-lock {
+    width: 16rem;
+    overflow-wrap: anywhere;
+}
+
+.cp-thread-counts {
+    width: 9rem;
+    white-space: nowrap;
+}
+
+.cp-thread-stack {
+    margin-top: 0.35rem;
+}
+
+.cp-thread-stack > summary {
+    cursor: pointer;
+    color: var(--muted-foreground);
+}
+
+.cp-thread-stack pre {
+    margin: 0.35rem 0 0;
+    max-height: 22rem;
+    overflow: auto;
+}
+
+.cp-thread-stack pre code {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
 .table th.cp-logger-actions,
 .table td.cp-logger-actions,
 .table th.cp-bean-actions,
@@ -4005,6 +4039,15 @@ body.cp-table-browser-resizing .cp-table-browser-splitter::before {
 }
 
 @media (max-width: 640px) {
+    .cp-thread-table .cp-thread-lock,
+    .cp-thread-table .cp-thread-counts {
+        display: none;
+    }
+
+    .cp-thread-state {
+        width: 7.5rem;
+    }
+
     .cp-header {
         flex-wrap: wrap;
         align-items: flex-start;

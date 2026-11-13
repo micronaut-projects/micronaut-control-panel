@@ -1,0 +1,118 @@
+{{#with controlPanel.detailedBody }}
+<div class="cp-dashboard-stack">
+    <div class="card card-light">
+        <div class="card-header">
+            <h3 class="card-title">Thread states</h3>
+            <div class="card-tools">
+                <a class="btn btn-primary btn-sm" href="{{../ext.controlPanelPath}}/threaddump">
+                    <i class="fa fa-rotate-right" aria-hidden="true"></i>
+                    Take a new dump
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            {{#if unsupportedMapper}}
+                <p class="card-text">
+                    The application's <code>ThreadInfoMapper</code> returned {{total}} entries that are not
+                    <code>java.lang.management.ThreadInfo</code> objects, so they cannot be shown here. Read them from the
+                    <code>/threaddump</code> management endpoint instead.
+                </p>
+            {{else}}
+                <dl class="row">
+                    <dt class="col-sm-2">Threads</dt>
+                    <dd class="col-sm-10">{{total}}</dd>
+                    <dt class="col-sm-2">States</dt>
+                    <dd class="col-sm-10">
+                        {{#each stateCounts}}
+                            <span class="badge {{badgeClass}}">{{state}}: {{count}}</span>
+                        {{else}}
+                            <span class="card-description">No threads were reported.</span>
+                        {{/each}}
+                    </dd>
+                </dl>
+            {{/if}}
+        </div>
+    </div>
+
+    {{#if threads}}
+    <div class="card card-light">
+        <div class="card-header">
+            <h3 class="card-title">Threads</h3>
+        </div>
+        <div class="card-body">
+            <div class="cp-data-table" data-filter-table data-filter-table-label="thread" data-filter-table-label-plural="threads">
+                <div class="cp-data-table-toolbar">
+                    <div class="cp-data-table-summary" data-filter-table-summary>{{total}} threads</div>
+                    <div class="cp-data-table-search">
+                        <input type="search" class="form-control" data-filter-table-search placeholder="Search threads, states, locks or stack frames" aria-label="Search threads">
+                    </div>
+                </div>
+                <div class="cp-data-table-container">
+                    <table class="table cp-data-table-table cp-data-table-fixed cp-thread-table">
+                        <thead>
+                        <tr>
+                            <th class="cp-thread-state">State</th>
+                            <th>Thread</th>
+                            <th class="cp-thread-lock">Locks</th>
+                            <th class="cp-thread-counts">Blocked / waited</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {{#each threads as |thread|}}
+                            <tr data-filter-table-row>
+                                <td class="cp-thread-state"><span class="badge {{thread.badgeClass}}">{{thread.state}}</span></td>
+                                <td>
+                                    <code class="cp-table-code">{{thread.name}}</code>
+                                    <span class="card-description">#{{thread.id}}{{#if thread.daemon}} · daemon{{/if}}</span>
+                                    {{#if thread.stackTrace}}
+                                        <details class="cp-thread-stack">
+                                            <summary>Stack trace</summary>
+                                            <pre><code class="nohighlight">{{#each thread.stackTrace as |frame|}}{{frame}}
+{{/each}}</code></pre>
+                                        </details>
+                                    {{/if}}
+                                </td>
+                                <td class="cp-thread-lock">
+                                    {{#if thread.lockName}}
+                                        <code class="cp-table-code">{{thread.lockName}}</code>
+                                        {{#if thread.lockOwnerName}}
+                                            <div class="card-description">held by <code class="cp-table-code">{{thread.lockOwnerName}}</code></div>
+                                        {{/if}}
+                                    {{else}}
+                                        {{#unless thread.lockedSynchronizers}}<span class="card-description">—</span>{{/unless}}
+                                    {{/if}}
+                                    {{#each thread.lockedSynchronizers as |synchronizer|}}
+                                        <div class="card-description">holds <code class="cp-table-code">{{synchronizer}}</code></div>
+                                    {{/each}}
+                                </td>
+                                <td class="cp-thread-counts">{{thread.blockedCount}} / {{thread.waitedCount}}</td>
+                            </tr>
+                        {{/each}}
+                        <tr data-filter-table-empty hidden>
+                            <td class="cp-data-table-empty-cell" colspan="4">No threads match your search.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="cp-data-table-footer">
+                    <label class="cp-data-table-page-size">
+                        Rows per page
+                        <select class="form-control" data-filter-table-page-size-select aria-label="Threads per page">
+                            <option value="10" selected>10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </label>
+                    <div class="cp-data-table-pagination">
+                        <span class="cp-data-table-page" data-filter-table-page>Page 1 of 1</span>
+                        <button type="button" class="btn btn-secondary btn-sm" data-filter-table-prev>Previous</button>
+                        <button type="button" class="btn btn-secondary btn-sm" data-filter-table-next>Next</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{/if}}
+</div>
+{{/with}}
