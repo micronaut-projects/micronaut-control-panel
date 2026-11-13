@@ -10,6 +10,7 @@ controlPanels:
   datasource: Datasource
   flyway: Flyway
   hibernate: Hibernate
+  reactor: Reactor
   kafka: Kafka
   langchain4j: LangChain4j
   pulsar: Pulsar
