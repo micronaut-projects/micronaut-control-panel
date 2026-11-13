@@ -36,7 +36,9 @@ class ControlPanelWriteClassificationTest {
         "/hibernate-control-panel-controller/default/statistics/enabled/true/",
         "/loggers-control-panel-controller/io.micronaut",
         "/loggers-control-panel-controller/io.micronaut/",
-        "/application-control-panel-controller/refresh/"
+        "/application-control-panel-controller/refresh/",
+        "/langchain4j-control-panel-controller/chat",
+        "/langchain4j-control-panel-controller/chat/"
     })
     void postWriteRoutesAreClassifiedWithOrWithoutATrailingSlash(String route) {
         assertTrue(ControlPanelSecurityPaths.isWriteRequest(CP, HttpRequest.POST(CP + route, "")));

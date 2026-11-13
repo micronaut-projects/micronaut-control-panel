@@ -11,6 +11,7 @@ controlPanels:
   flyway: Flyway
   hibernate: Hibernate
   kafka: Kafka
+  langchain4j: LangChain4j
   pulsar: Pulsar
   rabbitmq: RabbitMQ
   oracleCloud: Oracle Cloud
