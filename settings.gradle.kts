@@ -27,6 +27,7 @@ include("control-panel-langchain4j")
 include("control-panel-pulsar")
 include("control-panel-rabbitmq")
 include("control-panel-oracle-cloud")
+include("control-panel-nats")
 
 include("doc-examples:example-java")
 include("test-suite-thymeleaf")
@@ -56,4 +57,5 @@ configure<MicronautBuildSettingsExtension> {
     importMicronautCatalog("micronaut-rabbitmq")
     importMicronautCatalog("micronaut-flyway")
     importMicronautCatalog("micronaut-oraclecloud")
+    importMicronautCatalog("micronaut-nats")
 }

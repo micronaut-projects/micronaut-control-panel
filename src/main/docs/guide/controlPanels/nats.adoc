@@ -1,0 +1,32 @@
+The NATS control panel shows the NATS connections and subscriptions of an application that uses https://micronaut-projects.github.io/micronaut-nats/latest/guide/[Micronaut NATS]. It is listed in the Messaging category.
+
+To add it, add the following dependency to an application that already uses Micronaut NATS:
+
+dependency:io.micronaut.controlpanel:micronaut-control-panel-nats[scope=developmentOnly]
+
+The panel shows:
+
+* Each connection configured under `nats`, such as `nats.default`: its status, the configured servers and the one it is
+  connected to, the server name and version, how it authenticates, whether it uses TLS, and the messages and bytes it
+  has sent and received, its reconnections and the messages dropped because a subscriber was too slow.
+* Each `@Subject` method of the `@NatsListener` beans: the subject, the queue group, the connection, and the listener
+  class and method.
+
+The panel does not send anything to the server: the status, version and counters come from what the NATS client already
+knows, and a connection that nothing has used yet is shown as not opened rather than being opened by the panel.
+Passwords, tokens and credential files are never shown, and server addresses are shown without user info. JetStream
+consumers are not listed.
+
+== Configuration
+
+The NATS control panel is enabled when you include the `micronaut-control-panel-nats` module in a project that uses
+Micronaut NATS. You can disable it by setting:
+
+[configuration]
+----
+micronaut:
+  control-panel:
+    panels:
+      nats:
+        enabled: false
+----

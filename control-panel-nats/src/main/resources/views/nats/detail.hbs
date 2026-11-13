@@ -1,0 +1,98 @@
+{{#with controlPanel.body }}
+<div class="cp-dashboard-stack">
+    <div class="card card-light">
+        <div class="card-header">
+            <h3 class="card-title">Connections</h3>
+        </div>
+        <div class="card-body">
+            {{#each connections as |connection|}}
+                <dl class="row cp-nats-connection">
+                    <dt>Name</dt>
+                    <dd><code>{{connection.name}}</code> <span class="badge {{connection.badgeClass}}">{{connection.statusLabel}}</span></dd>
+                    <dt>Servers</dt>
+                    <dd>
+                        {{#each connection.addresses as |address|}}<code>{{address}}</code> {{else}}<span class="card-description">default</span>{{/each}}
+                        {{#if connection.connectedUrl}}<div class="card-description">connected to <code>{{connection.connectedUrl}}</code></div>{{/if}}
+                        {{#if connection.server}}<div class="card-description">{{connection.server}}</div>{{/if}}
+                    </dd>
+                    <dt>Authentication</dt>
+                    <dd>{{connection.authentication}}{{#if connection.tls}} <span class="badge badge-secondary">TLS</span>{{/if}}</dd>
+                    {{#if connection.statistics}}
+                        <dt>Messages</dt>
+                        <dd>{{connection.statistics.inMessages}} in ({{binaryPrefix connection.statistics.inBytes}}), {{connection.statistics.outMessages}} out ({{binaryPrefix connection.statistics.outBytes}})</dd>
+                        <dt>Reconnects</dt>
+                        <dd>{{connection.statistics.reconnects}}</dd>
+                        <dt>Dropped</dt>
+                        <dd>{{#if connection.statistics.dropped}}<span class="badge badge-destructive">{{connection.statistics.dropped}}</span>{{else}}0{{/if}}</dd>
+                    {{/if}}
+                </dl>
+            {{else}}
+                <p class="card-text card-description">There are no NATS connections. Configure one under <code>nats</code>, such as <code>nats.default.addresses</code>.</p>
+            {{/each}}
+        </div>
+    </div>
+
+    <div class="card card-light">
+        <div class="card-header">
+            <h3 class="card-title">Subscriptions</h3>
+        </div>
+        <div class="card-body">
+            {{#if subscriptions}}
+            <div class="cp-data-table" data-filter-table data-filter-table-label="subscription" data-filter-table-label-plural="subscriptions">
+                <div class="cp-data-table-toolbar">
+                    <div class="cp-data-table-summary" data-filter-table-summary>{{subscriptions.size}} subscriptions</div>
+                    <div class="cp-data-table-search">
+                        <input type="search" class="form-control" data-filter-table-search placeholder="Search subjects, queue groups or listeners" aria-label="Search subscriptions">
+                    </div>
+                </div>
+                <div class="cp-data-table-container">
+                    <table class="table cp-data-table-table">
+                        <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Listener</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {{#each subscriptions as |subscription|}}
+                            <tr data-filter-table-row>
+                                <td>
+                                    <code class="cp-table-code">{{subscription.subject}}</code>
+                                    <div class="card-description">on {{subscription.connection}}{{#if subscription.queue}}, queue group <code>{{subscription.queue}}</code>{{/if}}</div>
+                                </td>
+                                <td>
+                                    <code class="cp-table-code">{{subscription.listener}}</code>
+                                    <div class="card-description">{{subscription.method}}()</div>
+                                </td>
+                            </tr>
+                        {{/each}}
+                        <tr data-filter-table-empty hidden>
+                            <td class="cp-data-table-empty-cell" colspan="2">No subscriptions match your search.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="cp-data-table-footer">
+                    <label class="cp-data-table-page-size">
+                        Rows per page
+                        <select class="form-control" data-filter-table-page-size-select aria-label="Subscriptions per page">
+                            <option value="10" selected>10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </label>
+                    <div class="cp-data-table-pagination">
+                        <span class="cp-data-table-page" data-filter-table-page>Page 1 of 1</span>
+                        <button type="button" class="btn btn-secondary btn-sm" data-filter-table-prev>Previous</button>
+                        <button type="button" class="btn btn-secondary btn-sm" data-filter-table-next>Next</button>
+                    </div>
+                </div>
+            </div>
+            {{else}}
+                <p class="card-text card-description">There are no <code>@Subject</code> methods in <code>@NatsListener</code> beans.</p>
+            {{/if}}
+        </div>
+    </div>
+</div>
+{{/with}}
