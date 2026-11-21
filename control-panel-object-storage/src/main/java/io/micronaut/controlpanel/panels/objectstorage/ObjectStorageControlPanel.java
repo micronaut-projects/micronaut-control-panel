@@ -35,11 +35,18 @@ import io.micronaut.objectstorage.local.LocalStorageEntry;
 import io.micronaut.objectstorage.oraclecloud.OracleCloudStorageConfiguration;
 import io.micronaut.objectstorage.oraclecloud.OracleCloudStorageEntry;
 import jakarta.inject.Named;
+import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 import static io.micronaut.core.util.StringUtils.EMPTY_STRING;
 
@@ -75,6 +82,8 @@ public class ObjectStorageControlPanel extends AbstractEachBeanControlPanel<Obje
         LOCAL_STORAGE_CONFIGURATION, "fa-hard-drive"
     );
 
+    private static final Logger LOG = LoggerFactory.getLogger(ObjectStorageControlPanel.class);
+
     private final ObjectStorageOperations<?, ?, ?> operations;
     private final AbstractObjectStorageConfiguration objectStorageConfiguration;
 
@@ -98,15 +107,19 @@ public class ObjectStorageControlPanel extends AbstractEachBeanControlPanel<Obje
 
     @Override
     public Body getBody() {
-        var entries = operations.listObjects()
-            .stream()
-            .map(operations::retrieve)
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .toList();
         var metadata = computeMetadata();
-
-        return new Body(entries, metadata);
+        try {
+            var entries = operations.listObjects()
+                .stream()
+                .map(operations::retrieve)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .toList();
+            return new Body(entries, metadata);
+        } catch (RuntimeException e) {
+            LOG.warn("Unable to list the objects of object storage '{}'", getBeanName(), e);
+            return new Body(List.of(), metadata, describeFailure(e));
+        }
     }
 
     @Override
@@ -151,6 +164,32 @@ public class ObjectStorageControlPanel extends AbstractEachBeanControlPanel<Obje
         return metadata;
     }
 
+    /**
+     * Describes a listing failure for display, including the messages of its causes. An
+     * {@link io.micronaut.objectstorage.ObjectStorageException} message such as "Error listing objects"
+     * says little on its own; the cause, for example a {@code NoSuchFileException} naming the missing
+     * path, is what tells the user what to fix.
+     *
+     * @param failure the failure
+     * @return the description
+     */
+    static String describeFailure(Throwable failure) {
+        var description = new StringBuilder(Objects.requireNonNullElse(failure.getMessage(), failure.getClass().getSimpleName()));
+        Set<Throwable> seen = Collections.newSetFromMap(new IdentityHashMap<>());
+        seen.add(failure);
+        for (Throwable cause = failure.getCause(); cause != null && seen.add(cause); cause = cause.getCause()) {
+            var message = cause.getMessage();
+            // Skip a cause whose message a wrapper already repeats, as new RuntimeException(cause) does
+            if (message == null || description.indexOf(message) < 0) {
+                description.append(": ").append(cause.getClass().getSimpleName());
+                if (message != null) {
+                    description.append(": ").append(message);
+                }
+            }
+        }
+        return description.toString();
+    }
+
     private static boolean isConfiguration(Class<?> type, String configurationClassName) {
         var currentType = type;
         while (currentType != null) {
@@ -172,6 +211,7 @@ public class ObjectStorageControlPanel extends AbstractEachBeanControlPanel<Obje
      *
      * @param entries the list of object storage entries
      * @param metadata the metadata for this control panel
+     * @param error a description of why the objects could not be listed, or {@code null} if they were listed
      */
     @ReflectiveAccess
     @TypeHint(
@@ -184,5 +224,16 @@ public class ObjectStorageControlPanel extends AbstractEachBeanControlPanel<Obje
         },
         accessType = TypeHint.AccessType.ALL_PUBLIC
     )
-    public record Body(List<? extends ObjectStorageEntry<?>> entries, Map<String, Object> metadata) { }
+    public record Body(List<? extends ObjectStorageEntry<?>> entries, Map<String, Object> metadata, @Nullable String error) {
+
+        /**
+         * Creates the body of a panel whose objects were listed.
+         *
+         * @param entries the list of object storage entries
+         * @param metadata the metadata for this control panel
+         */
+        public Body(List<? extends ObjectStorageEntry<?>> entries, Map<String, Object> metadata) {
+            this(entries, metadata, null);
+        }
+    }
 }
